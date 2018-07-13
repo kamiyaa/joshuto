@@ -31,6 +31,7 @@ mod joshuto {
 
 
         ncurses::init_pair(1, ncurses::COLOR_BLUE, ncurses::COLOR_BLACK);
+        ncurses::init_pair(2, ncurses::COLOR_CYAN, ncurses::COLOR_BLACK);
     //    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
     }
 
@@ -66,6 +67,8 @@ mod joshuto {
                     }
                     if file_type.is_dir() {
                         ncurses::wattron(win, ncurses::COLOR_PAIR(1));
+                    } else if file_type.is_symlink() {
+                        ncurses::wattron(win, ncurses::COLOR_PAIR(2));
                     }
 
                     match dir_contents[i].file_name().into_string() {
@@ -79,11 +82,14 @@ mod joshuto {
                     };
 
 
-                    if file_type.is_dir() {
-                        ncurses::wattroff(win, ncurses::COLOR_PAIR(1));
-                    }
                     if i == index {
                         ncurses::wattroff(win, ncurses::A_REVERSE());
+                    }
+
+                    if file_type.is_dir() {
+                        ncurses::wattroff(win, ncurses::COLOR_PAIR(1));
+                    } else if file_type.is_symlink() {
+                        ncurses::wattroff(win, ncurses::COLOR_PAIR(2));
                     }
                 },
                 Err(_e) => {
@@ -135,23 +141,27 @@ mod joshuto {
 
 fn direntry_sort_func(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> std::cmp::Ordering
 {
+    fn res_ordering(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> Result<std::cmp::Ordering, std::io::Error> {
+        let f1_type = file1.file_type()?;
+        let f2_type = file2.file_type()?;
 
-    let f1_type = file1.file_type().unwrap();
-    let f2_type = file2.file_type().unwrap();
-
-    if f1_type != f2_type {
-        match f1_type.is_dir() {
-            true => std::cmp::Ordering::Less,
-            false => std::cmp::Ordering::Greater,
-        }
-    } else {
-        let f1_name = file1.file_name().into_string().unwrap().to_uppercase();
-        let f2_name = file2.file_name().into_string().unwrap().to_uppercase();
-        match f1_name.as_str() <= f2_name.as_str() {
-            true => std::cmp::Ordering::Less,
-            false => std::cmp::Ordering::Greater,
+        if !f1_type.is_file() && f2_type.is_file() {
+            Ok(std::cmp::Ordering::Less)
+        } else if !f2_type.is_file() && f1_type.is_file() {
+            Ok(std::cmp::Ordering::Greater)
+        } else {
+            let f1_name : std::string::String =
+                file1.file_name().as_os_str().to_str().unwrap().to_lowercase();
+            let f2_name : std::string::String =
+                file2.file_name().as_os_str().to_str().unwrap().to_lowercase();
+            if f1_name <= f2_name {
+                Ok(std::cmp::Ordering::Less)
+            } else {
+                Ok(std::cmp::Ordering::Greater)
+            }
         }
     }
+    res_ordering(file1, file2).unwrap_or(std::cmp::Ordering::Less)
 }
 
 fn main()
