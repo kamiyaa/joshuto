@@ -5,3 +5,6 @@ authors = ["Jiayi Zhao <jeff.no.zhao@gmail.com>"]
 
 [dependencies]
 ncurses = "5.93.0"
+serde = "1.0.70"
+serde_derive = "1.0.70"
+toml = "0.4"
