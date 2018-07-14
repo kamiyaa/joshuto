@@ -19,7 +19,6 @@ pub struct joshuto_win {
 */
 
 
-
 fn main()
 {
     let args: Vec<String> = env::args().collect();
@@ -36,13 +35,14 @@ fn main()
     let mut pindex : usize = 0;
     let mut cindex : usize = 0;
 
-    let top_win = joshuto::init_window(1, term_cols, 0, 0);
-    let mid_win = joshuto::init_window(term_rows - 2, term_cols / 7 * 3,
-                                        term_cols / 7, 1);
-    let left_win = joshuto::init_window(term_rows - 2, term_cols / 7,
-                                        0, 1);
-    let right_win = joshuto::init_window(term_rows - 2, term_cols / 7 * 3,
-                                        term_cols / 7 * 4, 1);
+    ncurses::refresh();
+
+    let mut top_win = ncurses::newwin(1, term_cols, 0, 0);
+    let mut mid_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
+                                        1, term_cols / 7);
+    let mut left_win = ncurses::newwin(term_rows - 2, term_cols / 7, 1, 0);
+    let mut right_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
+                                        1, term_cols / 7 * 4);
 
     let mut tmp_result : Result<Vec<fs::DirEntry>, _> = fs::read_dir(".").unwrap().collect();
     let mut dir_contents : Vec<fs::DirEntry> = tmp_result.unwrap();
@@ -53,6 +53,8 @@ fn main()
 
     joshuto::win_print_dir(mid_win, &dir_contents, index, (term_rows - 1) as usize);
 
+    ncurses::refresh();
+
     loop {
         let ch = ncurses::getch();
 
@@ -60,14 +62,26 @@ fn main()
             QUIT => {
                 break;
             }
+            ncurses::KEY_RESIZE => {
+                ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+                top_win = ncurses::newwin(1, term_cols, 0, 0);
+                mid_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
+                                          term_cols / 7, 1);
+                left_win = ncurses::newwin(term_rows - 2, term_cols / 7, 0, 1);
+                right_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
+                                            term_cols / 7 * 4, 1);
+                ncurses::refresh();
+            }
             ncurses::KEY_UP => {
                 if index > 0 {
                     index = index - 1;
+                    joshuto::win_print_select_file(right_win, &dir_contents[index], (term_rows - 1) as usize);
                 }
             }
             ncurses::KEY_DOWN => {
                 if index + 1 < dir_contents.len() {
                     index = index + 1;
+                    joshuto::win_print_select_file(right_win, &dir_contents[index], (term_rows - 1) as usize);
                 }
             }
             ncurses::KEY_LEFT => {
@@ -81,16 +95,20 @@ fn main()
                         if pathbuf.pop() == false {
                             continue;
                         }
-                        match env::set_current_dir(pathbuf) {
+                        match env::set_current_dir(&pathbuf) {
                             Ok(_s) => {
                                 tmp_result = fs::read_dir(".").unwrap().collect();
                                 dir_contents = tmp_result.unwrap();
                                 dir_contents.sort_by(joshuto::alpha_sort);
                                 index = pindex;
                                 pindex = 0;
-
-                                joshuto::win_print_curr_dir(top_win);
-                                joshuto::win_print_parent_dir(left_win, pindex, (term_rows - 1) as usize);
+                                if pathbuf.eq(&path::Path::new("/")) {
+                                    ncurses::wclear(left_win);
+                                    ncurses::wrefresh(left_win);
+                                } else {
+                                    joshuto::win_print_curr_dir(top_win);
+                                    joshuto::win_print_parent_dir(left_win, pindex, (term_rows - 1) as usize);
+                                }
                             },
                             Err(_e) => {
                                 ncurses::printw("None");
