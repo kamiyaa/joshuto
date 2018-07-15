@@ -11,21 +11,16 @@ use JoshutoConfig;
 const QUIT: i32 = 'q' as i32;
 const ENTER: i32 = '\n' as i32;
 
-mod joshuto_rwx {
+const S_IFSOCK : u32 = 0o140;   /* socket */
+const S_IFLNK  : u32 = 0o120;   /* symbolic link */
+const S_IFREG  : u32 = 0o100;   /* regular file */
+const S_IFBLK  : u32 = 0o060;   /* block device */
+const S_IFDIR  : u32 = 0o040;   /* directory */
+const S_IFCHR  : u32 = 0o020;   /* character device */
+const S_IFIFO  : u32 = 0o010;   /* FIFO */
+
+mod joshuto_unix {
     extern crate libc;
-
-/*
-    pub fn get_mode_str(mode : u32)
-    {
-        let mode_str : &str = match mode / 0o1000 {
-            0o20 => "D",
-            0o40 => "d",
-            0o100 => "_",
-            0o120 => "l",
-        };
-        let mode_str = concat!(mode_str, stringify_mode(mode));
-    }*/
-
 
     pub fn stringify_mode(mode : u32) -> String
     {
@@ -112,15 +107,49 @@ pub fn init_ncurses()
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 }
 
+fn file_attron(win : ncurses::WINDOW, mode : u32)
+{
+    match mode {
+        S_IFDIR => {
+            ncurses::wattron(win, ncurses::COLOR_PAIR(1));
+        },
+        S_IFLNK | S_IFCHR => {
+            ncurses::wattron(win, ncurses::COLOR_PAIR(2));
+        },
+        S_IFSOCK | S_IFIFO => {
+            ncurses::wattron(win, ncurses::COLOR_PAIR(4));
+        },
+        _ => {},
+    };
+}
+
+fn file_attroff(win : ncurses::WINDOW, mode : u32)
+{
+    match mode {
+        S_IFDIR => {
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(1));
+        },
+        S_IFLNK | S_IFCHR => {
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(2));
+        },
+        S_IFSOCK | S_IFIFO => {
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(4));
+        },
+        _ => {},
+    };
+}
+
 fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
 
-    if let Ok(file_type) = file.file_type() {
-        if file_type.is_dir() {
-            ncurses::wattron(win, ncurses::COLOR_PAIR(1));
-        }
-        else if file_type.is_symlink() {
-            ncurses::wattron(win, ncurses::COLOR_PAIR(2));
-        }
+    use std::os::unix::fs::PermissionsExt;
+
+    let mut mode : u32 = 0o100;
+
+    if let Ok(metadata) = file.metadata() {
+        mode = metadata.permissions().mode() / 0o1000;
+    }
+    if mode != 0o100 {
+        file_attron(win, mode);
     }
 
     match file.file_name().into_string() {
@@ -132,13 +161,8 @@ fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
             ncurses::wprintw(win, format!("{:?}", e).as_str());
         },
     };
-    if let Ok(file_type) = file.file_type() {
-        if file_type.is_dir() {
-            ncurses::wattroff(win, ncurses::COLOR_PAIR(1));
-        }
-        else if file_type.is_symlink() {
-            ncurses::wattroff(win, ncurses::COLOR_PAIR(2));
-        }
+    if mode != 0o100 {
+        file_attroff(win, mode);
     }
 
     ncurses::wprintw(win, "\n");
@@ -241,42 +265,6 @@ pub fn win_contents_refresh_indexed(win : ncurses::WINDOW,
     ncurses::wrefresh(win);
 }
 
-/*
-pub fn win_contents_refresh_indexed(win : ncurses::WINDOW,
-                    dir_contents: &Vec<fs::DirEntry>,
-                    win_rows : usize, index : usize) {
-    let offset = 5;
-    let vec_len = dir_contents.len();
-
-    ncurses::wclear(win);
-    ncurses::wmove(win, 0, 0);
-    if vec_len == 0 {
-        ncurses::wattron(win, ncurses::COLOR_PAIR(3));
-        ncurses::wprintw(win, "empty");
-        ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
-        ncurses::wrefresh(win);
-        return;
-    }
-
-    let mut i : usize = 0;
-    if vec_len >= win_rows && index > offset {
-        i = index - offset;
-    }
-    let win_rows : usize = win_rows + i;
-
-    while i < vec_len && i < win_rows {
-        if index == i {
-            ncurses::wattron(win, ncurses::A_REVERSE());
-            print_file(win, &dir_contents[i]);
-            ncurses::wattroff(win, ncurses::A_REVERSE());
-        } else {
-            print_file(win, &dir_contents[i]);
-        }
-        i = i + 1;
-    }
-    ncurses::wrefresh(win);
-}*/
-
 pub fn cwd_contents() -> Result<Vec<fs::DirEntry>, std::io::Error>
 {
     match fs::read_dir(".") {
@@ -289,7 +277,6 @@ pub fn cwd_contents() -> Result<Vec<fs::DirEntry>, std::io::Error>
         },
     }
 }
-
 
 pub fn win_print_curr_path(win : ncurses::WINDOW)
 {
@@ -322,26 +309,51 @@ pub fn win_print_parent_dir(win : ncurses::WINDOW, index : usize, length : usize
     };
 }
 
-pub fn win_print_select_file(win : ncurses::WINDOW, file : &fs::DirEntry, length : usize)
+pub fn win_print_file_preview(win : ncurses::WINDOW, file : &fs::DirEntry, length : usize)
 {
+    use std::os::unix::fs::PermissionsExt;
+
     ncurses::wclear(win);
     if let Ok(metadata) = file.metadata() {
-        if metadata.is_dir() {
-            match fs::read_dir(&file.path()) {
-                Ok(results) => {
-                    let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-                    if let Ok(mut dir_contents) = results {
-                        dir_contents.sort_by(joshuto_sort::alpha_sort);
-                        win_contents_refresh(win, &dir_contents, length);
-                    }
-                },
-                Err(e) => {
-                    ncurses::wattron(win, ncurses::COLOR_PAIR(3));
-                    win_print_err_msg(win, format!("{}", e).as_str());
-                    ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
-                },
-            };
-        }
+        let permissions : fs::Permissions = metadata.permissions();
+        let mode = permissions.mode();
+
+        match mode / 0o1000 {
+            S_IFDIR => {
+                match fs::read_dir(&file.path()) {
+                    Ok(results) => {
+                        let results : Result<Vec<fs::DirEntry>, _> = results.collect();
+                        if let Ok(mut dir_contents) = results {
+                            dir_contents.sort_by(joshuto_sort::alpha_sort);
+                            win_contents_refresh(win, &dir_contents, length);
+                        }
+                    },
+                    Err(e) => {
+                        ncurses::wattron(win, ncurses::COLOR_PAIR(3));
+                        win_print_err_msg(win, format!("{}", e).as_str());
+                        ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
+                    },
+                };
+            },
+            S_IFLNK => {
+                ncurses::wprintw(win, "Symlink file");
+            },
+            S_IFSOCK => {
+                ncurses::wprintw(win, "Socket file");
+            },
+            S_IFCHR => {
+                ncurses::wprintw(win, "Character file");
+            },
+            S_IFIFO => {
+                ncurses::wprintw(win, "FIFO file");
+            },
+            S_IFREG => {
+                ncurses::wprintw(win, "Plain file");
+            },
+            _ => {
+                ncurses::wprintw(win, "Unknown file");
+            },
+        };
     }
     ncurses::wrefresh(win);
 }
@@ -351,7 +363,7 @@ pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
 {
     use std::os::unix::fs::PermissionsExt;
 
-    const FILE_UNITS : [&str ; 5] = ["B", "KB", "MB", "GB", "TB"];
+    const FILE_UNITS : [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "ExB"];
     const CONV_RATE : u64 = 1024;
 
     ncurses::wclear(win);
@@ -362,7 +374,7 @@ pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
             let mode = permissions.mode();
             ncurses::wprintw(win, format!("{:?}", mode).as_str());
             ncurses::wprintw(win, " ");
-            ncurses::wprintw(win, joshuto_rwx::stringify_mode(mode).as_str());
+            ncurses::wprintw(win, joshuto_unix::stringify_mode(mode).as_str());
             ncurses::wprintw(win, "  ");
 
             let mut file_size = metadata.len();
@@ -439,7 +451,7 @@ pub fn run(config : &JoshutoConfig)
     win_contents_refresh_indexed(mid_win, &dir_contents, (term_rows - 2) as usize, index);
 
     if dir_contents.len() > 0 {
-        win_print_select_file(right_win, &dir_contents[index], (term_rows - 2) as usize);
+        win_print_file_preview(right_win, &dir_contents[index], (term_rows - 2) as usize);
         win_print_file_info(bottom_win, &dir_contents[index]);
     }
 
@@ -474,13 +486,13 @@ pub fn run(config : &JoshutoConfig)
             ncurses::KEY_UP => {
                 if index > 0 {
                     index = index - 1;
-                    win_print_select_file(right_win, &dir_contents[index], (term_rows - 2) as usize);
+                    win_print_file_preview(right_win, &dir_contents[index], (term_rows - 2) as usize);
                 }
             }
             ncurses::KEY_DOWN => {
                 if index + 1 < dir_contents.len() {
                     index = index + 1;
-                    win_print_select_file(right_win, &dir_contents[index], (term_rows - 2) as usize);
+                    win_print_file_preview(right_win, &dir_contents[index], (term_rows - 2) as usize);
                 }
             }
             ncurses::KEY_LEFT => {
@@ -509,7 +521,7 @@ pub fn run(config : &JoshutoConfig)
                                     win_print_parent_dir(left_win, pindex,
                                         (term_rows - 2) as usize);
                                 }
-                                win_print_select_file(right_win,
+                                win_print_file_preview(right_win,
                                     &dir_contents[index],
                                     (term_rows - 2) as usize);
                             }
@@ -541,7 +553,7 @@ pub fn run(config : &JoshutoConfig)
                                 win_print_parent_dir(left_win, pindex,
                                     (term_rows - 2) as usize);
                                 if dir_contents.len() > 0 {
-                                    win_print_select_file(right_win,
+                                    win_print_file_preview(right_win,
                                         &dir_contents[index],
                                         (term_rows - 2) as usize);
                                 }
