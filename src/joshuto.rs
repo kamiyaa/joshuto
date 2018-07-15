@@ -279,9 +279,15 @@ pub fn win_contents_refresh_indexed(win : ncurses::WINDOW,
 
 pub fn cwd_contents() -> Result<Vec<fs::DirEntry>, std::io::Error>
 {
-    let tmp_result : Result<Vec<fs::DirEntry>, _> = fs::read_dir(".").unwrap().collect();
-    // let dir_contents : Vec<fs::DirEntry> = tmp_result.unwrap();
-    tmp_result
+    match fs::read_dir(".") {
+        Ok(results) => {
+            let results : Result<Vec<fs::DirEntry>, _> = results.collect();
+            results
+        },
+        Err(e) => {
+            Err(e)
+        },
+    }
 }
 
 
