@@ -153,6 +153,7 @@ fn file_attroff(win : ncurses::WINDOW, mode : u32)
         joshuto_unix::S_IFSOCK | joshuto_unix::S_IFIFO => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(4));
         },
+        joshuto_unix::S_IFREG => {},
         _ => {},
     };
 }
@@ -162,12 +163,12 @@ fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
     use std::os::unix::fs::PermissionsExt;
     use joshuto::joshuto_unix;
 
-    let mut mode : u32 = joshuto_unix::S_IFDIR;
+    let mut mode : u32 = joshuto_unix::S_IFREG;
 
     if let Ok(metadata) = file.metadata() {
         mode = metadata.permissions().mode();
     }
-    if mode != joshuto_unix::S_IFDIR {
+    if mode != joshuto_unix::S_IFREG {
         file_attron(win, mode);
     }
 
@@ -180,7 +181,7 @@ fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
             ncurses::wprintw(win, format!("{:?}", e).as_str());
         },
     };
-    if mode != joshuto_unix::S_IFDIR {
+    if mode != joshuto_unix::S_IFREG {
         file_attroff(win, mode);
     }
 
