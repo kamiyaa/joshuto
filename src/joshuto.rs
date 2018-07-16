@@ -2,104 +2,17 @@ extern crate ncurses;
 
 use std;
 use std::env;
+use std::ffi;
 use std::fs;
 use std::path;
 use std::process;
-use std::ffi;
 
 use JoshutoConfig;
+use joshuto_sort;
+use joshuto_unix;
 
 const QUIT: i32 = 'q' as i32;
 const ENTER: i32 = '\n' as i32;
-
-mod joshuto_unix {
-    extern crate libc;
-
-    pub const BITMASK  : u32 = 0o170000;
-
-    pub const S_IFSOCK : u32 = 0o140000;   /* socket */
-    pub const S_IFLNK  : u32 = 0o120000;   /* symbolic link */
-    pub const S_IFREG  : u32 = 0o100000;   /* regular file */
-    pub const S_IFBLK  : u32 = 0o060000;   /* block device */
-    pub const S_IFDIR  : u32 = 0o040000;   /* directory */
-    pub const S_IFCHR  : u32 = 0o020000;   /* character device */
-    pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
-
-    pub fn stringify_mode(mode : u32) -> String
-    {
-        let mut mode_str : String = String::with_capacity(10);
-
-        const LIBC_FILE_VALS : [(u32, char) ; 7] = [
-            (S_IFSOCK, 's'),
-            (S_IFLNK, 'l'),
-            (S_IFREG, '-'),
-            (S_IFBLK, 'b'),
-            (S_IFDIR, 'd'),
-            (S_IFCHR, 'c'),
-            (S_IFIFO, 'f'),
-        ];
-
-        for val in LIBC_FILE_VALS.iter() {
-            if mode & val.0 != 0 {
-                mode_str.push(val.1);
-                break;
-            }
-        }
-
-        const LIBC_PERMISSION_VALS : [(u32, char) ; 9] = [
-                (libc::S_IRUSR, 'r'),
-                (libc::S_IWUSR, 'w'),
-                (libc::S_IXUSR, 'x'),
-                (libc::S_IRGRP, 'r'),
-                (libc::S_IWGRP, 'w'),
-                (libc::S_IXGRP, 'x'),
-                (libc::S_IROTH, 'r'),
-                (libc::S_IWOTH, 'w'),
-                (libc::S_IXOTH, 'x'),
-        ];
-
-        for val in LIBC_PERMISSION_VALS.iter() {
-            if mode & val.0 != 0 {
-                mode_str.push(val.1);
-            } else {
-                mode_str.push('-');
-            }
-        }
-        mode_str
-    }
-}
-
-mod joshuto_sort {
-
-    use std::cmp;
-    use std::fs;
-    use std;
-
-    pub fn alpha_sort(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> cmp::Ordering
-    {
-        fn res_ordering(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> Result<cmp::Ordering, std::io::Error> {
-            let f1_type = file1.file_type()?;
-            let f2_type = file2.file_type()?;
-
-            if !f1_type.is_file() && f2_type.is_file() {
-                Ok(cmp::Ordering::Less)
-            } else if !f2_type.is_file() && f1_type.is_file() {
-                Ok(cmp::Ordering::Greater)
-            } else {
-                let f1_name : std::string::String =
-                    file1.file_name().as_os_str().to_str().unwrap().to_lowercase();
-                let f2_name : std::string::String =
-                    file2.file_name().as_os_str().to_str().unwrap().to_lowercase();
-                if f1_name <= f2_name {
-                    Ok(cmp::Ordering::Less)
-                } else {
-                    Ok(cmp::Ordering::Greater)
-                }
-            }
-        }
-        res_ordering(file1, file2).unwrap_or(cmp::Ordering::Less)
-    }
-}
 
 pub fn init_ncurses()
 {
@@ -188,25 +101,56 @@ fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
     ncurses::wprintw(win, "\n");
 }
 
+pub fn win_print_err_msg(win : ncurses::WINDOW, err_msg : &str)
+{
+    ncurses::wclear(win);
+    ncurses::wattron(win, ncurses::COLOR_PAIR(99));
+    ncurses::mvwprintw(win, 0, 0, err_msg);
+    ncurses::wattron(win, ncurses::COLOR_PAIR(99));
+    ncurses::wrefresh(win);
+}
+
+pub fn dirent_list(path : &path::PathBuf) -> Result<Vec<fs::DirEntry>, std::io::Error>
+{
+    match fs::read_dir(path) {
+        Ok(results) => {
+            let results : Result<Vec<fs::DirEntry>, _> = results.collect();
+            results
+        },
+        Err(e) => {
+            Err(e)
+        },
+    }
+}
+
+pub fn win_print_path(win : ncurses::WINDOW, path : &path::PathBuf)
+{
+    ncurses::wclear(win);
+    let path_str : &str =
+        match path.to_str() {
+            Some(s) => s,
+            None => "Error",
+        };
+
+    ncurses::mvwprintw(win, 0, 0, path_str);
+    ncurses::wrefresh(win);
+}
+
 pub fn win_contents_refresh(win : ncurses::WINDOW,
                 dir_contents: &Vec<fs::DirEntry>, win_rows : usize) {
 
     let vec_len = dir_contents.len();
 
-    ncurses::wclear(win);
-    ncurses::wmove(win, 0, 0);
-
     if vec_len == 0 {
-        ncurses::wattron(win, ncurses::COLOR_PAIR(3));
-        ncurses::wprintw(win, "empty");
-        ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
-        ncurses::wrefresh(win);
+        win_print_err_msg(win, "empty");
         return;
     }
 
     let mut i : usize = 0;
     let win_rows : usize = win_rows + i;
 
+    ncurses::wclear(win);
+    ncurses::wmove(win, 0, 0);
     while i < vec_len && i < win_rows {
         print_file(win, &dir_contents[i]);
         i += 1;
@@ -218,19 +162,16 @@ pub fn win_contents_refresh_indexed_short(win : ncurses::WINDOW,
                     win_rows : usize, index : usize) {
     let vec_len = dir_contents.len();
 
-    ncurses::wclear(win);
-    ncurses::wmove(win, 0, 0);
-
     if vec_len == 0 {
-        ncurses::wattron(win, ncurses::COLOR_PAIR(3));
-        ncurses::wprintw(win, "empty");
-        ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
-        ncurses::wrefresh(win);
+        win_print_err_msg(win, "empty");
         return;
     }
 
     let mut i : usize = 0;
     let win_rows : usize = win_rows + i;
+
+    ncurses::wclear(win);
+    ncurses::wmove(win, 0, 0);
 
     while i < vec_len && i < win_rows {
         if i == index {
@@ -285,32 +226,6 @@ pub fn win_contents_refresh_indexed(win : ncurses::WINDOW,
     ncurses::wrefresh(win);
 }
 
-pub fn dirent_list(path : &path::PathBuf) -> Result<Vec<fs::DirEntry>, std::io::Error>
-{
-    match fs::read_dir(path) {
-        Ok(results) => {
-            let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-            results
-        },
-        Err(e) => {
-            Err(e)
-        },
-    }
-}
-
-pub fn win_print_path(win : ncurses::WINDOW, path : &path::PathBuf)
-{
-    ncurses::wclear(win);
-    let path_str : &str =
-        match path.to_str() {
-            Some(s) => s,
-            None => "Error",
-        };
-
-    ncurses::mvwprintw(win, 0, 0, path_str);
-    ncurses::wrefresh(win);
-}
-
 pub fn win_print_parent_dir(win : ncurses::WINDOW, path : &path::PathBuf, index : usize, length : usize)
 {
     ncurses::wclear(win);
@@ -324,9 +239,7 @@ pub fn win_print_parent_dir(win : ncurses::WINDOW, path : &path::PathBuf, index 
                 }
             },
             Err(e) => {
-                ncurses::wattron(win, ncurses::COLOR_PAIR(3));
                 win_print_err_msg(win, format!("{}", e).as_str());
-                ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
             },
         };
     }
@@ -355,14 +268,39 @@ pub fn win_print_file_preview(win : ncurses::WINDOW, file : &fs::DirEntry,
                         }
                     },
                     Err(e) => {
-                        ncurses::wattron(win, ncurses::COLOR_PAIR(3));
                         win_print_err_msg(win, format!("{}", e).as_str());
-                        ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
                     },
                 };
             },
             joshuto_unix::S_IFLNK => {
-                ncurses::wprintw(win, "Symlink file");
+                let mut file_path = file.path();
+                match fs::read_link(&file_path) {
+                    Ok(sym_path) => {
+                        file_path.pop();
+                        file_path.push(sym_path.as_path());
+                        ncurses::wprintw(win, file_path.to_str().unwrap());
+                        ncurses::wprintw(win, "\n");
+                        if file_path.as_path().is_dir() {
+                            match fs::read_dir(file_path) {
+                                Ok(results) => {
+                                    let results : Result<Vec<fs::DirEntry>, _> = results.collect();
+                                    if let Ok(mut dir_contents) = results {
+                                        dir_contents.sort_by(joshuto_sort::alpha_sort);
+                                        win_contents_refresh(win, &dir_contents, length);
+                                    }
+                                },
+                                Err(e) => {
+                                    win_print_err_msg(win, format!("{}", e).as_str());
+                                },
+                            };
+                        } else {
+                            ncurses::wprintw(win, "Symlink pointing to a file");
+                        }
+                    },
+                    Err(e) => {
+                        win_print_err_msg(win, format!("{}", e).as_str());
+                    },
+                };
             },
             joshuto_unix::S_IFBLK => {
                 ncurses::wprintw(win, "Block file");
@@ -421,13 +359,6 @@ pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     ncurses::wrefresh(win);
 }
 
-pub fn win_print_err_msg(win : ncurses::WINDOW, err_msg : &str)
-{
-    ncurses::wclear(win);
-    ncurses::mvwprintw(win, 0, 0, err_msg);
-    ncurses::wrefresh(win);
-}
-
 pub fn run(_config : &JoshutoConfig)
 {
     init_ncurses();
@@ -451,7 +382,7 @@ pub fn run(_config : &JoshutoConfig)
                                         1, term_cols / 7 * 4);
     let mut bottom_win = ncurses::newwin(1, term_cols, term_rows - 1, 0);
 
-    // ncurses::scrollok(mid_win, true);
+    ncurses::scrollok(top_win, true);
 
     /* TODO: mutable in the future */
     let sort_func : fn(file1 : &std::fs::DirEntry, file2 : &std::fs::DirEntry) -> std::cmp::Ordering
@@ -500,7 +431,7 @@ pub fn run(_config : &JoshutoConfig)
         match ch {
             QUIT => {
                 break;
-            }
+            },
             ncurses::KEY_RESIZE => {
                 ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
@@ -539,19 +470,61 @@ pub fn run(_config : &JoshutoConfig)
 
                 ncurses::refresh();
 
-            }
+            },
+            ncurses::KEY_HOME => {
+                if index != 0 {
+                    index = 0;
+                    win_print_file_preview(right_win, &dir_contents[index],
+                            (term_rows - 2) as usize);
+                }
+            },
+            ncurses::KEY_END => {
+                let tmp_len = dir_contents.len();
+                if index + 1 != tmp_len {
+                    index = tmp_len - 1;
+                    win_print_file_preview(right_win, &dir_contents[index],
+                            (term_rows - 2) as usize);
+                }
+            },
             ncurses::KEY_UP => {
                 if index > 0 {
                     index = index - 1;
-                    win_print_file_preview(right_win, &dir_contents[index], (term_rows - 2) as usize);
+                    win_print_file_preview(right_win, &dir_contents[index],
+                            (term_rows - 2) as usize);
                 }
-            }
+            },
             ncurses::KEY_DOWN => {
                 if index + 1 < dir_contents.len() {
                     index = index + 1;
-                    win_print_file_preview(right_win, &dir_contents[index], (term_rows - 2) as usize);
+                    win_print_file_preview(right_win, &dir_contents[index],
+                            (term_rows - 2) as usize);
                 }
-            }
+            },
+            ncurses::KEY_NPAGE => {
+                let tmp_len = dir_contents.len();
+                if index + 1 == tmp_len {
+                    continue;
+                }
+                if index + 5 < tmp_len {
+                    index = index + 5;
+                } else {
+                    index = tmp_len - 1;
+                }
+                win_print_file_preview(right_win, &dir_contents[index],
+                        (term_rows - 2) as usize);
+            },
+            ncurses::KEY_PPAGE => {
+                if index == 0 {
+                    continue;
+                }
+                if index >= 5 {
+                    index = index - 5;
+                } else {
+                    index = 0;
+                }
+                win_print_file_preview(right_win, &dir_contents[index],
+                        (term_rows - 2) as usize);
+            },
             ncurses::KEY_LEFT => {
                 if None == curr_path.parent() {
                         ncurses::wclear(left_win);
@@ -580,10 +553,10 @@ pub fn run(_config : &JoshutoConfig)
                         win_print_err_msg(bottom_win, format!("{}", e).as_str());
                     },
                 };
-            }
+            },
             ncurses::KEY_RIGHT | ENTER => {
                 if let Ok(file_type) = &dir_contents[index as usize].file_type() {
-                    if file_type.is_dir() || file_type.is_symlink() {
+                    if file_type.is_dir() {
                         let tmp_name : ffi::OsString = dir_contents[index as usize].file_name();
                         let tmp_name2 = tmp_name.as_os_str().to_str().unwrap();
                         let file_name = path::Path::new(tmp_name2);
@@ -607,13 +580,44 @@ pub fn run(_config : &JoshutoConfig)
                                 &dir_contents[index],
                                 (term_rows - 2) as usize);
                         }
+                    } else if file_type.is_symlink() {
+                        match fs::read_link(dir_contents[index as usize].path()) {
+                            Ok(_real_path) => {
+                                let tmp_name : ffi::OsString = dir_contents[index as usize].file_name();
+                                let tmp_name2 = tmp_name.as_os_str().to_str().unwrap();
+                                let file_name = path::Path::new(tmp_name2);
+                                curr_path.push(file_name);
+                                match dirent_list(&curr_path) {
+                                    Ok(s) => {
+                                        dir_contents = s;
+                                        dir_contents.sort_by(sort_func);
+                                    }
+                                    Err(_e) => {
+                                        process::exit(1);
+                                    }
+                                }
+                                index = 0;
+
+                                win_print_path(top_win, &curr_path);
+                                win_print_parent_dir(left_win, &curr_path, pindex,
+                                    (term_rows - 2) as usize);
+                                if dir_contents.len() > 0 {
+                                    win_print_file_preview(right_win,
+                                        &dir_contents[index],
+                                        (term_rows - 2) as usize);
+                                }
+                            },
+                            Err(e) => {
+                                win_print_err_msg(bottom_win, format!("{}", e).as_str());
+                            },
+                        };
                     }
                 }
-            }
+            },
             _ => {
                     ncurses::wprintw(mid_win, format!("pressed: {}\n",
 			            std::char::from_u32(ch as u32).expect("Invalid char")).as_ref());
-            }
+            },
         };
 
         win_contents_refresh_indexed(mid_win, &dir_contents,

@@ -9,9 +9,20 @@ use std::env;
 use std::fs;
 
 mod joshuto;
+mod joshuto_sort;
+mod joshuto_unix;
 
 const PROGRAM_NAME : &str = "joshuto";
 const CONFIG_FILE : &str = "joshuto.toml";
+
+/*
+pub struct joshuto_win {
+    win : ncurses::WINDOW,
+    offset : usize,
+    row_size : i32,
+    col_size : i32,
+}
+*/
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoConfig {
@@ -25,15 +36,6 @@ pub struct JoshutoConfig {
 pub struct JoshutoKeymaps {
     up : i32,
 }
-
-/*
-pub struct joshuto_win {
-    win : ncurses::WINDOW,
-    offset : usize,
-    row_size : i32,
-    col_size : i32,
-}
-*/
 
 fn generate_default_config() -> JoshutoConfig
 {
