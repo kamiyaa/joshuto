@@ -5,36 +5,48 @@ use std::env;
 use std::fs;
 use std::path;
 use std::process;
+use std::ffi;
 
 use JoshutoConfig;
 
 const QUIT: i32 = 'q' as i32;
 const ENTER: i32 = '\n' as i32;
 
-const S_IFSOCK : u32 = 0o140;   /* socket */
-const S_IFLNK  : u32 = 0o120;   /* symbolic link */
-const S_IFREG  : u32 = 0o100;   /* regular file */
-const S_IFBLK  : u32 = 0o060;   /* block device */
-const S_IFDIR  : u32 = 0o040;   /* directory */
-const S_IFCHR  : u32 = 0o020;   /* character device */
-const S_IFIFO  : u32 = 0o010;   /* FIFO */
-
 mod joshuto_unix {
     extern crate libc;
+
+    pub const BITMASK  : u32 = 0o170000;
+
+    pub const S_IFSOCK : u32 = 0o140000;   /* socket */
+    pub const S_IFLNK  : u32 = 0o120000;   /* symbolic link */
+    pub const S_IFREG  : u32 = 0o100000;   /* regular file */
+    pub const S_IFBLK  : u32 = 0o060000;   /* block device */
+    pub const S_IFDIR  : u32 = 0o040000;   /* directory */
+    pub const S_IFCHR  : u32 = 0o020000;   /* character device */
+    pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
     pub fn stringify_mode(mode : u32) -> String
     {
         let mut mode_str : String = String::with_capacity(10);
 
-        mode_str.push(match mode / 0o1000 {
-                0o20 => '_',
-                0o40 => 'd',
-                0o100 => '-',
-                0o120 => 'l',
-                _ => '-',
-            });
+        const LIBC_FILE_VALS : [(u32, char) ; 7] = [
+            (S_IFSOCK, 's'),
+            (S_IFLNK, 'l'),
+            (S_IFREG, '-'),
+            (S_IFBLK, 'b'),
+            (S_IFDIR, 'd'),
+            (S_IFCHR, 'c'),
+            (S_IFIFO, 'f'),
+        ];
 
-        const LIBC_VALS : [(u32, char) ; 9] = [
+        for val in LIBC_FILE_VALS.iter() {
+            if mode & val.0 != 0 {
+                mode_str.push(val.1);
+                break;
+            }
+        }
+
+        const LIBC_PERMISSION_VALS : [(u32, char) ; 9] = [
                 (libc::S_IRUSR, 'r'),
                 (libc::S_IWUSR, 'w'),
                 (libc::S_IXUSR, 'x'),
@@ -46,7 +58,7 @@ mod joshuto_unix {
                 (libc::S_IXOTH, 'x'),
         ];
 
-        for val in LIBC_VALS.iter() {
+        for val in LIBC_PERMISSION_VALS.iter() {
             if mode & val.0 != 0 {
                 mode_str.push(val.1);
             } else {
@@ -109,14 +121,17 @@ pub fn init_ncurses()
 
 fn file_attron(win : ncurses::WINDOW, mode : u32)
 {
-    match mode {
-        S_IFDIR => {
+    use joshuto::joshuto_unix;
+
+    match mode & joshuto_unix::BITMASK {
+        joshuto_unix::S_IFDIR => {
             ncurses::wattron(win, ncurses::COLOR_PAIR(1));
         },
-        S_IFLNK | S_IFCHR => {
+        joshuto_unix::S_IFLNK | joshuto_unix::S_IFCHR | joshuto_unix::S_IFBLK
+         => {
             ncurses::wattron(win, ncurses::COLOR_PAIR(2));
         },
-        S_IFSOCK | S_IFIFO => {
+        joshuto_unix::S_IFSOCK | joshuto_unix::S_IFIFO => {
             ncurses::wattron(win, ncurses::COLOR_PAIR(4));
         },
         _ => {},
@@ -125,14 +140,17 @@ fn file_attron(win : ncurses::WINDOW, mode : u32)
 
 fn file_attroff(win : ncurses::WINDOW, mode : u32)
 {
-    match mode {
-        S_IFDIR => {
+    use joshuto::joshuto_unix;
+
+    match mode & joshuto_unix::BITMASK {
+        joshuto_unix::S_IFDIR => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(1));
         },
-        S_IFLNK | S_IFCHR | S_IFBLK => {
+        joshuto_unix::S_IFLNK | joshuto_unix::S_IFCHR |
+        joshuto_unix::S_IFBLK => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(2));
         },
-        S_IFSOCK | S_IFIFO => {
+        joshuto_unix::S_IFSOCK | joshuto_unix::S_IFIFO => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(4));
         },
         _ => {},
@@ -142,13 +160,14 @@ fn file_attroff(win : ncurses::WINDOW, mode : u32)
 fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
 
     use std::os::unix::fs::PermissionsExt;
+    use joshuto::joshuto_unix;
 
-    let mut mode : u32 = 0o100;
+    let mut mode : u32 = joshuto_unix::S_IFDIR;
 
     if let Ok(metadata) = file.metadata() {
-        mode = metadata.permissions().mode() / 0o1000;
+        mode = metadata.permissions().mode();
     }
-    if mode != 0o100 {
+    if mode != joshuto_unix::S_IFDIR {
         file_attron(win, mode);
     }
 
@@ -161,7 +180,7 @@ fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
             ncurses::wprintw(win, format!("{:?}", e).as_str());
         },
     };
-    if mode != 0o100 {
+    if mode != joshuto_unix::S_IFDIR {
         file_attroff(win, mode);
     }
 
@@ -265,9 +284,9 @@ pub fn win_contents_refresh_indexed(win : ncurses::WINDOW,
     ncurses::wrefresh(win);
 }
 
-pub fn cwd_contents() -> Result<Vec<fs::DirEntry>, std::io::Error>
+pub fn dirent_list(path : &path::PathBuf) -> Result<Vec<fs::DirEntry>, std::io::Error>
 {
-    match fs::read_dir(".") {
+    match fs::read_dir(path) {
         Ok(results) => {
             let results : Result<Vec<fs::DirEntry>, _> = results.collect();
             results
@@ -278,49 +297,54 @@ pub fn cwd_contents() -> Result<Vec<fs::DirEntry>, std::io::Error>
     }
 }
 
-pub fn win_print_curr_path(win : ncurses::WINDOW)
+pub fn win_print_path(win : ncurses::WINDOW, path : &path::PathBuf)
 {
     ncurses::wclear(win);
-    if let Ok(cwd_path) = std::env::current_dir() {
-        if let Some(path_str) = cwd_path.to_str() {
-            ncurses::mvwprintw(win, 0, 0, path_str);
-        }
-    }
+    let path_str : &str =
+        match path.to_str() {
+            Some(s) => s,
+            None => "Error",
+        };
+
+    ncurses::mvwprintw(win, 0, 0, path_str);
     ncurses::wrefresh(win);
 }
 
-pub fn win_print_parent_dir(win : ncurses::WINDOW, index : usize, length : usize)
+pub fn win_print_parent_dir(win : ncurses::WINDOW, path : &path::PathBuf, index : usize, length : usize)
 {
-    match fs::read_dir("..") {
-        Ok(results) => {
-            let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-            if let Ok(mut dir_contents) = results {
-                dir_contents.sort_by(joshuto_sort::alpha_sort);
-                win_contents_refresh_indexed(win, &dir_contents, length, index);
-            }
-        },
-        Err(e) => {
-            ncurses::wclear(win);
-            ncurses::wattron(win, ncurses::COLOR_PAIR(3));
-            win_print_err_msg(win, format!("{}", e).as_str());
-            ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
-            ncurses::wrefresh(win);
-        },
-    };
+    ncurses::wclear(win);
+    if let Some(ppath) = path.parent() {
+        match fs::read_dir(ppath) {
+            Ok(results) => {
+                let results : Result<Vec<fs::DirEntry>, _> = results.collect();
+                if let Ok(mut dir_contents) = results {
+                    dir_contents.sort_by(joshuto_sort::alpha_sort);
+                    win_contents_refresh_indexed(win, &dir_contents, length, index);
+                }
+            },
+            Err(e) => {
+                ncurses::wattron(win, ncurses::COLOR_PAIR(3));
+                win_print_err_msg(win, format!("{}", e).as_str());
+                ncurses::wattroff(win, ncurses::COLOR_PAIR(3));
+            },
+        };
+    }
+    ncurses::wrefresh(win);
 }
 
 pub fn win_print_file_preview(win : ncurses::WINDOW, file : &fs::DirEntry,
                                 length : usize)
 {
     use std::os::unix::fs::PermissionsExt;
+    use joshuto::joshuto_unix;
 
     ncurses::wclear(win);
     if let Ok(metadata) = file.metadata() {
         let permissions : fs::Permissions = metadata.permissions();
         let mode = permissions.mode();
 
-        match mode / 0o1000 {
-            S_IFDIR => {
+        match mode & joshuto_unix::BITMASK {
+            joshuto_unix::S_IFDIR => {
                 match fs::read_dir(&file.path()) {
                     Ok(results) => {
                         let results : Result<Vec<fs::DirEntry>, _> = results.collect();
@@ -336,28 +360,28 @@ pub fn win_print_file_preview(win : ncurses::WINDOW, file : &fs::DirEntry,
                     },
                 };
             },
-            S_IFLNK => {
+            joshuto_unix::S_IFLNK => {
                 ncurses::wprintw(win, "Symlink file");
             },
-            S_IFBLK => {
+            joshuto_unix::S_IFBLK => {
                 ncurses::wprintw(win, "Block file");
             },
-            S_IFSOCK => {
+            joshuto_unix::S_IFSOCK => {
                 ncurses::wprintw(win, "Socket file");
             },
-            S_IFCHR => {
+            joshuto_unix::S_IFCHR => {
                 ncurses::wprintw(win, "Character file");
             },
-            S_IFIFO => {
+            joshuto_unix::S_IFIFO => {
                 ncurses::wprintw(win, "FIFO file");
             },
-            S_IFREG => {
+            joshuto_unix::S_IFREG => {
                 ncurses::wprintw(win, "Plain file");
             },
             _ => {
                 ncurses::wprintw(win, "Unknown file");
             },
-        };
+        }
     }
     ncurses::wrefresh(win);
 }
@@ -411,27 +435,20 @@ pub fn run(_config : &JoshutoConfig)
     let mut term_cols : i32 = 0;
     ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-    eprintln!("rows: {}, cols: {}", term_rows, term_cols);
-
     let mut index : usize = 0;
     let pindex : usize = 0;
     // let mut cindex : usize = 0;
 
     ncurses::refresh();
 
-    /* height, width, y, x) */
+    /* height, width, y, x */
     let mut top_win = ncurses::newwin(1, term_cols, 0, 0);
-
     let mut mid_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
                                         1, term_cols / 7);
-
     let mut left_win = ncurses::newwin(term_rows - 2, term_cols / 7, 1, 0);
-
     let mut right_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
                                         1, term_cols / 7 * 4);
-
-    let mut bottom_win = ncurses::newwin(1, term_cols,
-                                        term_rows - 1, 0);
+    let mut bottom_win = ncurses::newwin(1, term_cols, term_rows - 1, 0);
 
     // ncurses::scrollok(mid_win, true);
 
@@ -439,20 +456,32 @@ pub fn run(_config : &JoshutoConfig)
     let sort_func : fn(file1 : &std::fs::DirEntry, file2 : &std::fs::DirEntry) -> std::cmp::Ordering
         = joshuto_sort::alpha_sort;
 
-    let mut dir_contents : Vec<fs::DirEntry>; // = Vec::new();
-    match cwd_contents() {
-        Ok(s) => {
-            dir_contents = s;
-            dir_contents.sort_by(sort_func);
-        }
-        Err(_e) => {
-            process::exit(1);
-        }
-    }
+    let mut curr_path : path::PathBuf =
+        match env::current_dir() {
+            Ok(path) => {
+                path
+            },
+            Err(e) => {
+                eprintln!("{}", e);
+                process::exit(1);
+            },
+        };
 
-    win_print_curr_path(top_win);
-    win_print_curr_path(bottom_win);
-    win_print_parent_dir(left_win, pindex, (term_rows - 2) as usize);
+    let mut dir_contents : Vec<fs::DirEntry> =
+        match dirent_list(&curr_path) {
+            Ok(s) => {
+                s
+            }
+            Err(e) => {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        };
+    dir_contents.sort_by(sort_func);
+
+    win_print_path(top_win, &curr_path);
+
+    win_print_parent_dir(left_win, &curr_path, pindex, (term_rows - 2) as usize);
 
     win_contents_refresh_indexed(mid_win, &dir_contents, (term_rows - 2) as usize, index);
 
@@ -488,21 +517,17 @@ pub fn run(_config : &JoshutoConfig)
                 ncurses::clear();
 
                 top_win = ncurses::newwin(1, term_cols, 0, 0);
-
                 mid_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
                                         1, term_cols / 7);
-
                 left_win = ncurses::newwin(term_rows - 2, term_cols / 7, 1, 0);
-
                 right_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
                                             1, term_cols / 7 * 4);
-
                 bottom_win = ncurses::newwin(1, term_cols, term_rows - 1, 0);
 
                 ncurses::refresh();
 
-                win_print_curr_path(top_win);
-                win_print_parent_dir(left_win, pindex, (term_rows - 2) as usize);
+                win_print_path(top_win, &curr_path);
+                win_print_parent_dir(left_win, &curr_path, pindex, (term_rows - 2) as usize);
                 win_contents_refresh_indexed(mid_win, &dir_contents,
                                             (term_rows - 2) as usize, index);
                 if dir_contents.len() > 0 {
@@ -527,72 +552,60 @@ pub fn run(_config : &JoshutoConfig)
                 }
             }
             ncurses::KEY_LEFT => {
-                if let Ok(mut pathbuf) = env::current_dir() {
-                    if pathbuf.eq(&path::Path::new("/")) {
+                if None == curr_path.parent() {
                         ncurses::wclear(left_win);
                         ncurses::wrefresh(left_win);
                         continue;
-                    }
-                    if pathbuf.pop() == false {
-                        continue;
-                    }
-                    match env::set_current_dir(&pathbuf) {
-                        Ok(_) => {
-                            if let Ok(tmp_contents) = cwd_contents() {
-                                dir_contents = tmp_contents;
-                                dir_contents.sort_by(sort_func);
-
-                                index = pindex;
-
-                                if pathbuf.eq(&path::Path::new("/")) {
-                                    ncurses::wclear(left_win);
-                                    ncurses::wrefresh(left_win);
-                                } else {
-                                    win_print_curr_path(top_win);
-                                    win_print_parent_dir(left_win, pindex,
-                                        (term_rows - 2) as usize);
-                                }
-                                win_print_file_preview(right_win,
-                                    &dir_contents[index],
-                                    (term_rows - 2) as usize);
-                            }
-                        },
-                        Err(e) => {
-                            win_print_err_msg(bottom_win, format!("{}", e).as_str());
-                        },
-                    };
                 }
+                if curr_path.pop() == false {
+                        continue;
+                }
+                match dirent_list(&curr_path) {
+                    Ok(s) => {
+                        dir_contents = s;
+                        dir_contents.sort_by(sort_func);
+
+                        index = pindex;
+
+                        win_print_parent_dir(left_win, &curr_path, pindex,
+                            (term_rows - 2) as usize);
+
+                        win_print_path(top_win, &curr_path);
+                        win_print_file_preview(right_win,
+                            &dir_contents[index],
+                            (term_rows - 2) as usize);
+                    },
+                    Err(e) => {
+                        win_print_err_msg(bottom_win, format!("{}", e).as_str());
+                    },
+                };
             }
             ncurses::KEY_RIGHT | ENTER => {
-                if let Ok(file_type) = dir_contents[index as usize].file_type() {
+                if let Ok(file_type) = &dir_contents[index as usize].file_type() {
                     if file_type.is_dir() || file_type.is_symlink() {
-                        let new_path : path::PathBuf = dir_contents[index as usize].path();
-                        match env::set_current_dir(new_path) {
-                            Ok(_s) => {
-                                match cwd_contents() {
-                                    Ok(s) => {
-                                        dir_contents = s;
-                                        dir_contents.sort_by(sort_func);
-                                    }
-                                    Err(_e) => {
-                                        process::exit(1);
-                                    }
-                                }
-                                index = 0;
+                        let tmp_name : ffi::OsString = dir_contents[index as usize].file_name();
+                        let tmp_name2 = tmp_name.as_os_str().to_str().unwrap();
+                        let file_name = path::Path::new(tmp_name2);
+                        curr_path.push(file_name);
+                        match dirent_list(&curr_path) {
+                            Ok(s) => {
+                                dir_contents = s;
+                                dir_contents.sort_by(sort_func);
+                            }
+                            Err(_e) => {
+                                process::exit(1);
+                            }
+                        }
+                        index = 0;
 
-                                win_print_curr_path(top_win);
-                                win_print_parent_dir(left_win, pindex,
-                                    (term_rows - 2) as usize);
-                                if dir_contents.len() > 0 {
-                                    win_print_file_preview(right_win,
-                                        &dir_contents[index],
-                                        (term_rows - 2) as usize);
-                                }
-                            },
-                            Err(e) => {
-                                win_print_err_msg(bottom_win, format!("{}", e).as_str());
-                            },
-                        };
+                        win_print_path(top_win, &curr_path);
+                        win_print_parent_dir(left_win, &curr_path, pindex,
+                            (term_rows - 2) as usize);
+                        if dir_contents.len() > 0 {
+                            win_print_file_preview(right_win,
+                                &dir_contents[index],
+                                (term_rows - 2) as usize);
+                        }
                     }
                 }
             }
