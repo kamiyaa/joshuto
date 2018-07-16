@@ -129,7 +129,7 @@ fn file_attroff(win : ncurses::WINDOW, mode : u32)
         S_IFDIR => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(1));
         },
-        S_IFLNK | S_IFCHR => {
+        S_IFLNK | S_IFCHR | S_IFBLK => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(2));
         },
         S_IFSOCK | S_IFIFO => {
@@ -189,7 +189,7 @@ pub fn win_contents_refresh(win : ncurses::WINDOW,
 
     while i < vec_len && i < win_rows {
         print_file(win, &dir_contents[i]);
-        i = i + 1;
+        i += 1;
     }
     ncurses::wrefresh(win);
 }
@@ -220,7 +220,7 @@ pub fn win_contents_refresh_indexed_short(win : ncurses::WINDOW,
         } else {
             print_file(win, &dir_contents[i]);
         }
-        i = i + 1;
+        i += 1;
     }
     ncurses::wrefresh(win);
 }
@@ -309,7 +309,8 @@ pub fn win_print_parent_dir(win : ncurses::WINDOW, index : usize, length : usize
     };
 }
 
-pub fn win_print_file_preview(win : ncurses::WINDOW, file : &fs::DirEntry, length : usize)
+pub fn win_print_file_preview(win : ncurses::WINDOW, file : &fs::DirEntry,
+                                length : usize)
 {
     use std::os::unix::fs::PermissionsExt;
 
@@ -337,6 +338,9 @@ pub fn win_print_file_preview(win : ncurses::WINDOW, file : &fs::DirEntry, lengt
             },
             S_IFLNK => {
                 ncurses::wprintw(win, "Symlink file");
+            },
+            S_IFBLK => {
+                ncurses::wprintw(win, "Block file");
             },
             S_IFSOCK => {
                 ncurses::wprintw(win, "Socket file");
@@ -381,7 +385,7 @@ pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
             let mut index = 0;
             while file_size > CONV_RATE {
                 file_size = file_size / CONV_RATE;
-                index = index + 1;
+                index += 1;
             }
             ncurses::wprintw(win, format!("{} {}", file_size, FILE_UNITS[index]).as_str());
         },
@@ -399,13 +403,15 @@ pub fn win_print_err_msg(win : ncurses::WINDOW, err_msg : &str)
     ncurses::wrefresh(win);
 }
 
-pub fn run(config : &JoshutoConfig)
+pub fn run(_config : &JoshutoConfig)
 {
     init_ncurses();
 
     let mut term_rows : i32 = 0;
     let mut term_cols : i32 = 0;
     ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+
+    eprintln!("rows: {}, cols: {}", term_rows, term_cols);
 
     let mut index : usize = 0;
     let pindex : usize = 0;
@@ -451,7 +457,8 @@ pub fn run(config : &JoshutoConfig)
     win_contents_refresh_indexed(mid_win, &dir_contents, (term_rows - 2) as usize, index);
 
     if dir_contents.len() > 0 {
-        win_print_file_preview(right_win, &dir_contents[index], (term_rows - 2) as usize);
+        win_print_file_preview(right_win, &dir_contents[index],
+                                (term_rows - 2) as usize);
         win_print_file_info(bottom_win, &dir_contents[index]);
     }
 
@@ -467,21 +474,45 @@ pub fn run(config : &JoshutoConfig)
             ncurses::KEY_RESIZE => {
                 ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-                ncurses::delwin(top_win);
-                ncurses::delwin(mid_win);
-                ncurses::delwin(left_win);
-                ncurses::delwin(right_win);
-                ncurses::delwin(bottom_win);
+                let windows : [ncurses::WINDOW ; 5] = [
+                    top_win,
+                    mid_win,
+                    left_win,
+                    right_win,
+                    bottom_win
+                    ];
+                for win in windows.iter() {
+                    ncurses::delwin(*win);
+                }
 
+                ncurses::clear();
 
                 top_win = ncurses::newwin(1, term_cols, 0, 0);
+
                 mid_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
-                                          term_cols / 7, 1);
-                left_win = ncurses::newwin(term_rows - 2, term_cols / 7, 0, 1);
+                                        1, term_cols / 7);
+
+                left_win = ncurses::newwin(term_rows - 2, term_cols / 7, 1, 0);
+
                 right_win = ncurses::newwin(term_rows - 2, term_cols / 7 * 3,
-                                            term_cols / 7 * 4, 1);
+                                            1, term_cols / 7 * 4);
+
                 bottom_win = ncurses::newwin(1, term_cols, term_rows - 1, 0);
+
                 ncurses::refresh();
+
+                win_print_curr_path(top_win);
+                win_print_parent_dir(left_win, pindex, (term_rows - 2) as usize);
+                win_contents_refresh_indexed(mid_win, &dir_contents,
+                                            (term_rows - 2) as usize, index);
+                if dir_contents.len() > 0 {
+                    win_print_file_preview(right_win, &dir_contents[index],
+                                            (term_rows - 2) as usize);
+                    win_print_file_info(bottom_win, &dir_contents[index]);
+                }
+
+                ncurses::refresh();
+
             }
             ncurses::KEY_UP => {
                 if index > 0 {
