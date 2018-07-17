@@ -409,37 +409,36 @@ pub struct JoshutoView {
     win_ratio : (i32, i32, i32),
 }
 
-pub fn create_joshuto_view(term_rows : i32, term_cols : i32,
-        win_ratio : (i32, i32, i32)) -> JoshutoView
-{
-    let term_divide : i32 = term_cols / 7;
-    let top_win = ncurses::newwin(1, term_cols, 0, 0);
-    ncurses::scrollok(top_win, true);
-
-    let left_win = ncurses::newwin(term_rows - 2,
-        term_divide * win_ratio.0, 1, 0);
-
-    let mid_win = ncurses::newwin(term_rows - 2,
-        term_divide * win_ratio.1, 1, term_divide * win_ratio.0);
-
-    let right_win = ncurses::newwin(term_rows - 2,
-        term_divide * 3, 1, term_divide * win_ratio.2);
-    let bot_win = ncurses::newwin(1, term_cols, term_rows - 1, 0);
-
-    ncurses::refresh();
-
-    JoshutoView {
-        top_win,
-        left_win,
-        mid_win,
-        right_win,
-        bot_win,
-        win_ratio,
-    }
-}
-
 impl JoshutoView {
-    fn destroy_views(&mut self) {
+    pub fn new(term_rows : i32, term_cols : i32, win_ratio : (i32, i32, i32)) -> JoshutoView
+    {
+        let term_divide : i32 = term_cols / 7;
+        let top_win = ncurses::newwin(1, term_cols, 0, 0);
+        ncurses::scrollok(top_win, true);
+
+        let left_win = ncurses::newwin(term_rows - 2,
+            term_divide * win_ratio.0, 1, 0);
+
+        let mid_win = ncurses::newwin(term_rows - 2,
+            term_divide * win_ratio.1, 1, term_divide * win_ratio.0);
+
+        let right_win = ncurses::newwin(term_rows - 2,
+            term_divide * 3, 1, term_divide * win_ratio.2);
+        let bot_win = ncurses::newwin(1, term_cols, term_rows - 1, 0);
+
+        ncurses::refresh();
+
+        JoshutoView {
+            top_win,
+            left_win,
+            mid_win,
+            right_win,
+            bot_win,
+            win_ratio,
+        }
+    }
+
+    fn redraw_views(&mut self, term_rows : i32, term_cols : i32) {
         let windows : [ncurses::WINDOW ; 5] = [
             self.top_win,
             self.mid_win,
@@ -450,9 +449,7 @@ impl JoshutoView {
         for win in windows.iter() {
             ncurses::delwin(*win);
         }
-    }
 
-    fn init_views(&mut self, term_rows : i32, term_cols : i32) {
         let term_divide : i32 = term_cols / 7;
         self.top_win = ncurses::newwin(1, term_cols, 0, 0);
 
@@ -484,8 +481,8 @@ pub fn run(_config : &JoshutoConfig)
     ncurses::refresh();
 
     /* height, width, y, x */
-    let mut joshuto_view : JoshutoView =
-            create_joshuto_view(term_rows, term_cols, (1, 3, 4));
+    let mut joshuto_view : JoshutoView = JoshutoView::new(term_rows, term_cols,
+                (1, 3, 4));
 
     /* TODO: mutable in the future */
     let sort_func : fn(file1 : &std::fs::DirEntry, file2 : &std::fs::DirEntry) -> std::cmp::Ordering
@@ -538,10 +535,8 @@ pub fn run(_config : &JoshutoConfig)
             ncurses::KEY_RESIZE => {
                 ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-                joshuto_view.destroy_views();
                 ncurses::clear();
-                ncurses::refresh();
-                joshuto_view.init_views(term_rows, term_cols);
+                joshuto_view.redraw_views(term_rows, term_cols);
                 ncurses::refresh();
 
                 win_print_path(joshuto_view.top_win, &curr_path);
