@@ -12,16 +12,20 @@ pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
 pub fn is_executable(mode : u32) -> bool
 {
-    const LIBC_PERMISSION_VALS : [(u32, char) ; 3] = [
-            (libc::S_IXUSR, 'x'),
-            (libc::S_IXGRP, 'x'),
-            (libc::S_IXOTH, 'x'),
+    const LIBC_PERMISSION_VALS : [ u32 ; 3] = [
+            libc::S_IXUSR,
+            libc::S_IXGRP,
+            libc::S_IXOTH,
         ];
+
     for val in LIBC_PERMISSION_VALS.iter() {
-        if mode & val.0 != 0 {
+        if mode & val != 0 {
+            eprintln!("true:");
             return true;
         }
+        eprintln!("mode & val: {}", mode & val);
     }
+    eprintln!("false:");
     return false;
 }
 

@@ -11,8 +11,16 @@ use JoshutoConfig;
 use joshuto_sort;
 use joshuto_unix;
 
-const QUIT: i32 = 'q' as i32;
-const ENTER: i32 = '\n' as i32;
+const QUIT      : i32 = 'q' as i32;
+const ENTER     : i32 = '\n' as i32;
+
+const DIR_COLOR     : i16 = 1;
+const SOCK_COLOR    : i16 = 4;
+const EXEC_COLOR    : i16 = 11;
+const IMG_COLOR     : i16 = 12;
+const VID_COLOR     : i16 = 13;
+const ERR_COLOR     : i16 = 40;
+
 
 pub fn init_ncurses()
 {
@@ -25,81 +33,123 @@ pub fn init_ncurses()
     ncurses::use_default_colors();
 
     /* directories */
-    ncurses::init_pair(1, ncurses::COLOR_BLUE, -1);
-    ncurses::init_pair(2, ncurses::COLOR_CYAN, -1);
+    ncurses::init_pair(DIR_COLOR, ncurses::COLOR_BLUE, -1);
 
     /* Sockets */
-    ncurses::init_pair(4, ncurses::COLOR_CYAN, -1);
+    ncurses::init_pair(SOCK_COLOR, ncurses::COLOR_CYAN, -1);
 
     /* executables */
-    ncurses::init_pair(11, ncurses::COLOR_GREEN, -1);
+    ncurses::init_pair(EXEC_COLOR, ncurses::COLOR_GREEN, -1);
 
-    ncurses::init_pair(99, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
+    /* image files */
+    ncurses::init_pair(IMG_COLOR, ncurses::COLOR_YELLOW, -1);
+    /* video files */
+    ncurses::init_pair(VID_COLOR, ncurses::COLOR_MAGENTA, -1);
+
+    ncurses::init_pair(ERR_COLOR, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 }
 
-fn file_attron(win : ncurses::WINDOW, mode : u32)
+fn file_attron(win : ncurses::WINDOW, mode : u32,
+        file_extension : Option<&ffi::OsStr>)
 {
-    use joshuto::joshuto_unix;
-
     match mode & joshuto_unix::BITMASK {
         joshuto_unix::S_IFDIR => {
-            ncurses::wattron(win, ncurses::COLOR_PAIR(1));
+            ncurses::wattron(win, ncurses::A_BOLD());
+            ncurses::wattron(win, ncurses::COLOR_PAIR(DIR_COLOR));
         },
         joshuto_unix::S_IFLNK | joshuto_unix::S_IFCHR | joshuto_unix::S_IFBLK
          => {
-            ncurses::wattron(win, ncurses::COLOR_PAIR(2));
+            ncurses::wattron(win, ncurses::A_BOLD());
+            ncurses::wattron(win, ncurses::COLOR_PAIR(SOCK_COLOR));
         },
         joshuto_unix::S_IFSOCK | joshuto_unix::S_IFIFO => {
-            ncurses::wattron(win, ncurses::COLOR_PAIR(4));
+            ncurses::wattron(win, ncurses::A_BOLD());
+            ncurses::wattron(win, ncurses::COLOR_PAIR(SOCK_COLOR));
         },
         joshuto_unix::S_IFREG => {
-            if joshuto_unix::is_executable(mode) {
+            if joshuto_unix::is_executable(mode) == true {
                 ncurses::wattron(win, ncurses::A_BOLD());
-                ncurses::wattron(win, ncurses::COLOR_PAIR(11));
+                ncurses::wattron(win, ncurses::COLOR_PAIR(EXEC_COLOR));
+            }
+            else if let Some(extension) = file_extension {
+                if let Some(ext) = extension.to_str() {
+                    file_ext_attron(win, ext);
+                }
             }
         },
         _ => {},
     };
 }
 
-fn file_attroff(win : ncurses::WINDOW, mode : u32)
+fn file_attroff(win : ncurses::WINDOW, mode : u32,
+        file_extension : Option<&ffi::OsStr>)
 {
-    use joshuto::joshuto_unix;
-
     match mode & joshuto_unix::BITMASK {
         joshuto_unix::S_IFDIR => {
-            ncurses::wattroff(win, ncurses::COLOR_PAIR(1));
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(DIR_COLOR));
+            ncurses::wattroff(win, ncurses::A_BOLD());
         },
         joshuto_unix::S_IFLNK | joshuto_unix::S_IFCHR |
         joshuto_unix::S_IFBLK => {
-            ncurses::wattroff(win, ncurses::COLOR_PAIR(2));
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(SOCK_COLOR));
+            ncurses::wattroff(win, ncurses::A_BOLD());
         },
         joshuto_unix::S_IFSOCK | joshuto_unix::S_IFIFO => {
-            ncurses::wattroff(win, ncurses::COLOR_PAIR(4));
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(SOCK_COLOR));
+            ncurses::wattroff(win, ncurses::A_BOLD());
         },
         joshuto_unix::S_IFREG => {
             if joshuto_unix::is_executable(mode) {
+                ncurses::wattroff(win, ncurses::COLOR_PAIR(EXEC_COLOR));
                 ncurses::wattroff(win, ncurses::A_BOLD());
-                ncurses::wattroff(win, ncurses::COLOR_PAIR(11));
+            } else if let Some(extension) = file_extension {
+                if let Some(ext) = extension.to_str() {
+                    file_ext_attroff(win, ext);
+                }
             }
         },
         _ => {},
     };
+}
+
+fn file_ext_attron(win : ncurses::WINDOW, ext : &str)
+{
+    match ext {
+        "png" | "jpg" | "jpeg" | "gif" => {
+            ncurses::wattron(win, ncurses::COLOR_PAIR(IMG_COLOR));
+        },
+        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" => {
+            ncurses::wattron(win, ncurses::COLOR_PAIR(VID_COLOR));
+        },
+        _ => {},
+    }
+}
+
+fn file_ext_attroff(win : ncurses::WINDOW, ext : &str)
+{
+    match ext {
+        "png" | "jpg" | "jpeg" | "gif" => {
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(IMG_COLOR));
+        },
+        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" => {
+            ncurses::wattroff(win, ncurses::COLOR_PAIR(IMG_COLOR));
+        },
+        _ => {},
+    }
 }
 
 fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
 
     use std::os::unix::fs::PermissionsExt;
-    use joshuto::joshuto_unix;
 
-    let mut mode : u32 = joshuto_unix::S_IFREG;
+    let mut mode : u32 = 0;
 
     if let Ok(metadata) = file.metadata() {
         mode = metadata.permissions().mode();
     }
-    if mode != joshuto_unix::S_IFREG {
-        file_attron(win, mode);
+    if mode != 0 {
+        file_attron(win, mode, file.path().extension());
     }
 
     match file.file_name().into_string() {
@@ -111,8 +161,8 @@ fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
             ncurses::wprintw(win, format!("{:?}", e).as_str());
         },
     };
-    if mode != joshuto_unix::S_IFREG {
-        file_attroff(win, mode);
+    if mode != 0 {
+        file_attroff(win, mode, file.path().extension());
     }
 
     ncurses::wprintw(win, "\n");
@@ -121,9 +171,9 @@ fn print_file(win : ncurses::WINDOW, file : &fs::DirEntry) {
 pub fn win_print_err_msg(win : ncurses::WINDOW, err_msg : &str)
 {
     ncurses::wclear(win);
-    ncurses::wattron(win, ncurses::COLOR_PAIR(99));
+    ncurses::wattron(win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::mvwprintw(win, 0, 0, err_msg);
-    ncurses::wattron(win, ncurses::COLOR_PAIR(99));
+    ncurses::wattroff(win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::wrefresh(win);
 }
 
@@ -174,34 +224,6 @@ pub fn win_contents_refresh(win : ncurses::WINDOW,
     }
     ncurses::wrefresh(win);
 }
-pub fn win_contents_refresh_indexed_short(win : ncurses::WINDOW,
-                    dir_contents: &Vec<fs::DirEntry>,
-                    win_rows : usize, index : usize) {
-    let vec_len = dir_contents.len();
-
-    if vec_len == 0 {
-        win_print_err_msg(win, "empty");
-        return;
-    }
-
-    let mut i : usize = 0;
-    let win_rows : usize = win_rows + i;
-
-    ncurses::wclear(win);
-    ncurses::wmove(win, 0, 0);
-
-    while i < vec_len && i < win_rows {
-        if i == index {
-            ncurses::wattron(win, ncurses::A_REVERSE());
-            print_file(win, &dir_contents[i]);
-            ncurses::wattroff(win, ncurses::A_REVERSE());
-        } else {
-            print_file(win, &dir_contents[i]);
-        }
-        i += 1;
-    }
-    ncurses::wrefresh(win);
-}
 
 pub fn win_contents_refresh_indexed(win : ncurses::WINDOW,
                     dir_contents: &Vec<fs::DirEntry>,
@@ -209,15 +231,19 @@ pub fn win_contents_refresh_indexed(win : ncurses::WINDOW,
 
     let vec_len = dir_contents.len();
 
-    if win_rows >= vec_len {
-        win_contents_refresh_indexed_short(win, dir_contents, win_rows, index);
+    if vec_len == 0 {
+        win_print_err_msg(win, "empty");
         return;
     }
 
     let offset : usize = 5;
     let start : usize;
     let end : usize;
-    if index <= offset {
+
+    if win_rows >= vec_len {
+        start = 0;
+        end = vec_len;
+    } else if index <= offset {
         start = 0;
         end = win_rows;
     } else if index - offset + win_rows >= vec_len {
