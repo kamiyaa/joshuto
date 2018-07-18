@@ -54,9 +54,7 @@ impl JoshutoWindow {
 
     pub fn display_contents(&self, dir_contents: &Vec<fs::DirEntry>,
             index : usize) {
-
         let vec_len = dir_contents.len();
-
         if vec_len == 0 {
             win_print_err_msg(self, "empty");
             return;
@@ -388,7 +386,7 @@ fn print_file(win : &JoshutoWindow, file : &fs::DirEntry)
         Ok(file_name) => {
             ncurses::wprintw(win.win, " ");
             if file_name.len() + 1 >= win.cols as usize {
-                let mut shortened = String::with_capacity(win.cols as usize);
+                let mut shortened = String::with_capacity(win.cols as usize - 4);
                 let mut iter = file_name.chars();
                 for _i in 0..win.cols - 5 {
                     if let Some(ch) = iter.next() {
@@ -413,17 +411,14 @@ fn print_file(win : &JoshutoWindow, file : &fs::DirEntry)
     ncurses::wprintw(win.win, "\n");
 }
 
-pub fn win_print_parent_dir(win : &JoshutoWindow, path : &path::PathBuf, index : usize)
+pub fn win_print_parent_dir(config : &JoshutoConfig, win : &JoshutoWindow, path : &path::PathBuf, index : usize)
 {
     ncurses::wclear(win.win);
     if let Some(ppath) = path.parent() {
-        match fs::read_dir(ppath) {
-            Ok(results) => {
-                let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-                if let Ok(mut dir_contents) = results {
-                    dir_contents.sort_by(joshuto_sort::alpha_sort);
-                    win.display_contents(&dir_contents, index);
-                }
+        match read_dir_list(config, ppath.to_str().unwrap()) {
+            Ok(mut dir_contents) => {
+                dir_contents.sort_by(joshuto_sort::alpha_sort);
+                win.display_contents(&dir_contents, index);
             },
             Err(e) => {
                 win_print_err_msg(win, format!("{}", e).as_str());
@@ -562,7 +557,7 @@ pub fn enter_dir(config : &JoshutoConfig, direntry : &fs::DirEntry, joshuto_view
             *index = 0;
 
             win_print_path(&joshuto_view.top_win, &curr_path);
-            win_print_parent_dir(&joshuto_view.left_win,
+            win_print_parent_dir(&config, &joshuto_view.left_win,
                     &curr_path, *index);
 
             if dir_contents.len() > 0 {
@@ -626,7 +621,7 @@ pub fn run(config : &JoshutoConfig)
 
     win_print_path(&joshuto_view.top_win, &curr_path);
 
-    win_print_parent_dir(&joshuto_view.left_win, &curr_path, pindex);
+    win_print_parent_dir(&config, &joshuto_view.left_win, &curr_path, pindex);
 
     joshuto_view.mid_win.display_contents(&dir_contents, index);
 
@@ -650,7 +645,7 @@ pub fn run(config : &JoshutoConfig)
                 ncurses::refresh();
 
                 win_print_path(&joshuto_view.top_win, &curr_path);
-                win_print_parent_dir(&joshuto_view.left_win, &curr_path, pindex);
+                win_print_parent_dir(&config, &joshuto_view.left_win, &curr_path, pindex);
                 joshuto_view.mid_win.display_contents(&dir_contents, index);
                 if dir_contents.len() > 0 {
                     win_print_file_preview(config, &joshuto_view.right_win,
@@ -725,24 +720,30 @@ pub fn run(config : &JoshutoConfig)
                 if curr_path.pop() == false {
                         continue;
                 }
-                env::set_current_dir(curr_path.as_path());
-                match read_dir_list(config, ".") {
-                    Ok(s) => {
-                        dir_contents = s;
-                        dir_contents.sort_by(&sort_func);
+                match env::set_current_dir(curr_path.as_path()) {
+                    Ok(_s) => {
+                        match read_dir_list(config, ".") {
+                            Ok(s) => {
+                                dir_contents = s;
+                                dir_contents.sort_by(&sort_func);
 
-                        index = pindex;
+                                index = pindex;
 
-                        win_print_parent_dir(&joshuto_view.left_win,
-                                &curr_path, pindex);
+                                win_print_parent_dir(&config, &joshuto_view.left_win,
+                                        &curr_path, pindex);
 
-                        win_print_path(&joshuto_view.top_win, &curr_path);
-                        win_print_file_preview(config, &joshuto_view.right_win,
-                                &dir_contents[index]);
+                                win_print_path(&joshuto_view.top_win, &curr_path);
+                                win_print_file_preview(config, &joshuto_view.right_win,
+                                        &dir_contents[index]);
+                            },
+                            Err(e) => {
+                                win_print_err_msg(&joshuto_view.bot_win,
+                                        format!("{}", e).as_str());
+                            },
+                        };
                     },
                     Err(e) => {
-                        win_print_err_msg(&joshuto_view.bot_win,
-                                format!("{}", e).as_str());
+                        eprintln!("{}", e);
                     },
                 };
             },
