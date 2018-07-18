@@ -73,7 +73,6 @@ fn get_config() -> JoshutoConfig
     }
 }
 
-#[cfg(not(feature = "wide"))]
 fn main()
 {
     let args: Vec<String> = env::args().collect();

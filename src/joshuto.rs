@@ -21,7 +21,6 @@ const IMG_COLOR     : i16 = 12;
 const VID_COLOR     : i16 = 13;
 const ERR_COLOR     : i16 = 40;
 
-
 pub struct JoshutoWindow {
     win : ncurses::WINDOW,
     rows : i32,
@@ -175,7 +174,7 @@ pub fn init_ncurses()
 {
     let locale_conf = ncurses::LcCategory::all;
 
-    ncurses::setlocale(locale_conf, "en_US.UTF-8");
+    ncurses::setlocale(locale_conf, "");
 
     ncurses::initscr();
     ncurses::raw();
@@ -314,7 +313,9 @@ pub fn win_print_path(win : &JoshutoWindow, path : &path::PathBuf)
             None => "Error",
         };
 
+    ncurses::wattron(win.win, ncurses::A_BOLD());
     ncurses::mvwprintw(win.win, 0, 0, path_str);
+    ncurses::wattroff(win.win, ncurses::A_BOLD());
     ncurses::wrefresh(win.win);
 }
 
@@ -335,9 +336,16 @@ fn print_file(win : &JoshutoWindow, file : &fs::DirEntry)
         Ok(file_name) => {
             ncurses::wprintw(win.win, " ");
             if file_name.len() + 1 >= win.cols as usize {
-                ncurses::wprintw(win.win, &file_name[..win.cols as usize - 5]);
-//                ncurses::wprintw(win.win, "…");
-                ncurses::wprintw(win.win, "...");
+                let mut shortened = String::with_capacity(win.cols as usize);
+                let mut iter = file_name.chars();
+                for _i in 0..win.cols - 5 {
+                    if let Some(ch) = iter.next() {
+                        shortened.push(ch);
+                    }
+                }
+                ncurses::wprintw(win.win, &shortened);
+                ncurses::wprintw(win.win, "…");
+//                ncurses::wprintw(win.win, "...");
             } else {
                 ncurses::wprintw(win.win, &file_name);
             }
@@ -505,6 +513,48 @@ pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     ncurses::wrefresh(win);
 }
 
+pub fn enter_dir(direntry : &fs::DirEntry, joshuto_view : &JoshutoView,
+        curr_path : &mut path::PathBuf, index : &mut usize) -> Option<Vec<fs::DirEntry>>
+{
+    let tmp_name : ffi::OsString = direntry.file_name();
+    let tmp_name2 = tmp_name.as_os_str().to_str().unwrap();
+    let file_name = path::Path::new(tmp_name2);
+    curr_path.push(file_name);
+
+    let dir_contents : Vec<fs::DirEntry>;
+
+    match env::set_current_dir(&curr_path) {
+        Ok(_s) => {
+            match curr_dirent_list() {
+                Ok(s) => {
+                    dir_contents = s;
+                }
+                Err(e) => {
+                    win_print_err_msg(&joshuto_view.bot_win,
+                        format!("{}", e).as_str());
+                    return None;
+                }
+            }
+            *index = 0;
+
+            win_print_path(&joshuto_view.top_win, &curr_path);
+            win_print_parent_dir(&joshuto_view.left_win,
+                    &curr_path, *index);
+
+            if dir_contents.len() > 0 {
+                win_print_file_preview(&joshuto_view.right_win, direntry);
+            }
+        },
+        Err(e) => {
+            win_print_err_msg(&joshuto_view.bot_win,
+                format!("{}", e).as_str());
+            return None;
+        }
+    }
+
+    return Some(dir_contents);
+}
+
 
 pub fn run(_config : &JoshutoConfig)
 {
@@ -572,7 +622,7 @@ pub fn run(_config : &JoshutoConfig)
             },
             ncurses::KEY_RESIZE => {
                 ncurses::clear();
-                joshuto_view.redraw_views(term_rows, term_cols);
+                joshuto_view.redraw_views();
                 ncurses::refresh();
 
                 win_print_path(&joshuto_view.top_win, &curr_path);
@@ -675,38 +725,10 @@ pub fn run(_config : &JoshutoConfig)
             ncurses::KEY_RIGHT | ENTER => {
                 if let Ok(file_type) = &dir_contents[index as usize].file_type() {
                     if file_type.is_dir() {
-                        let tmp_name : ffi::OsString =
-                                dir_contents[index as usize].file_name();
-                        let tmp_name2 = tmp_name.as_os_str().to_str().unwrap();
-                        let file_name = path::Path::new(tmp_name2);
-                        curr_path.push(file_name);
-                        match env::set_current_dir(&curr_path) {
-                            Ok(_s) => {
-                                match curr_dirent_list() {
-                                    Ok(s) => {
-                                        dir_contents = s;
-                                        dir_contents.sort_by(&sort_func);
-                                    }
-                                    Err(_e) => {
-                                        process::exit(1);
-                                    }
-                                }
-                                index = 0;
-
-                                win_print_path(&joshuto_view.top_win, &curr_path);
-                                win_print_parent_dir(&joshuto_view.left_win,
-                                        &curr_path, pindex);
-
-                                if dir_contents.len() > 0 {
-                                    win_print_file_preview(
-                                        &joshuto_view.right_win,
-                                        &dir_contents[index]);
-                                }
-                            },
-                            Err(e) => {
-                                win_print_err_msg(&joshuto_view.bot_win,
-                                    format!("{}", e).as_str());
-                            }
+                        if let Some(s) = enter_dir(&dir_contents[index as usize],
+                                &joshuto_view, &mut curr_path, &mut index) {
+                            dir_contents = s;
+                            dir_contents.sort_by(&sort_func);
                         }
                     } else if file_type.is_symlink() {
                         let mut file_path : path::PathBuf =
@@ -716,28 +738,10 @@ pub fn run(_config : &JoshutoConfig)
                                 file_path.pop();
                                 file_path.push(sym_path.as_path());
                                 if file_path.as_path().is_dir() {
-                                    let tmp_name : ffi::OsString = dir_contents[index as usize].file_name();
-                                    let tmp_name2 = tmp_name.as_os_str().to_str().unwrap();
-                                    let file_name = path::Path::new(tmp_name2);
-                                    curr_path.push(file_name);
-                                    env::set_current_dir(&curr_path);
-                                    match curr_dirent_list() {
-                                        Ok(s) => {
-                                            dir_contents = s;
-                                            dir_contents.sort_by(&sort_func);
-                                        }
-                                        Err(_e) => {
-                                            process::exit(1);
-                                        }
-                                    }
-                                    index = 0;
-
-                                    win_print_path(&joshuto_view.top_win,
-                                            &curr_path);
-                                    win_print_parent_dir(&joshuto_view.left_win,
-                                            &curr_path, pindex);
-                                    if dir_contents.len() > 0 {
-                                        win_print_file_preview(&joshuto_view.right_win, &dir_contents[index]);
+                                    if let Some(s) = enter_dir(&dir_contents[index as usize],
+                                            &joshuto_view, &mut curr_path, &mut index) {
+                                        dir_contents = s;
+                                        dir_contents.sort_by(&sort_func);
                                     }
                                 }
                             },
