@@ -5,6 +5,7 @@ extern crate ncurses;
 extern crate toml;
 extern crate xdg;
 
+use std::char;
 use std::env;
 use std::fs;
 
@@ -72,6 +73,7 @@ fn get_config() -> JoshutoConfig
     }
 }
 
+#[cfg(not(feature = "wide"))]
 fn main()
 {
     let args: Vec<String> = env::args().collect();

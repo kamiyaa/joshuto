@@ -20,12 +20,9 @@ pub fn is_executable(mode : u32) -> bool
 
     for val in LIBC_PERMISSION_VALS.iter() {
         if mode & val != 0 {
-            eprintln!("true:");
             return true;
         }
-        eprintln!("mode & val: {}", mode & val);
     }
-    eprintln!("false:");
     return false;
 }
 
