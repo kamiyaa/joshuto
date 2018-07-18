@@ -45,7 +45,7 @@ impl JoshutoWindow {
     pub fn redraw(&mut self, rows : i32, cols : i32, coords : (i32, i32))
     {
         ncurses::delwin(self.win);
-        self.win = ncurses::newwin(rows, cols, coords.1, coords.0);
+        self.win = ncurses::newwin(rows, cols, coords.0, coords.1);
         self.rows = rows;
         self.cols = cols;
         self.coords = coords;
