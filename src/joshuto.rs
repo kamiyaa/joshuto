@@ -271,7 +271,8 @@ fn file_ext_attron(win : ncurses::WINDOW, ext : &str)
         "png" | "jpg" | "jpeg" | "gif" => {
             ncurses::wattron(win, ncurses::COLOR_PAIR(IMG_COLOR));
         },
-        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" => {
+        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" |
+        "m4a" => {
             ncurses::wattron(win, ncurses::COLOR_PAIR(VID_COLOR));
         },
         _ => {},
@@ -284,11 +285,83 @@ fn file_ext_attroff(win : ncurses::WINDOW, ext : &str)
         "png" | "jpg" | "jpeg" | "gif" => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(IMG_COLOR));
         },
-        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" => {
+        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" |
+        "m4a" => {
             ncurses::wattroff(win, ncurses::COLOR_PAIR(IMG_COLOR));
         },
         _ => {},
     }
+}
+
+
+pub fn read_dir_list(config : &JoshutoConfig, path : &str) -> Result<Vec<fs::DirEntry>, std::io::Error>
+{
+    fn filter_func(result : Result<fs::DirEntry, std::io::Error>) -> Option<fs::DirEntry>
+    {
+        match result {
+            Ok(direntry) => {
+                match direntry.file_name().into_string() {
+                    Ok(file_name) => {
+                        if file_name.starts_with(".") {
+                            None
+                        } else {
+                            Some(direntry)
+                        }
+                    },
+                    Err(e) => {
+                        None
+                    },
+                }
+            },
+            Err(e) => {
+                eprintln!("{}", e);
+                None
+            }
+        }
+    }
+
+    fn list_dirent(path : &str) -> Result<Vec<fs::DirEntry>, std::io::Error>
+    {
+        match fs::read_dir(path) {
+            Ok(results) => {
+                let mut result_vec : Vec<fs::DirEntry> = results
+                        .filter_map(filter_func)
+                        .collect();
+                Ok(result_vec)
+            },
+            Err(e) => {
+                Err(e)
+            },
+        }
+    }
+
+    fn list_dirent_hidden(path : &str) -> Result<Vec<fs::DirEntry>, std::io::Error>
+    {
+        match fs::read_dir(path) {
+            Ok(results) => {
+                let results : Result<Vec<fs::DirEntry>, _> = results.collect();
+                results
+            },
+            Err(e) => {
+                Err(e)
+            },
+        }
+    }
+
+
+    match config.show_hidden {
+        Some(show) => {
+            if show {
+                list_dirent_hidden(path)
+            } else {
+                list_dirent(path)
+            }
+        },
+        None => {
+            list_dirent(path)
+        },
+    }
+
 }
 
 pub fn curr_dirent_list() -> Result<Vec<fs::DirEntry>, std::io::Error>
@@ -513,7 +586,7 @@ pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     ncurses::wrefresh(win);
 }
 
-pub fn enter_dir(direntry : &fs::DirEntry, joshuto_view : &JoshutoView,
+pub fn enter_dir(config : &JoshutoConfig, direntry : &fs::DirEntry, joshuto_view : &JoshutoView,
         curr_path : &mut path::PathBuf, index : &mut usize) -> Option<Vec<fs::DirEntry>>
 {
     let tmp_name : ffi::OsString = direntry.file_name();
@@ -525,7 +598,7 @@ pub fn enter_dir(direntry : &fs::DirEntry, joshuto_view : &JoshutoView,
 
     match env::set_current_dir(&curr_path) {
         Ok(_s) => {
-            match curr_dirent_list() {
+            match read_dir_list(config, ".") {
                 Ok(s) => {
                     dir_contents = s;
                 }
@@ -556,7 +629,7 @@ pub fn enter_dir(direntry : &fs::DirEntry, joshuto_view : &JoshutoView,
 }
 
 
-pub fn run(_config : &JoshutoConfig)
+pub fn run(config : &JoshutoConfig)
 {
     init_ncurses();
 
@@ -589,7 +662,7 @@ pub fn run(_config : &JoshutoConfig)
         };
 
     let mut dir_contents : Vec<fs::DirEntry> =
-        match curr_dirent_list() {
+        match read_dir_list(config, ".") {
             Ok(s) => {
                 s
             }
@@ -702,7 +775,7 @@ pub fn run(_config : &JoshutoConfig)
                         continue;
                 }
                 env::set_current_dir(curr_path.as_path());
-                match curr_dirent_list() {
+                match read_dir_list(config, ".") {
                     Ok(s) => {
                         dir_contents = s;
                         dir_contents.sort_by(&sort_func);
@@ -725,7 +798,7 @@ pub fn run(_config : &JoshutoConfig)
             ncurses::KEY_RIGHT | ENTER => {
                 if let Ok(file_type) = &dir_contents[index as usize].file_type() {
                     if file_type.is_dir() {
-                        if let Some(s) = enter_dir(&dir_contents[index as usize],
+                        if let Some(s) = enter_dir(config, &dir_contents[index as usize],
                                 &joshuto_view, &mut curr_path, &mut index) {
                             dir_contents = s;
                             dir_contents.sort_by(&sort_func);
@@ -738,7 +811,7 @@ pub fn run(_config : &JoshutoConfig)
                                 file_path.pop();
                                 file_path.push(sym_path.as_path());
                                 if file_path.as_path().is_dir() {
-                                    if let Some(s) = enter_dir(&dir_contents[index as usize],
+                                    if let Some(s) = enter_dir(config, &dir_contents[index as usize],
                                             &joshuto_view, &mut curr_path, &mut index) {
                                         dir_contents = s;
                                         dir_contents.sort_by(&sort_func);
