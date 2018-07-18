@@ -308,7 +308,7 @@ pub fn read_dir_list(config : &JoshutoConfig, path : &str) -> Result<Vec<fs::Dir
                             Some(direntry)
                         }
                     },
-                    Err(e) => {
+                    Err(_e) => {
                         None
                     },
                 }
@@ -349,31 +349,10 @@ pub fn read_dir_list(config : &JoshutoConfig, path : &str) -> Result<Vec<fs::Dir
     }
 
 
-    match config.show_hidden {
-        Some(show) => {
-            if show {
-                list_dirent_hidden(path)
-            } else {
-                list_dirent(path)
-            }
-        },
-        None => {
-            list_dirent(path)
-        },
-    }
-
-}
-
-pub fn curr_dirent_list() -> Result<Vec<fs::DirEntry>, std::io::Error>
-{
-    match fs::read_dir(".") {
-        Ok(results) => {
-            let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-            results
-        },
-        Err(e) => {
-            Err(e)
-        },
+    if config.show_hidden {
+        list_dirent_hidden(path)
+    } else {
+        list_dirent(path)
     }
 }
 
@@ -434,28 +413,6 @@ fn print_file(win : &JoshutoWindow, file : &fs::DirEntry)
     ncurses::wprintw(win.win, "\n");
 }
 
-pub fn win_contents_refresh(win : &JoshutoWindow,
-                dir_contents: &Vec<fs::DirEntry>) {
-
-    let vec_len = dir_contents.len();
-
-    if vec_len == 0 {
-        win_print_err_msg(win, "empty");
-        return;
-    }
-
-    let mut i : usize = 0;
-    let win_rows : usize = i + win.rows as usize;
-
-    ncurses::wclear(win.win);
-    ncurses::wmove(win.win, 0, 0);
-    while i < vec_len && i < win_rows {
-        print_file(win, &dir_contents[i]);
-        i += 1;
-    }
-    ncurses::wrefresh(win.win);
-}
-
 pub fn win_print_parent_dir(win : &JoshutoWindow, path : &path::PathBuf, index : usize)
 {
     ncurses::wclear(win.win);
@@ -476,25 +433,22 @@ pub fn win_print_parent_dir(win : &JoshutoWindow, path : &path::PathBuf, index :
     ncurses::wrefresh(win.win);
 }
 
-pub fn win_print_file_preview(win : &JoshutoWindow, file : &fs::DirEntry)
+pub fn win_print_file_preview(config : &JoshutoConfig, win : &JoshutoWindow, direntry : &fs::DirEntry)
 {
     use std::os::unix::fs::PermissionsExt;
     use joshuto::joshuto_unix;
 
     ncurses::wclear(win.win);
-    if let Ok(metadata) = file.metadata() {
+    if let Ok(metadata) = direntry.metadata() {
         let permissions : fs::Permissions = metadata.permissions();
         let mode = permissions.mode();
 
         match mode & joshuto_unix::BITMASK {
             joshuto_unix::S_IFDIR => {
-                match fs::read_dir(&file.path()) {
-                    Ok(results) => {
-                        let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-                        if let Ok(mut dir_contents) = results {
-                            dir_contents.sort_by(joshuto_sort::alpha_sort);
-                            win_contents_refresh(&win, &dir_contents);
-                        }
+                match read_dir_list(config, &direntry.path().to_str().unwrap()) {
+                    Ok(mut dir_contents) => {
+                        dir_contents.sort_by(joshuto_sort::alpha_sort);
+                        win.display_contents(&dir_contents, 0);
                     },
                     Err(e) => {
                         win_print_err_msg(&win, format!("{}", e).as_str());
@@ -502,19 +456,16 @@ pub fn win_print_file_preview(win : &JoshutoWindow, file : &fs::DirEntry)
                 };
             },
             joshuto_unix::S_IFLNK => {
-                let mut file_path = file.path();
+                let mut file_path = direntry.path();
                 match fs::read_link(&file_path) {
                     Ok(sym_path) => {
                         file_path.pop();
                         file_path.push(sym_path.as_path());
                         if file_path.as_path().is_dir() {
-                            match fs::read_dir(file_path) {
-                                Ok(results) => {
-                                    let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-                                    if let Ok(mut dir_contents) = results {
-                                        dir_contents.sort_by(joshuto_sort::alpha_sort);
-                                        win_contents_refresh(&win, &dir_contents);
-                                    }
+                            match read_dir_list(config, file_path.to_str().unwrap()) {
+                                Ok(mut dir_contents) => {
+                                    dir_contents.sort_by(joshuto_sort::alpha_sort);
+                                    win.display_contents(&dir_contents, 0);
                                 },
                                 Err(e) => {
                                     win_print_err_msg(&win, format!("{}", e).as_str());
@@ -615,7 +566,7 @@ pub fn enter_dir(config : &JoshutoConfig, direntry : &fs::DirEntry, joshuto_view
                     &curr_path, *index);
 
             if dir_contents.len() > 0 {
-                win_print_file_preview(&joshuto_view.right_win, direntry);
+                win_print_file_preview(config, &joshuto_view.right_win, direntry);
             }
         },
         Err(e) => {
@@ -680,7 +631,7 @@ pub fn run(config : &JoshutoConfig)
     joshuto_view.mid_win.display_contents(&dir_contents, index);
 
     if dir_contents.len() > 0 {
-        win_print_file_preview(&joshuto_view.right_win, &dir_contents[index]);
+        win_print_file_preview(config, &joshuto_view.right_win, &dir_contents[index]);
         win_print_file_info(joshuto_view.bot_win.win, &dir_contents[index]);
     }
 
@@ -702,7 +653,7 @@ pub fn run(config : &JoshutoConfig)
                 win_print_parent_dir(&joshuto_view.left_win, &curr_path, pindex);
                 joshuto_view.mid_win.display_contents(&dir_contents, index);
                 if dir_contents.len() > 0 {
-                    win_print_file_preview(&joshuto_view.right_win,
+                    win_print_file_preview(config, &joshuto_view.right_win,
                             &dir_contents[index]);
                     win_print_file_info(joshuto_view.bot_win.win,
                             &dir_contents[index]);
@@ -714,7 +665,7 @@ pub fn run(config : &JoshutoConfig)
             ncurses::KEY_HOME => {
                 if index != 0 {
                     index = 0;
-                    win_print_file_preview(&joshuto_view.right_win,
+                    win_print_file_preview(config, &joshuto_view.right_win,
                             &dir_contents[index]);
                 }
             },
@@ -722,21 +673,21 @@ pub fn run(config : &JoshutoConfig)
                 let tmp_len = dir_contents.len();
                 if index + 1 != tmp_len {
                     index = tmp_len - 1;
-                    win_print_file_preview(&joshuto_view.right_win,
+                    win_print_file_preview(config, &joshuto_view.right_win,
                             &dir_contents[index]);
                 }
             },
             ncurses::KEY_UP => {
                 if index > 0 {
                     index = index - 1;
-                    win_print_file_preview(&joshuto_view.right_win,
+                    win_print_file_preview(config, &joshuto_view.right_win,
                             &dir_contents[index]);
                 }
             },
             ncurses::KEY_DOWN => {
                 if index + 1 < dir_contents.len() {
                     index = index + 1;
-                    win_print_file_preview(&joshuto_view.right_win,
+                    win_print_file_preview(config, &joshuto_view.right_win,
                             &dir_contents[index]);
                 }
             },
@@ -750,7 +701,7 @@ pub fn run(config : &JoshutoConfig)
                 } else {
                     index = tmp_len - 1;
                 }
-                win_print_file_preview(&joshuto_view.right_win,
+                win_print_file_preview(config, &joshuto_view.right_win,
                         &dir_contents[index]);
             },
             ncurses::KEY_PPAGE => {
@@ -762,7 +713,7 @@ pub fn run(config : &JoshutoConfig)
                 } else {
                     index = 0;
                 }
-                win_print_file_preview(&joshuto_view.right_win,
+                win_print_file_preview(config, &joshuto_view.right_win,
                         &dir_contents[index]);
             },
             ncurses::KEY_LEFT => {
@@ -786,7 +737,7 @@ pub fn run(config : &JoshutoConfig)
                                 &curr_path, pindex);
 
                         win_print_path(&joshuto_view.top_win, &curr_path);
-                        win_print_file_preview(&joshuto_view.right_win,
+                        win_print_file_preview(config, &joshuto_view.right_win,
                                 &dir_contents[index]);
                     },
                     Err(e) => {
