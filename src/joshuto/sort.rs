@@ -2,6 +2,30 @@ use std;
 use std::cmp;
 use std::fs;
 
+pub fn filter_func_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<fs::DirEntry>
+{
+    match result {
+        Ok(direntry) => {
+            match direntry.file_name().into_string() {
+                Ok(file_name) => {
+                    if file_name.starts_with(".") {
+                        None
+                    } else {
+                        Some(direntry)
+                    }
+                },
+                Err(_e) => {
+                    None
+                },
+            }
+        },
+        Err(e) => {
+            eprintln!("{}", e);
+            None
+        }
+    }
+}
+
 pub fn alpha_sort(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> cmp::Ordering
 {
     fn res_ordering(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> Result<cmp::Ordering, std::io::Error> {

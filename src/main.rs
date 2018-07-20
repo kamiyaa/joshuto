@@ -5,12 +5,11 @@ extern crate ncurses;
 extern crate toml;
 extern crate xdg;
 
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 
 mod joshuto;
-mod joshuto_sort;
-mod joshuto_unix;
 
 const PROGRAM_NAME : &str = "joshuto";
 const CONFIG_FILE : &str = "joshuto.toml";
@@ -25,11 +24,12 @@ pub struct joshuto_win {
 */
 
 #[derive(Debug, Deserialize)]
-pub struct IntermediateConfig {
+pub struct JoshutoConfig {
     show_hidden: Option<bool>,
     color_scheme: Option<String>,
     sort_method: Option<String>,
     keymaps: Option<JoshutoKeymaps>,
+    mimes: Option<HashMap<String, String>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -37,26 +37,18 @@ pub struct JoshutoKeymaps {
     up : i32,
 }
 
-pub struct JoshutoConfig {
-    show_hidden: bool,
-    color_scheme: String,
-    sort_method: String,
-    keymaps: JoshutoKeymaps,
-}
-
 fn generate_default_config() -> JoshutoConfig
 {
     JoshutoConfig {
-        show_hidden: false,
-        color_scheme: "default".to_string(),
-        sort_method: "Natural".to_string(),
-        keymaps: JoshutoKeymaps {
-            up : 3,
-        },
+        show_hidden: None,
+        color_scheme: None,
+        sort_method: None,
+        keymaps: None,
+        mimes: None
     }
 }
 
-fn read_config() -> Option<IntermediateConfig>
+fn read_config() -> Option<JoshutoConfig>
 {
     let dirs = xdg::BaseDirectories::with_profile(PROGRAM_NAME, "").unwrap();
     match dirs.find_config_file(CONFIG_FILE) {
@@ -79,45 +71,11 @@ fn read_config() -> Option<IntermediateConfig>
     }
 }
 
-fn convert_config(config : IntermediateConfig) -> JoshutoConfig
-{
-    let show_hidden : bool = 
-        match config.show_hidden {
-            Some(s) => s,
-            None => false,
-        };
-    let color_scheme : String =
-        match config.color_scheme {
-            Some(s) => s,
-            None => "default".to_string(),
-        };
-    let sort_method : String =
-        match config.sort_method {
-            Some(s) => s,
-            None => "natural".to_string(),
-        };
-    let keymaps : JoshutoKeymaps =
-        match config.keymaps {
-            Some(s) => s,
-            None => JoshutoKeymaps {
-                        up : 3,
-                    },
-        };
-
-    JoshutoConfig {
-        show_hidden: show_hidden,
-        color_scheme: color_scheme,
-        sort_method: sort_method,
-        keymaps: keymaps,
-    }
-
-}
-
 fn get_config() -> JoshutoConfig
 {
     match read_config() {
-        Some(inter_config) => {
-            convert_config(inter_config)
+        Some(config) => {
+            config
         }
         None => {
             generate_default_config()
@@ -131,7 +89,7 @@ fn main()
     let args: Vec<String> = env::args().collect();
     println!("{:?}", args);
 
-    let config = get_config();
+    let mut config = get_config();
 
-    joshuto::run(&config);
+    joshuto::run(&mut config);
 }

@@ -1,4 +1,11 @@
 extern crate libc;
+extern crate mime_guess;
+
+use std::collections::HashMap;
+use std::fs;
+use std::path;
+use std::process;
+use std::thread;
 
 pub const BITMASK  : u32 = 0o170000;
 
@@ -10,6 +17,38 @@ pub const S_IFDIR  : u32 = 0o040000;   /* directory */
 pub const S_IFCHR  : u32 = 0o020000;   /* character device */
 pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
+
+pub fn get_mime_type(direntry : &fs::DirEntry, map : &HashMap<&str, &str>)
+{
+    use self::mime::Mime;
+
+    let path : path::PathBuf = direntry.path();
+    match path.extension() {
+        None => {
+            let mime: mime_guess::Mime = "application/octet-stream".parse().unwrap();
+            return mime;
+        },
+        Some(ext) => {
+            return mime_guess::get_mime_type(ext.to_str().unwrap());
+        },
+    };
+}
+
+pub fn exec_with(program : &'static str, args : Vec<String>)
+{
+    use std::os::unix::process::CommandExt;
+
+    let handler : thread::JoinHandle<()> = thread::spawn(move || {
+        let mut command : process::Command = process::Command::new(program);
+        command.args(args);
+        command.exec();
+    });
+
+    match handler.join() {
+        Ok(_s) => {},
+        Err(e) => eprintln!("{:?}", e),
+    };
+}
 pub fn is_executable(mode : u32) -> bool
 {
     const LIBC_PERMISSION_VALS : [ u32 ; 3] = [
