@@ -2,3 +2,5 @@ show_hidden = true
 # sort_method options: size, natural, basename, atime, ctime, mtime, type, random
 sort_method = "natural"
 
+[mimetypes]
+"text/plain" = "nano"

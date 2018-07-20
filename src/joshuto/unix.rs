@@ -18,11 +18,12 @@ pub const S_IFCHR  : u32 = 0o020000;   /* character device */
 pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
 
-pub fn get_mime_type(direntry : &fs::DirEntry, map : &HashMap<&str, &str>)
-        -> String
+pub fn get_mime_type<'a>(direntry : &fs::DirEntry, map : &'a HashMap<String, String>)
+        -> Option<&'a String>
 {
+    let mime_type : String = tree_magic::from_filepath(&direntry.path().as_path());
 
-    tree_magic::from_filepath(&direntry.path().as_path())
+    map.get(&mime_type)
 }
 
 pub fn exec_with(program : &'static str, args : Vec<String>)
