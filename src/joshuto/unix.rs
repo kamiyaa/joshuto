@@ -1,5 +1,5 @@
 extern crate libc;
-extern crate mime_guess;
+extern crate tree_magic;
 
 use std::collections::HashMap;
 use std::fs;
@@ -19,19 +19,10 @@ pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
 
 pub fn get_mime_type(direntry : &fs::DirEntry, map : &HashMap<&str, &str>)
+        -> String
 {
-    use self::mime::Mime;
 
-    let path : path::PathBuf = direntry.path();
-    match path.extension() {
-        None => {
-            let mime: mime_guess::Mime = "application/octet-stream".parse().unwrap();
-            return mime;
-        },
-        Some(ext) => {
-            return mime_guess::get_mime_type(ext.to_str().unwrap());
-        },
-    };
+    tree_magic::from_filepath(&direntry.path().as_path())
 }
 
 pub fn exec_with(program : &'static str, args : Vec<String>)
