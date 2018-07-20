@@ -15,8 +15,7 @@ pub struct JoshutoDirEntry {
 
 impl JoshutoDirEntry {
 
-    pub fn new(path : &str, show_hidden : bool,
-        parent : Option<JoshutoDirEntry>)
+    pub fn new(path : &str, show_hidden : bool)
         -> Result<JoshutoDirEntry, std::io::Error>
     {
         let dir_contents : Vec<fs::DirEntry>;

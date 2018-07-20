@@ -43,7 +43,7 @@ fn generate_default_config() -> JoshutoConfig
         color_scheme: None,
         sort_method: None,
 //        keymaps: None,
-        mimetypes: None, //toml::value::Table::new(),
+        mimetypes: None,
     }
 }
 
@@ -87,10 +87,11 @@ fn main()
 {
     let args: Vec<String> = env::args().collect();
 
+    println!("args:\n{:?}", args);
+
     let mut config = get_config();
 
-    println!("{:?}", config);
-    println!("{:?}", config.mimetypes);
+    println!("config:\n{:?}", config);
 
-    //joshuto::run(&mut config);
+    joshuto::run(&mut config);
 }
