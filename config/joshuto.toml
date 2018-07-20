@@ -3,4 +3,8 @@ show_hidden = true
 sort_method = "natural"
 
 [mimetypes]
-"text/plain" = "nano"
+"application/x-matroska"    = "mpv"
+"application/x-shellscript" = "nano"
+"image/jpeg"                = "feh"
+"image/png"                 = "feh"
+"text/plain"                = "nano"

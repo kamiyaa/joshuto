@@ -531,13 +531,26 @@ pub fn run(config : &mut JoshutoConfig)
                         },
                     };
                 } else {
-                    let mut arg_list : Vec<String> = Vec::new();
-                    arg_list.push(dir_contents[index as usize].file_name().into_string().unwrap());
-                    wprintmsg(&joshuto_view.right_win, "Nice");
+                    let mime_type : String =
+                        unix::get_mime_type(&dir_contents[index as usize]);
+                    if let Some(mime_map) = &config.mimetypes {
+                        if let Some(mime_exec) = unix::get_exec_program(mime_type.as_str(), &mime_map) {
+                            let mut arg_list : Vec<String> = Vec::new();
+                            arg_list.push(dir_contents[index as usize].file_name().into_string().unwrap());
+                            ncurses::savetty();
+                            ncurses::endwin();
+                            unix::exec_with(mime_exec, arg_list);
+                            ncurses::resetty();
+                        } else {
+                            wprintmsg(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
+                        }
+                    } else {
+                        wprintmsg(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
+                    }
                 }
             }
         } else {
-            eprintln!("Unknown keychar: ({}: {})", ch as u32, ch);
+            eprintln!("Unknown keychar: ({}: {})", ch, ch as u8 as char);
         }
 
         if dir_contents.len() > 0 {

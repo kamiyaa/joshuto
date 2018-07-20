@@ -1,9 +1,9 @@
 extern crate libc;
+extern crate toml;
 extern crate tree_magic;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fs;
-use std::path;
 use std::process;
 use std::thread;
 
@@ -17,30 +17,37 @@ pub const S_IFDIR  : u32 = 0o040000;   /* directory */
 pub const S_IFCHR  : u32 = 0o020000;   /* character device */
 pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
-
-pub fn get_mime_type<'a>(direntry : &fs::DirEntry, map : &'a HashMap<String, String>)
-        -> Option<&'a String>
+pub fn get_mime_type(direntry : &fs::DirEntry) -> String
 {
-    let mime_type : String = tree_magic::from_filepath(&direntry.path().as_path());
-
-    map.get(&mime_type)
+    tree_magic::from_filepath(&direntry.path().as_path())
 }
 
-pub fn exec_with(program : &'static str, args : Vec<String>)
+pub fn get_exec_program<'a>(mime_type : &str,
+        map : &'a BTreeMap<String, toml::Value>) -> Option<String>
 {
-    use std::os::unix::process::CommandExt;
-
-    let handler : thread::JoinHandle<()> = thread::spawn(move || {
-        let mut command : process::Command = process::Command::new(program);
-        command.args(args);
-        command.exec();
-    });
-
-    match handler.join() {
-        Ok(_s) => {},
-        Err(e) => eprintln!("{:?}", e),
-    };
+    if let Some(mime_value) = map.get(mime_type) {
+        if let Some(mime_str) = mime_value.as_str() {
+            return Some(String::from(mime_str));
+        } else {
+            return None;
+        }
+    } else {
+        return None;
+    }
 }
+
+pub fn exec_with(program : String, args : Vec<String>)
+{
+    use std::process::Command;
+
+    let mut child = Command::new(program)
+                        .args(args)
+                        .spawn()
+                        .expect("failed to execute child");
+
+    let ecode = child.wait().expect("failed to wait on child");
+}
+
 pub fn is_executable(mode : u32) -> bool
 {
     const LIBC_PERMISSION_VALS : [ u32 ; 3] = [
