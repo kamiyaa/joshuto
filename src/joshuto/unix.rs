@@ -4,8 +4,6 @@ extern crate tree_magic;
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::process;
-use std::thread;
 
 pub const BITMASK  : u32 = 0o170000;
 
@@ -40,12 +38,20 @@ pub fn exec_with(program : String, args : Vec<String>)
 {
     use std::process::Command;
 
-    let mut child = Command::new(program)
-                        .args(args)
-                        .spawn()
-                        .expect("failed to execute child");
+    let mut child = Command::new(program);
+    child.args(args);
 
-    let ecode = child.wait().expect("failed to wait on child");
+    match child.spawn() {
+        Ok(mut ch) => {
+            match ch.wait() {
+                Ok(exit_code) => println!("program exited with code: {}", exit_code),
+                Err(e) => eprintln!("{}", e),
+            }
+        },
+        Err(e) => {
+            eprintln!("{:?}", e);
+        },
+    }
 }
 
 pub fn is_executable(mode : u32) -> bool

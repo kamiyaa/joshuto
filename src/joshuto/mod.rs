@@ -1,4 +1,5 @@
 extern crate ncurses;
+extern crate whoami;
 
 use std;
 use std::env;
@@ -98,21 +99,25 @@ pub fn wprintmsg(win : &structs::JoshutoWindow, err_msg : &str)
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::mvwprintw(win.win, 0, 0, err_msg);
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
-    win.commit();
 }
 
-pub fn wprint_path(win : &structs::JoshutoWindow, path : &path::PathBuf)
+pub fn wprint_path(win : &structs::JoshutoWindow, username : &str,
+        hostname : &str, path : &path::PathBuf)
 {
     ncurses::wclear(win.win);
     let path_str : &str = match path.to_str() {
             Some(s) => s,
             None => "Error",
         };
-
     ncurses::wattron(win.win, ncurses::A_BOLD());
-    ncurses::mvwprintw(win.win, 0, 0, path_str);
+    ncurses::wattron(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
+    ncurses::mvwprintw(win.win, 0, 0,
+            format!("{}@{} ", username, hostname).as_str());
+    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
+
+    ncurses::wprintw(win.win, path_str);
     ncurses::wattroff(win.win, ncurses::A_BOLD());
-    win.commit();
+    ncurses::wnoutrefresh(win.win);
 }
 
 pub fn wprint_pdir(win : &structs::JoshutoWindow, path : &path::PathBuf,
@@ -132,7 +137,6 @@ pub fn wprint_pdir(win : &structs::JoshutoWindow, path : &path::PathBuf,
             },
         };
     }
-    win.commit();
 }
 
 pub fn wprint_file_preview(win : &structs::JoshutoWindow,
@@ -202,7 +206,6 @@ pub fn wprint_file_preview(win : &structs::JoshutoWindow,
             },
         }
     }
-    win.commit();
 }
 
 pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
@@ -235,7 +238,7 @@ pub fn win_print_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
             ncurses::wprintw(win, format!("{:?}", e).as_str());
         },
     };
-    ncurses::wrefresh(win);
+    ncurses::wnoutrefresh(win);
 }
 
 pub fn enter_dir(direntry : &fs::DirEntry,
@@ -264,7 +267,6 @@ pub fn enter_dir(direntry : &fs::DirEntry,
             }
             *index = 0;
 
-            wprint_path(&view.top_win, &curr_path);
             wprint_pdir(&view.left_win, &curr_path, *index, sort_func,
                     show_hidden);
 
@@ -287,9 +289,8 @@ pub fn run(config : &mut JoshutoConfig)
 {
     init_ncurses();
 
-    let mut term_rows : i32 = 0;
-    let mut term_cols : i32 = 0;
-    ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+    let username : String = whoami::username();
+    let hostname : String = whoami::hostname();
 
     let mut index : usize = 0;
     let pindex : usize = 0;
@@ -343,13 +344,12 @@ pub fn run(config : &mut JoshutoConfig)
         };
     dir_contents.sort_by(&sort_func);
 
-    wprint_path(&joshuto_view.top_win, &curr_path);
+    wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(), &curr_path);
 
     wprint_pdir(&joshuto_view.left_win, &curr_path, pindex, sort_func,
             show_hidden);
 
     joshuto_view.mid_win.display_contents(&dir_contents, index);
-    joshuto_view.mid_win.commit();
 
     if dir_contents.len() > 0 {
         wprint_file_preview(&joshuto_view.right_win, &dir_contents[index],
@@ -357,7 +357,7 @@ pub fn run(config : &mut JoshutoConfig)
         win_print_file_info(joshuto_view.bot_win.win, &dir_contents[index]);
     }
 
-    ncurses::refresh();
+    ncurses::doupdate();
 
     loop {
         let ch : i32 = ncurses::getch();
@@ -365,7 +365,24 @@ pub fn run(config : &mut JoshutoConfig)
         if ch == QUIT {
             break;
         }
-        if ch == 'z' as i32 {
+        if ch == ncurses::KEY_RESIZE {
+            ncurses::clear();
+            joshuto_view.redraw_views();
+            ncurses::refresh();
+
+            wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(), &curr_path);
+            wprint_pdir(&joshuto_view.left_win, &curr_path, pindex, sort_func,
+                    show_hidden);
+            joshuto_view.mid_win.display_contents(&dir_contents, index);
+            if dir_contents.len() > 0 {
+                wprint_file_preview(&joshuto_view.right_win,
+                        &dir_contents[index], show_hidden);
+                win_print_file_info(joshuto_view.bot_win.win,
+                        &dir_contents[index]);
+            }
+            ncurses::doupdate();
+
+        } else if ch == 'z' as i32 {
             let ch2 : i32 = ncurses::getch();
             if ch2 == 'h' as i32 {
                 show_hidden = !show_hidden;
@@ -392,28 +409,7 @@ pub fn run(config : &mut JoshutoConfig)
                                 format!("{}", e).as_str());
                     },
                 };
-
-                ncurses::refresh();
             }
-        } else if ch == ncurses::KEY_RESIZE {
-            ncurses::clear();
-            joshuto_view.redraw_views();
-            ncurses::refresh();
-
-            wprint_path(&joshuto_view.top_win, &curr_path);
-            wprint_pdir(&joshuto_view.left_win, &curr_path, pindex, sort_func,
-                    show_hidden);
-            joshuto_view.mid_win.display_contents(&dir_contents, index);
-            joshuto_view.mid_win.commit();
-            if dir_contents.len() > 0 {
-                wprint_file_preview(&joshuto_view.right_win,
-                        &dir_contents[index], show_hidden);
-                win_print_file_info(joshuto_view.bot_win.win,
-                        &dir_contents[index]);
-            }
-
-            ncurses::refresh();
-
         } else if ch == ncurses::KEY_HOME {
             if index != 0 {
                 index = 0;
@@ -465,7 +461,7 @@ pub fn run(config : &mut JoshutoConfig)
         } else if ch == ncurses::KEY_LEFT {
             if curr_path.parent() == None {
                     ncurses::wclear(joshuto_view.left_win.win);
-                    ncurses::wrefresh(joshuto_view.left_win.win);
+                    ncurses::wnoutrefresh(joshuto_view.left_win.win);
                     continue;
             }
             if curr_path.pop() == false {
@@ -483,7 +479,7 @@ pub fn run(config : &mut JoshutoConfig)
                             wprint_pdir(&joshuto_view.left_win, &curr_path,
                                 pindex, sort_func, show_hidden);
 
-                            wprint_path(&joshuto_view.top_win, &curr_path);
+                            wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(), &curr_path);
                             if dir_contents.len() > 0 {
                                 wprint_file_preview(&joshuto_view.right_win,
                                         &dir_contents[index], show_hidden);
@@ -555,13 +551,12 @@ pub fn run(config : &mut JoshutoConfig)
 
         if dir_contents.len() > 0 {
             joshuto_view.mid_win.display_contents(&dir_contents, index);
-            joshuto_view.mid_win.commit();
             win_print_file_info(joshuto_view.bot_win.win, &dir_contents[index]);
         } else {
             wprintmsg(&joshuto_view.mid_win, "empty");
             ncurses::wclear(joshuto_view.right_win.win);
-            ncurses::wrefresh(joshuto_view.right_win.win);
         }
+        ncurses::doupdate();
     }
     ncurses::endwin();
 }

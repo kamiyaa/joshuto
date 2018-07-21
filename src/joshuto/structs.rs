@@ -65,11 +65,7 @@ impl JoshutoWindow {
         self.coords = coords;
         self.win = ncurses::newwin(self.rows, self.cols, self.coords.0,
                 self.coords.1);
-    }
-
-    pub fn commit(&self)
-    {
-        ncurses::wrefresh(self.win);
+        ncurses::wnoutrefresh(self.win);
     }
 
     fn print_file(&self, file : &fs::DirEntry)
@@ -153,6 +149,7 @@ impl JoshutoWindow {
                 self.print_file(&dir_contents[i]);
             }
         }
+        ncurses::wnoutrefresh(self.win);
     }
 }
 
@@ -217,16 +214,6 @@ impl JoshutoView {
         self.right_win.redraw(term_rows - 2,
             term_divide * 3, (1, term_divide * self.win_ratio.2));
         self.bot_win.redraw(1, term_cols, (term_rows - 1, 0));
-    }
-
-    pub fn commit(&self)
-    {
-        self.top_win.commit();
-        self.left_win.commit();
-        self.mid_win.commit();
-        self.right_win.commit();
-        self.bot_win.commit();
-        ncurses::refresh();
     }
 }
 
