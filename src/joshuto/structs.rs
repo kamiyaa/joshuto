@@ -3,39 +3,40 @@ extern crate ncurses;
 use std;
 use std::fs;
 use std::ffi;
+use std::path;
 
-use joshuto;
+use joshuto::sort;
+use joshuto::ui;
 use joshuto::unix;
 
+#[derive(Debug)]
 pub struct JoshutoDirEntry {
-    pub index           : usize,
-    pub metadata        : fs::Metadata,
-    pub dir_contents    : Option<Vec<fs::DirEntry>>,
+    pub index : usize,
+    pub metadata : fs::Metadata,
+    pub contents : Option<Vec<fs::DirEntry>>,
 }
 
 impl JoshutoDirEntry {
 
-    pub fn new(path : &str, show_hidden : bool)
-        -> Result<JoshutoDirEntry, std::io::Error>
+    pub fn new(path : &path::Path,
+            sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
+            show_hidden : bool) -> Result<JoshutoDirEntry, std::io::Error>
     {
-        let dir_contents : Vec<fs::DirEntry>;
-        if show_hidden {
-            dir_contents = joshuto::list_dirent_hidden(path)?;
-        } else {
-            dir_contents = joshuto::list_dirent(path)?;
-        }
+        let mut dir_contents : Vec<fs::DirEntry> = read_dir_list(path, show_hidden)?;
+        dir_contents.sort_by(&sort_func);
 
-        let file = fs::File::open(path)?;
+        let file = fs::File::open(&path)?;
         let metadata = file.metadata()?;
 
         Ok(JoshutoDirEntry {
             index: 0,
             metadata: metadata,
-            dir_contents: Some(dir_contents),
+            contents: Some(dir_contents),
         })
     }
 }
 
+#[derive(Debug)]
 pub struct JoshutoWindow {
     pub win     : ncurses::WINDOW,
     pub rows    : i32,
@@ -111,11 +112,12 @@ impl JoshutoWindow {
         ncurses::waddstr(self.win, "\n");
     }
 
-    pub fn display_contents(&self, dir_contents: &Vec<fs::DirEntry>,
-            index : usize) {
+    pub fn display_contents(&self, entry : &JoshutoDirEntry) {
+        let index = entry.index;
+        let dir_contents = entry.contents.as_ref().unwrap();
         let vec_len = dir_contents.len();
         if vec_len == 0 {
-            joshuto::wprintmsg(self, "empty");
+            ui::wprintmsg(self, "empty");
             return;
         }
 
@@ -137,7 +139,7 @@ impl JoshutoWindow {
             end = start + self.rows as usize;
         }
 
-        ncurses::wclear(self.win);
+        ncurses::werase(self.win);
         ncurses::wmove(self.win, 0, 0);
 
         for i in start..end {
@@ -153,6 +155,7 @@ impl JoshutoWindow {
     }
 }
 
+#[derive(Debug)]
 pub struct JoshutoView {
     pub top_win : JoshutoWindow,
     pub left_win : JoshutoWindow,
@@ -171,7 +174,6 @@ impl JoshutoView {
 
         let term_divide : i32 = term_cols / 7;
         let top_win = JoshutoWindow::new(1, term_cols, (0, 0));
-        ncurses::scrollok(top_win.win, true);
 
         let left_win = JoshutoWindow::new(term_rows - 2,
             term_divide * win_ratio.0, (1, 0));
@@ -182,6 +184,20 @@ impl JoshutoView {
         let right_win = JoshutoWindow::new(term_rows - 2,
             term_divide * 3, (1, term_divide * win_ratio.2));
         let bot_win = JoshutoWindow::new(1, term_cols, (term_rows - 1, 0));
+
+        ncurses::leaveok(top_win.win, true);
+        ncurses::leaveok(left_win.win, true);
+        ncurses::leaveok(mid_win.win, true);
+        ncurses::leaveok(right_win.win, true);
+
+/*
+        ncurses::scrollok(top_win.win, true);
+        ncurses::scrollok(left_win.win, true);
+        ncurses::scrollok(mid_win.win, true);
+        ncurses::scrollok(right_win.win, true);
+        ncurses::idlok(left_win.win, true);
+        ncurses::idlok(mid_win.win, true);
+        ncurses::idlok(right_win.win, true); */
 
         ncurses::refresh();
 
@@ -217,6 +233,44 @@ impl JoshutoView {
     }
 }
 
+
+fn list_dirent(path : &path::Path) -> Result<Vec<fs::DirEntry>, std::io::Error>
+{
+    match fs::read_dir(path) {
+        Ok(results) => {
+            let mut result_vec : Vec<fs::DirEntry> = results
+                    .filter_map(sort::filter_func_hidden_files)
+                    .collect();
+            Ok(result_vec)
+        },
+        Err(e) => {
+            Err(e)
+        },
+    }
+}
+
+fn list_dirent_hidden(path : &path::Path) -> Result<Vec<fs::DirEntry>, std::io::Error>
+{
+    match fs::read_dir(path) {
+        Ok(results) => {
+            let results : Result<Vec<fs::DirEntry>, _> = results.collect();
+            results
+        },
+        Err(e) => {
+            Err(e)
+        },
+    }
+}
+
+fn read_dir_list(path : &path::Path, show_hidden : bool) -> Result<Vec<fs::DirEntry>, std::io::Error>
+{
+    if show_hidden {
+        list_dirent_hidden(path)
+    } else {
+        list_dirent(path)
+    }
+}
+
 fn file_attr_apply(win : ncurses::WINDOW, mode : u32,
         file_extension : Option<&ffi::OsStr>,
         func : fn(ncurses::WINDOW, ncurses::NCURSES_ATTR_T) -> i32)
@@ -224,21 +278,21 @@ fn file_attr_apply(win : ncurses::WINDOW, mode : u32,
     match mode & unix::BITMASK {
         unix::S_IFDIR => {
             func(win, ncurses::A_BOLD());
-            func(win, ncurses::COLOR_PAIR(joshuto::DIR_COLOR));
+            func(win, ncurses::COLOR_PAIR(ui::DIR_COLOR));
         },
         unix::S_IFLNK | unix::S_IFCHR | unix::S_IFBLK
          => {
             func(win, ncurses::A_BOLD());
-            func(win, ncurses::COLOR_PAIR(joshuto::SOCK_COLOR));
+            func(win, ncurses::COLOR_PAIR(ui::SOCK_COLOR));
         },
         unix::S_IFSOCK | unix::S_IFIFO => {
             func(win, ncurses::A_BOLD());
-            func(win, ncurses::COLOR_PAIR(joshuto::SOCK_COLOR));
+            func(win, ncurses::COLOR_PAIR(ui::SOCK_COLOR));
         },
         unix::S_IFREG => {
             if unix::is_executable(mode) == true {
                 func(win, ncurses::A_BOLD());
-                func(win, ncurses::COLOR_PAIR(joshuto::EXEC_COLOR));
+                func(win, ncurses::COLOR_PAIR(ui::EXEC_COLOR));
             }
             else if let Some(extension) = file_extension {
                 if let Some(ext) = extension.to_str() {
@@ -255,11 +309,11 @@ fn file_ext_attr_apply(win : ncurses::WINDOW, ext : &str,
 {
     match ext {
         "png" | "jpg" | "jpeg" | "gif" => {
-            func(win, ncurses::COLOR_PAIR(joshuto::IMG_COLOR));
+            func(win, ncurses::COLOR_PAIR(ui::IMG_COLOR));
         },
         "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" |
         "m4a" => {
-            func(win, ncurses::COLOR_PAIR(joshuto::VID_COLOR));
+            func(win, ncurses::COLOR_PAIR(ui::VID_COLOR));
         },
         _ => {},
     }
