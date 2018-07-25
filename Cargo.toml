@@ -15,3 +15,6 @@ xdg = "2.1.0"
 [dependencies.ncurses]
 version = "5.93.0"
 features = [ "extended_colors" ]
+
+[features]
+default = []
