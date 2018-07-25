@@ -285,20 +285,25 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
             ncurses::doupdate();
 
         } else if ch == ncurses::KEY_LEFT {
-            let tmp_key : String = format!("{}",
-                                        curr_path.as_path()
-                                                 .to_str().unwrap()
-                                    );
-
             if curr_path.pop() == false {
                 continue;
             }
 
             match env::set_current_dir(curr_path.as_path()) {
                 Ok(_s) => {
-                    // eprintln!("LEFT Storing: {}, {:?}", tmp_key, curr_view.as_ref().unwrap().contents.as_ref().unwrap());
                     match preview_view {
-                        Some(s) => { history.insert(tmp_key, s); },
+                        Some(s) => {
+                            let index = curr_view.as_ref().unwrap().index;
+                            let path = &curr_view.as_ref().unwrap()
+                                                .contents.as_ref()
+                                                .unwrap()[index].path();
+
+                            let tmp_key : String = format!("{}", path.as_path().to_str().unwrap());
+
+                          //  eprintln!("left: {}", tmp_key);
+                          //  eprintln!("inserting: {:?}", s.contents.as_ref().unwrap());
+                            history.insert(tmp_key, s);
+                        },
                         None => {},
                     };
 
@@ -339,18 +344,30 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
             if path.is_dir() {
                 match env::set_current_dir(&path) {
                     Ok(_s) => {
-                        let tmp_key : String = format!("{}", curr_path.as_path().parent().unwrap().to_str().unwrap());
+                        match parent_view {
+                            Some(s) => {
+                                let tmp_key : String = format!("{}", curr_path.as_path().parent().unwrap()
+                                        .to_str().unwrap());
+                            //    eprintln!("right: {}", tmp_key);
+                            //    eprintln!("inserting: {:?}", s.contents.as_ref().unwrap());
+                                history.insert(tmp_key, s);
+                            },
+                            None => {},
+                        };
 
                         curr_path.push(path.file_name().unwrap().to_str().unwrap());
 
-                        history.insert(tmp_key, parent_view.unwrap());
                         parent_view = curr_view;
                         curr_view = preview_view;
                         preview_view = None;
 
-                        joshuto_view.left_win.display_contents(
-                            parent_view.as_ref().unwrap());
-                        ncurses::wnoutrefresh(joshuto_view.left_win.win);
+                        match parent_view.as_ref() {
+                            Some(s) => {
+                                joshuto_view.left_win.display_contents(s);
+                                ncurses::wnoutrefresh(joshuto_view.left_win.win);
+                            },
+                            None => {},
+                        };
                         joshuto_view.mid_win.display_contents(
                             curr_view.as_ref().unwrap());
                         ncurses::wnoutrefresh(joshuto_view.mid_win.win);
@@ -374,6 +391,8 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                             ncurses::werase(joshuto_view.right_win.win);
                             ncurses::wnoutrefresh(joshuto_view.right_win.win);
                         }
+                        ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
+                                &curr_path);
                         ncurses::doupdate();
                     }
                     Err(e) => {
@@ -384,6 +403,7 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
         } else {
             eprintln!("Unknown keychar: ({}: {})", ch, ch as u8 as char);
         }
+        // eprintln!("{:?}\n\n", history);
     }
     ncurses::endwin();
 }
