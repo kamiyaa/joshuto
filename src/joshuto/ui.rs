@@ -4,7 +4,6 @@ use std;
 use std::fs;
 use std::path;
 
-use joshuto;
 use joshuto::structs;
 use joshuto::unix;
 
@@ -75,25 +74,7 @@ pub fn wprint_path(win : &structs::JoshutoWindow, username : &str,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_pdir(win : &structs::JoshutoWindow, path : &path::PathBuf,
-        index : usize, 
-        sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
-        show_hidden : bool)
-{
-    ncurses::werase(win.win);
-    if let Some(ppath) = path.parent() {
-        match joshuto::read_dir_list(ppath.to_str().unwrap(), show_hidden) {
-            Ok(mut dir_contents) => {
-                dir_contents.sort_by(sort_func);
-                // win.display_contents(&dir_contents, index);
-            },
-            Err(e) => {
-                wprintmsg(win, format!("{}", e).as_str());
-            },
-        };
-    }
-}
-
+/*
 pub fn wprint_file_preview(win : &structs::JoshutoWindow,
         direntry : &fs::DirEntry,
         sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
@@ -111,7 +92,7 @@ pub fn wprint_file_preview(win : &structs::JoshutoWindow,
                 match joshuto::read_dir_list(&direntry.path().to_str().unwrap(), show_hidden) {
                     Ok(mut dir_contents) => {
                         dir_contents.sort_by(sort_func);
-                        // win.display_contents(&dir_contents, 0);
+                    //    win.display_contents(&dir_contents, 0);
                     },
                     Err(e) => {
                         wprintmsg(&win, format!("{}", e).as_str());
@@ -164,7 +145,7 @@ pub fn wprint_file_preview(win : &structs::JoshutoWindow,
         }
     }
     ncurses::wnoutrefresh(win.win);
-}
+}*/
 
 pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
 {
@@ -179,10 +160,6 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
         Ok(metadata) => {
             let permissions : fs::Permissions = metadata.permissions();
             let mode = permissions.mode();
-            ncurses::wprintw(win, format!("{:?}", mode).as_str());
-            ncurses::wprintw(win, " ");
-            ncurses::wprintw(win, unix::stringify_mode(mode).as_str());
-            ncurses::wprintw(win, "  ");
 
             let mut file_size = metadata.len();
             let mut index = 0;
@@ -190,7 +167,11 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
                 file_size = file_size / CONV_RATE;
                 index += 1;
             }
-            ncurses::wprintw(win, format!("{} {}", file_size, FILE_UNITS[index]).as_str());
+
+            ncurses::wprintw(win,
+                format!("{:?} {}  {} {}", mode, unix::stringify_mode(mode),
+                    file_size, FILE_UNITS[index]).as_str()
+                );
         },
         Err(e) => {
             ncurses::wprintw(win, format!("{:?}", e).as_str());
