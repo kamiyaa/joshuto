@@ -16,13 +16,13 @@ pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoDirEntry>,
         return None;
     }
     let key = format!("{}", path.to_str().unwrap());
-    eprintln!("Looking for {} in map...", key);
+//  eprintln!("Looking for {} in map...", key);
     match map.entry(key) {
         Entry::Occupied(entry) => {
             Some(entry.remove_entry().1)
         },
         Entry::Vacant(_entry) => {
-            eprintln!("did not find value, creating new one...");
+//            eprintln!("did not find value, creating new one...");
             match structs::JoshutoDirEntry::new(&path, sort_func, show_hidden) {
                 Ok(s) => { Some(s) },
                 Err(e) => {
