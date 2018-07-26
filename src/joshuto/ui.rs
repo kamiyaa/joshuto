@@ -1,6 +1,5 @@
 extern crate ncurses;
 
-use std;
 use std::fs;
 use std::path;
 
