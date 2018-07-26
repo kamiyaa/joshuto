@@ -52,6 +52,7 @@ pub fn wprintmsg(win : &structs::JoshutoWindow, err_msg : &str)
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::mvwprintw(win.win, 0, 0, err_msg);
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
+    ncurses::wnoutrefresh(win.win);
 }
 
 pub fn wprint_path(win : &structs::JoshutoWindow, username : &str,

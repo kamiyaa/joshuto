@@ -180,7 +180,8 @@ pub fn run(config : &mut JoshutoConfig)
             if curr_view.as_ref().unwrap().index == 0 {
                 continue;
             }
-curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
+            curr_view.as_mut().unwrap().index =
+                    curr_view.as_ref().unwrap().index - 1;
 
             let index : usize = curr_view.as_ref().unwrap().index;
             let old_path = &curr_view.as_ref().unwrap()
@@ -262,7 +263,6 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                     Ok(s) => { Some(s) },
                     Err(e) => {
                         ui::wprintmsg(&joshuto_view.right_win, format!("{}", e).as_str());
-                        ncurses::wnoutrefresh(joshuto_view.right_win.win);
                         None
                     },
                 };
@@ -279,7 +279,6 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                 preview_view = None;
                 ncurses::werase(joshuto_view.right_win.win);
                 ui::wprintmsg(&joshuto_view.right_win, "Not a directory");
-                ncurses::wnoutrefresh(joshuto_view.right_win.win);
             }
 
             joshuto_view.mid_win.display_contents(curr_view.as_ref().unwrap());
@@ -330,7 +329,6 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                         Ok(s) => { Some(s) },
                         Err(e) => {
                             ui::wprintmsg(&joshuto_view.left_win, format!("{}", e).as_str());
-                            ncurses::wnoutrefresh(joshuto_view.left_win.win);
                             None
                         },
                     };
@@ -348,6 +346,10 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
             ncurses::doupdate();
 
         } else if ch == ncurses::KEY_RIGHT || ch == ENTER {
+            if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
+                continue;
+            }
+
             let index = curr_view.as_ref().unwrap().index;
             let path = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
@@ -359,8 +361,6 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                             Some(s) => {
                                 let tmp_key : String = format!("{}", curr_path.as_path().parent().unwrap()
                                         .to_str().unwrap());
-                            //    eprintln!("right: {}", tmp_key);
-                            //    eprintln!("inserting: {:?}", s.contents.as_ref().unwrap());
                                 history.insert(tmp_key, s);
                             },
                             None => {},
@@ -383,7 +383,18 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                             curr_view.as_ref().unwrap());
                         ncurses::wnoutrefresh(joshuto_view.mid_win.win);
 
+                        if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
+                            ncurses::werase(joshuto_view.right_win.win);
+                            ncurses::wnoutrefresh(joshuto_view.right_win.win);
+
+                            ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
+                                    &curr_path);
+                            ncurses::doupdate();
+                            continue;
+                        }
+
                         let index : usize = curr_view.as_ref().unwrap().index;
+
                         let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
                                                         .contents.as_ref().unwrap()[index];
                         let new_path = dirent.path();
@@ -393,7 +404,6 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                                 Ok(s) => { Some(s) },
                                 Err(e) => {
                                     ui::wprintmsg(&joshuto_view.right_win, format!("{}", e).as_str());
-                                    ncurses::wnoutrefresh(joshuto_view.right_win.win);
                                     None
                                 },
                             };
@@ -406,14 +416,11 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                             };
                             ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
                         } else {
-                            preview_view = None;
                             ncurses::werase(joshuto_view.right_win.win);
                             ui::wprintmsg(&joshuto_view.right_win, "Not a directory");
-                            ncurses::wnoutrefresh(joshuto_view.right_win.win);
                         }
                         ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
                                 &curr_path);
-                        ncurses::doupdate();
                     }
                     Err(e) => {
                         eprintln!("{}", e);
@@ -441,6 +448,7 @@ curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index - 1;
                     ui::wprintmsg(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
                 }
             }
+            ncurses::doupdate();
         } else {
             eprintln!("Unknown keychar: ({}: {})", ch, ch as u8 as char);
         }
