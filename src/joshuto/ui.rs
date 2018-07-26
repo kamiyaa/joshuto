@@ -178,4 +178,3 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     };
     ncurses::wnoutrefresh(win);
 }
-
