@@ -8,5 +8,5 @@ See `Cargo.toml`
 ## Installation
 ```
 $ cargo build
-# cargo install --root=/usr/local
+# cargo install --root=/usr/local --force
 ```
