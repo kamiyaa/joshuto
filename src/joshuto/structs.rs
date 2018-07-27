@@ -13,7 +13,7 @@ use joshuto::unix;
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
     pub index : usize,
-    pub update : bool,
+    pub need_update : bool,
     pub modified : time::SystemTime,
     pub contents : Option<Vec<fs::DirEntry>>,
 }
@@ -27,12 +27,11 @@ impl JoshutoDirEntry {
         let mut dir_contents : Vec<fs::DirEntry> = read_dir_list(path, show_hidden)?;
         dir_contents.sort_by(&sort_func);
 
-        let file = fs::File::open(&path)?;
-        let modified = file.metadata()?.modified()?;
+        let modified = std::fs::metadata(&path)?.modified()?;
 
         Ok(JoshutoDirEntry {
             index: 0,
-            update : false,
+            need_update : false,
             modified: modified,
             contents: Some(dir_contents),
         })
@@ -42,7 +41,7 @@ impl JoshutoDirEntry {
         sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
         show_hidden : bool)
     {
-        self.update = false;
+        self.need_update = false;
         self.index = 0;
 
         if let Ok(mut dir_contents) = read_dir_list(path, show_hidden) {
