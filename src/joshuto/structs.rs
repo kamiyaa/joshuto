@@ -4,6 +4,7 @@ use std;
 use std::fs;
 use std::ffi;
 use std::path;
+use std::time;
 
 use joshuto::sort;
 use joshuto::ui;
@@ -12,7 +13,8 @@ use joshuto::unix;
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
     pub index : usize,
-    pub metadata : fs::Metadata,
+    pub update : bool,
+    pub modified : time::SystemTime,
     pub contents : Option<Vec<fs::DirEntry>>,
 }
 
@@ -26,13 +28,35 @@ impl JoshutoDirEntry {
         dir_contents.sort_by(&sort_func);
 
         let file = fs::File::open(&path)?;
-        let metadata = file.metadata()?;
+        let modified = file.metadata()?.modified()?;
 
         Ok(JoshutoDirEntry {
             index: 0,
-            metadata: metadata,
+            update : false,
+            modified: modified,
             contents: Some(dir_contents),
         })
+    }
+
+    pub fn update(&mut self, path : &path::Path,
+        sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
+        show_hidden : bool)
+    {
+        self.update = false;
+        self.index = 0;
+
+        if let Ok(mut dir_contents) = read_dir_list(path, show_hidden) {
+            dir_contents.sort_by(&sort_func);
+
+            self.contents = Some(dir_contents);
+        }
+
+        if let Ok(metadata) = std::fs::metadata(&path) {
+            match metadata.modified() {
+                Ok(s) => { self.modified = s; },
+                Err(e) => { eprintln!("{}", e); },
+            };
+        }
     }
 }
 

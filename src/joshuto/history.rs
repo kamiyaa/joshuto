@@ -24,3 +24,11 @@ pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoDirEntry>,
         }
     }
 }
+
+pub fn depecrate_all_entries(map : &mut HashMap<String, structs::JoshutoDirEntry>)
+{
+    for (_, direntry) in map.iter_mut() {
+        direntry.update = true;
+    }
+
+}
