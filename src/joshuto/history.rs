@@ -16,7 +16,19 @@ pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoDirEntry>,
 //  eprintln!("Looking for {} in map...", key);
     match map.entry(key) {
         Entry::Occupied(entry) => {
-            Ok(entry.remove_entry().1)
+            let tmp = entry.remove_entry();
+
+            let metadata = fs::metadata(&path)?;
+            let mut dir_entry = tmp.1;
+            let modified = metadata.modified()?;
+            if modified > dir_entry.modified {
+                dir_entry.modified = modified;
+                dir_entry.need_update = true;
+            }
+            if dir_entry.need_update {
+                dir_entry.update(&path, sort_func, show_hidden);
+            }
+            Ok(dir_entry)
         },
         Entry::Vacant(_entry) => {
 //            eprintln!("did not find value, creating new one...");
@@ -28,7 +40,7 @@ pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoDirEntry>,
 pub fn depecrate_all_entries(map : &mut HashMap<String, structs::JoshutoDirEntry>)
 {
     for (_, direntry) in map.iter_mut() {
-        direntry.update = true;
+        direntry.need_update = true;
     }
 
 }
