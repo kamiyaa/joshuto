@@ -36,6 +36,65 @@ pub fn parse_sort_func(sort_method : &Option<String>)
     }
 }
 
+pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
+        joshuto_view : &structs::JoshutoView,
+        curr : &structs::JoshutoDirEntry, preview_view : Option<structs::JoshutoDirEntry>,
+        sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
+        show_hidden : bool, offset : i32) -> Option<structs::JoshutoDirEntry>
+{
+    let index : usize = curr.index;
+    let old_path = &curr.contents.as_ref().unwrap()[(index as i32 - offset) as usize].path();
+    let dirent : &fs::DirEntry = &curr.contents.as_ref().unwrap()[index];
+
+    let new_path = dirent.path();
+
+    let old_osstr = match old_path.to_str() {
+            Some(s) => s,
+            None => return None,
+        };
+
+    let tmp_key : String = format!("{}", old_osstr);
+
+    match preview_view {
+        Some(s) => { history.insert(tmp_key, s); },
+        None => {},
+    };
+
+
+    let preview : Option<structs::JoshutoDirEntry>;
+    if new_path.is_dir() {
+        preview = match history::get_or_create(history, new_path.as_path(), sort_func, show_hidden) {
+            Ok(s) => { Some(s) },
+            Err(e) => {
+                ui::wprintmsg(&joshuto_view.right_win, format!("{}", e).as_str());
+                ncurses::wnoutrefresh(joshuto_view.right_win.win);
+                None
+            },
+        };
+
+        match preview.as_ref() {
+            Some(s) => {
+                joshuto_view.right_win.display_contents(&s);
+                ncurses::wnoutrefresh(joshuto_view.right_win.win);
+            },
+            None => {},
+        };
+        ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+    } else {
+        preview = None;
+        ncurses::werase(joshuto_view.right_win.win);
+        ui::wprintmsg(&joshuto_view.right_win, "Not a directory");
+        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+    }
+
+    joshuto_view.mid_win.display_contents(curr);
+    ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+
+    ncurses::doupdate();
+
+    preview
+}
+
 pub fn run(config : &mut JoshutoConfig)
 {
     ui::init_ncurses();
@@ -183,109 +242,20 @@ pub fn run(config : &mut JoshutoConfig)
             curr_view.as_mut().unwrap().index =
                     curr_view.as_ref().unwrap().index - 1;
 
-            let index : usize = curr_view.as_ref().unwrap().index;
-            let old_path = &curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[index+1].path();
-            let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
-                                            .contents.as_ref().unwrap()[index];
-            let new_path = dirent.path();
-
-            let old_osstr = match old_path.to_str() {
-                    Some(s) => s,
-                    None => continue,
-                };
-
-            let tmp_key : String = format!("{}", old_osstr);
-
-            match preview_view {
-                Some(s) => { history.insert(tmp_key, s); },
-                None => {},
-            };
-
-            if new_path.is_dir() {
-                preview_view = match history::get_or_create(&mut history, new_path.as_path(), sort_func, show_hidden) {
-                    Ok(s) => { Some(s) },
-                    Err(e) => {
-                        ui::wprintmsg(&joshuto_view.right_win, format!("{}", e).as_str());
-                        ncurses::wnoutrefresh(joshuto_view.right_win.win);
-                        None
-                    },
-                };
-
-                match preview_view.as_ref() {
-                    Some(s) => {
-                        joshuto_view.right_win.display_contents(&s);
-                        ncurses::wnoutrefresh(joshuto_view.right_win.win);
-                    },
-                    None => {},
-                };
-                ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
-            } else {
-                preview_view = None;
-                ncurses::werase(joshuto_view.right_win.win);
-                ui::wprintmsg(&joshuto_view.right_win, "Not a directory");
-                ncurses::wnoutrefresh(joshuto_view.right_win.win);
-            }
-
-            joshuto_view.mid_win.display_contents(curr_view.as_ref().unwrap());
-            // ncurses::wscrl(joshuto_view.mid_win.win, -1);
-            ncurses::wnoutrefresh(joshuto_view.mid_win.win);
-
-            ncurses::doupdate();
+            preview_view = updown(&mut history, &joshuto_view,
+                    curr_view.as_ref().unwrap(), preview_view, sort_func,
+                    show_hidden, -1);
 
         } else if ch == ncurses::KEY_DOWN {
             if curr_view.as_ref().unwrap().index + 1 >= curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() {
                 continue;
             }
-            curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index + 1;
+            curr_view.as_mut().unwrap().index =
+                curr_view.as_ref().unwrap().index + 1;
 
-            let index : usize = curr_view.as_ref().unwrap().index;
-            let old_path = &curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[index-1].path();
-            let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
-                                            .contents.as_ref().unwrap()[index];
-            let new_path = dirent.path();
-
-            let old_osstr = match old_path.to_str() {
-                    Some(s) => s,
-                    None => continue,
-                };
-
-            let tmp_key : String = format!("{}", old_osstr);
-
-            match preview_view {
-                Some(s) => { history.insert(tmp_key, s); },
-                None => {},
-            };
-
-            if new_path.is_dir() {
-                preview_view = match history::get_or_create(&mut history, new_path.as_path(), sort_func, show_hidden) {
-                    Ok(s) => { Some(s) },
-                    Err(e) => {
-                        ui::wprintmsg(&joshuto_view.right_win, format!("{}", e).as_str());
-                        None
-                    },
-                };
-
-                match preview_view.as_ref() {
-                    Some(s) => {
-                        joshuto_view.right_win.display_contents(&s);
-                        ncurses::wnoutrefresh(joshuto_view.right_win.win);
-                    },
-                    None => {},
-                };
-                ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
-            } else {
-                preview_view = None;
-                ncurses::werase(joshuto_view.right_win.win);
-                ui::wprintmsg(&joshuto_view.right_win, "Not a directory");
-            }
-
-            joshuto_view.mid_win.display_contents(curr_view.as_ref().unwrap());
-            // ncurses::wscrl(joshuto_view.mid_win.win, -1);
-            ncurses::wnoutrefresh(joshuto_view.mid_win.win);
-
-            ncurses::doupdate();
+            preview_view = updown(&mut history, &joshuto_view,
+                    curr_view.as_ref().unwrap(), preview_view, sort_func,
+                    show_hidden, 1);
 
         } else if ch == ncurses::KEY_LEFT {
             if curr_path.pop() == false {
@@ -449,7 +419,26 @@ pub fn run(config : &mut JoshutoConfig)
                 }
             }
             ncurses::doupdate();
-        } else {
+        } /* else if ch == 'z' as i32 {
+            history::depecrate_all_entries(&mut history);
+            curr_view.unwrap().update(&curr_path, sort_func, show_hidden);
+            if curr_path.parent() != None {
+                match parent_view {
+                    Some(mut s) => { s.update(curr_path.parent().unwrap(), sort_func, show_hidden); },
+                    None => {},
+                }
+            }
+            if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
+                let index : usize = curr_view.as_ref().unwrap().index;
+                let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
+                                .contents.as_ref().unwrap()[index];
+
+                match preview_view {
+                    Some(mut s) => { s.update(dirent.path().as_path(), sort_func, show_hidden); },
+                    None => {},
+                }
+            }
+        } */ else {
             eprintln!("Unknown keychar: ({}: {})", ch, ch as u8 as char);
         }
         // eprintln!("{:?}\n\n", history);
