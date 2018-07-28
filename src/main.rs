@@ -5,6 +5,7 @@ extern crate ncurses;
 extern crate toml;
 extern crate xdg;
 
+use std::collections::BTreeMap;
 use std::env;
 use std::fs;
 
@@ -28,7 +29,7 @@ pub struct JoshutoConfig {
     color_scheme: Option<String>,
     sort_method: Option<String>,
 //    keymaps: Option<JoshutoKeymaps>,
-    mimetypes: Option<toml::value::Table>,
+    mimetypes: Option<BTreeMap<String, Vec<String>>>,
 }
 
 #[derive(Debug, Deserialize)]

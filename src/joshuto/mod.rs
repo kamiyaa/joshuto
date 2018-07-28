@@ -390,15 +390,26 @@ pub fn run(config : &mut JoshutoConfig)
                                                 .contents.as_ref().unwrap()[index];
                 let mime_type : String =
                     unix::get_mime_type(&dirent);
+
+                /* check if there is a BTreeMap of programs to execute */
                 if let Some(mime_map) = &config.mimetypes {
-                    if let Some(mime_exec) = unix::get_exec_program(mime_type.as_str(), &mime_map) {
-                        let mut arg_list : Vec<String> = Vec::new();
-                        arg_list.push(dirent.file_name().into_string().unwrap());
-                        ncurses::savetty();
-                        ncurses::endwin();
-                        unix::exec_with(mime_exec, arg_list);
-                        ncurses::resetty();
-                        ncurses::refresh();
+                    if let Some(mime_args) = unix::get_exec_program(mime_type.as_str(), mime_map) {
+                        let mime_args_len = mime_args.len();
+                        if mime_args_len > 0 {
+                            let program_name = mime_args[0].clone();
+
+                            let mut args_list : Vec<String> = Vec::with_capacity(mime_args_len);
+                            for i in 1..mime_args_len {
+                                args_list.push(mime_args[i].clone());
+                            }
+                            args_list.push(dirent.file_name().into_string().unwrap());
+
+                            ncurses::savetty();
+                            ncurses::endwin();
+                            unix::exec_with(program_name, args_list);
+                            ncurses::resetty();
+                            ncurses::refresh();
+                        }
                     } else {
                         ui::wprintmsg(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
                     }

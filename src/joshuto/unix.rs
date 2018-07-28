@@ -21,17 +21,9 @@ pub fn get_mime_type(direntry : &fs::DirEntry) -> String
 }
 
 pub fn get_exec_program<'a>(mime_type : &str,
-        map : &'a BTreeMap<String, toml::Value>) -> Option<String>
+        map : &'a BTreeMap<String, Vec<String>>) -> Option<&'a Vec<String>>
 {
-    if let Some(mime_value) = map.get(mime_type) {
-        if let Some(mime_str) = mime_value.as_str() {
-            return Some(String::from(mime_str));
-        } else {
-            return None;
-        }
-    } else {
-        return None;
-    }
+    map.get(mime_type)
 }
 
 pub fn exec_with(program : String, args : Vec<String>)
