@@ -254,6 +254,19 @@ pub fn run(config : &mut JoshutoConfig)
                     curr_view.as_ref().unwrap(), preview_view, sort_func,
                     show_hidden, 1);
 
+        } else if ch == ncurses::KEY_HOME {
+            if curr_view.as_ref().unwrap().index == 0 {
+                continue;
+            }
+            curr_view.as_mut().unwrap().index = 0;
+
+        } else if ch == ncurses::KEY_END {
+            if curr_view.as_ref().unwrap().index == curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() - 1 {
+                continue;
+            }
+            curr_view.as_mut().unwrap().index =
+                curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() - 1;
+
         } else if ch == ncurses::KEY_LEFT {
             if curr_path.pop() == false {
                 continue;
@@ -437,8 +450,31 @@ pub fn run(config : &mut JoshutoConfig)
 
                 preview_view.unwrap().update(dirent.path().as_path(), sort_func, show_hidden);
             }*/
+        } else if ch == 330 { // delete button
+            if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
+                continue;
+            }
+            let index = curr_view.as_ref().unwrap().index;
+            let path = &curr_view.as_ref().unwrap()
+                                .contents.as_ref()
+                                .unwrap()[index].path();
+            let name = &curr_view.as_ref().unwrap()
+                                .contents.as_ref()
+                                .unwrap()[index].file_name();
+            ui::wprintmsg(&joshuto_view.bot_win,
+                format!("Delete {:?}? (y/n)", name).as_str());
+            ncurses::doupdate();
+            let ch2 = ncurses::getch();
+            if ch2 == 'y' as i32 {
+                std::fs::remove_file(path);
+                curr_view.as_mut().unwrap().update(&curr_path, sort_func, show_hidden);
+                joshuto_view.mid_win.display_contents(curr_view.as_ref().unwrap());
+                ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+            }
+            ncurses::doupdate();
         } else {
-            eprintln!("Unknown keychar: ({}: {})", ch, ch as u8 as char);
+            ui::wprintmsg(&joshuto_view.bot_win,
+                format!("Unknown keychar: ({}: {})", ch, ch as u8 as char).as_str());
         }
         // eprintln!("{:?}\n\n", history);
     }

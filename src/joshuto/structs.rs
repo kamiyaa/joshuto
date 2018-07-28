@@ -41,13 +41,21 @@ impl JoshutoDirEntry {
         sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
         show_hidden : bool)
     {
+        use std::os::linux::fs::MetadataExt;
+
         self.need_update = false;
-        self.index = 0;
+
+        let inode : u64;
 
         if let Ok(mut dir_contents) = read_dir_list(path, show_hidden) {
             dir_contents.sort_by(&sort_func);
 
             self.contents = Some(dir_contents);
+        }
+
+        if self.index >= self.contents.as_ref().unwrap().len() {
+            self.index = self.contents.as_ref().unwrap().len() - 1;
+
         }
 
         if let Ok(metadata) = std::fs::metadata(&path) {
