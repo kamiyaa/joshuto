@@ -2,9 +2,12 @@ show_hidden = true
 # sort_method options: size, natural, basename, atime, ctime, mtime, type, random
 sort_method = "natural"
 
+scroll_offset = 8
+
 [mimetypes]
-"application/x-matroska"    = "mpv"
-"application/x-shellscript" = "nano"
-"image/jpeg"                = "feh"
-"image/png"                 = "feh"
-"text/plain"                = "nano"
+"application/x-matroska"	= [ "mpv" ]
+"application/x-shellscript"	= [ "nano" ]
+"image/jpeg"			= [ "feh" ]
+"image/png"			= [ "feh", "-F" ]
+"text/plain"			= [ "nano" ]
+"text/x-csrc"			= [ "nano" ]
