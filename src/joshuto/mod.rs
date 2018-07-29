@@ -25,13 +25,13 @@ pub fn parse_sort_func(sort_method : &Option<String>)
     match sort_method {
         Some(ref method) => {
             if method == "natural" {
-                sort::alpha_sort
+                sort::sort_dir_first
             } else {
-                sort::alpha_sort
+                sort::sort_dir_first
             }
         },
         None => {
-            sort::alpha_sort
+            sort::sort_dir_first
         }
     }
 }
@@ -164,19 +164,22 @@ pub fn run(config : &mut JoshutoConfig)
         ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
 
         let preview_path = dirent.path();
-        preview_view = match structs::JoshutoDirEntry::new(&preview_path, sort_func, show_hidden) {
-            Ok(s) => { Some(s) },
-            Err(e) => {
-                eprintln!("{}", e);
-                None
-            },
-        };
-        ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
-                &preview_path);
+        if preview_path.is_dir() {
+            preview_view = match structs::JoshutoDirEntry::new(&preview_path, sort_func, show_hidden) {
+                Ok(s) => { Some(s) },
+                Err(e) => {
+                    eprintln!("{}", e);
+                    None
+                },
+            };
+            ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
+                    &preview_path);
+        } else {
+            preview_view = None;
+        }
     } else {
         preview_view = None;
     }
-
 
     if let Some(s) = parent_view.as_ref() {
         joshuto_view.left_win.display_contents(&s);

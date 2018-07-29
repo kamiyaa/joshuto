@@ -102,7 +102,7 @@ impl JoshutoWindow {
             return;
         }
 
-        let offset : usize = 5;
+        let offset : usize = 8;
         let start : usize;
         let end : usize;
 
