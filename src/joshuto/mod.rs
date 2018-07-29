@@ -38,14 +38,14 @@ pub fn parse_sort_func(sort_method : &Option<String>)
 
 pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
         joshuto_view : &structs::JoshutoView,
-        curr : &structs::JoshutoDirEntry, preview_view : Option<structs::JoshutoDirEntry>,
+        old_path : &path::Path,
+        curr : &structs::JoshutoDirEntry,
+        preview_view : Option<structs::JoshutoDirEntry>,
         sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
-        show_hidden : bool, offset : i32) -> Option<structs::JoshutoDirEntry>
+        show_hidden : bool) -> Option<structs::JoshutoDirEntry>
 {
     let index : usize = curr.index;
-    let old_path = &curr.contents.as_ref().unwrap()[(index as i32 - offset) as usize].path();
     let dirent : &fs::DirEntry = &curr.contents.as_ref().unwrap()[index];
-
     let new_path = dirent.path();
 
     let old_osstr = match old_path.to_str() {
@@ -112,9 +112,9 @@ pub fn run(config : &mut JoshutoConfig)
             None => false,
         };
 
-    /* keep track of */
+    /* keep track of where we are in directories */
     let mut history : HashMap<String, structs::JoshutoDirEntry>
-        = HashMap::new();
+            = history::init_path_history(sort_func, show_hidden);
 
     let mut curr_path : path::PathBuf =
         match env::current_dir() {
@@ -137,7 +137,7 @@ pub fn run(config : &mut JoshutoConfig)
     let mut parent_view : Option<structs::JoshutoDirEntry> =
         match curr_path.parent() {
             Some(parent) => {
-                match structs::JoshutoDirEntry::new(&parent, sort_func, show_hidden) {
+                match history::get_or_create(&mut history, &parent, sort_func, show_hidden) {
                     Ok(s) => { Some(s) },
                     Err(e) => {
                         eprintln!("{}", e);
@@ -233,39 +233,70 @@ pub fn run(config : &mut JoshutoConfig)
             ncurses::doupdate();
 
         } else if ch == ncurses::KEY_UP {
-            if curr_view.as_ref().unwrap().index == 0 {
+            let curr_index = curr_view.as_ref().unwrap().index;
+            if curr_index == 0 {
                 continue;
             }
+
+            let old_path : path::PathBuf = curr_view.as_ref().unwrap()
+                                .contents.as_ref().unwrap()[curr_index].path();
+
             curr_view.as_mut().unwrap().index =
                     curr_view.as_ref().unwrap().index - 1;
 
-            preview_view = updown(&mut history, &joshuto_view,
-                    curr_view.as_ref().unwrap(), preview_view, sort_func,
-                    show_hidden, -1);
+            preview_view = updown(&mut history, &joshuto_view, &old_path,
+                    curr_view.as_ref().unwrap(), preview_view,
+                    sort_func, show_hidden);
 
         } else if ch == ncurses::KEY_DOWN {
-            if curr_view.as_ref().unwrap().index + 1 >= curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() {
+            let curr_index = curr_view.as_ref().unwrap().index;
+            let dir_len = curr_view.as_ref().unwrap()
+                            .contents.as_ref().unwrap().len();
+
+            if curr_index + 1 >= dir_len {
                 continue;
             }
+            let old_path : path::PathBuf = curr_view.as_ref().unwrap()
+                                .contents.as_ref().unwrap()[curr_index].path();
+
             curr_view.as_mut().unwrap().index =
                 curr_view.as_ref().unwrap().index + 1;
 
-            preview_view = updown(&mut history, &joshuto_view,
-                    curr_view.as_ref().unwrap(), preview_view, sort_func,
-                    show_hidden, 1);
+            preview_view = updown(&mut history, &joshuto_view, &old_path,
+                    curr_view.as_ref().unwrap(), preview_view,
+                    sort_func, show_hidden);
 
         } else if ch == ncurses::KEY_HOME {
-            if curr_view.as_ref().unwrap().index == 0 {
+            let curr_index = curr_view.as_ref().unwrap().index;
+
+            if curr_index == 0 {
                 continue;
             }
+            let old_path : path::PathBuf = curr_view.as_ref().unwrap()
+                                .contents.as_ref().unwrap()[curr_index].path();
+
             curr_view.as_mut().unwrap().index = 0;
 
+            preview_view = updown(&mut history, &joshuto_view, &old_path,
+                    curr_view.as_ref().unwrap(), preview_view,
+                    sort_func, show_hidden);
+
         } else if ch == ncurses::KEY_END {
-            if curr_view.as_ref().unwrap().index == curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() - 1 {
+            let curr_index = curr_view.as_ref().unwrap().index;
+            let dir_len = curr_view.as_ref().unwrap()
+                            .contents.as_ref().unwrap().len();
+
+            if curr_index == dir_len - 1 {
                 continue;
             }
-            curr_view.as_mut().unwrap().index =
-                curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() - 1;
+            let old_path : path::PathBuf = curr_view.as_ref().unwrap()
+                                .contents.as_ref().unwrap()[curr_index].path();
+
+            curr_view.as_mut().unwrap().index = dir_len - 1;
+
+            preview_view = updown(&mut history, &joshuto_view, &old_path,
+                    curr_view.as_ref().unwrap(), preview_view,
+                    sort_func, show_hidden);
 
         } else if ch == ncurses::KEY_LEFT {
             if curr_path.pop() == false {
@@ -306,7 +337,8 @@ pub fn run(config : &mut JoshutoConfig)
                             None
                         },
                     };
-                    joshuto_view.left_win.display_contents(parent_view.as_ref().unwrap());
+                    joshuto_view.left_win.display_contents(
+                            parent_view.as_ref().unwrap());
                     ncurses::wnoutrefresh(joshuto_view.left_win.win);
                 },
                 None => {
@@ -434,22 +466,38 @@ pub fn run(config : &mut JoshutoConfig)
         } else if ch == 'z' as i32 {
 
             let ch2 : i32 = ncurses::getch();
+            /* toggle show hidden */
             if ch2 == 'h' as i32 {
                 show_hidden = !show_hidden;
                 history::depecrate_all_entries(&mut history);
-            }
-/*
-            curr_view.unwrap().update(&curr_path, sort_func, show_hidden);
-            if curr_path.parent() != None {
-                parent_view.unwrap().update(curr_path.parent().unwrap(), sort_func, show_hidden);
-            }
-            if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
-                let index : usize = curr_view.as_ref().unwrap().index;
-                let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[index];
 
-                preview_view.unwrap().update(dirent.path().as_path(), sort_func, show_hidden);
-            }*/
+                match curr_view.as_mut() {
+                    Some(s) => { s.update(&curr_path, sort_func, show_hidden); },
+                    None => {},
+                };
+
+                match parent_view.as_mut() {
+                    Some(s) => {
+                        if curr_path.parent() != None {
+                            s.update(curr_path.parent().unwrap(), sort_func, show_hidden);
+                        }
+                    },
+                    None => {},
+                };
+
+                match preview_view.as_mut() {
+                    Some(s) => {
+                        if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
+                            let index : usize = curr_view.as_ref().unwrap().index;
+                            let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
+                                            .contents.as_ref().unwrap()[index];
+
+                            s.update(dirent.path().as_path(), sort_func, show_hidden);
+                        }
+                    },
+                    None => {},
+                };
+            }
         } else if ch == 330 { // delete button
             if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
                 continue;
@@ -466,10 +514,19 @@ pub fn run(config : &mut JoshutoConfig)
             ncurses::doupdate();
             let ch2 = ncurses::getch();
             if ch2 == 'y' as i32 {
-                std::fs::remove_file(path);
-                curr_view.as_mut().unwrap().update(&curr_path, sort_func, show_hidden);
-                joshuto_view.mid_win.display_contents(curr_view.as_ref().unwrap());
-                ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+                match std::fs::remove_file(path) {
+                    Ok(_s) => {
+                        curr_view.as_mut().unwrap().update(
+                            &curr_path, sort_func, show_hidden);
+                        joshuto_view.mid_win.display_contents(
+                            curr_view.as_ref().unwrap());
+                        ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+                    },
+                    Err(e) => {
+                        ui::wprintmsg(&joshuto_view.bot_win,
+                            format!("{}", e).as_str());
+                    }
+                }
             }
             ncurses::doupdate();
         } else {
