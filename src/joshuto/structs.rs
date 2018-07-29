@@ -2,13 +2,11 @@ extern crate ncurses;
 
 use std;
 use std::fs;
-use std::ffi;
 use std::path;
 use std::time;
 
 use joshuto::sort;
 use joshuto::ui;
-use joshuto::unix;
 
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
@@ -95,55 +93,12 @@ impl JoshutoWindow {
         ncurses::wnoutrefresh(self.win);
     }
 
-    fn print_file(&self, file : &fs::DirEntry)
-    {
-        use std::os::unix::fs::PermissionsExt;
-
-        let mut mode : u32 = 0;
-
-        if let Ok(metadata) = file.metadata() {
-            mode = metadata.permissions().mode();
-        }
-        if mode != 0 {
-            file_attr_apply(self.win, mode, file.path().extension(), ncurses::wattron);
-        }
-
-        match file.file_name().into_string() {
-            Ok(file_name) => {
-                ncurses::wprintw(self.win, " ");
-                if file_name.len() + 1 >= self.cols as usize {
-                    let mut shortened = String::with_capacity(
-                            self.cols as usize - 4);
-                    let mut iter = file_name.chars();
-                    for _i in 0..self.cols - 5 {
-                        if let Some(ch) = iter.next() {
-                            shortened.push(ch);
-                        }
-                    }
-                    ncurses::wprintw(self.win, &shortened);
-                    ncurses::wprintw(self.win, "…");
-                } else {
-                    ncurses::wprintw(self.win, &file_name);
-                }
-            },
-            Err(e) => {
-                ncurses::wprintw(self.win, format!("{:?}", e).as_str());
-            },
-        };
-
-        if mode != 0 {
-            file_attr_apply(self.win, mode, file.path().extension(),
-                    ncurses::wattroff);
-        }
-        ncurses::waddstr(self.win, "\n");
-    }
-
     pub fn display_contents(&self, entry : &JoshutoDirEntry) {
         let index = entry.index;
         let dir_contents = entry.contents.as_ref().unwrap();
         let vec_len = dir_contents.len();
         if vec_len == 0 {
-            ui::wprintmsg(self, "empty");
+            ui::wprint_err(self, "empty");
             return;
         }
 
@@ -171,10 +126,10 @@ impl JoshutoWindow {
         for i in start..end {
             if index == i {
                 ncurses::wattron(self.win, ncurses::A_REVERSE());
-                self.print_file(&dir_contents[i]);
+                ui::wprint_file(self, &dir_contents[i]);
                 ncurses::wattroff(self.win, ncurses::A_REVERSE());
             } else {
-                self.print_file(&dir_contents[i]);
+                ui::wprint_file(self, &dir_contents[i]);
             }
         }
         ncurses::wnoutrefresh(self.win);
@@ -294,53 +249,5 @@ fn read_dir_list(path : &path::Path, show_hidden : bool) -> Result<Vec<fs::DirEn
         list_dirent_hidden(path)
     } else {
         list_dirent(path)
-    }
-}
-
-fn file_attr_apply(win : ncurses::WINDOW, mode : u32,
-        file_extension : Option<&ffi::OsStr>,
-        func : fn(ncurses::WINDOW, ncurses::NCURSES_ATTR_T) -> i32)
-{
-    match mode & unix::BITMASK {
-        unix::S_IFDIR => {
-            func(win, ncurses::A_BOLD());
-            func(win, ncurses::COLOR_PAIR(ui::DIR_COLOR));
-        },
-        unix::S_IFLNK | unix::S_IFCHR | unix::S_IFBLK
-         => {
-            func(win, ncurses::A_BOLD());
-            func(win, ncurses::COLOR_PAIR(ui::SOCK_COLOR));
-        },
-        unix::S_IFSOCK | unix::S_IFIFO => {
-            func(win, ncurses::A_BOLD());
-            func(win, ncurses::COLOR_PAIR(ui::SOCK_COLOR));
-        },
-        unix::S_IFREG => {
-            if unix::is_executable(mode) == true {
-                func(win, ncurses::A_BOLD());
-                func(win, ncurses::COLOR_PAIR(ui::EXEC_COLOR));
-            }
-            else if let Some(extension) = file_extension {
-                if let Some(ext) = extension.to_str() {
-                    file_ext_attr_apply(win, ext, func);
-                }
-            }
-        },
-        _ => {},
-    };
-}
-
-fn file_ext_attr_apply(win : ncurses::WINDOW, ext : &str,
-        func : fn(ncurses::WINDOW, ncurses::NCURSES_ATTR_T) -> i32)
-{
-    match ext {
-        "png" | "jpg" | "jpeg" | "gif" => {
-            func(win, ncurses::COLOR_PAIR(ui::IMG_COLOR));
-        },
-        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" |
-        "m4a" => {
-            func(win, ncurses::COLOR_PAIR(ui::VID_COLOR));
-        },
-        _ => {},
     }
 }

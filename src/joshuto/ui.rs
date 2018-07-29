@@ -1,5 +1,6 @@
 extern crate ncurses;
 
+use std::ffi;
 use std::fs;
 use std::path;
 
@@ -21,7 +22,7 @@ pub fn init_ncurses()
 
     ncurses::initscr();
     ncurses::cbreak();
-    // ncurses::raw();
+    ncurses::raw();
     ncurses::noecho();
 
     ncurses::keypad(ncurses::stdscr(), true);
@@ -46,11 +47,17 @@ pub fn init_ncurses()
     ncurses::refresh();
 }
 
-pub fn wprintmsg(win : &structs::JoshutoWindow, err_msg : &str)
+pub fn wprint_msg(win : &structs::JoshutoWindow, err_msg : &str)
+{
+    ncurses::werase(win.win);
+    ncurses::mvwaddstr(win.win, 0, 0, err_msg);
+    ncurses::wnoutrefresh(win.win);
+}
+pub fn wprint_err(win : &structs::JoshutoWindow, err_msg : &str)
 {
     ncurses::werase(win.win);
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
-    ncurses::mvwprintw(win.win, 0, 0, err_msg);
+    ncurses::mvwaddstr(win.win, 0, 0, err_msg);
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::wnoutrefresh(win.win);
 }
@@ -65,13 +72,106 @@ pub fn wprint_path(win : &structs::JoshutoWindow, username : &str,
         };
     ncurses::wattron(win.win, ncurses::A_BOLD());
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
-    ncurses::mvwprintw(win.win, 0, 0,
+    ncurses::mvwaddstr(win.win, 0, 0,
             format!("{}@{} ", username, hostname).as_str());
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
 
-    ncurses::wprintw(win.win, path_str);
+    ncurses::waddstr(win.win, path_str);
     ncurses::wattroff(win.win, ncurses::A_BOLD());
     ncurses::wnoutrefresh(win.win);
+}
+
+pub fn wprint_file(win : &structs::JoshutoWindow, file : &fs::DirEntry)
+{
+    use std::os::unix::fs::PermissionsExt;
+
+    let mut mode : u32 = 0;
+
+    if let Ok(metadata) = file.metadata() {
+        mode = metadata.permissions().mode();
+    }
+    if mode != 0 {
+        file_attr_apply(win.win, mode, file.path().extension(), ncurses::wattron);
+    }
+
+    match file.file_name().into_string() {
+        Ok(file_name) => {
+            ncurses::waddstr(win.win, " ");
+            if file_name.len() >= win.cols as usize - 2 {
+                let mut shortened = String::with_capacity(
+                        win.cols as usize);
+                let mut iter = file_name.chars();
+                let mut i : usize = 0;
+                while i < win.cols as usize - 4 {
+                    if let Some(ch) = iter.next() {
+                        shortened.push(ch);
+                        i += ch.len_utf8();
+                    }
+                }
+                shortened.push('…');
+                ncurses::waddstr(win.win, &shortened);
+            } else {
+                ncurses::waddstr(win.win, &file_name);
+            }
+        },
+        Err(e) => {
+            ncurses::waddstr(win.win, format!("{:?}", e).as_str());
+        },
+    };
+
+    if mode != 0 {
+        file_attr_apply(win.win, mode, file.path().extension(),
+                ncurses::wattroff);
+    }
+    ncurses::waddstr(win.win, "\n");
+}
+
+fn file_attr_apply(win : ncurses::WINDOW, mode : u32,
+        file_extension : Option<&ffi::OsStr>,
+        func : fn(ncurses::WINDOW, ncurses::NCURSES_ATTR_T) -> i32)
+{
+    match mode & unix::BITMASK {
+        unix::S_IFDIR => {
+            func(win, ncurses::A_BOLD());
+            func(win, ncurses::COLOR_PAIR(DIR_COLOR));
+        },
+        unix::S_IFLNK | unix::S_IFCHR | unix::S_IFBLK
+         => {
+            func(win, ncurses::A_BOLD());
+            func(win, ncurses::COLOR_PAIR(SOCK_COLOR));
+        },
+        unix::S_IFSOCK | unix::S_IFIFO => {
+            func(win, ncurses::A_BOLD());
+            func(win, ncurses::COLOR_PAIR(SOCK_COLOR));
+        },
+        unix::S_IFREG => {
+            if unix::is_executable(mode) == true {
+                func(win, ncurses::A_BOLD());
+                func(win, ncurses::COLOR_PAIR(EXEC_COLOR));
+            }
+            else if let Some(extension) = file_extension {
+                if let Some(ext) = extension.to_str() {
+                    file_ext_attr_apply(win, ext, func);
+                }
+            }
+        },
+        _ => {},
+    };
+}
+
+fn file_ext_attr_apply(win : ncurses::WINDOW, ext : &str,
+        func : fn(ncurses::WINDOW, ncurses::NCURSES_ATTR_T) -> i32)
+{
+    match ext {
+        "png" | "jpg" | "jpeg" | "gif" => {
+            func(win, ncurses::COLOR_PAIR(IMG_COLOR));
+        },
+        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" |
+        "m4a" => {
+            func(win, ncurses::COLOR_PAIR(VID_COLOR));
+        },
+        _ => {},
+    }
 }
 
 /*
@@ -116,7 +216,7 @@ pub fn wprint_file_preview(win : &structs::JoshutoWindow,
                                 },
                             };
                         } else {
-                            ncurses::wprintw(win.win, "Symlink pointing to a file");
+                            ncurses::waddstr(win.win, "Symlink pointing to a file");
                         }
                     },
                     Err(e) => {
@@ -125,22 +225,22 @@ pub fn wprint_file_preview(win : &structs::JoshutoWindow,
                 };
             },
             unix::S_IFBLK => {
-                ncurses::wprintw(win.win, "Block file");
+                ncurses::waddstr(win.win, "Block file");
             },
             unix::S_IFSOCK => {
-                ncurses::wprintw(win.win, "Socket file");
+                ncurses::waddstr(win.win, "Socket file");
             },
             unix::S_IFCHR => {
-                ncurses::wprintw(win.win, "Character file");
+                ncurses::waddstr(win.win, "Character file");
             },
             unix::S_IFIFO => {
-                ncurses::wprintw(win.win, "FIFO file");
+                ncurses::waddstr(win.win, "FIFO file");
             },
             unix::S_IFREG => {
-                ncurses::wprintw(win.win, "Plain file");
+                ncurses::waddstr(win.win, "Plain file");
             },
             _ => {
-                ncurses::wprintw(win.win, "Unknown file");
+                ncurses::waddstr(win.win, "Unknown file");
             },
         }
     }
@@ -168,13 +268,13 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
                 index += 1;
             }
 
-            ncurses::wprintw(win,
+            ncurses::waddstr(win,
                 format!("{:?} {}  {} {}", mode, unix::stringify_mode(mode),
                     file_size, FILE_UNITS[index]).as_str()
                 );
         },
         Err(e) => {
-            ncurses::wprintw(win, format!("{:?}", e).as_str());
+            ncurses::waddstr(win, format!("{:?}", e).as_str());
         },
     };
     ncurses::wnoutrefresh(win);
