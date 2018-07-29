@@ -294,6 +294,49 @@ pub fn run(config : &mut JoshutoConfig)
                     curr_view.as_ref().unwrap(), preview_view,
                     sort_func, show_hidden);
 
+        } else if ch == ncurses::KEY_NPAGE {
+            let curr_index = curr_view.as_ref().unwrap().index;
+            let dir_len = curr_view.as_ref().unwrap()
+                            .contents.as_ref().unwrap().len();
+
+            if curr_index == dir_len - 1 {
+                continue;
+            }
+
+            let old_path : path::PathBuf = curr_view.as_ref().unwrap()
+                                .contents.as_ref().unwrap()[curr_index].path();
+
+            if curr_index + joshuto_view.mid_win.cols as usize >= dir_len {
+                curr_view.as_mut().unwrap().index = dir_len - 1;
+            } else {
+                curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index
+                    + joshuto_view.mid_win.cols as usize;
+            }
+
+            preview_view = updown(&mut history, &joshuto_view, &old_path,
+                    curr_view.as_ref().unwrap(), preview_view,
+                    sort_func, show_hidden);
+
+        } else if ch == ncurses::KEY_PPAGE {
+            let curr_index = curr_view.as_ref().unwrap().index;
+            if curr_index == 0 {
+                continue;
+            }
+
+            let old_path : path::PathBuf = curr_view.as_ref().unwrap()
+                                .contents.as_ref().unwrap()[curr_index].path();
+
+            if (curr_index as i32 - joshuto_view.mid_win.cols) < 0 {
+                curr_view.as_mut().unwrap().index = 0;
+            } else {
+                curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index
+                    - joshuto_view.mid_win.cols as usize;
+            }
+
+            preview_view = updown(&mut history, &joshuto_view, &old_path,
+                    curr_view.as_ref().unwrap(), preview_view,
+                    sort_func, show_hidden);
+
         } else if ch == ncurses::KEY_LEFT {
             if curr_path.pop() == false {
                 continue;
@@ -392,9 +435,8 @@ pub fn run(config : &mut JoshutoConfig)
                         }
 
                         let index : usize = curr_view.as_ref().unwrap().index;
-
                         let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
-                                                        .contents.as_ref().unwrap()[index];
+                                .contents.as_ref().unwrap()[index];
                         let new_path = dirent.path();
                         ui::wprint_path(&joshuto_view.top_win,
                                 username.as_str(), hostname.as_str(), &new_path);
@@ -403,7 +445,8 @@ pub fn run(config : &mut JoshutoConfig)
                             preview_view = match history::get_or_create(&mut history, new_path.as_path(), sort_func, show_hidden) {
                                 Ok(s) => { Some(s) },
                                 Err(e) => {
-                                    ui::wprint_err(&joshuto_view.right_win, format!("{}", e).as_str());
+                                    ui::wprint_err(&joshuto_view.right_win,
+                                            format!("{}", e).as_str());
                                     None
                                 },
                             };
@@ -411,7 +454,6 @@ pub fn run(config : &mut JoshutoConfig)
                                 joshuto_view.right_win.display_contents(&s);
                                 ncurses::wnoutrefresh(joshuto_view.right_win.win);
                             }
-
                             ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
                         } else {
                             ncurses::werase(joshuto_view.right_win.win);
@@ -429,8 +471,7 @@ pub fn run(config : &mut JoshutoConfig)
                 let index : usize = curr_view.as_ref().unwrap().index;
                 let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
                                                 .contents.as_ref().unwrap()[index];
-                let mime_type : String =
-                    unix::get_mime_type(&dirent);
+                let mime_type : String = unix::get_mime_type(&dirent);
 
                 /* check if there is a BTreeMap of programs to execute */
                 if let Some(mime_map) = &config.mimetypes {
