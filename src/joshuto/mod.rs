@@ -36,6 +36,42 @@ pub fn parse_sort_func(sort_method : &Option<String>)
     }
 }
 
+pub fn refresh_handler(joshuto_view : &mut structs::JoshutoView,
+        curr_path : &path::PathBuf, parent_view : Option<&structs::JoshutoDirEntry>,
+        curr_view : Option<&structs::JoshutoDirEntry>,
+        preview_view : Option<&structs::JoshutoDirEntry>)
+{
+    let username : String = whoami::username();
+    let hostname : String = whoami::hostname();
+
+    joshuto_view.redraw_views();
+    ncurses::refresh();
+
+    ui::wprint_path(&joshuto_view.top_win, username.as_str(),
+        hostname.as_str(), curr_path);
+
+    if let Some(s) = parent_view {
+        joshuto_view.left_win.display_contents(&s);
+        ncurses::wnoutrefresh(joshuto_view.left_win.win);
+    }
+
+    joshuto_view.mid_win.display_contents(curr_view.unwrap());
+    ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+
+    if let Some(s) = preview_view {
+        joshuto_view.right_win.display_contents(&s);
+        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+    }
+
+    let index : usize = curr_view.unwrap().index;
+    let dirent : &fs::DirEntry = &curr_view.unwrap().contents
+                                    .as_ref().unwrap()[index];
+
+    ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+
+    ncurses::doupdate();
+}
+
 pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
         joshuto_view : &structs::JoshutoView,
         old_path : &path::Path,
@@ -207,32 +243,8 @@ pub fn run(config : &mut JoshutoConfig)
         }
 
         if ch == ncurses::KEY_RESIZE {
-            joshuto_view.redraw_views();
-            ncurses::refresh();
-
-            ui::wprint_path(&joshuto_view.top_win, username.as_str(),
-                hostname.as_str(), &curr_path);
-
-            if let Some(s) = parent_view.as_ref() {
-                joshuto_view.left_win.display_contents(&s);
-                ncurses::wnoutrefresh(joshuto_view.left_win.win);
-            }
-
-            joshuto_view.mid_win.display_contents(curr_view.as_ref().unwrap());
-            ncurses::wnoutrefresh(joshuto_view.mid_win.win);
-
-            if let Some(s) = preview_view.as_ref() {
-                joshuto_view.right_win.display_contents(&s);
-                ncurses::wnoutrefresh(joshuto_view.right_win.win);
-            }
-
-            let index : usize = curr_view.as_ref().unwrap().index;
-            let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
-                            .contents.as_ref().unwrap()[index];
-
-            ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
-
-            ncurses::doupdate();
+            refresh_handler(&mut joshuto_view, &curr_path, parent_view.as_ref(),
+                    curr_view.as_ref(), preview_view.as_ref());
 
         } else if ch == ncurses::KEY_UP {
             let curr_index = curr_view.as_ref().unwrap().index;
