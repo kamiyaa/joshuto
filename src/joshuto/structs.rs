@@ -14,6 +14,7 @@ pub struct JoshutoDirEntry {
     pub need_update : bool,
     pub modified : time::SystemTime,
     pub contents : Option<Vec<fs::DirEntry>>,
+    pub selection : Vec<fs::DirEntry>,
 }
 
 impl JoshutoDirEntry {
@@ -32,6 +33,7 @@ impl JoshutoDirEntry {
             need_update : false,
             modified: modified,
             contents: Some(dir_contents),
+            selection: Vec::new(),
         })
     }
 
@@ -43,12 +45,12 @@ impl JoshutoDirEntry {
 
         if let Ok(mut dir_contents) = read_dir_list(path, show_hidden) {
             dir_contents.sort_by(&sort_func);
-
             self.contents = Some(dir_contents);
-        }
-
-        if self.index >= self.contents.as_ref().unwrap().len() {
-            self.index = self.contents.as_ref().unwrap().len() - 1;
+            if self.index >= self.contents.as_ref().unwrap().len() {
+                if self.contents.as_ref().unwrap().len() > 0 {
+                    self.index = self.contents.as_ref().unwrap().len() - 1;
+                }
+            }
         }
 
         if let Ok(metadata) = std::fs::metadata(&path) {

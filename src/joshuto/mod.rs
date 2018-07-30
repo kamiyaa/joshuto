@@ -202,7 +202,6 @@ pub fn run(config : &mut JoshutoConfig)
 
     loop {
         let ch : i32 = ncurses::getch();
-        eprintln!("Unknown keychar: ({}: {})", ch, ch as u8 as char);
         if ch == QUIT {
             break;
         }
@@ -313,11 +312,12 @@ pub fn run(config : &mut JoshutoConfig)
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap()[curr_index].path();
 
-            if curr_index + joshuto_view.mid_win.cols as usize >= dir_len {
+            let half_page : i32 = joshuto_view.mid_win.cols / 2;
+            if curr_index + half_page as usize >= dir_len {
                 curr_view.as_mut().unwrap().index = dir_len - 1;
             } else {
                 curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index
-                    + joshuto_view.mid_win.cols as usize;
+                    + half_page as usize;
             }
 
             preview_view = updown(&mut history, &joshuto_view, &old_path,
@@ -333,11 +333,12 @@ pub fn run(config : &mut JoshutoConfig)
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap()[curr_index].path();
 
-            if (curr_index as i32 - joshuto_view.mid_win.cols) < 0 {
+            let half_page : i32 = joshuto_view.mid_win.cols / 2;
+            if curr_index < half_page as usize {
                 curr_view.as_mut().unwrap().index = 0;
             } else {
                 curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index
-                    - joshuto_view.mid_win.cols as usize;
+                    - half_page as usize;
             }
 
             preview_view = updown(&mut history, &joshuto_view, &old_path,
@@ -516,11 +517,15 @@ pub fn run(config : &mut JoshutoConfig)
 
                 if let Some(s) = curr_view.as_mut() {
                     s.update(&curr_path, sort_func, show_hidden);
+                    joshuto_view.mid_win.display_contents(&s);
+                    ncurses::wnoutrefresh(joshuto_view.mid_win.win);
                 }
 
                 if let Some(s) = parent_view.as_mut() {
                     if curr_path.parent() != None {
                         s.update(curr_path.parent().unwrap(), sort_func, show_hidden);
+                        joshuto_view.left_win.display_contents(&s);
+                        ncurses::wnoutrefresh(joshuto_view.left_win.win);
                     }
                 }
 
@@ -530,9 +535,18 @@ pub fn run(config : &mut JoshutoConfig)
                         let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
                                         .contents.as_ref().unwrap()[index];
 
+                        ui::wprint_path(&joshuto_view.top_win, username.as_str(),
+                            hostname.as_str(), &dirent.path());
+
                         s.update(dirent.path().as_path(), sort_func, show_hidden);
+
+                        joshuto_view.right_win.display_contents(&s);
+                        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+
+                        ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
                     }
                 }
+                ncurses::doupdate();
             }
         } else if ch == 330 { // delete button
             if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
