@@ -2,11 +2,9 @@ extern crate libc;
 extern crate toml;
 extern crate tree_magic;
 
-use std::collections::BTreeMap;
 use std::fs;
 
 pub const BITMASK  : u32 = 0o170000;
-
 pub const S_IFSOCK : u32 = 0o140000;   /* socket */
 pub const S_IFLNK  : u32 = 0o120000;   /* symbolic link */
 pub const S_IFREG  : u32 = 0o100000;   /* regular file */
@@ -18,12 +16,6 @@ pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 pub fn get_mime_type(direntry : &fs::DirEntry) -> String
 {
     tree_magic::from_filepath(&direntry.path().as_path())
-}
-
-pub fn get_exec_program<'a>(mime_type : &str,
-        map : &'a BTreeMap<String, Vec<String>>) -> Option<&'a Vec<String>>
-{
-    map.get(mime_type)
 }
 
 pub fn exec_with(program : String, args : Vec<String>)

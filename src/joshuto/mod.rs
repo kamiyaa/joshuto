@@ -172,11 +172,15 @@ pub fn run(config : &mut JoshutoConfig)
                     None
                 },
             };
-            ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
-                    &preview_path);
         } else {
             preview_view = None;
+            ncurses::werase(joshuto_view.right_win.win);
+            let mime_type = unix::get_mime_type(&dirent);
+            ui::wprint_msg(&joshuto_view.right_win, mime_type.as_str());
+            ncurses::wnoutrefresh(joshuto_view.right_win.win);
         }
+        ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
+                &preview_path);
     } else {
         preview_view = None;
     }
@@ -198,7 +202,7 @@ pub fn run(config : &mut JoshutoConfig)
 
     loop {
         let ch : i32 = ncurses::getch();
-
+        eprintln!("Unknown keychar: ({}: {})", ch, ch as u8 as char);
         if ch == QUIT {
             break;
         }
@@ -478,7 +482,7 @@ pub fn run(config : &mut JoshutoConfig)
 
                 /* check if there is a BTreeMap of programs to execute */
                 if let Some(mime_map) = &config.mimetypes {
-                    if let Some(mime_args) = unix::get_exec_program(mime_type.as_str(), mime_map) {
+                    if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
                         let mime_args_len = mime_args.len();
                         if mime_args_len > 0 {
                             let program_name = mime_args[0].clone();
