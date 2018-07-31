@@ -500,35 +500,45 @@ pub fn run(config : &mut JoshutoConfig)
                     }
                 };
             } else {
+                use std::os::unix::fs::PermissionsExt;
+
                 let index : usize = curr_view.as_ref().unwrap().index;
                 let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
                                                 .contents.as_ref().unwrap()[index];
-                let mime_type : String = unix::get_mime_type(&dirent);
+                if let Ok(metadata) = dirent.metadata() {
+                    let permissions : fs::Permissions = metadata.permissions();
+                    let mode = permissions.mode();
+                    if unix::is_reg(mode) {
+                        let mime_type : String = unix::get_mime_type(&dirent);
 
-                /* check if there is a BTreeMap of programs to execute */
-                if let Some(mime_map) = &config.mimetypes {
-                    if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
-                        let mime_args_len = mime_args.len();
-                        if mime_args_len > 0 {
-                            let program_name = mime_args[0].clone();
+                        /* check if there is a BTreeMap of programs to execute */
+                        if let Some(mime_map) = &config.mimetypes {
+                            if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
+                                let mime_args_len = mime_args.len();
+                                if mime_args_len > 0 {
+                                    let program_name = mime_args[0].clone();
 
-                            let mut args_list : Vec<String> = Vec::with_capacity(mime_args_len);
-                            for i in 1..mime_args_len {
-                                args_list.push(mime_args[i].clone());
+                                    let mut args_list : Vec<String> = Vec::with_capacity(mime_args_len);
+                                    for i in 1..mime_args_len {
+                                        args_list.push(mime_args[i].clone());
+                                    }
+                                    args_list.push(dirent.file_name().into_string().unwrap());
+
+                                    ncurses::savetty();
+                                    ncurses::endwin();
+                                    unix::exec_with(program_name, args_list);
+                                    ncurses::resetty();
+                                    ncurses::refresh();
+                                }
+                            } else {
+                                ui::wprint_err(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
                             }
-                            args_list.push(dirent.file_name().into_string().unwrap());
-
-                            ncurses::savetty();
-                            ncurses::endwin();
-                            unix::exec_with(program_name, args_list);
-                            ncurses::resetty();
-                            ncurses::refresh();
                         }
                     } else {
-                        ui::wprint_err(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
+                        ui::wprint_err(&joshuto_view.right_win, format!("Don't know how to open: {}", unix::get_unix_filetype(mode)).as_str());
                     }
                 } else {
-                    ui::wprint_err(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
+                    ui::wprint_err(&joshuto_view.right_win, "Failed to read metadata, unable to determine filetype");
                 }
             }
             ncurses::doupdate();

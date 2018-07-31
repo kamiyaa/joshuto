@@ -21,13 +21,13 @@ pub fn is_reg(mode : u32) -> bool
 pub fn get_unix_filetype(mode : u32) -> &'static str
 {
     match mode & BITMASK {
+        S_IFBLK => "inode/blockdevice",
+        S_IFCHR => "inode/chardevice",
         S_IFDIR => "inode/directory",
+        S_IFIFO => "inode/fifo",
         S_IFLNK => "inode/symlink",
-        S_IFBLK => "unix/block",
-        S_IFSOCK => "unix/socket",
-        S_IFCHR => "unix/char",
-        S_IFIFO => "unix/fifo",
-        S_IFREG => "unix/regular",
+        S_IFSOCK => "inode/socket",
+        S_IFREG => "inode/regular",
         _ => "unknown",
     }
 }
