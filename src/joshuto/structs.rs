@@ -67,13 +67,13 @@ pub struct JoshutoWindow {
     pub win     : ncurses::WINDOW,
     pub rows    : i32,
     pub cols    : i32,
-    pub coords  : (i32, i32)
+    pub coords  : (usize, usize)
 }
 
 impl JoshutoWindow {
-    pub fn new(rows : i32, cols : i32, coords : (i32, i32)) -> JoshutoWindow
+    pub fn new(rows : i32, cols : i32, coords : (usize, usize)) -> JoshutoWindow
     {
-        let win = ncurses::newwin(rows, cols, coords.0, coords.1);
+        let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
 
         ncurses::refresh();
         JoshutoWindow {
@@ -84,14 +84,14 @@ impl JoshutoWindow {
         }
     }
 
-    pub fn redraw(&mut self, rows : i32, cols : i32, coords : (i32, i32))
+    pub fn redraw(&mut self, rows : i32, cols : i32, coords : (usize, usize))
     {
         ncurses::delwin(self.win);
         self.rows = rows;
         self.cols = cols;
         self.coords = coords;
-        self.win = ncurses::newwin(self.rows, self.cols, self.coords.0,
-                self.coords.1);
+        self.win = ncurses::newwin(self.rows, self.cols, self.coords.0 as i32,
+                self.coords.1 as i32);
         ncurses::wnoutrefresh(self.win);
     }
 
@@ -145,28 +145,30 @@ pub struct JoshutoView {
     pub mid_win : JoshutoWindow,
     pub right_win : JoshutoWindow,
     pub bot_win : JoshutoWindow,
-    pub win_ratio : (i32, i32, i32),
+    pub win_ratio : (usize, usize, usize),
 }
 
 impl JoshutoView {
-    pub fn new(win_ratio : (i32, i32, i32)) -> JoshutoView
+    pub fn new(win_ratio : (usize, usize, usize)) -> JoshutoView
     {
         let mut term_rows : i32 = 0;
         let mut term_cols : i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let term_divide : i32 = term_cols / 7;
+        let term_divide : usize = term_cols as usize / 7;
         let top_win = JoshutoWindow::new(1, term_cols, (0, 0));
 
         let left_win = JoshutoWindow::new(term_rows - 2,
-            term_divide * win_ratio.0, (1, 0));
+            (term_divide * win_ratio.0) as i32, (1, 0));
 
         let mid_win = JoshutoWindow::new(term_rows - 2,
-            term_divide * win_ratio.1, (1, term_divide * win_ratio.0));
+            (term_divide * win_ratio.1) as i32,
+            (1, term_divide * win_ratio.0));
 
         let right_win = JoshutoWindow::new(term_rows - 2,
-            term_divide * 3, (1, term_divide * win_ratio.2));
-        let bot_win = JoshutoWindow::new(1, term_cols, (term_rows - 1, 0));
+            term_divide as i32 * 3, (1, term_divide * win_ratio.2));
+        let bot_win = JoshutoWindow::new(1, term_cols,
+                (term_rows as usize - 1, 0));
 
         ncurses::leaveok(top_win.win, true);
         ncurses::leaveok(left_win.win, true);
@@ -199,20 +201,22 @@ impl JoshutoView {
         let mut term_cols : i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let term_divide : i32 = term_cols / 7;
+        let term_divide : usize = term_cols as usize / 7;
 
         self.top_win.redraw(1, term_cols, (0, 0));
         ncurses::scrollok(self.top_win.win, true);
 
         self.left_win.redraw(term_rows - 2,
-            term_divide * self.win_ratio.0, (1, 0));
+            (term_divide * self.win_ratio.0) as i32, (1, 0));
 
         self.mid_win.redraw(term_rows - 2,
-            term_divide * self.win_ratio.1, (1, term_divide * self.win_ratio.0));
+            (term_divide * self.win_ratio.1) as i32,
+            (1, term_divide * self.win_ratio.0));
 
         self.right_win.redraw(term_rows - 2,
-            term_divide * 3, (1, term_divide * self.win_ratio.2));
-        self.bot_win.redraw(1, term_cols, (term_rows - 1, 0));
+            term_divide as i32 * 3,
+            (1, term_divide * self.win_ratio.2));
+        self.bot_win.redraw(1, term_cols, (term_rows as usize - 1, 0));
     }
 }
 

@@ -13,9 +13,30 @@ pub const S_IFDIR  : u32 = 0o040000;   /* directory */
 pub const S_IFCHR  : u32 = 0o020000;   /* character device */
 pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
+pub fn is_reg(mode : u32) -> bool
+{
+    mode & BITMASK == S_IFREG
+}
+
+pub fn get_unix_filetype(mode : u32) -> &'static str
+{
+    match mode & BITMASK {
+        S_IFDIR => "inode/directory",
+        S_IFLNK => "inode/symlink",
+        S_IFBLK => "unix/block",
+        S_IFSOCK => "unix/socket",
+        S_IFCHR => "unix/char",
+        S_IFIFO => "unix/fifo",
+        S_IFREG => "unix/regular",
+        _ => "unknown",
+    }
+}
+
 pub fn get_mime_type(direntry : &fs::DirEntry) -> String
 {
-    tree_magic::from_filepath(&direntry.path().as_path())
+    let path = &direntry.path();
+    eprintln!("path {:?}", path);
+    tree_magic::from_filepath(path.as_path())
 }
 
 pub fn exec_with(program : String, args : Vec<String>)

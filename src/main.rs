@@ -25,11 +25,12 @@ pub struct joshuto_win {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoConfig {
-    show_hidden: Option<bool>,
-    color_scheme: Option<String>,
-    sort_method: Option<String>,
+    color_scheme : Option<String>,
+    show_hidden : Option<bool>,
+    sort_method : Option<String>,
+    column_ratio : Option<[usize; 3]>,
 //    keymaps: Option<JoshutoKeymaps>,
-    mimetypes: Option<BTreeMap<String, Vec<String>>>,
+    mimetypes : Option<BTreeMap<String, Vec<String>>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -43,6 +44,7 @@ fn generate_default_config() -> JoshutoConfig
         show_hidden: None,
         color_scheme: None,
         sort_method: None,
+        column_ratio : None,
 //        keymaps: None,
         mimetypes: None,
     }
