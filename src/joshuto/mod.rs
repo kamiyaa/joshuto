@@ -51,15 +51,15 @@ pub fn refresh_handler(joshuto_view : &mut structs::JoshutoView,
         hostname.as_str(), curr_path);
 
     if let Some(s) = parent_view {
-        joshuto_view.left_win.display_contents(&s);
+        ui::display_contents(&joshuto_view.left_win, &s);
         ncurses::wnoutrefresh(joshuto_view.left_win.win);
     }
 
-    joshuto_view.mid_win.display_contents(curr_view.unwrap());
+    ui::display_contents(&joshuto_view.mid_win, curr_view.unwrap());
     ncurses::wnoutrefresh(joshuto_view.mid_win.win);
 
     if let Some(s) = preview_view {
-        joshuto_view.right_win.display_contents(&s);
+        ui::display_contents(&joshuto_view.right_win, &s);
         ncurses::wnoutrefresh(joshuto_view.right_win.win);
     }
 
@@ -102,7 +102,7 @@ pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
     ui::wprint_path(&joshuto_view.top_win, username.as_str(), hostname.as_str(),
             &new_path);
 
-    joshuto_view.mid_win.display_contents(curr);
+    ui::display_contents(&joshuto_view.mid_win, curr);
     ncurses::wnoutrefresh(joshuto_view.mid_win.win);
 
     ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
@@ -112,7 +112,7 @@ pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
         match history::get_or_create(history, new_path.as_path(), sort_func, show_hidden) {
             Ok(s) => {
                 preview = Some(s);
-                joshuto_view.right_win.display_contents(preview.as_ref().unwrap());
+                ui::display_contents(&joshuto_view.right_win, preview.as_ref().unwrap());
             },
             Err(e) => {
                 preview = None;
@@ -235,15 +235,15 @@ pub fn run(config : &mut JoshutoConfig)
     }
 
     if let Some(s) = parent_view.as_ref() {
-        joshuto_view.left_win.display_contents(&s);
+        ui::display_contents(&joshuto_view.left_win, &s);
         ncurses::wnoutrefresh(joshuto_view.left_win.win);
     }
 
-    joshuto_view.mid_win.display_contents(curr_view.as_ref().unwrap());
+    ui::display_contents(&joshuto_view.mid_win, curr_view.as_ref().unwrap());
     ncurses::wnoutrefresh(joshuto_view.mid_win.win);
 
     if let Some(s) = preview_view.as_ref() {
-        joshuto_view.right_win.display_contents(&s);
+        ui::display_contents(&joshuto_view.right_win, &s);
         ncurses::wnoutrefresh(joshuto_view.right_win.win);
     }
 
@@ -388,10 +388,10 @@ pub fn run(config : &mut JoshutoConfig)
 
                     preview_view = curr_view;
                     curr_view = parent_view;
-                    joshuto_view.mid_win.display_contents(
+                    ui::display_contents(&joshuto_view.mid_win,
                             curr_view.as_ref().unwrap());
                     ncurses::wnoutrefresh(joshuto_view.mid_win.win);
-                    joshuto_view.right_win.display_contents(
+                    ui::display_contents(&joshuto_view.right_win,
                             preview_view.as_ref().unwrap());
                     ncurses::wnoutrefresh(joshuto_view.right_win.win);
                 },
@@ -408,7 +408,7 @@ pub fn run(config : &mut JoshutoConfig)
                             None
                         },
                     };
-                    joshuto_view.left_win.display_contents(
+                    ui::display_contents(&joshuto_view.left_win,
                             parent_view.as_ref().unwrap());
                     ncurses::wnoutrefresh(joshuto_view.left_win.win);
                 },
@@ -451,11 +451,11 @@ pub fn run(config : &mut JoshutoConfig)
                         preview_view = None;
 
                         if let Some(s) = parent_view.as_ref() {
-                            joshuto_view.left_win.display_contents(s);
+                            ui::display_contents(&joshuto_view.left_win, s);
                             ncurses::wnoutrefresh(joshuto_view.left_win.win);
                         }
 
-                        joshuto_view.mid_win.display_contents(
+                        ui::display_contents(&joshuto_view.mid_win,
                                 curr_view.as_ref().unwrap());
                         ncurses::wnoutrefresh(joshuto_view.mid_win.win);
 
@@ -483,7 +483,7 @@ pub fn run(config : &mut JoshutoConfig)
                                 },
                             };
                             if let Some(s) = preview_view.as_ref() {
-                                joshuto_view.right_win.display_contents(&s);
+                                ui::display_contents(&joshuto_view.right_win, &s);
                                 ncurses::wnoutrefresh(joshuto_view.right_win.win);
                             }
                             ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
@@ -551,14 +551,14 @@ pub fn run(config : &mut JoshutoConfig)
 
                 if let Some(s) = curr_view.as_mut() {
                     s.update(&curr_path, sort_func, show_hidden);
-                    joshuto_view.mid_win.display_contents(&s);
+                    ui::display_contents(&joshuto_view.mid_win, &s);
                     ncurses::wnoutrefresh(joshuto_view.mid_win.win);
                 }
 
                 if let Some(s) = parent_view.as_mut() {
                     if curr_path.parent() != None {
                         s.update(curr_path.parent().unwrap(), sort_func, show_hidden);
-                        joshuto_view.left_win.display_contents(&s);
+                        ui::display_contents(&joshuto_view.left_win, &s);
                         ncurses::wnoutrefresh(joshuto_view.left_win.win);
                     }
                 }
@@ -574,7 +574,7 @@ pub fn run(config : &mut JoshutoConfig)
 
                         s.update(dirent.path().as_path(), sort_func, show_hidden);
 
-                        joshuto_view.right_win.display_contents(&s);
+                        ui::display_contents(&joshuto_view.right_win, &s);
                         ncurses::wnoutrefresh(joshuto_view.right_win.win);
 
                         ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
@@ -602,7 +602,7 @@ pub fn run(config : &mut JoshutoConfig)
                     Ok(_s) => {
                         curr_view.as_mut().unwrap().update(
                             &curr_path, sort_func, show_hidden);
-                        joshuto_view.mid_win.display_contents(
+                        ui::display_contents(&joshuto_view.mid_win,
                             curr_view.as_ref().unwrap());
                         ui::wprint_msg(&joshuto_view.bot_win,
                             format!("Deleted {:?}!", file_name).as_str());

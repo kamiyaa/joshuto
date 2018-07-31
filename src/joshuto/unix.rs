@@ -35,7 +35,6 @@ pub fn get_unix_filetype(mode : u32) -> &'static str
 pub fn get_mime_type(direntry : &fs::DirEntry) -> String
 {
     let path = &direntry.path();
-    eprintln!("path {:?}", path);
     tree_magic::from_filepath(path.as_path())
 }
 

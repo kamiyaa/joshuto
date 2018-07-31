@@ -6,7 +6,6 @@ use std::path;
 use std::time;
 
 use joshuto::sort;
-use joshuto::ui;
 
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
@@ -92,48 +91,6 @@ impl JoshutoWindow {
         self.coords = coords;
         self.win = ncurses::newwin(self.rows, self.cols, self.coords.0 as i32,
                 self.coords.1 as i32);
-        ncurses::wnoutrefresh(self.win);
-    }
-
-    pub fn display_contents(&self, entry : &JoshutoDirEntry) {
-        let index = entry.index;
-        let dir_contents = entry.contents.as_ref().unwrap();
-        let vec_len = dir_contents.len();
-        if vec_len == 0 {
-            ui::wprint_err(self, "empty");
-            return;
-        }
-
-        let offset : usize = 8;
-        let start : usize;
-        let end : usize;
-
-        if self.rows as usize >= vec_len {
-            start = 0;
-            end = vec_len;
-        } else if index <= offset {
-            start = 0;
-            end = self.rows as usize;
-        } else if index - offset + self.rows as usize >= vec_len {
-            start = vec_len - self.rows as usize;
-            end = vec_len;
-        } else {
-            start = index - offset;
-            end = start + self.rows as usize;
-        }
-
-        ncurses::werase(self.win);
-        ncurses::wmove(self.win, 0, 0);
-
-        for i in start..end {
-            if index == i {
-                ncurses::wattron(self.win, ncurses::A_REVERSE());
-                ui::wprint_file(self, &dir_contents[i]);
-                ncurses::wattroff(self.win, ncurses::A_REVERSE());
-            } else {
-                ui::wprint_file(self, &dir_contents[i]);
-            }
-        }
         ncurses::wnoutrefresh(self.win);
     }
 }
