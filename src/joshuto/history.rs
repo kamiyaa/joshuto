@@ -9,10 +9,10 @@ use std::process;
 
 use joshuto::structs;
 
-pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoDirEntry>,
+pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoColumn>,
         path : &path::Path,
-        sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
-        show_hidden : bool) -> Result<structs::JoshutoDirEntry, std::io::Error>
+        sort_func : fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering,
+        show_hidden : bool) -> Result<structs::JoshutoColumn, std::io::Error>
 {
     let key = format!("{}", path.to_str().unwrap());
 //  eprintln!("Looking for {} in map...", key);
@@ -34,12 +34,12 @@ pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoDirEntry>,
         },
         Entry::Vacant(_entry) => {
 //            eprintln!("did not find value, creating new one...");
-            structs::JoshutoDirEntry::new(&path, sort_func, show_hidden)
+            structs::JoshutoColumn::new(&path, sort_func, show_hidden)
         }
     }
 }
 
-pub fn depecrate_all_entries(map : &mut HashMap<String, structs::JoshutoDirEntry>)
+pub fn depecrate_all_entries(map : &mut HashMap<String, structs::JoshutoColumn>)
 {
     for (_, direntry) in map.iter_mut() {
         direntry.need_update = true;
@@ -48,20 +48,20 @@ pub fn depecrate_all_entries(map : &mut HashMap<String, structs::JoshutoDirEntry
 }
 
 pub fn init_path_history(
-        sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
-        show_hidden : bool) -> HashMap<String, structs::JoshutoDirEntry>
+        sort_func : fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering,
+        show_hidden : bool) -> HashMap<String, structs::JoshutoColumn>
 {
     match env::current_dir() {
         Ok(mut pathbuf) => {
-            let mut history : HashMap<String, structs::JoshutoDirEntry>
+            let mut history : HashMap<String, structs::JoshutoColumn>
                     = HashMap::new();
             while pathbuf.parent() != None {
-                match structs::JoshutoDirEntry::new(pathbuf.parent().unwrap(), sort_func, show_hidden) {
+                match structs::JoshutoColumn::new(pathbuf.parent().unwrap(), sort_func, show_hidden) {
                     Ok(mut s) => {
                         let parent = pathbuf.parent().unwrap();
                         let parent_str = format!("{}", parent.to_str().unwrap());
                         for (i, dirent) in s.contents.as_ref().unwrap().iter().enumerate() {
-                            if dirent.path() == pathbuf {
+                            if dirent.entry.path() == pathbuf {
                                 s.index = i;
                                 break;
                             }

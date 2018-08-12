@@ -12,6 +12,7 @@ pub const SOCK_COLOR    : i16 = 4;
 pub const EXEC_COLOR    : i16 = 11;
 pub const IMG_COLOR     : i16 = 12;
 pub const VID_COLOR     : i16 = 13;
+pub const SELECT_COLOR  : i16 = 25;
 pub const ERR_COLOR     : i16 = 40;
 
 pub fn init_ncurses()
@@ -23,13 +24,13 @@ pub fn init_ncurses()
     ncurses::initscr();
     ncurses::cbreak();
     ncurses::raw();
-    ncurses::noecho();
 
     ncurses::keypad(ncurses::stdscr(), true);
     ncurses::start_color();
     ncurses::use_default_colors();
+    ncurses::noecho();
 
-//    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
+    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
     /* directories */
     ncurses::init_pair(DIR_COLOR, ncurses::COLOR_BLUE, -1);
@@ -41,6 +42,8 @@ pub fn init_ncurses()
     ncurses::init_pair(IMG_COLOR, ncurses::COLOR_YELLOW, -1);
     /* video files */
     ncurses::init_pair(VID_COLOR, ncurses::COLOR_MAGENTA, -1);
+    /* selected files */
+    ncurses::init_pair(SELECT_COLOR, ncurses::COLOR_YELLOW, ncurses::COLOR_BLACK);
     /* error message */
     ncurses::init_pair(ERR_COLOR, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
 
@@ -53,6 +56,7 @@ pub fn wprint_msg(win : &structs::JoshutoWindow, err_msg : &str)
     ncurses::mvwaddstr(win.win, 0, 0, err_msg);
     ncurses::wnoutrefresh(win.win);
 }
+
 pub fn wprint_err(win : &structs::JoshutoWindow, err_msg : &str)
 {
     ncurses::werase(win.win);
@@ -114,7 +118,8 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     ncurses::wnoutrefresh(win);
 }
 
-pub fn display_contents(win : &structs::JoshutoWindow, entry : &structs::JoshutoDirEntry) {
+pub fn display_contents(win : &structs::JoshutoWindow,
+        entry : &structs::JoshutoColumn) {
     use std::os::unix::fs::PermissionsExt;
 
     let mut mode : u32 = 0;
@@ -149,19 +154,26 @@ pub fn display_contents(win : &structs::JoshutoWindow, entry : &structs::Joshuto
     ncurses::wmove(win.win, 0, 0);
 
     for i in start..end {
-        ncurses::wmove(win.win, i as i32 - start as i32, 0);
-        wprint_file(win, &dir_contents[i]);
+        let coord : (i32, i32) = (i as i32 - start as i32, 0);
+        ncurses::wmove(win.win, coord.0, coord.1);
+        wprint_file(win, &dir_contents[i].entry);
 
-        if let Ok(metadata) = &dir_contents[i].metadata() {
+        if let Ok(metadata) = &dir_contents[i].entry.metadata() {
             mode = metadata.permissions().mode();
         }
-        if mode != 0 {
+        if dir_contents[i].selected {
             if index == i {
-                file_attr_apply(win.win, (i as i32 - start as i32, 0), mode,
-                    dir_contents[i].path().extension(), ncurses::A_STANDOUT());
+                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | ncurses::A_STANDOUT(), SELECT_COLOR);
             } else {
-                file_attr_apply(win.win, (i as i32 - start as i32, 0), mode,
-                    dir_contents[i].path().extension(), ncurses::A_NORMAL());
+                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD(), SELECT_COLOR);
+            }
+        } else if mode != 0 {
+            if index == i {
+                file_attr_apply(win.win, coord, mode,
+                    dir_contents[i].entry.path().extension(), ncurses::A_STANDOUT());
+            } else {
+                file_attr_apply(win.win, coord, mode,
+                    dir_contents[i].entry.path().extension(), ncurses::A_NORMAL());
             }
         }
 

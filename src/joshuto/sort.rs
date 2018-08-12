@@ -2,7 +2,27 @@ use std;
 use std::cmp;
 use std::fs;
 
-pub fn filter_func_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<fs::DirEntry>
+use joshuto::structs;
+
+pub fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
+{
+    match result {
+        Ok(direntry) => {
+            let dir_entry = structs::JoshutoDirEntry {
+                entry : direntry,
+                selected : false,
+                marked : false,
+            };
+            Some(dir_entry)
+        },
+        Err(e) => {
+            eprintln!("{}", e);
+            None
+        }
+    }
+}
+
+pub fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
 {
     match result {
         Ok(direntry) => {
@@ -11,7 +31,12 @@ pub fn filter_func_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -
                     if file_name.starts_with(".") {
                         None
                     } else {
-                        Some(direntry)
+                        let dir_entry = structs::JoshutoDirEntry {
+                            entry : direntry,
+                            selected : false,
+                            marked : false,
+                        };
+                        Some(dir_entry)
                     }
                 },
                 Err(_e) => {
@@ -28,7 +53,8 @@ pub fn filter_func_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -
 
 
 /* sort by directory first, incase-sensitive */
-pub fn sort_dir_first(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> cmp::Ordering
+pub fn sort_dir_first(file1 : &structs::JoshutoDirEntry,
+        file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
 {
     fn res_ordering(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> Result<cmp::Ordering, std::io::Error> {
 
@@ -61,5 +87,5 @@ pub fn sort_dir_first(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> cmp::Orde
             }
         }
     }
-    res_ordering(file1, file2).unwrap_or(cmp::Ordering::Less)
+    res_ordering(&file1.entry, &file2.entry).unwrap_or(cmp::Ordering::Less)
 }

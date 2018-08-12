@@ -9,26 +9,67 @@ use joshuto::sort;
 
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
+    pub entry : fs::DirEntry,
+    pub selected : bool,
+    pub marked : bool,
+}
+
+#[derive(Debug)]
+pub struct JoshutoColumn {
     pub index : usize,
+    pub start_index : usize,
     pub need_update : bool,
     pub modified : time::SystemTime,
-    pub contents : Option<Vec<fs::DirEntry>>,
+    pub contents : Option<Vec<JoshutoDirEntry>>,
     pub selection : Vec<fs::DirEntry>,
 }
 
-impl JoshutoDirEntry {
+impl JoshutoColumn {
+
+    fn list_dirent(path : &path::Path,
+            filter_func : fn (Result<fs::DirEntry, std::io::Error>)
+                        -> Option<JoshutoDirEntry>) -> Result<Vec<JoshutoDirEntry>, std::io::Error>
+    {
+        match fs::read_dir(path) {
+            Ok(results) => {
+                let mut result_vec : Vec<JoshutoDirEntry> = results
+                        .filter_map(filter_func)
+                        .collect();
+                Ok(result_vec)
+            },
+            Err(e) => {
+                Err(e)
+            },
+        }
+    }
+
+    pub fn read_dir_list(path : &path::Path, show_hidden : bool)
+            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
+    {
+        let dir_contents : Vec<JoshutoDirEntry>;
+        if show_hidden {
+            dir_contents = JoshutoColumn::list_dirent(path,
+                    sort::filter_default)?;
+        } else {
+            dir_contents = JoshutoColumn::list_dirent(path,
+                    sort::filter_hidden_files)?;
+        }
+        Ok(dir_contents)
+    }
 
     pub fn new(path : &path::Path,
-            sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
-            show_hidden : bool) -> Result<JoshutoDirEntry, std::io::Error>
+            sort_func : fn (&JoshutoDirEntry, &JoshutoDirEntry) -> std::cmp::Ordering,
+            show_hidden : bool) -> Result<JoshutoColumn, std::io::Error>
     {
-        let mut dir_contents : Vec<fs::DirEntry> = read_dir_list(path, show_hidden)?;
+        let mut dir_contents = JoshutoColumn::read_dir_list(path, show_hidden)?;
+
         dir_contents.sort_by(&sort_func);
 
         let modified = std::fs::metadata(&path)?.modified()?;
 
-        Ok(JoshutoDirEntry {
-            index: 0,
+        Ok(JoshutoColumn {
+            index : 0,
+            start_index : 0,
             need_update : false,
             modified: modified,
             contents: Some(dir_contents),
@@ -37,12 +78,12 @@ impl JoshutoDirEntry {
     }
 
     pub fn update(&mut self, path : &path::Path,
-        sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
+        sort_func : fn (&JoshutoDirEntry, &JoshutoDirEntry) -> std::cmp::Ordering,
         show_hidden : bool)
     {
         self.need_update = false;
 
-        if let Ok(mut dir_contents) = read_dir_list(path, show_hidden) {
+        if let Ok(mut dir_contents) = JoshutoColumn::read_dir_list(path, show_hidden) {
             dir_contents.sort_by(&sort_func);
             self.contents = Some(dir_contents);
             if self.index >= self.contents.as_ref().unwrap().len() {
@@ -73,6 +114,7 @@ impl JoshutoWindow {
     pub fn new(rows : i32, cols : i32, coords : (usize, usize)) -> JoshutoWindow
     {
         let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
+        ncurses::leaveok(win, true);
 
         ncurses::refresh();
         JoshutoWindow {
@@ -91,6 +133,7 @@ impl JoshutoWindow {
         self.coords = coords;
         self.win = ncurses::newwin(self.rows, self.cols, self.coords.0 as i32,
                 self.coords.1 as i32);
+        ncurses::leaveok(self.win, true);
         ncurses::wnoutrefresh(self.win);
     }
 }
@@ -111,26 +154,25 @@ impl JoshutoView {
         let mut term_rows : i32 = 0;
         let mut term_cols : i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-
         let term_divide : usize = term_cols as usize / 7;
+
         let top_win = JoshutoWindow::new(1, term_cols, (0, 0));
 
         let left_win = JoshutoWindow::new(term_rows - 2,
-            (term_divide * win_ratio.0) as i32, (1, 0));
+            (term_divide * win_ratio.0) as i32 - 1, (1, 0));
 
         let mid_win = JoshutoWindow::new(term_rows - 2,
-            (term_divide * win_ratio.1) as i32,
+            (term_divide * win_ratio.1) as i32 - 1,
             (1, term_divide * win_ratio.0));
 
         let right_win = JoshutoWindow::new(term_rows - 2,
-            term_divide as i32 * 3, (1, term_divide * win_ratio.2));
+            term_divide as i32 * 3 - 1, (1, term_divide * win_ratio.2));
+
         let bot_win = JoshutoWindow::new(1, term_cols,
                 (term_rows as usize - 1, 0));
 
-        ncurses::leaveok(top_win.win, true);
-        ncurses::leaveok(left_win.win, true);
-        ncurses::leaveok(mid_win.win, true);
-        ncurses::leaveok(right_win.win, true);
+        ncurses::scrollok(top_win.win, true);
+        ncurses::scrollok(bot_win.win, true);
 
 /*
         ncurses::scrollok(top_win.win, true);
@@ -174,43 +216,5 @@ impl JoshutoView {
             term_divide as i32 * 3,
             (1, term_divide * self.win_ratio.2));
         self.bot_win.redraw(1, term_cols, (term_rows as usize - 1, 0));
-    }
-}
-
-
-fn list_dirent(path : &path::Path) -> Result<Vec<fs::DirEntry>, std::io::Error>
-{
-    match fs::read_dir(path) {
-        Ok(results) => {
-            let mut result_vec : Vec<fs::DirEntry> = results
-                    .filter_map(sort::filter_func_hidden_files)
-                    .collect();
-            Ok(result_vec)
-        },
-        Err(e) => {
-            Err(e)
-        },
-    }
-}
-
-fn list_dirent_hidden(path : &path::Path) -> Result<Vec<fs::DirEntry>, std::io::Error>
-{
-    match fs::read_dir(path) {
-        Ok(results) => {
-            let results : Result<Vec<fs::DirEntry>, _> = results.collect();
-            results
-        },
-        Err(e) => {
-            Err(e)
-        },
-    }
-}
-
-fn read_dir_list(path : &path::Path, show_hidden : bool) -> Result<Vec<fs::DirEntry>, std::io::Error>
-{
-    if show_hidden {
-        list_dirent_hidden(path)
-    } else {
-        list_dirent(path)
     }
 }

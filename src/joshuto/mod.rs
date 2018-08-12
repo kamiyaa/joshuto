@@ -16,11 +16,8 @@ mod structs;
 mod ui;
 mod unix;
 
-const QUIT      : i32 = 'q' as i32;
-const ENTER     : i32 = '\n' as i32;
-
 pub fn parse_sort_func(sort_method : &Option<String>)
-        -> fn(&std::fs::DirEntry, &std::fs::DirEntry) -> std::cmp::Ordering
+        -> fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering
 {
     match sort_method {
         Some(ref method) => {
@@ -37,9 +34,9 @@ pub fn parse_sort_func(sort_method : &Option<String>)
 }
 
 pub fn refresh_handler(joshuto_view : &mut structs::JoshutoView,
-        curr_path : &path::PathBuf, parent_view : Option<&structs::JoshutoDirEntry>,
-        curr_view : Option<&structs::JoshutoDirEntry>,
-        preview_view : Option<&structs::JoshutoDirEntry>)
+        curr_path : &path::PathBuf, parent_view : Option<&structs::JoshutoColumn>,
+        curr_view : Option<&structs::JoshutoColumn>,
+        preview_view : Option<&structs::JoshutoColumn>)
 {
     let username : String = whoami::username();
     let hostname : String = whoami::hostname();
@@ -64,25 +61,25 @@ pub fn refresh_handler(joshuto_view : &mut structs::JoshutoView,
     }
 
     let index : usize = curr_view.unwrap().index;
-    let dirent : &fs::DirEntry = &curr_view.unwrap().contents
+    let dirent : &structs::JoshutoDirEntry = &curr_view.unwrap().contents
                                     .as_ref().unwrap()[index];
 
-    ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+    ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
 
     ncurses::doupdate();
 }
 
-pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
+pub fn updown(history : &mut HashMap<String, structs::JoshutoColumn>,
         joshuto_view : &structs::JoshutoView,
         old_path : &path::Path,
-        curr : &structs::JoshutoDirEntry,
-        preview_view : Option<structs::JoshutoDirEntry>,
-        sort_func : fn (&fs::DirEntry, &fs::DirEntry) -> std::cmp::Ordering,
-        show_hidden : bool) -> Option<structs::JoshutoDirEntry>
+        curr : &structs::JoshutoColumn,
+        preview_view : Option<structs::JoshutoColumn>,
+        sort_func : fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering,
+        show_hidden : bool) -> Option<structs::JoshutoColumn>
 {
     let index : usize = curr.index;
-    let dirent : &fs::DirEntry = &curr.contents.as_ref().unwrap()[index];
-    let new_path = dirent.path();
+    let dirent : &structs::JoshutoDirEntry = &curr.contents.as_ref().unwrap()[index];
+    let new_path = dirent.entry.path();
 
     let old_osstr = match old_path.to_str() {
             Some(s) => s,
@@ -105,9 +102,9 @@ pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
     ui::display_contents(&joshuto_view.mid_win, curr);
     ncurses::wnoutrefresh(joshuto_view.mid_win.win);
 
-    ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+    ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
 
-    let preview : Option<structs::JoshutoDirEntry>;
+    let preview : Option<structs::JoshutoColumn>;
     if new_path.is_dir() {
         match history::get_or_create(history, new_path.as_path(), sort_func, show_hidden) {
             Ok(s) => {
@@ -125,11 +122,11 @@ pub fn updown(history : &mut HashMap<String, structs::JoshutoDirEntry>,
 
         preview = None;
         ncurses::werase(joshuto_view.right_win.win);
-        if let Ok(metadata) = dirent.metadata() {
+        if let Ok(metadata) = dirent.entry.metadata() {
             let permissions : fs::Permissions = metadata.permissions();
             let mode = permissions.mode();
             if unix::is_reg(mode) {
-                let mime_type = unix::get_mime_type(&dirent);
+                let mime_type = unix::get_mime_type(&dirent.entry);
                 ui::wprint_msg(&joshuto_view.right_win, mime_type.as_str());
             } else {
                 ui::wprint_msg(&joshuto_view.right_win,
@@ -159,7 +156,7 @@ pub fn run(config : &mut JoshutoConfig)
         };
 
     /* TODO: mutable in the future */
-    let sort_func : fn(&std::fs::DirEntry, &std::fs::DirEntry) -> std::cmp::Ordering
+    let sort_func : fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering
         = parse_sort_func(&config.sort_method);
 
     let mut show_hidden : bool =
@@ -169,7 +166,7 @@ pub fn run(config : &mut JoshutoConfig)
         };
 
     /* keep track of where we are in directories */
-    let mut history : HashMap<String, structs::JoshutoDirEntry>
+    let mut history : HashMap<String, structs::JoshutoColumn>
             = history::init_path_history(sort_func, show_hidden);
 
     let mut curr_path : path::PathBuf =
@@ -182,8 +179,8 @@ pub fn run(config : &mut JoshutoConfig)
         };
 
     /* load up directories */
-    let mut curr_view : Option<structs::JoshutoDirEntry> =
-        match structs::JoshutoDirEntry::new(&curr_path.as_path(), sort_func, show_hidden) {
+    let mut curr_view : Option<structs::JoshutoColumn> =
+        match structs::JoshutoColumn::new(&curr_path.as_path(), sort_func, show_hidden) {
             Ok(s) => { Some(s) },
             Err(e) => {
                 eprintln!("{}", e);
@@ -191,7 +188,7 @@ pub fn run(config : &mut JoshutoConfig)
             },
         };
 
-    let mut parent_view : Option<structs::JoshutoDirEntry> =
+    let mut parent_view : Option<structs::JoshutoColumn> =
         match curr_path.parent() {
             Some(parent) => {
                 match history::get_or_create(&mut history, &parent, sort_func, show_hidden) {
@@ -205,16 +202,16 @@ pub fn run(config : &mut JoshutoConfig)
             None => { None },
         };
 
-    let mut preview_view : Option<structs::JoshutoDirEntry>;
+    let mut preview_view : Option<structs::JoshutoColumn>;
     if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
         let index : usize = curr_view.as_ref().unwrap().index;
-        let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
+        let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                         .contents.as_ref().unwrap()[index];
-        ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+        ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
 
-        let preview_path = dirent.path();
+        let preview_path = dirent.entry.path();
         if preview_path.is_dir() {
-            preview_view = match structs::JoshutoDirEntry::new(&preview_path, sort_func, show_hidden) {
+            preview_view = match structs::JoshutoColumn::new(&preview_path, sort_func, show_hidden) {
                 Ok(s) => { Some(s) },
                 Err(e) => {
                     eprintln!("{}", e);
@@ -224,7 +221,7 @@ pub fn run(config : &mut JoshutoConfig)
         } else {
             preview_view = None;
             ncurses::werase(joshuto_view.right_win.win);
-            let mime_type = unix::get_mime_type(&dirent);
+            let mime_type = unix::get_mime_type(&dirent.entry);
             ui::wprint_msg(&joshuto_view.right_win, mime_type.as_str());
             ncurses::wnoutrefresh(joshuto_view.right_win.win);
         }
@@ -251,7 +248,7 @@ pub fn run(config : &mut JoshutoConfig)
 
     loop {
         let ch : i32 = ncurses::getch();
-        if ch == QUIT {
+        if ch == 'q' as i32 {
             break;
         }
 
@@ -264,7 +261,7 @@ pub fn run(config : &mut JoshutoConfig)
                 continue;
             }
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[curr_index].path();
+                                .contents.as_ref().unwrap()[curr_index].entry.path();
 
             curr_view.as_mut().unwrap().index =
                     curr_view.as_ref().unwrap().index - 1;
@@ -282,7 +279,7 @@ pub fn run(config : &mut JoshutoConfig)
                 continue;
             }
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[curr_index].path();
+                                .contents.as_ref().unwrap()[curr_index].entry.path();
 
             curr_view.as_mut().unwrap().index =
                 curr_view.as_ref().unwrap().index + 1;
@@ -298,7 +295,7 @@ pub fn run(config : &mut JoshutoConfig)
                 continue;
             }
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[curr_index].path();
+                                .contents.as_ref().unwrap()[curr_index].entry.path();
 
             curr_view.as_mut().unwrap().index = 0;
 
@@ -315,7 +312,7 @@ pub fn run(config : &mut JoshutoConfig)
                 continue;
             }
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[curr_index].path();
+                                .contents.as_ref().unwrap()[curr_index].entry.path();
 
             curr_view.as_mut().unwrap().index = dir_len - 1;
 
@@ -333,7 +330,7 @@ pub fn run(config : &mut JoshutoConfig)
             }
 
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[curr_index].path();
+                                .contents.as_ref().unwrap()[curr_index].entry.path();
 
             let half_page : i32 = joshuto_view.mid_win.cols / 2;
             if curr_index + half_page as usize >= dir_len {
@@ -354,7 +351,7 @@ pub fn run(config : &mut JoshutoConfig)
             }
 
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[curr_index].path();
+                                .contents.as_ref().unwrap()[curr_index].entry.path();
 
             let half_page : i32 = joshuto_view.mid_win.cols / 2;
             if curr_index < half_page as usize {
@@ -379,7 +376,7 @@ pub fn run(config : &mut JoshutoConfig)
                         let index : usize = curr_view.as_ref().unwrap().index;
                         let path : path::PathBuf = curr_view.as_ref().unwrap()
                                             .contents.as_ref()
-                                            .unwrap()[index].path();
+                                            .unwrap()[index].entry.path();
 
                         let tmp_key : String =
                                 format!("{}", path.as_path().to_str().unwrap());
@@ -419,14 +416,14 @@ pub fn run(config : &mut JoshutoConfig)
                 },
             };
             let index : usize = curr_view.as_ref().unwrap().index;
-            let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
+            let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                             .contents.as_ref().unwrap()[index];
             ui::wprint_path(&joshuto_view.top_win, username.as_str(),
-                    hostname.as_str(), &dirent.path());
-            ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+                    hostname.as_str(), &dirent.entry.path());
+            ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
             ncurses::doupdate();
 
-        } else if ch == ncurses::KEY_RIGHT || ch == ENTER {
+        } else if ch == ncurses::KEY_RIGHT || ch == '\n' as i32 {
             if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
                 continue;
             }
@@ -434,7 +431,7 @@ pub fn run(config : &mut JoshutoConfig)
             let index = curr_view.as_ref().unwrap().index;
             let path = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
-                                .unwrap()[index].path();
+                                .unwrap()[index].entry.path();
             if path.is_dir() {
                 match env::set_current_dir(&path) {
                     Ok(_s) => {
@@ -467,9 +464,9 @@ pub fn run(config : &mut JoshutoConfig)
                         }
 
                         let index : usize = curr_view.as_ref().unwrap().index;
-                        let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
+                        let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap()[index];
-                        let new_path = dirent.path();
+                        let new_path = dirent.entry.path();
                         ui::wprint_path(&joshuto_view.top_win,
                                 username.as_str(), hostname.as_str(), &new_path);
 
@@ -486,7 +483,7 @@ pub fn run(config : &mut JoshutoConfig)
                                 ui::display_contents(&joshuto_view.right_win, &s);
                                 ncurses::wnoutrefresh(joshuto_view.right_win.win);
                             }
-                            ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+                            ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
                         } else {
                             ncurses::werase(joshuto_view.right_win.win);
                             ui::wprint_err(&joshuto_view.right_win, "Not a directory");
@@ -503,13 +500,13 @@ pub fn run(config : &mut JoshutoConfig)
                 use std::os::unix::fs::PermissionsExt;
 
                 let index : usize = curr_view.as_ref().unwrap().index;
-                let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
+                let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                                 .contents.as_ref().unwrap()[index];
-                if let Ok(metadata) = dirent.metadata() {
+                if let Ok(metadata) = dirent.entry.metadata() {
                     let permissions : fs::Permissions = metadata.permissions();
                     let mode = permissions.mode();
                     if unix::is_reg(mode) {
-                        let mime_type : String = unix::get_mime_type(&dirent);
+                        let mime_type : String = unix::get_mime_type(&dirent.entry);
 
                         /* check if there is a BTreeMap of programs to execute */
                         if let Some(mime_map) = &config.mimetypes {
@@ -522,7 +519,7 @@ pub fn run(config : &mut JoshutoConfig)
                                     for i in 1..mime_args_len {
                                         args_list.push(mime_args[i].clone());
                                     }
-                                    args_list.push(dirent.file_name().into_string().unwrap());
+                                    args_list.push(dirent.entry.file_name().into_string().unwrap());
 
                                     ncurses::savetty();
                                     ncurses::endwin();
@@ -566,30 +563,30 @@ pub fn run(config : &mut JoshutoConfig)
                 if let Some(s) = preview_view.as_mut() {
                     if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
                         let index : usize = curr_view.as_ref().unwrap().index;
-                        let dirent : &fs::DirEntry = &curr_view.as_ref().unwrap()
+                        let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                         .contents.as_ref().unwrap()[index];
 
                         ui::wprint_path(&joshuto_view.top_win, username.as_str(),
-                            hostname.as_str(), &dirent.path());
+                            hostname.as_str(), &dirent.entry.path());
 
-                        s.update(dirent.path().as_path(), sort_func, show_hidden);
+                        s.update(dirent.entry.path().as_path(), sort_func, show_hidden);
 
                         ui::display_contents(&joshuto_view.right_win, &s);
                         ncurses::wnoutrefresh(joshuto_view.right_win.win);
 
-                        ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+                        ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
                     }
                 }
                 ncurses::doupdate();
             }
-        } else if ch == 330 { // delete button
+        } else if ch == ncurses::KEY_DC { // delete button
             if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
                 continue;
             }
             let index = curr_view.as_ref().unwrap().index;
             let file_name = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
-                                .unwrap()[index].file_name();
+                                .unwrap()[index].entry.file_name();
             ui::wprint_msg(&joshuto_view.bot_win,
                 format!("Delete {:?}? (y/n)", file_name).as_str());
             ncurses::doupdate();
@@ -597,7 +594,7 @@ pub fn run(config : &mut JoshutoConfig)
             if ch2 == 'y' as i32 {
                 let path = &curr_view.as_ref().unwrap()
                                     .contents.as_ref()
-                                    .unwrap()[index].path();
+                                    .unwrap()[index].entry.path();
                 match std::fs::remove_file(path) {
                     Ok(_s) => {
                         curr_view.as_mut().unwrap().update(
@@ -614,11 +611,45 @@ pub fn run(config : &mut JoshutoConfig)
                     }
                 }
             } else {
-                let dirent = &curr_view.as_ref().unwrap()
+                let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
                                 .unwrap()[index];
-                ui::wprint_file_info(joshuto_view.bot_win.win, dirent);
+                ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
             }
+            ncurses::doupdate();
+        } else if ch == 'r' as i32 {
+            if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
+                continue;
+            }
+
+            let index = curr_view.as_ref().unwrap().index;
+            let dirent = &curr_view.as_ref().unwrap()
+                                .contents.as_ref()
+                                .unwrap()[index];
+
+            ncurses::wclear(joshuto_view.bot_win.win);
+            let mut str_input : String = String::new();
+            ncurses::mvwprintw(joshuto_view.bot_win.win, 0, 0, "open_with:");
+            ncurses::wgetstr(joshuto_view.bot_win.win, &mut str_input);
+
+            ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
+            ncurses::doupdate();
+
+        } else if ch == ' ' as i32 {
+            let index = curr_view.as_ref().unwrap().index;
+            curr_view.as_mut().unwrap().contents.as_mut().unwrap()[index].selected
+                = !curr_view.as_ref().unwrap().contents.as_ref().unwrap()[index].selected;
+            let dir_len = curr_view.as_ref().unwrap()
+                    .contents.as_ref().unwrap().len();
+
+            if index + 1 >= dir_len {
+                continue;
+            }
+            curr_view.as_mut().unwrap().index =
+                curr_view.as_ref().unwrap().index + 1;
+
+            ui::display_contents(&joshuto_view.mid_win, curr_view.as_ref().unwrap());
+            ncurses::wnoutrefresh(joshuto_view.mid_win.win);
             ncurses::doupdate();
         } else {
             ui::wprint_err(&joshuto_view.bot_win,
