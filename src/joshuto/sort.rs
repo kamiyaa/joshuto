@@ -58,6 +58,19 @@ impl SortType {
             _ => true,
         }
     }
+
+    pub fn set_show_hidden(&mut self, show_hidden: bool)
+    {
+        match self {
+            SortType::SortNatural(ref mut ss) => {
+                ss.show_hidden = show_hidden;
+            },
+            SortType::SortMtime(ref mut ss) => {
+                ss.show_hidden = show_hidden;
+            },
+            _ => {},
+        }
+    }
 }
 
 #[derive(Debug)]

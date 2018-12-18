@@ -124,7 +124,7 @@ pub fn display_contents(win : &structs::JoshutoWindow,
 
     let mut mode : u32 = 0;
 
-    let index = entry.index;
+    let index = entry.index as usize;
     let dir_contents = entry.contents.as_ref().unwrap();
     let vec_len = dir_contents.len();
     if vec_len == 0 {

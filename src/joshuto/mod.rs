@@ -42,11 +42,14 @@ pub fn refresh_handler(joshuto_view : &mut structs::JoshutoView,
         ncurses::wnoutrefresh(joshuto_view.right_win.win);
     }
 
-    let index : usize = curr_view.unwrap().index;
-    let dirent : &structs::JoshutoDirEntry = &curr_view.unwrap().contents
-                                    .as_ref().unwrap()[index];
+    let index = curr_view.unwrap().index;
+    if (index > 0) {
+        let index : usize = index as usize;
+        let dirent : &structs::JoshutoDirEntry = &curr_view.unwrap().contents
+                                        .as_ref().unwrap()[index];
 
-    ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
+        ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
+    }
 
     ncurses::doupdate();
 }
@@ -124,7 +127,7 @@ pub fn updown(history : &mut HashMap<String, structs::JoshutoDirList>,
 }
 */
 
-pub fn run(config : config::JoshutoConfig)
+pub fn run(mut config : config::JoshutoConfig)
 {
     ui::init_ncurses();
 
@@ -149,7 +152,7 @@ pub fn run(config : config::JoshutoConfig)
 
     /* load up directories */
     let mut curr_view : Option<structs::JoshutoDirList> =
-        match history.pop_or_create(&parent, &config.sort_type) {
+        match history.pop_or_create(&curr_path, &config.sort_type) {
             Ok(s) => { Some(s) },
             Err(e) => {
                 eprintln!("{}", e);
@@ -172,8 +175,9 @@ pub fn run(config : config::JoshutoConfig)
         };
 
     let mut preview_view : Option<structs::JoshutoDirList>;
-    if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
-        let index : usize = curr_view.as_ref().unwrap().index;
+    if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 &&
+        curr_view.as_ref().unwrap().index > 0 {
+        let index : usize = curr_view.as_ref().unwrap().index as usize;
         let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                         .contents.as_ref().unwrap()[index];
         ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
@@ -225,7 +229,7 @@ pub fn run(config : config::JoshutoConfig)
             refresh_handler(&mut joshuto_view, &curr_path, parent_view.as_ref(),
                     curr_view.as_ref(), preview_view.as_ref());
         } else if ch == ncurses::KEY_UP {
-            let curr_index = curr_view.as_ref().unwrap().index;
+            let curr_index = curr_view.as_ref().unwrap().index as usize;
             if curr_index == 0 {
                 continue;
             }
@@ -241,7 +245,7 @@ pub fn run(config : config::JoshutoConfig)
                     sort_func, show_hidden); */
 
         } else if ch == ncurses::KEY_DOWN {
-            let curr_index = curr_view.as_ref().unwrap().index;
+            let curr_index = curr_view.as_ref().unwrap().index as usize;
             let dir_len = curr_view.as_ref().unwrap()
                             .contents.as_ref().unwrap().len();
 
@@ -260,7 +264,7 @@ pub fn run(config : config::JoshutoConfig)
                     sort_func, show_hidden);*/
 
         } else if ch == ncurses::KEY_HOME {
-            let curr_index = curr_view.as_ref().unwrap().index;
+            let curr_index = curr_view.as_ref().unwrap().index as usize;
 
             if curr_index == 0 {
                 continue;
@@ -277,7 +281,7 @@ pub fn run(config : config::JoshutoConfig)
 */
 
         } else if ch == ncurses::KEY_END {
-            let curr_index = curr_view.as_ref().unwrap().index;
+            let curr_index = curr_view.as_ref().unwrap().index as usize;
             let dir_len = curr_view.as_ref().unwrap()
                             .contents.as_ref().unwrap().len();
 
@@ -287,7 +291,7 @@ pub fn run(config : config::JoshutoConfig)
             let old_path : path::PathBuf = curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap()[curr_index].entry.path();
 
-            curr_view.as_mut().unwrap().index = dir_len - 1;
+            curr_view.as_mut().unwrap().index = (dir_len - 1) as i32;
 
 /*
             preview_view = updown(&mut history, &joshuto_view, &old_path,
@@ -296,7 +300,7 @@ pub fn run(config : config::JoshutoConfig)
 */
 
         } else if ch == ncurses::KEY_NPAGE {
-            let curr_index = curr_view.as_ref().unwrap().index;
+            let curr_index = curr_view.as_ref().unwrap().index as usize;
             let dir_len = curr_view.as_ref().unwrap()
                             .contents.as_ref().unwrap().len();
 
@@ -309,10 +313,9 @@ pub fn run(config : config::JoshutoConfig)
 
             let half_page : i32 = joshuto_view.mid_win.cols / 2;
             if curr_index + half_page as usize >= dir_len {
-                curr_view.as_mut().unwrap().index = dir_len - 1;
+                curr_view.as_mut().unwrap().index = (dir_len - 1) as i32;
             } else {
-                curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index
-                    + half_page as usize;
+                curr_view.as_mut().unwrap().index += half_page;
             }
 
 /*
@@ -322,7 +325,7 @@ pub fn run(config : config::JoshutoConfig)
 */
 
         } else if ch == ncurses::KEY_PPAGE {
-            let curr_index = curr_view.as_ref().unwrap().index;
+            let curr_index = curr_view.as_ref().unwrap().index as usize;
             if curr_index == 0 {
                 continue;
             }
@@ -334,8 +337,7 @@ pub fn run(config : config::JoshutoConfig)
             if curr_index < half_page as usize {
                 curr_view.as_mut().unwrap().index = 0;
             } else {
-                curr_view.as_mut().unwrap().index = curr_view.as_ref().unwrap().index
-                    - half_page as usize;
+                curr_view.as_mut().unwrap().index -= half_page;
             }
 
 /*
@@ -352,7 +354,7 @@ pub fn run(config : config::JoshutoConfig)
             match env::set_current_dir(curr_path.as_path()) {
                 Ok(_s) => {
                     if let Some(s) = preview_view {
-                        let index : usize = curr_view.as_ref().unwrap().index;
+                        let index : usize = curr_view.as_ref().unwrap().index as usize;
                         let path : path::PathBuf = curr_view.as_ref().unwrap()
                                             .contents.as_ref()
                                             .unwrap()[index].entry.path();
@@ -391,7 +393,7 @@ pub fn run(config : config::JoshutoConfig)
                     parent_view = None;
                 },
             };
-            let index : usize = curr_view.as_ref().unwrap().index;
+            let index : usize = curr_view.as_ref().unwrap().index as usize;
             let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                             .contents.as_ref().unwrap()[index];
             ui::wprint_path(&joshuto_view.top_win, username.as_str(),
@@ -404,7 +406,7 @@ pub fn run(config : config::JoshutoConfig)
                 continue;
             }
 
-            let index = curr_view.as_ref().unwrap().index;
+            let index = curr_view.as_ref().unwrap().index as usize;
             let path = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
                                 .unwrap()[index].entry.path();
@@ -437,7 +439,7 @@ pub fn run(config : config::JoshutoConfig)
                             continue;
                         }
 
-                        let index : usize = curr_view.as_ref().unwrap().index;
+                        let index : usize = curr_view.as_ref().unwrap().index as usize;
                         let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap()[index];
                         let new_path = dirent.entry.path();
@@ -475,8 +477,11 @@ pub fn run(config : config::JoshutoConfig)
             let ch2 : i32 = ncurses::getch();
             /* toggle show hidden */
             if ch2 == 'h' as i32 {
-                show_hidden = !show_hidden;
-                history.depecrate_all_entries();
+                {
+                    let opposite = !config.sort_type.show_hidden();
+                    config.sort_type.set_show_hidden(opposite);
+                    history.depecrate_all_entries();
+                }
 
                 if let Some(s) = curr_view.as_mut() {
                     s.update(&curr_path, &config.sort_type);
@@ -494,7 +499,7 @@ pub fn run(config : config::JoshutoConfig)
 
                 if let Some(s) = preview_view.as_mut() {
                     if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
-                        let index : usize = curr_view.as_ref().unwrap().index;
+                        let index : usize = curr_view.as_ref().unwrap().index as usize;
                         let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                         .contents.as_ref().unwrap()[index];
 
@@ -515,7 +520,7 @@ pub fn run(config : config::JoshutoConfig)
             if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
                 continue;
             }
-            let index = curr_view.as_ref().unwrap().index;
+            let index = curr_view.as_ref().unwrap().index as usize;
             let file_name = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
                                 .unwrap()[index].entry.file_name();
@@ -554,7 +559,7 @@ pub fn run(config : config::JoshutoConfig)
                 continue;
             }
 
-            let index = curr_view.as_ref().unwrap().index;
+            let index = curr_view.as_ref().unwrap().index as usize;
             let dirent = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
                                 .unwrap()[index];
@@ -568,7 +573,7 @@ pub fn run(config : config::JoshutoConfig)
             ncurses::doupdate();
 
         } else if ch == ' ' as i32 {
-            let index = curr_view.as_ref().unwrap().index;
+            let index = curr_view.as_ref().unwrap().index as usize;
             curr_view.as_mut().unwrap().contents.as_mut().unwrap()[index].selected
                 = !curr_view.as_ref().unwrap().contents.as_ref().unwrap()[index].selected;
             let dir_len = curr_view.as_ref().unwrap()

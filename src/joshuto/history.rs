@@ -36,7 +36,7 @@ impl History {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.as_ref().unwrap().iter().enumerate() {
                             if dirent.entry.path() == pathbuf {
-                                s.index = i;
+                                s.index = i as i32;
                                 break;
                             }
                         }

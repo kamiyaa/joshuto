@@ -17,7 +17,7 @@ pub struct JoshutoDirEntry {
 
 #[derive(Debug)]
 pub struct JoshutoDirList {
-    pub index : usize,
+    pub index : i32,
     pub need_update : bool,
     pub modified : time::SystemTime,
     pub contents : Option<Vec<JoshutoDirEntry>>,
@@ -35,7 +35,7 @@ impl JoshutoDirList {
         let modified = std::fs::metadata(&path)?.modified()?;
 
         Ok(JoshutoDirList {
-            index : 0,
+            index : -1,
             need_update : false,
             modified: modified,
             contents: Some(dir_contents),
@@ -85,9 +85,9 @@ impl JoshutoDirList {
         if let Ok(mut dir_contents) = JoshutoDirList::read_dir_list(path, sort_type) {
             dir_contents.sort_by(&sort_func);
             self.contents = Some(dir_contents);
-            if self.index >= self.contents.as_ref().unwrap().len() {
+            if self.index as usize >= self.contents.as_ref().unwrap().len() {
                 if self.contents.as_ref().unwrap().len() > 0 {
-                    self.index = self.contents.as_ref().unwrap().len() - 1;
+                    self.index = (self.contents.as_ref().unwrap().len() - 1) as i32;
                 }
             }
         }
