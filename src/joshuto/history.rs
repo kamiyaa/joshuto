@@ -8,78 +8,79 @@ use std::path;
 use std::process;
 
 use joshuto::structs;
+use joshuto::config;
+use joshuto::sort;
 
-pub fn get_or_create(map : &mut HashMap<String, structs::JoshutoColumn>,
-        path : &path::Path,
-        sort_func : fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering,
-        show_hidden : bool) -> Result<structs::JoshutoColumn, std::io::Error>
-{
-    let key = format!("{}", path.to_str().unwrap());
-//  eprintln!("Looking for {} in map...", key);
-    match map.entry(key) {
-        Entry::Occupied(entry) => {
-            let tmp = entry.remove_entry();
+pub struct History {
+    pub map : HashMap<path::PathBuf, structs::JoshutoDirList>,
+}
 
-            let metadata = fs::metadata(&path)?;
-            let mut dir_entry = tmp.1;
-            let modified = metadata.modified()?;
-            if modified > dir_entry.modified {
-                dir_entry.modified = modified;
-                dir_entry.need_update = true;
-            }
-            if dir_entry.need_update {
-                dir_entry.update(&path, sort_func, show_hidden);
-            }
-            Ok(dir_entry)
-        },
-        Entry::Vacant(_entry) => {
-//            eprintln!("did not find value, creating new one...");
-            structs::JoshutoColumn::new(&path, sort_func, show_hidden)
+impl History {
+
+    pub fn new() -> Self
+    {
+        History {
+            map: HashMap::new()
         }
     }
-}
 
-pub fn depecrate_all_entries(map : &mut HashMap<String, structs::JoshutoColumn>)
-{
-    for (_, direntry) in map.iter_mut() {
-        direntry.need_update = true;
-    }
+    pub fn populate_to_root(&mut self, pathbuf: &path::PathBuf,
+       sort_type: &sort::SortType)
+    {
+        let mut pathbuf = pathbuf.clone();
 
-}
-
-pub fn init_path_history(
-        sort_func : fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering,
-        show_hidden : bool) -> HashMap<String, structs::JoshutoColumn>
-{
-    match env::current_dir() {
-        Ok(mut pathbuf) => {
-            let mut history : HashMap<String, structs::JoshutoColumn>
-                    = HashMap::new();
-            while pathbuf.parent() != None {
-                match structs::JoshutoColumn::new(pathbuf.parent().unwrap(), sort_func, show_hidden) {
+        while pathbuf.parent() != None {
+            {
+                let parent = pathbuf.parent().unwrap();
+                match structs::JoshutoDirList::new(parent, sort_type) {
                     Ok(mut s) => {
-                        let parent = pathbuf.parent().unwrap();
-                        let parent_str = format!("{}", parent.to_str().unwrap());
                         for (i, dirent) in s.contents.as_ref().unwrap().iter().enumerate() {
                             if dirent.entry.path() == pathbuf {
                                 s.index = i;
                                 break;
                             }
                         }
-
-                        history.insert(parent_str, s);
+                        self.map.insert(parent.to_path_buf(), s);
                     },
                     Err(e) => { eprintln!("{}", e); }
                 };
-                if pathbuf.pop() == false {
-                    break;
-                }
             }
-            history
-        },
-        Err(e) => {
-            eprintln!("{}", e);
-            process::exit(1);
+            if pathbuf.pop() == false {
+                break;
+            }
         }
+    }
+
+    pub fn pop_or_create(&mut self, path : &path::Path,
+       sort_type: &sort::SortType)
+            -> Result<structs::JoshutoDirList, std::io::Error>
+    {
+        match self.map.remove(path) {
+            Some(mut dir_entry) => {
+                let metadata = fs::metadata(&path)?;
+                let modified = metadata.modified()?;
+                if modified > dir_entry.modified {
+                    dir_entry.modified = modified;
+                    dir_entry.need_update = true;
+                }
+                if dir_entry.need_update {
+                    dir_entry.update(&path, &sort_type);
+                }
+                Ok(dir_entry)
+            },
+            None => {
+                structs::JoshutoDirList::new(&path, &sort_type)
+            }
+        }
+
+    }
+
+
+    pub fn depecrate_all_entries(&mut self)
+    {
+        for (_, direntry) in self.map.iter_mut() {
+            direntry.need_update = true;
+        }
+
     }
 }

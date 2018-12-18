@@ -119,7 +119,7 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
 }
 
 pub fn display_contents(win : &structs::JoshutoWindow,
-        entry : &structs::JoshutoColumn) {
+        entry : &structs::JoshutoDirList) {
     use std::os::unix::fs::PermissionsExt;
 
     let mut mode : u32 = 0;

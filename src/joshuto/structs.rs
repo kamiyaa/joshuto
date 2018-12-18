@@ -6,6 +6,7 @@ use std::path;
 use std::time;
 
 use joshuto::sort;
+use joshuto::config;
 
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
@@ -15,16 +16,32 @@ pub struct JoshutoDirEntry {
 }
 
 #[derive(Debug)]
-pub struct JoshutoColumn {
+pub struct JoshutoDirList {
     pub index : usize,
-    pub start_index : usize,
     pub need_update : bool,
     pub modified : time::SystemTime,
     pub contents : Option<Vec<JoshutoDirEntry>>,
     pub selection : Vec<fs::DirEntry>,
 }
 
-impl JoshutoColumn {
+impl JoshutoDirList {
+
+    pub fn new(path: &path::Path, sort_type: &sort::SortType) -> Result<JoshutoDirList, std::io::Error>
+    {
+        let mut dir_contents = JoshutoDirList::read_dir_list(path, sort_type)?;
+
+        dir_contents.sort_by(&sort_type.compare_func());
+
+        let modified = std::fs::metadata(&path)?.modified()?;
+
+        Ok(JoshutoDirList {
+            index : 0,
+            need_update : false,
+            modified: modified,
+            contents: Some(dir_contents),
+            selection: Vec::new(),
+        })
+    }
 
     fn list_dirent(path : &path::Path,
             filter_func : fn (Result<fs::DirEntry, std::io::Error>)
@@ -43,47 +60,29 @@ impl JoshutoColumn {
         }
     }
 
-    pub fn read_dir_list(path : &path::Path, show_hidden : bool)
+    pub fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
             -> Result<Vec<JoshutoDirEntry>, std::io::Error>
     {
         let dir_contents : Vec<JoshutoDirEntry>;
-        if show_hidden {
-            dir_contents = JoshutoColumn::list_dirent(path,
-                    sort::filter_default)?;
+        let filter_func = sort_type.filter_func();
+
+        if sort_type.show_hidden() {
+            dir_contents = JoshutoDirList::list_dirent(path,
+                    filter_func)?;
         } else {
-            dir_contents = JoshutoColumn::list_dirent(path,
-                    sort::filter_hidden_files)?;
+            dir_contents = JoshutoDirList::list_dirent(path,
+                    filter_func)?;
         }
         Ok(dir_contents)
     }
 
-    pub fn new(path : &path::Path,
-            sort_func : fn (&JoshutoDirEntry, &JoshutoDirEntry) -> std::cmp::Ordering,
-            show_hidden : bool) -> Result<JoshutoColumn, std::io::Error>
+    pub fn update(&mut self, path : &path::Path, sort_type: &sort::SortType)
     {
-        let mut dir_contents = JoshutoColumn::read_dir_list(path, show_hidden)?;
+        let sort_func = sort_type.compare_func();
 
-        dir_contents.sort_by(&sort_func);
-
-        let modified = std::fs::metadata(&path)?.modified()?;
-
-        Ok(JoshutoColumn {
-            index : 0,
-            start_index : 0,
-            need_update : false,
-            modified: modified,
-            contents: Some(dir_contents),
-            selection: Vec::new(),
-        })
-    }
-
-    pub fn update(&mut self, path : &path::Path,
-        sort_func : fn (&JoshutoDirEntry, &JoshutoDirEntry) -> std::cmp::Ordering,
-        show_hidden : bool)
-    {
         self.need_update = false;
 
-        if let Ok(mut dir_contents) = JoshutoColumn::read_dir_list(path, show_hidden) {
+        if let Ok(mut dir_contents) = JoshutoDirList::read_dir_list(path, sort_type) {
             dir_contents.sort_by(&sort_func);
             self.contents = Some(dir_contents);
             if self.index >= self.contents.as_ref().unwrap().len() {

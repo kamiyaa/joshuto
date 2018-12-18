@@ -4,7 +4,84 @@ use std::fs;
 
 use joshuto::structs;
 
-pub fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
+#[derive(Debug)]
+pub enum SortType {
+    SortNatural(SortStruct),
+    SortMtime(SortStruct),
+}
+
+impl SortType {
+    pub fn compare_func(&self) -> fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering
+    {
+        match (*self) {
+            SortType::SortNatural(ref ss) => {
+                sort_dir_first
+            }
+            SortType::SortMtime(ref ss) => {
+                sort_dir_first
+            }
+        }
+    }
+
+    pub fn filter_func(&self) -> fn(Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
+    {
+        match (*self) {
+            SortType::SortNatural(ref ss) => {
+                if ss.show_hidden {
+                    filter_default
+                } else {
+                    filter_hidden_files
+                }
+            },
+            SortType::SortMtime(ref ss) => {
+                if ss.show_hidden {
+                    filter_default
+                } else {
+                    filter_hidden_files
+                }
+            },
+            _ => {
+                filter_hidden_files
+            },
+        }
+    }
+
+    pub fn show_hidden(&self) -> bool
+    {
+        match (*self) {
+            SortType::SortNatural(ref ss) => {
+                ss.show_hidden
+            },
+            SortType::SortMtime(ref ss) => {
+                ss.show_hidden
+            },
+            _ => true,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct SortStruct {
+    pub show_hidden: bool,
+    pub folders_first: bool,
+    pub case_sensitive: bool,
+    pub reverse: bool,
+}
+
+impl SortStruct {
+
+    pub fn new() -> Self
+    {
+        SortStruct {
+            show_hidden: false,
+            folders_first: true,
+            case_sensitive: false,
+            reverse: false
+        }
+    }
+}
+
+fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
 {
     match result {
         Ok(direntry) => {
@@ -22,7 +99,7 @@ pub fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<s
     }
 }
 
-pub fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
+fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
 {
     match result {
         Ok(direntry) => {
