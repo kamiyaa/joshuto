@@ -13,11 +13,11 @@ pub enum SortType {
 impl SortType {
     pub fn compare_func(&self) -> fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering
     {
-        match (*self) {
-            SortType::SortNatural(ref ss) => {
+        match *self {
+            SortType::SortNatural(_) => {
                 sort_dir_first
             }
-            SortType::SortMtime(ref ss) => {
+            SortType::SortMtime(_) => {
                 sort_dir_first
             }
         }
@@ -25,7 +25,7 @@ impl SortType {
 
     pub fn filter_func(&self) -> fn(Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
     {
-        match (*self) {
+        match *self {
             SortType::SortNatural(ref ss) => {
                 if ss.show_hidden {
                     filter_default
@@ -39,23 +39,19 @@ impl SortType {
                 } else {
                     filter_hidden_files
                 }
-            },
-            _ => {
-                filter_hidden_files
             },
         }
     }
 
     pub fn show_hidden(&self) -> bool
     {
-        match (*self) {
+        match *self {
             SortType::SortNatural(ref ss) => {
                 ss.show_hidden
             },
             SortType::SortMtime(ref ss) => {
                 ss.show_hidden
             },
-            _ => true,
         }
     }
 
@@ -68,7 +64,6 @@ impl SortType {
             SortType::SortMtime(ref mut ss) => {
                 ss.show_hidden = show_hidden;
             },
-            _ => {},
         }
     }
 }
@@ -79,19 +74,6 @@ pub struct SortStruct {
     pub folders_first: bool,
     pub case_sensitive: bool,
     pub reverse: bool,
-}
-
-impl SortStruct {
-
-    pub fn new() -> Self
-    {
-        SortStruct {
-            show_hidden: false,
-            folders_first: true,
-            case_sensitive: false,
-            reverse: false
-        }
-    }
 }
 
 fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>
