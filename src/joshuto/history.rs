@@ -1,14 +1,10 @@
 
 use std;
 use std::collections::HashMap;
-use std::collections::hash_map::Entry;
-use std::env;
 use std::fs;
 use std::path;
-use std::process;
 
 use joshuto::structs;
-use joshuto::config;
 use joshuto::sort;
 
 pub struct History {
@@ -24,6 +20,11 @@ impl History {
         }
     }
 
+    pub fn insert(&mut self, pathbuf: path::PathBuf, dirlist: structs::JoshutoDirList)
+    {
+        self.map.insert(pathbuf, dirlist);
+    }
+
     pub fn populate_to_root(&mut self, pathbuf: &path::PathBuf,
        sort_type: &sort::SortType)
     {
@@ -31,8 +32,8 @@ impl History {
 
         while pathbuf.parent() != None {
             {
-                let parent = pathbuf.parent().unwrap();
-                match structs::JoshutoDirList::new(parent, sort_type) {
+                let parent = pathbuf.parent().unwrap().to_path_buf();
+                match structs::JoshutoDirList::new(parent.as_path(), sort_type) {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.as_ref().unwrap().iter().enumerate() {
                             if dirent.entry.path() == pathbuf {
@@ -40,7 +41,7 @@ impl History {
                                 break;
                             }
                         }
-                        self.map.insert(parent.to_path_buf(), s);
+                        self.map.insert(parent, s);
                     },
                     Err(e) => { eprintln!("{}", e); }
                 };
