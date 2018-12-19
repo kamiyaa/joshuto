@@ -6,7 +6,7 @@ use std::path;
 use std::time;
 
 use joshuto::sort;
-use joshuto::config;
+use joshuto::ui;
 
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
@@ -34,8 +34,14 @@ impl JoshutoDirList {
 
         let modified = std::fs::metadata(&path)?.modified()?;
 
+        let index = if dir_contents.len() > 0 {
+                0
+            } else {
+                -1
+            };
+
         Ok(JoshutoDirList {
-            index : -1,
+            index,
             need_update : false,
             modified: modified,
             contents: Some(dir_contents),
@@ -43,10 +49,16 @@ impl JoshutoDirList {
         })
     }
 
-    fn list_dirent(path : &path::Path,
-            filter_func : fn (Result<fs::DirEntry, std::io::Error>)
-                        -> Option<JoshutoDirEntry>) -> Result<Vec<JoshutoDirEntry>, std::io::Error>
+    pub fn display_contents(&self, win: &JoshutoWindow)
     {
+        ui::display_contents(win, self);
+    }
+
+    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
+            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
+    {
+        let filter_func = sort_type.filter_func();
+
         match fs::read_dir(path) {
             Ok(results) => {
                 let mut result_vec : Vec<JoshutoDirEntry> = results
@@ -58,22 +70,6 @@ impl JoshutoDirList {
                 Err(e)
             },
         }
-    }
-
-    pub fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
-            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
-    {
-        let dir_contents : Vec<JoshutoDirEntry>;
-        let filter_func = sort_type.filter_func();
-
-        if sort_type.show_hidden() {
-            dir_contents = JoshutoDirList::list_dirent(path,
-                    filter_func)?;
-        } else {
-            dir_contents = JoshutoDirList::list_dirent(path,
-                    filter_func)?;
-        }
-        Ok(dir_contents)
     }
 
     pub fn update(&mut self, path : &path::Path, sort_type: &sort::SortType)
