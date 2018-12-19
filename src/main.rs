@@ -5,9 +5,8 @@ extern crate ncurses;
 extern crate toml;
 extern crate xdg;
 
-use std::collections::BTreeMap;
+// use std::collections::BTreeMap;
 use std::env;
-use std::fs;
 
 mod joshuto;
 
@@ -18,12 +17,12 @@ fn main()
 {
     let args: Vec<String> = env::args().collect();
 
-    println!("args:\n{:?}", args);
+    println!("args: {:?}", args);
 
     let config = joshuto::config::JoshutoRawConfig::new();
     let config = config.to_config();
 
-    println!("config:\n{:?}", config);
+    println!("config:\n{:#?}", config);
 
     joshuto::run(config);
 }

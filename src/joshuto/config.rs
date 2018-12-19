@@ -1,8 +1,7 @@
+extern crate whoami;
 
-use std;
 use joshuto;
 use joshuto::sort;
-use joshuto::structs;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -35,7 +34,7 @@ impl JoshutoRawConfig {
         }
         let sort_struct = sort::SortStruct {
                 show_hidden,
-                folders_first: false,
+                folders_first: true,
                 case_sensitive: false,
                 reverse: false,
             };
@@ -46,8 +45,12 @@ impl JoshutoRawConfig {
             sort_type = sort::SortType::SortNatural(sort_struct);
         }
 
+        let username : String = whoami::username();
+        let hostname : String = whoami::hostname();
 
         JoshutoConfig {
+            username,
+            hostname,
             sort_type,
             column_ratio,
             mimetypes: HashMap::new(),
@@ -57,7 +60,9 @@ impl JoshutoRawConfig {
 
 #[derive(Debug)]
 pub struct JoshutoConfig {
-    pub sort_type : joshuto::sort::SortType,
-    pub column_ratio : (usize, usize, usize),
-    pub mimetypes : HashMap<String, String>,
+    pub username: String,
+    pub hostname: String,
+    pub sort_type: joshuto::sort::SortType,
+    pub column_ratio: (usize, usize, usize),
+    pub mimetypes: HashMap<String, String>,
 }
