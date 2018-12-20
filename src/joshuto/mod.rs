@@ -8,8 +8,8 @@ use std::process;
 // use std::collections::HashMap;
 
 pub mod config;
+pub mod sort;
 mod history;
-mod sort;
 mod structs;
 mod ui;
 mod unix;
@@ -158,7 +158,7 @@ pub fn run(mut config_t : config::JoshutoConfig)
                     preview_view.as_ref());
         } else if ch == ncurses::KEY_UP {
             let curr_index = curr_view.as_ref().unwrap().index;
-            if curr_index == 0 {
+            if curr_index <= 0 {
                 continue;
             }
 
@@ -205,7 +205,7 @@ pub fn run(mut config_t : config::JoshutoConfig)
 
         } else if ch == ncurses::KEY_HOME {
             let curr_index = curr_view.as_ref().unwrap().index;
-            if curr_index == 0 {
+            if curr_index <= 0 {
                 continue;
             }
 
@@ -282,7 +282,7 @@ pub fn run(mut config_t : config::JoshutoConfig)
 
         } else if ch == ncurses::KEY_PPAGE {
             let curr_index = curr_view.as_ref().unwrap().index as usize;
-            if curr_index == 0 {
+            if curr_index <= 0 {
                 continue;
             }
 
@@ -378,14 +378,16 @@ pub fn run(mut config_t : config::JoshutoConfig)
                 match env::set_current_dir(&path) {
                     Ok(_) => {
                         if let Some(s) = parent_view {
-                            let path = curr_path.parent().unwrap().to_path_buf();
-                            history.insert(path, s);
+                            if let Some(path) = curr_path.parent() {
+                                history.insert(path.to_path_buf(), s);
+                            }
                         }
 
                         parent_view = curr_view;
                         curr_view = preview_view;
                         preview_view = None;
 
+                        /* update curr_path */
                         match path.strip_prefix(curr_path.as_path()) {
                             Ok(s) => curr_path.push(s),
                             Err(e) => {
@@ -402,6 +404,7 @@ pub fn run(mut config_t : config::JoshutoConfig)
                                     parent_view.as_ref(),
                                     curr_view.as_ref(),
                                     preview_view.as_ref());
+                            ncurses::doupdate();
                             continue;
                         }
 

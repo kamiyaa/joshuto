@@ -54,24 +54,6 @@ impl JoshutoDirList {
         ui::display_contents(win, self);
     }
 
-    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
-            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
-    {
-        let filter_func = sort_type.filter_func();
-
-        match fs::read_dir(path) {
-            Ok(results) => {
-                let mut result_vec : Vec<JoshutoDirEntry> = results
-                        .filter_map(filter_func)
-                        .collect();
-                Ok(result_vec)
-            },
-            Err(e) => {
-                Err(e)
-            },
-        }
-    }
-
     pub fn update(&mut self, path : &path::Path, sort_type: &sort::SortType)
     {
         let sort_func = sort_type.compare_func();
@@ -93,6 +75,24 @@ impl JoshutoDirList {
                 Ok(s) => { self.modified = s; },
                 Err(e) => { eprintln!("{}", e); },
             };
+        }
+    }
+
+    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
+            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
+    {
+        let filter_func = sort_type.filter_func();
+
+        match fs::read_dir(path) {
+            Ok(results) => {
+                let mut result_vec : Vec<JoshutoDirEntry> = results
+                        .filter_map(filter_func)
+                        .collect();
+                Ok(result_vec)
+            },
+            Err(e) => {
+                Err(e)
+            },
         }
     }
 }

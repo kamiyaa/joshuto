@@ -1,6 +1,7 @@
 use std;
 use std::cmp;
 use std::fs;
+use std::time;
 
 use joshuto::structs;
 
@@ -14,11 +15,15 @@ impl SortType {
     pub fn compare_func(&self) -> fn (&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering
     {
         match *self {
-            SortType::SortNatural(_) => {
-                sort_dir_first
+            SortType::SortNatural(ref ss) => {
+                if ss.folders_first && !ss.case_sensitive && !ss.reverse {
+                    sort_natural_dir_first_case_insensitive
+                } else {
+                    sort_natural_dir_first_case_insensitive
+                }
             }
             SortType::SortMtime(_) => {
-                sort_dir_first
+                sort_mtime_dir_first_case_insensitive
             }
         }
     }
@@ -123,26 +128,30 @@ fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<
     }
 }
 
+fn compare_string_ordering(str1: &str, str2: &str) -> cmp::Ordering
+{
+    if str1 <= str2 {
+        cmp::Ordering::Less
+    } else {
+        cmp::Ordering::Greater
+    }
+}
 
-/* sort by directory first, incase-sensitive */
-pub fn sort_dir_first(file1 : &structs::JoshutoDirEntry,
+pub fn sort_natural_dir_first_case_insensitive(file1 : &structs::JoshutoDirEntry,
         file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
 {
-    fn res_ordering(file1 : &fs::DirEntry, file2 : &fs::DirEntry) -> Result<cmp::Ordering, std::io::Error> {
-
-        let f1_meta = file1.metadata()?;
-        let f2_meta = file2.metadata()?;
+    fn compare(file1: &fs::DirEntry, file2: &fs::DirEntry)
+            -> Result<cmp::Ordering, std::io::Error>
+    {
+        let f1_meta: fs::Metadata = file1.metadata()?;
+        let f2_meta: fs::Metadata = file2.metadata()?;
 
         if f1_meta.is_dir() && f2_meta.is_dir() {
             let f1_name : std::string::String =
-                file1.file_name().as_os_str().to_str().unwrap().to_lowercase();
+                file1.file_name().into_string().unwrap().to_lowercase();
             let f2_name : std::string::String =
-                file2.file_name().as_os_str().to_str().unwrap().to_lowercase();
-            if f1_name <= f2_name {
-                Ok(cmp::Ordering::Less)
-            } else {
-                Ok(cmp::Ordering::Greater)
-            }
+                file2.file_name().into_string().unwrap().to_lowercase();
+            Ok(compare_string_ordering(&f1_name, &f2_name))
         } else if f1_meta.is_dir() {
             Ok(cmp::Ordering::Less)
         } else if f2_meta.is_dir() {
@@ -152,12 +161,43 @@ pub fn sort_dir_first(file1 : &structs::JoshutoDirEntry,
                 file1.file_name().as_os_str().to_str().unwrap().to_lowercase();
             let f2_name : std::string::String =
                 file2.file_name().as_os_str().to_str().unwrap().to_lowercase();
-            if f1_name <= f2_name {
-                Ok(cmp::Ordering::Less)
-            } else {
-                Ok(cmp::Ordering::Greater)
-            }
+            Ok(compare_string_ordering(&f1_name, &f2_name))
         }
     }
-    res_ordering(&file1.entry, &file2.entry).unwrap_or(cmp::Ordering::Less)
+    compare(&file1.entry, &file2.entry).unwrap_or(cmp::Ordering::Less)
 }
+
+pub fn sort_mtime_dir_first_case_insensitive(file1 : &structs::JoshutoDirEntry,
+        file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
+{
+    fn compare(file1: &fs::DirEntry, file2: &fs::DirEntry)
+            -> Result<cmp::Ordering, std::io::Error>
+    {
+        let f1_meta: fs::Metadata = file1.metadata()?;
+        let f2_meta: fs::Metadata = file2.metadata()?;
+
+        if f1_meta.is_dir() && f2_meta.is_dir() {
+            let f1_mtime: time::SystemTime = f1_meta.modified()?;
+            let f2_mtime: time::SystemTime = f2_meta.modified()?;
+            Ok(if f1_mtime <= f2_mtime {
+                    cmp::Ordering::Less
+                } else {
+                    cmp::Ordering::Greater
+            })
+        } else if f1_meta.is_dir() {
+            Ok(cmp::Ordering::Less)
+        } else if f2_meta.is_dir() {
+            Ok(cmp::Ordering::Greater)
+        } else {
+            let f1_mtime: time::SystemTime = f1_meta.modified()?;
+            let f2_mtime: time::SystemTime = f2_meta.modified()?;
+            Ok(if f1_mtime <= f2_mtime {
+                    cmp::Ordering::Less
+                } else {
+                    cmp::Ordering::Greater
+            })
+        }
+    }
+    compare(&file1.entry, &file2.entry).unwrap_or(cmp::Ordering::Less)
+}
+

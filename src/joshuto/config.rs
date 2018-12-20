@@ -3,35 +3,42 @@ extern crate whoami;
 use joshuto;
 use joshuto::sort;
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct JoshutoRawConfig {
-    pub show_hidden : String,
-    pub sort_type : String,
-    pub column_ratio : [usize; 3],
+    show_hidden: Option<bool>,
+    sort_type: Option<String>,
+    column_ratio: Option<[usize; 3]>,
+    mimetypes: Option<HashMap<String, Vec<Vec<String>>>>,
 }
 
 impl JoshutoRawConfig {
     pub fn new() -> Self
     {
         JoshutoRawConfig {
-            show_hidden: "false".to_string(),
-            sort_type: "natural".to_string(),
-            column_ratio : [1, 3, 4],
+            show_hidden: Some(false),
+            sort_type: Some(String::from("natural")),
+            column_ratio: Some([1, 3, 4]),
+            mimetypes: None,
         }
     }
 
-    pub fn to_config(self) -> JoshutoConfig
+    pub fn into_config(self) -> JoshutoConfig
     {
-        let show_hidden: bool;
-        let sort_type: sort::SortType;
-        let column_ratio = (self.column_ratio[0], self.column_ratio[1], self.column_ratio[2]);
+        let username : String = whoami::username();
+        let hostname : String = whoami::hostname();
 
-        if self.show_hidden.to_lowercase() == "true" {
-            show_hidden = true;
-        } else {
-            show_hidden = false;
-        }
+        let column_ratio = match self.column_ratio {
+            Some(s) => (s[0], s[1], s[2]),
+            None => (1, 3, 4),
+            };
+
+        let show_hidden: bool = match self.show_hidden {
+            Some(s) => s,
+            None => false,
+            };
+
         let sort_struct = sort::SortStruct {
                 show_hidden,
                 folders_first: true,
@@ -39,21 +46,28 @@ impl JoshutoRawConfig {
                 reverse: false,
             };
 
-        if self.sort_type.to_lowercase() == "natural" {
-            sort_type = sort::SortType::SortNatural(sort_struct);
-        } else {
-            sort_type = sort::SortType::SortNatural(sort_struct);
-        }
+        let sort_type: sort::SortType = match self.sort_type {
+            Some(s) => {
+                match s.as_str() {
+                    "natural" => sort::SortType::SortNatural(sort_struct),
+                    "mtime" => sort::SortType::SortMtime(sort_struct),
+                    _ => sort::SortType::SortNatural(sort_struct),
+                }
+            }
+            _ => sort::SortType::SortNatural(sort_struct),
+            };
 
-        let username : String = whoami::username();
-        let hostname : String = whoami::hostname();
+        let mimetypes = match self.mimetypes {
+            Some(s) => s,
+            None => HashMap::new(),
+            };
 
         JoshutoConfig {
             username,
             hostname,
             sort_type,
             column_ratio,
-            mimetypes: HashMap::new(),
+            mimetypes,
         }
     }
 }
@@ -64,5 +78,30 @@ pub struct JoshutoConfig {
     pub hostname: String,
     pub sort_type: joshuto::sort::SortType,
     pub column_ratio: (usize, usize, usize),
-    pub mimetypes: HashMap<String, String>,
+    pub mimetypes: HashMap<String, Vec<Vec<String>>>,
+}
+
+impl JoshutoConfig {
+
+    pub fn new() -> Self
+    {
+        let sort_struct = sort::SortStruct {
+                show_hidden: false,
+                folders_first: true,
+                case_sensitive: false,
+                reverse: false,
+            };
+        let sort_type = sort::SortType::SortNatural(sort_struct);
+
+        let username : String = whoami::username();
+        let hostname : String = whoami::hostname();
+
+        JoshutoConfig {
+            username,
+            hostname,
+            sort_type,
+            column_ratio: (1, 3, 4),
+            mimetypes: HashMap::new(),
+        }
+    }
 }
