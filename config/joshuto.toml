@@ -3,7 +3,9 @@
 sort_type = "natural"
 
 # show hidden files
-show_hidden = true
+show_hidden = false
+
+show_prerview = true
 
 # ratios for parent view, current view and preview
 column_ratio = [1, 3, 4]
