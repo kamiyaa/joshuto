@@ -1,13 +1,22 @@
-show_hidden = true
-# sort_method options: size, natural, basename, atime, ctime, mtime, type, random
-sort_method = "natural"
+# sort_type options: size, natural, basename, atime, ctime, mtime, type, random
+## currently only supports: natural, mtime
+sort_type = "natural"
 
+# show hidden files
+show_hidden = true
+
+# ratios for parent view, current view and preview
+column_ratio = [1, 3, 4]
+
+# does nothing so far
 scroll_offset = 8
 
+# specify which applications to use to open certain file types
 [mimetypes]
-"application/x-matroska"	= [ "mpv" ]
-"application/x-shellscript"	= [ "nano" ]
-"image/jpeg"			= [ "feh" ]
-"image/png"			= [ "feh", "-F" ]
-"text/plain"			= [ "nano" ]
-"text/x-csrc"			= [ "nano" ]
+"application/x-matroska"	= [ ["mpv"] ]
+"application/x-shellscript"	= [ ["nano"], ["gedit"] ]
+"image/jpeg"			= [ ["qimgv"], ["feh"]]
+"image/png"			= [ ["feh", "-F"] ]
+"text/plain"			= [ ["nano"] ]
+"text/x-csrc"			= [ ["nano"] ]
+
