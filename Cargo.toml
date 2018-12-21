@@ -13,7 +13,7 @@ whoami = "0.2.4"
 xdg = "2.2.0"
 
 [dependencies.ncurses]
-version = "5.93.0"
+version = "5.97.0"
 features = [ "extended_colors" ]
 
 [features]
