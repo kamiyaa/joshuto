@@ -163,7 +163,9 @@ pub fn run(mut config_t : config::JoshutoConfig)
             preview_view = match navigation::set_dir_cursor_index(&mut history,
                     curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
                     curr_index - 1) {
-                Ok(s) => Some(s),
+                Ok(s) => {
+                    Some(s)
+                },
                 Err(e) => {
                     ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                     None

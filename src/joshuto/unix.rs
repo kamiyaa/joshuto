@@ -130,6 +130,7 @@ pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
         let permissions : fs::Permissions = metadata.permissions();
         let mode = permissions.mode();
         if is_reg(mode) {
+            let lossy_path: String = path.as_os_str().to_os_string().into_string().unwrap();
             let mime_type: String = get_mime_type(path);
 
             if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
@@ -141,7 +142,7 @@ pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
                     for i in 1..mime_args[0].len() {
                         args_list.push(mime_args[0][i].clone());
                     }
-                    args_list.push(format!("{:?}", path));
+                    args_list.push(lossy_path);
 
                     ncurses::savetty();
                     ncurses::endwin();
