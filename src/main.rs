@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate serde_derive;
 extern crate toml;
-extern crate ncurses;
 extern crate xdg;
 
 // use std::collections::BTreeMap;

@@ -3,7 +3,6 @@ extern crate whoami;
 use joshuto;
 use joshuto::sort;
 use std::collections::HashMap;
-use std::collections::BTreeMap;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawConfig {
@@ -14,6 +13,7 @@ pub struct JoshutoRawConfig {
 }
 
 impl JoshutoRawConfig {
+    #[allow(dead_code)]
     pub fn new() -> Self
     {
         JoshutoRawConfig {

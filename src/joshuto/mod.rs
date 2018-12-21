@@ -77,10 +77,8 @@ pub fn run(mut config_t : config::JoshutoConfig)
     /* keep track of where we are in directories */
     let mut history = history::History::new();
     history.populate_to_root(&curr_path, &config_t.sort_type);
-//    println!("History:\n{:#?}", history.map);
 
     ui::init_ncurses();
-
     let mut joshuto_view: structs::JoshutoView =
         structs::JoshutoView::new(config_t.column_ratio);
 
@@ -128,7 +126,7 @@ pub fn run(mut config_t : config::JoshutoConfig)
         } else {
             preview_view = None;
             ncurses::werase(joshuto_view.right_win.win);
-            let mime_type = unix::get_mime_type(&dirent.entry);
+            let mime_type = unix::get_mime_type(&dirent.entry.path());
             ui::wprint_msg(&joshuto_view.right_win, mime_type.as_str());
             ncurses::wnoutrefresh(joshuto_view.right_win.win);
         }
@@ -374,6 +372,13 @@ pub fn run(mut config_t : config::JoshutoConfig)
             let path = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
                                 .unwrap()[index].entry.path();
+            eprintln!("path: {:?}", path);
+
+            if path.is_file() {
+                unix::open_file(&config_t.mimetypes, &joshuto_view.bot_win, path);
+                continue;
+            }
+
             if path.is_dir() {
                 match env::set_current_dir(&path) {
                     Ok(_) => {
@@ -408,8 +413,8 @@ pub fn run(mut config_t : config::JoshutoConfig)
                             continue;
                         }
 
-                        let index : usize = curr_view.as_ref().unwrap().index as usize;
-                        let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
+                        let index: usize = curr_view.as_ref().unwrap().index as usize;
+                        let dirent: &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap()[index];
                         let new_path = dirent.entry.path();
 

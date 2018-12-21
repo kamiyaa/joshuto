@@ -1,8 +1,14 @@
 extern crate libc;
 extern crate toml;
 extern crate tree_magic;
+extern crate ncurses;
 
 use std::fs;
+use std::path;
+use std::collections::HashMap;
+
+use joshuto::structs;
+use joshuto::ui;
 
 pub const BITMASK  : u32 = 0o170000;
 pub const S_IFSOCK : u32 = 0o140000;   /* socket */
@@ -32,10 +38,9 @@ pub fn get_unix_filetype(mode : u32) -> &'static str
     }
 }
 
-pub fn get_mime_type(direntry : &fs::DirEntry) -> String
+pub fn get_mime_type(path: &path::Path) -> String
 {
-    let path = &direntry.path();
-    tree_magic::from_filepath(path.as_path())
+    tree_magic::from_filepath(path)
 }
 
 pub fn exec_with(program : String, args : Vec<String>)
@@ -117,48 +122,41 @@ pub fn stringify_mode(mode : u32) -> String
     mode_str
 }
 
-pub fn open_file() {}
-/*
-else {
-                use std::os::unix::fs::PermissionsExt;
+pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
+        win: &structs::JoshutoWindow, path: &path::Path) {
+    use std::os::unix::fs::PermissionsExt;
 
-                let index : usize = curr_view.as_ref().unwrap().index;
-                let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
-                                                .contents.as_ref().unwrap()[index];
-                if let Ok(metadata) = dirent.entry.metadata() {
-                    let permissions : fs::Permissions = metadata.permissions();
-                    let mode = permissions.mode();
-                    if unix::is_reg(mode) {
-                        let mime_type : String = unix::get_mime_type(&dirent.entry);
+    if let Ok(metadata) = fs::metadata(path) {
+        let permissions : fs::Permissions = metadata.permissions();
+        let mode = permissions.mode();
+        if is_reg(mode) {
+            let mime_type: String = get_mime_type(path);
 
-                        /* check if there is a BTreeMap of programs to execute */
-                        let mime_map = &config.mimetypes;
-                        if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
-                            let mime_args_len = mime_args.len();
-                            if mime_args_len > 0 {
-                                let program_name = mime_args[0].clone();
+            if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
+                let mime_args_len = mime_args.len();
+                if mime_args_len > 0 {
+                    let program_name = mime_args[0][0].clone();
 
-                                let mut args_list : Vec<String> = Vec::with_capacity(mime_args_len);
-                                for i in 1..mime_args_len {
-                                    args_list.push(mime_args[i].clone());
-                                }
-                                args_list.push(dirent.entry.file_name().into_string().unwrap());
-
-                                ncurses::savetty();
-                                ncurses::endwin();
-                                unix::exec_with(program_name, args_list);
-                                ncurses::resetty();
-                                ncurses::refresh();
-                            }
-                        } else {
-                            ui::wprint_err(&joshuto_view.right_win, format!("Don't know how to open: {}", mime_type).as_str());
-                        }
-                    } else {
-                        ui::wprint_err(&joshuto_view.right_win, format!("Don't know how to open: {}", unix::get_unix_filetype(mode)).as_str());
+                    let mut args_list : Vec<String> = Vec::with_capacity(mime_args_len);
+                    for i in 1..mime_args[0].len() {
+                        args_list.push(mime_args[0][i].clone());
                     }
-                } else {
-                    ui::wprint_err(&joshuto_view.right_win, "Failed to read metadata, unable to determine filetype");
+                    args_list.push(format!("{:?}", path));
+
+                    ncurses::savetty();
+                    ncurses::endwin();
+                    exec_with(program_name, args_list);
+                    ncurses::resetty();
+                    ncurses::refresh();
                 }
+            } else {
+                ui::wprint_err(win, format!("Don't know how to open: {}", mime_type).as_str());
             }
-            ncurses::doupdate();
-*/
+        } else {
+            ui::wprint_err(win, format!("Don't know how to open: {}", get_unix_filetype(mode)).as_str());
+        }
+    } else {
+        ui::wprint_err(win, "Failed to read metadata, unable to determine filetype");
+    }
+    ncurses::doupdate();
+}

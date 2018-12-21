@@ -1,5 +1,4 @@
 use std;
-use std::fs;
 use std::path;
 
 use joshuto::structs;
