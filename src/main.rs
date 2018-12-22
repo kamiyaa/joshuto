@@ -42,7 +42,7 @@ fn get_config() -> joshuto::config::JoshutoConfig
 {
     match read_config() {
         Some(config) => {
-            config.into_config()
+            config.flatten()
         }
         None => {
             joshuto::config::JoshutoConfig::new()

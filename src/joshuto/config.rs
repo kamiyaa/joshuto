@@ -24,7 +24,7 @@ impl JoshutoRawConfig {
         }
     }
 
-    pub fn into_config(self) -> JoshutoConfig
+    pub fn flatten(self) -> JoshutoConfig
     {
         let username : String = whoami::username();
         let hostname : String = whoami::hostname();
