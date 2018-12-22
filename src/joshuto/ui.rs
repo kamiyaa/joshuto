@@ -188,18 +188,8 @@ pub fn wprint_file(win : &structs::JoshutoWindow, file : &fs::DirEntry)
             ncurses::waddstr(win.win, " ");
             let name_len = file_name.len();
             if name_len >= win.cols as usize {
-                let mut shortened = String::with_capacity(
-                        win.cols as usize);
-                let mut iter = file_name.chars();
-                let mut i : usize = 0;
-                while i < win.cols as usize {
-                    if let Some(ch) = iter.next() {
-                        shortened.push(ch);
-                        i += ch.len_utf8();
-                    }
-                }
-                shortened.push('…');
-                ncurses::waddstr(win.win, &shortened);
+                ncurses::waddstr(win.win, &file_name[..win.cols as usize - 3]);
+                ncurses::waddstr(win.win, "…");
             } else {
                 ncurses::waddstr(win.win, &file_name);
             }
