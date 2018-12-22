@@ -146,25 +146,32 @@ pub struct JoshutoView {
 impl JoshutoView {
     pub fn new(win_ratio : (usize, usize, usize)) -> JoshutoView
     {
-        let mut term_rows : i32 = 0;
-        let mut term_cols : i32 = 0;
+        let sum_ratio: usize = win_ratio.0 + win_ratio.1 + win_ratio.2;
+
+        let mut term_rows: i32 = 0;
+        let mut term_cols: i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-        let term_divide : usize = term_cols as usize / 7;
+        let term_divide: i32 = term_cols / sum_ratio as i32;
 
-        let top_win = JoshutoWindow::new(1, term_cols, (0, 0));
+        let win_xy: (i32, i32) = (1, term_cols);
+        let win_coord: (usize, usize) = (0, 0);
+        let top_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
 
-        let left_win = JoshutoWindow::new(term_rows - 2,
-            (term_divide * win_ratio.0) as i32 - 1, (1, 0));
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 2);
+        let win_coord: (usize, usize) = (1, 0);
+        let left_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
 
-        let mid_win = JoshutoWindow::new(term_rows - 2,
-            (term_divide * win_ratio.1) as i32 - 1,
-            (1, term_divide * win_ratio.0));
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.1 as i32) - 2);
+        let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.0);
+        let mid_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
 
-        let right_win = JoshutoWindow::new(term_rows - 2,
-            term_divide as i32 * 3 - 1, (1, term_divide * win_ratio.2));
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.2 as i32) - 2);
+        let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.2);
+        let right_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
 
-        let bot_win = JoshutoWindow::new(1, term_cols,
-                (term_rows as usize - 1, 0));
+        let win_xy: (i32, i32) = (1, term_cols);
+        let win_coord: (usize, usize) = (term_rows as usize - 2, 0);
+        let bot_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
 
         ncurses::scrollok(top_win.win, true);
         ncurses::scrollok(bot_win.win, true);

@@ -14,6 +14,7 @@ mod structs;
 mod ui;
 mod unix;
 mod navigation;
+mod keymap;
 
 fn redraw_views(joshuto_view : &structs::JoshutoView,
         parent_view: Option<&structs::JoshutoDirList>,
@@ -374,7 +375,6 @@ pub fn run(mut config_t : config::JoshutoConfig)
             let path = &curr_view.as_ref().unwrap()
                                 .contents.as_ref()
                                 .unwrap()[index].entry.path();
-            eprintln!("path: {:?}", path);
 
             if path.is_file() {
                 unix::open_file(&config_t.mimetypes, &joshuto_view.bot_win, path);
