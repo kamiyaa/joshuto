@@ -8,13 +8,13 @@ use std::process;
 // use std::collections::HashMap;
 
 pub mod config;
+pub mod keymap;
 pub mod sort;
 mod history;
 mod structs;
 mod ui;
 mod unix;
 mod navigation;
-mod keymap;
 
 fn redraw_views(joshuto_view : &structs::JoshutoView,
         parent_view: Option<&structs::JoshutoDirList>,
