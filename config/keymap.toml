@@ -1,0 +1,19 @@
+[keymaps]
+Quit = [ "q" ]
+
+MoveUp = [ "UP" ]
+MoveDown = [ "DOWN" ]
+MoveHome = [ "HOME" ]
+MoveEnd = [ "END" ]
+Open = [ "RIGHT" ]
+ParentDirectory = [ "LEFT" ]
+MovePageUp = [ "PPAGE" ]
+MovePageDown = [ "NPAGE" ]
+
+DeleteFile = [ "d", "D" ]
+CutFile = [ "d", "d" ]
+RenameFile = [ "a" ]
+CopyFile = [ "y", "y" ]
+
+OpenWith = [ "r" ]
+ToggleHiddenFiles = [ "z", "h" ]

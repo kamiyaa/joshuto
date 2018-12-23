@@ -1,61 +1,14 @@
-
 use std::str;
 use std::collections::HashMap;
+use std::process;
+use std::slice;
 
-
-pub enum Keycode {
-}
-
-#[derive(Debug)]
-pub enum Keybind {
-    Quit,
-
-    MoveUp,
-    MoveDown,
-    MovePageUp,
-    MovePageDown,
-    MoveHome,
-    MoveEnd,
-
-    DeleteFile,
-    RenameFile,
-    CopyFile,
-    OpenFile,
-    OpenWith,
-    OpenDirectory,
-    ToggleHiddenFiles,
-
-    CompositeKeybind(HashMap<i32, Keybind>),
-}
-
-impl Keybind {
-
-    pub fn from_str(keybind: &str) -> Keybind
-    {
-        match keybind {
-            "Quit" => Keybind::Quit,
-            "MoveUp" => Keybind::MoveUp,
-            "MoveDown" => Keybind::MoveDown,
-            "MovePageUp" => Keybind::MovePageUp,
-            "MovePageDown" => Keybind::MovePageDown,
-            "MoveHome" => Keybind::MoveHome,
-            "MoveEnd" => Keybind::MoveEnd,
-            "DeleteFile" => Keybind::DeleteFile,
-            "RenameFile" => Keybind::RenameFile,
-            "CopyFile" => Keybind::CopyFile,
-            "OpenFile" => Keybind::OpenFile,
-            "OpenWith" => Keybind::OpenWith,
-            "OpenDirectory" => Keybind::OpenDirectory,
-            "ToggleHiddenFiles" => Keybind::ToggleHiddenFiles,
-            _ => Keybind::CompositeKeybind(HashMap::new()),
-        }
-
-    }
-}
+use joshuto::keymapll::JoshutoCommand;
+use joshuto::keymapll::Keycode;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawKeymaps {
-    keymaps: Option<HashMap<String, String>>,
+    keymaps: Option<HashMap<String, Vec<String>>>,
 }
 
 impl JoshutoRawKeymaps {
@@ -69,7 +22,7 @@ impl JoshutoRawKeymaps {
 
     pub fn flatten(self) -> JoshutoKeymaps
     {
-        let keymaps: HashMap<String, String> = match self.keymaps {
+        let keymaps = match self.keymaps {
                 Some(s) => {
                     s
                 }
@@ -83,46 +36,70 @@ impl JoshutoRawKeymaps {
         }
     }
 
-    fn unflatten_hashmap(map: HashMap<String, String>) -> HashMap<i32, Keybind>
+    fn unflatten_hashmap(map: HashMap<String, Vec<String>>) -> HashMap<i32, JoshutoCommand>
     {
-        let mut new_map: HashMap<i32, Keybind> = HashMap::new();
+        let mut new_map: HashMap<i32, JoshutoCommand> = HashMap::new();
 
         for (keycommand, keycomb) in &map {
-            let keybind = Keybind::from_str(&keycommand);
-            let mut chars = keycomb.chars();
-            if let Some(ch) = chars.next() {
-                JoshutoRawKeymaps::insert_keycommand(&mut new_map, &mut chars,
-                    ch as i32, keybind);
+            match JoshutoCommand::from_str(&keycommand) {
+                Some(keybind) => {
+                    let mut keys = keycomb.iter();
+                    if let Some(key) = keys.next() {
+                        let key = match Keycode::from_str(&key) {
+                            Some(s) => s,
+                            None => {
+                                eprintln!("Error: Unknown keycode for: {:?}", &keycommand);
+                                process::exit(1);
+                            }
+                        };
+                        JoshutoRawKeymaps::insert_keycommand(&mut new_map, &mut keys,
+                            key, keybind);
+                    }
+                }
+                None => {
+                    eprintln!("Error: Unknown command: {:?}", &keycommand);
+                    process::exit(1);
+                }
             }
         }
         new_map
     }
 
-    fn insert_keycommand(map: &mut HashMap<i32, Keybind>,
-            keycomb: &mut str::Chars, curr_char: i32, keybind: Keybind)
+    fn insert_keycommand(map: &mut HashMap<i32, JoshutoCommand>,
+            keys: &mut slice::Iter<String>, key: Keycode, keycommand: JoshutoCommand)
     {
-        match keycomb.next() {
+        match keys.next() {
             Some(s) => {
-                print!("{}", curr_char as u8 as char);
-                let ch: i32 = s as i32;
-                let mut new_map: HashMap<i32, Keybind>;
-                match map.remove(&ch) {
-                    Some(Keybind::CompositeKeybind(mut m)) => {
+                print!("{:?}+", key);
+                let mut new_map: HashMap<i32, JoshutoCommand>;
+
+                let key_i32 = key.clone() as i32;
+                match map.remove(&key_i32) {
+                    Some(JoshutoCommand::CompositeKeybind(mut m)) => {
                         new_map = m;
                     },
                     Some(_) => {
-                        panic!("keybindings ambiguous");
+                        eprintln!("Error: Keybindings ambiguous: {:?}", &keycommand);
+                        process::exit(1);
                     },
                     None => {
                         new_map = HashMap::new();
                     }
                 }
-                JoshutoRawKeymaps::insert_keycommand(&mut new_map, keycomb, ch, keybind);
-                map.insert(curr_char, Keybind::CompositeKeybind(new_map));
+                let new_key = match Keycode::from_str(&s) {
+                        Some(s) => s,
+                        None => {
+                            eprintln!("Error: Unknown keycode for: {:?}", &keycommand);
+                            process::exit(1);
+                        }
+                    };
+
+                JoshutoRawKeymaps::insert_keycommand(&mut new_map, keys, new_key, keycommand);
+                map.insert(key as i32, JoshutoCommand::CompositeKeybind(new_map));
             }
             None => {
-                println!("{} -> {:?}", curr_char as u8 as char, keybind); 
-                map.insert(curr_char, keybind);
+                println!("{:?} -> {:?}", key, keycommand);
+                map.insert(key as i32, keycommand);
             }
         }
     }
@@ -130,7 +107,7 @@ impl JoshutoRawKeymaps {
 
 #[derive(Debug)]
 pub struct JoshutoKeymaps {
-    pub keymaps: HashMap<i32, Keybind>,
+    pub keymaps: HashMap<i32, JoshutoCommand>,
 }
 
 impl JoshutoKeymaps {

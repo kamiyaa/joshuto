@@ -30,4 +30,3 @@ pub fn set_dir_cursor_index(history : &mut history::History,
     history.pop_or_create(new_path.as_path(), sort_type)
 }
 
-pub fn process_curr_dir_navigation(){}
