@@ -161,6 +161,7 @@ pub fn display_contents(win : &structs::JoshutoWindow,
         if let Ok(metadata) = &dir_contents[i].entry.metadata() {
             mode = metadata.permissions().mode();
         }
+
         if dir_contents[i].selected {
             if index == i {
                 ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | ncurses::A_STANDOUT(), SELECT_COLOR);
@@ -188,7 +189,14 @@ pub fn wprint_file(win : &structs::JoshutoWindow, file : &fs::DirEntry)
             ncurses::waddstr(win.win, " ");
             let name_len = file_name.len();
             if name_len >= win.cols as usize {
-                ncurses::waddstr(win.win, &file_name[..win.cols as usize - 3]);
+                let mut trim_index: usize = win.cols as usize - 3;
+                for (index, _) in file_name.char_indices() {
+                    if index >= win.cols as usize - 3 {
+                        trim_index = index;
+                        break;
+                    }
+                }
+                ncurses::waddstr(win.win, &file_name[..trim_index]);
                 ncurses::waddstr(win.win, "…");
             } else {
                 ncurses::waddstr(win.win, &file_name);
