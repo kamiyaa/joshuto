@@ -6,6 +6,7 @@ extern crate xdg;
 // use std::collections::BTreeMap;
 use std::env;
 use std::fs;
+use std::process;
 
 mod joshuto;
 
@@ -23,12 +24,11 @@ fn read_config() -> Option<joshuto::config::JoshutoRawConfig>
         Ok(config_contents) => {
             match toml::from_str(&config_contents) {
                 Ok(config) => {
-                    println!("rawconfig:\n{:?}", config);
                     Some(config)
                 },
                 Err(e) => {
                     eprintln!("{}", e);
-                    None
+                    process::exit(1);
                 },
             }
         },
@@ -61,12 +61,11 @@ fn read_keymaps() -> Option<joshuto::keymap::JoshutoRawKeymaps>
         Ok(config_contents) => {
             match toml::from_str(&config_contents) {
                 Ok(config) => {
-                    println!("rawconfig:\n{:?}", config);
                     Some(config)
                 },
                 Err(e) => {
                     eprintln!("{}", e);
-                    None
+                    process::exit(1);
                 },
             }
         },
@@ -100,5 +99,5 @@ fn main()
     let keymap = get_keymap();
     println!("keymap:\n{:#?}", keymap);
 
-    joshuto::run(config);
+    joshuto::run(config, keymap);
 }
