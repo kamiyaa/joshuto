@@ -69,6 +69,22 @@ fn redraw_views(joshuto_view : &structs::JoshutoView,
     }
 }
 
+fn redraw_status(joshuto_view : &structs::JoshutoView,
+    curr_view: Option<&structs::JoshutoDirList>, curr_path: &path::PathBuf,
+    username: &str, hostname: &str)
+{
+    if let Some(s) = curr_view.as_ref() {
+        let dirent = s.get_dir_entry(s.index);
+        if let Some(dirent) = dirent {
+            if let Ok(file_name) = dirent.entry.file_name().into_string() {
+                ui::wprint_path(&joshuto_view.top_win, username, hostname,
+                        curr_path, file_name.as_str());
+                ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
+            }
+        }
+    }
+}
+
 fn refresh_handler(config_t: &config::JoshutoConfig,
         joshuto_view : &mut structs::JoshutoView,
         curr_path : &path::PathBuf,
@@ -79,19 +95,10 @@ fn refresh_handler(config_t: &config::JoshutoConfig,
     joshuto_view.redraw_views();
     ncurses::refresh();
 
-    ui::wprint_path(&joshuto_view.top_win, &config_t.username,
-        &config_t.hostname, curr_path);
-
     redraw_views(joshuto_view, parent_view, curr_view, preview_view);
 
-    let index = curr_view.unwrap().index;
-    if index >= 0 {
-        let index : usize = index as usize;
-        let dirent : &structs::JoshutoDirEntry = &curr_view.unwrap().contents
-                                        .as_ref().unwrap()[index];
-
-        ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
-    }
+    redraw_status(joshuto_view, curr_view, curr_path,
+            &config_t.username, &config_t.hostname);
 
     ncurses::doupdate();
 }
@@ -107,7 +114,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 process::exit(1);
             },
         };
-    println!("pwd: {:?}", curr_path);
 
     /* keep track of where we are in directories */
     let mut history = history::History::new();
@@ -147,7 +153,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
         let index : usize = curr_view.as_ref().unwrap().index as usize;
         let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                         .contents.as_ref().unwrap()[index];
-        ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
 
         let preview_path = dirent.entry.path();
         if preview_path.is_dir() {
@@ -168,8 +173,9 @@ pub fn run(mut config_t: config::JoshutoConfig,
     } else {
         preview_view = None;
     }
-    ui::wprint_path(&joshuto_view.top_win, &config_t.username, &config_t.hostname,
-            &curr_path);
+
+    redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+            &config_t.username, &config_t.hostname);
 
     redraw_views(&joshuto_view,
                     parent_view.as_ref(),
@@ -204,7 +210,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 continue;
             }
         }
-        eprintln!("{:?}", *keycommand);
 
         match *keycommand {
             JoshutoCommand::Quit => break,
@@ -217,9 +222,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 preview_view = match navigation::set_dir_cursor_index(&mut history,
                         curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
                         curr_index - 1) {
-                    Ok(s) => {
-                        Some(s)
-                    },
+                    Ok(s) => s,
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                         None
@@ -230,6 +233,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 None.as_ref(),
                                 curr_view.as_ref(),
                                 preview_view.as_ref());
+
+                redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
                 ncurses::doupdate();
             },
             JoshutoCommand::MoveDown => {
@@ -244,7 +251,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 preview_view = match navigation::set_dir_cursor_index(&mut history,
                         curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
                         curr_index + 1) {
-                    Ok(s) => Some(s),
+                    Ok(s) => s,
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                         None
@@ -255,6 +262,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 None.as_ref(),
                                 curr_view.as_ref(),
                                 preview_view.as_ref());
+
+                redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
                 ncurses::doupdate();
             },
             JoshutoCommand::MovePageUp => {
@@ -273,7 +284,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 preview_view = match navigation::set_dir_cursor_index(&mut history,
                         curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
                         curr_index) {
-                    Ok(s) => Some(s),
+                    Ok(s) => s,
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                         None
@@ -284,6 +295,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 None.as_ref(),
                                 curr_view.as_ref(),
                                 preview_view.as_ref());
+
+                redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
                 ncurses::doupdate();
             },
             JoshutoCommand::MovePageDown => {
@@ -305,7 +320,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 preview_view = match navigation::set_dir_cursor_index(&mut history,
                         curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
                         curr_index) {
-                    Ok(s) => Some(s),
+                    Ok(s) => s,
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                         None
@@ -316,6 +331,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 None.as_ref(),
                                 curr_view.as_ref(),
                                 preview_view.as_ref());
+
+                redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
                 ncurses::doupdate();
             },
             JoshutoCommand::MoveHome => {
@@ -326,7 +345,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 preview_view = match navigation::set_dir_cursor_index(&mut history,
                         curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type, 0) {
-                    Ok(s) => Some(s),
+                    Ok(s) => s,
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                         None
@@ -337,6 +356,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 None.as_ref(),
                                 curr_view.as_ref(),
                                 preview_view.as_ref());
+
+                redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
                 ncurses::doupdate();
             },
             JoshutoCommand::MoveEnd => {
@@ -350,7 +373,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 preview_view = match navigation::set_dir_cursor_index(&mut history,
                         curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
                         (dir_len - 1) as i32) {
-                    Ok(s) => Some(s),
+                    Ok(s) => s,
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                         None
@@ -361,6 +384,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 None.as_ref(),
                                 curr_view.as_ref(),
                                 preview_view.as_ref());
+
+                redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
                 ncurses::doupdate();
             },
             JoshutoCommand::ParentDirectory => {
@@ -413,9 +440,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap()[index];
 
-                ui::wprint_path(&joshuto_view.top_win, &config_t.username,
-                        &config_t.hostname, &curr_path);
-                ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
+                redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
 
                 ncurses::doupdate();
             },
@@ -450,11 +476,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 format!("{}", e).as_str());
                         }
                     }
-                } else {
-                    let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
-                                    .contents.as_ref()
-                                    .unwrap()[index];
-                    ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
                 }
                 ncurses::doupdate();
             },
@@ -504,8 +525,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 }
                             }
 
-                            ui::wprint_path(&joshuto_view.top_win, &config_t.username, &config_t.hostname,
-                                    &curr_path);
+                            redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                                    &config_t.username, &config_t.hostname);
 
                             if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
                                 redraw_views(&joshuto_view,
@@ -530,7 +551,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                         None
                                     },
                                 };
-                                ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
                             } else {
                                 ncurses::werase(joshuto_view.right_win.win);
                                 ui::wprint_err(&joshuto_view.right_win, "Not a directory");
@@ -540,6 +560,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                     parent_view.as_ref(),
                                     curr_view.as_ref(),
                                     preview_view.as_ref());
+
+                            redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                                    &config_t.username, &config_t.hostname);
+
 
                             ncurses::doupdate();
                         }
@@ -579,15 +603,13 @@ pub fn run(mut config_t: config::JoshutoConfig,
                         let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
                                         .contents.as_ref().unwrap()[index];
 
-                        ui::wprint_path(&joshuto_view.top_win, &config_t.username,
-                            &config_t.hostname, &dirent.entry.path());
+                        redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                                &config_t.username, &config_t.hostname);
 
                         s.update(dirent.entry.path().as_path(), &config_t.sort_type);
 
                         ui::display_contents(&joshuto_view.right_win, &s);
                         ncurses::wnoutrefresh(joshuto_view.right_win.win);
-
-                        ui::wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
                     }
                 }
                 ncurses::doupdate();

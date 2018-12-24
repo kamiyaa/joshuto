@@ -68,11 +68,11 @@ pub fn wprint_err(win : &structs::JoshutoWindow, err_msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_path(win : &structs::JoshutoWindow, username : &str,
-        hostname : &str, path : &path::PathBuf)
+pub fn wprint_path(win: &structs::JoshutoWindow, username: &str,
+        hostname: &str, path: &path::PathBuf, file_name: &str)
 {
     ncurses::werase(win.win);
-    let path_str : &str = match path.to_str() {
+    let path_str: &str = match path.to_str() {
             Some(s) => s,
             None => "Error",
         };
@@ -84,6 +84,8 @@ pub fn wprint_path(win : &structs::JoshutoWindow, username : &str,
 
     ncurses::waddstr(win.win, path_str);
     ncurses::wattroff(win.win, ncurses::A_BOLD());
+    ncurses::waddstr(win.win, "/");
+    ncurses::waddstr(win.win, file_name);
     ncurses::wnoutrefresh(win.win);
 }
 

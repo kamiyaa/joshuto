@@ -10,7 +10,7 @@ pub fn set_dir_cursor_index(history : &mut history::History,
         preview_view: Option<structs::JoshutoDirList>,
         sort_type: &sort::SortType,
         new_index: i32)
-        -> Result<structs::JoshutoDirList, std::io::Error>
+        -> Result<Option<structs::JoshutoDirList>, std::io::Error>
 {
     let curr_index = curr_view.index as usize;
     match preview_view {
@@ -26,7 +26,13 @@ pub fn set_dir_cursor_index(history : &mut history::History,
     let curr_index = curr_view.index as usize;
     let new_path: path::PathBuf = curr_view.contents.as_ref()
                                     .unwrap()[curr_index].entry.path();
-
-    history.pop_or_create(new_path.as_path(), sort_type)
+    if new_path.is_dir() {
+        match history.pop_or_create(new_path.as_path(), sort_type) {
+            Ok(s) => Ok(Some(s)),
+            Err(e) => Err(e),
+        }
+    } else {
+        Ok(None)
+    }
 }
 
