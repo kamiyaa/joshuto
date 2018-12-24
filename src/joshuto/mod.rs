@@ -436,10 +436,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     },
                 };
 
-                let index : usize = curr_view.as_ref().unwrap().index as usize;
-                let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
-                                .contents.as_ref().unwrap()[index];
-
                 redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                         &config_t.username, &config_t.hostname);
 
