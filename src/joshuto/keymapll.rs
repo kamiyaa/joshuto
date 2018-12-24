@@ -381,6 +381,8 @@ impl Keycode {
 pub enum JoshutoCommand {
     Quit,
 
+    ReloadDirList,
+
     MoveUp,
     MoveDown,
     MovePageUp,
@@ -393,6 +395,7 @@ pub enum JoshutoCommand {
     RenameFile,
     CutFile,
     CopyFile,
+    PasteFile,
     Open,
     OpenWith,
     ToggleHiddenFiles,
@@ -407,6 +410,8 @@ impl JoshutoCommand {
         match keybind {
             "Quit" => Some(JoshutoCommand::Quit),
 
+            "ReloadDirList" => Some(JoshutoCommand::ReloadDirList),
+
             "MoveUp" => Some(JoshutoCommand::MoveUp),
             "MoveDown" => Some(JoshutoCommand::MoveDown),
             "MovePageUp" => Some(JoshutoCommand::MovePageUp),
@@ -419,6 +424,7 @@ impl JoshutoCommand {
             "RenameFile" => Some(JoshutoCommand::RenameFile),
             "CutFile" => Some(JoshutoCommand::CutFile),
             "CopyFile" => Some(JoshutoCommand::CopyFile),
+            "PasteFile" => Some(JoshutoCommand::PasteFile),
             "Open" => Some(JoshutoCommand::Open),
             "OpenWith" => Some(JoshutoCommand::OpenWith),
             "ToggleHiddenFiles" => Some(JoshutoCommand::ToggleHiddenFiles),
@@ -430,6 +436,8 @@ impl JoshutoCommand {
     {
         match self {
             JoshutoCommand::Quit => JoshutoCommand::Quit,
+            JoshutoCommand::ReloadDirList => JoshutoCommand::ReloadDirList,
+
             JoshutoCommand::MoveUp => JoshutoCommand::MoveUp,
             JoshutoCommand::MoveDown => JoshutoCommand::MoveDown,
             JoshutoCommand::MovePageUp => JoshutoCommand::MovePageUp,
@@ -442,6 +450,7 @@ impl JoshutoCommand {
             JoshutoCommand::RenameFile => JoshutoCommand::RenameFile,
             JoshutoCommand::CutFile => JoshutoCommand::CutFile,
             JoshutoCommand::CopyFile => JoshutoCommand::CopyFile,
+            JoshutoCommand::PasteFile => JoshutoCommand::PasteFile,
             JoshutoCommand::Open => JoshutoCommand::Open,
             JoshutoCommand::OpenWith => JoshutoCommand::OpenWith,
             JoshutoCommand::ToggleHiddenFiles => JoshutoCommand::ToggleHiddenFiles,

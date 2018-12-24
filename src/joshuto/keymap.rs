@@ -126,7 +126,6 @@ impl JoshutoKeymap {
         let dirs = xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "").unwrap();
 
         let config_path = dirs.find_config_file(::KEYMAP_FILE)?;
-        println!("config_path: {:?}", config_path);
         match fs::read_to_string(&config_path) {
             Ok(config_contents) => {
                 match toml::from_str(&config_contents) {
