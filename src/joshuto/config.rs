@@ -1,15 +1,18 @@
 extern crate whoami;
+extern crate toml;
+extern crate xdg;
+
+use std::fs;
+use std::process;
 
 use joshuto;
 use joshuto::sort;
-use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawConfig {
     show_hidden: Option<bool>,
     sort_type: Option<String>,
     column_ratio: Option<[usize; 3]>,
-    mimetypes: Option<HashMap<String, Vec<Vec<String>>>>,
 }
 
 impl JoshutoRawConfig {
@@ -20,7 +23,6 @@ impl JoshutoRawConfig {
             show_hidden: Some(false),
             sort_type: Some(String::from("natural")),
             column_ratio: Some([1, 3, 4]),
-            mimetypes: None,
         }
     }
 
@@ -57,17 +59,11 @@ impl JoshutoRawConfig {
             _ => sort::SortType::SortNatural(sort_struct),
             };
 
-        let mimetypes = match self.mimetypes {
-            Some(s) => s,
-            None => HashMap::new(),
-            };
-
         JoshutoConfig {
             username,
             hostname,
             sort_type,
             column_ratio,
-            mimetypes,
         }
     }
 }
@@ -78,7 +74,6 @@ pub struct JoshutoConfig {
     pub hostname: String,
     pub sort_type: joshuto::sort::SortType,
     pub column_ratio: (usize, usize, usize),
-    pub mimetypes: HashMap<String, Vec<Vec<String>>>,
 }
 
 impl JoshutoConfig {
@@ -101,7 +96,43 @@ impl JoshutoConfig {
             hostname,
             sort_type,
             column_ratio: (1, 3, 4),
-            mimetypes: HashMap::new(),
+        }
+    }
+
+    fn read_config() -> Option<JoshutoRawConfig>
+    {
+        let dirs = xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "").unwrap();
+
+        let config_path = dirs.find_config_file(::CONFIG_FILE)?;
+        println!("config_path: {:?}", config_path);
+        match fs::read_to_string(&config_path) {
+            Ok(config_contents) => {
+                match toml::from_str(&config_contents) {
+                    Ok(config) => {
+                        Some(config)
+                    },
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        process::exit(1);
+                    },
+                }
+            },
+            Err(e) => {
+                eprintln!("{}", e);
+                None
+            },
+        }
+    }
+
+    pub fn get_config() -> Self
+    {
+        match JoshutoConfig::read_config() {
+            Some(config) => {
+                config.flatten()
+            }
+            None => {
+                JoshutoConfig::new()
+            }
         }
     }
 }

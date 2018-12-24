@@ -1,4 +1,7 @@
-use std::str;
+extern crate toml;
+extern crate xdg;
+
+use std::fs;
 use std::collections::HashMap;
 use std::process;
 use std::slice;
@@ -7,20 +10,20 @@ use joshuto::keymapll::JoshutoCommand;
 use joshuto::keymapll::Keycode;
 
 #[derive(Debug, Deserialize)]
-pub struct JoshutoRawKeymaps {
+pub struct JoshutoRawKeymap {
     keymaps: Option<HashMap<String, Vec<Vec<String>>>>,
 }
 
-impl JoshutoRawKeymaps {
+impl JoshutoRawKeymap {
     #[allow(dead_code)]
     pub fn new() -> Self
     {
-        JoshutoRawKeymaps {
+        JoshutoRawKeymap {
             keymaps: None,
         }
     }
 
-    pub fn flatten(self) -> JoshutoKeymaps
+    pub fn flatten(self) -> JoshutoKeymap
     {
         let keymaps = match self.keymaps {
                 Some(s) => {
@@ -31,8 +34,8 @@ impl JoshutoRawKeymaps {
                 },
             };
 
-        JoshutoKeymaps {
-            keymaps: JoshutoRawKeymaps::unflatten_hashmap(keymaps)
+        JoshutoKeymap {
+            keymaps: JoshutoRawKeymap::unflatten_hashmap(keymaps)
         }
     }
 
@@ -53,7 +56,7 @@ impl JoshutoRawKeymaps {
                                     process::exit(1);
                                 }
                             };
-                            JoshutoRawKeymaps::insert_keycommand(&mut new_map, &mut keys,
+                            JoshutoRawKeymap::insert_keycommand(&mut new_map, &mut keys,
                                 key, keybind.clone());
                         }
                     }
@@ -96,7 +99,7 @@ impl JoshutoRawKeymaps {
                         }
                     };
 
-                JoshutoRawKeymaps::insert_keycommand(&mut new_map, keys, new_key, keycommand);
+                JoshutoRawKeymap::insert_keycommand(&mut new_map, keys, new_key, keycommand);
                 map.insert(key as i32, JoshutoCommand::CompositeKeybind(new_map));
             }
             None => {
@@ -108,16 +111,52 @@ impl JoshutoRawKeymaps {
 }
 
 #[derive(Debug)]
-pub struct JoshutoKeymaps {
+pub struct JoshutoKeymap {
     pub keymaps: HashMap<i32, JoshutoCommand>,
 }
 
-impl JoshutoKeymaps {
-    #[allow(dead_code)]
+impl JoshutoKeymap {
     pub fn new() -> Self
     {
-        JoshutoKeymaps {
+        JoshutoKeymap {
             keymaps: HashMap::new(),
+        }
+    }
+
+    fn read_config() -> Option<JoshutoRawKeymap>
+    {
+        let dirs = xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "").unwrap();
+
+        let config_path = dirs.find_config_file(::KEYMAP_FILE)?;
+        println!("config_path: {:?}", config_path);
+        match fs::read_to_string(&config_path) {
+            Ok(config_contents) => {
+                match toml::from_str(&config_contents) {
+                    Ok(config) => {
+                        Some(config)
+                    },
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        process::exit(1);
+                    },
+                }
+            },
+            Err(e) => {
+                eprintln!("{}", e);
+                None
+            },
+        }
+    }
+
+    pub fn get_config() -> JoshutoKeymap
+    {
+        match JoshutoKeymap::read_config() {
+            Some(config) => {
+                config.flatten()
+            }
+            None => {
+                JoshutoKeymap::new()
+            }
         }
     }
 }
