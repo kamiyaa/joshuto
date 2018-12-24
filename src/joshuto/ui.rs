@@ -5,6 +5,7 @@ use std::fs;
 use std::path;
 use std::collections::HashMap;
 
+use joshuto::config;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::keymapll::JoshutoCommand;
@@ -89,6 +90,39 @@ pub fn wprint_path(win: &structs::JoshutoWindow, username: &str,
     ncurses::waddstr(win.win, file_name);
     ncurses::wattroff(win.win, ncurses::A_BOLD());
     ncurses::wnoutrefresh(win.win);
+}
+
+pub fn wprint_mimetype(win: &structs::JoshutoWindow, mimetype: &str)
+{
+    ncurses::werase(win.win);
+    wprint_msg(&win, mimetype);
+    ncurses::wnoutrefresh(win.win);
+}
+
+pub fn wprint_file(win: &structs::JoshutoWindow, file : &fs::DirEntry)
+{
+    match file.file_name().into_string() {
+        Ok(file_name) => {
+            ncurses::waddstr(win.win, " ");
+            let name_len = file_name.len();
+            if name_len >= win.cols as usize {
+                let mut trim_index: usize = win.cols as usize - 3;
+                for (index, _) in file_name.char_indices() {
+                    if index >= win.cols as usize - 3 {
+                        trim_index = index;
+                        break;
+                    }
+                }
+                ncurses::waddstr(win.win, &file_name[..trim_index]);
+                ncurses::waddstr(win.win, "…");
+            } else {
+                ncurses::waddstr(win.win, &file_name);
+            }
+        },
+        Err(e) => {
+            ncurses::waddstr(win.win, format!("{:?}", e).as_str());
+        },
+    };
 }
 
 pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
@@ -188,33 +222,6 @@ pub fn display_contents(win : &structs::JoshutoWindow,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_file(win: &structs::JoshutoWindow, file : &fs::DirEntry)
-{
-    match file.file_name().into_string() {
-        Ok(file_name) => {
-            ncurses::waddstr(win.win, " ");
-            let name_len = file_name.len();
-            if name_len >= win.cols as usize {
-                let mut trim_index: usize = win.cols as usize - 3;
-                for (index, _) in file_name.char_indices() {
-                    if index >= win.cols as usize - 3 {
-                        trim_index = index;
-                        break;
-                    }
-                }
-                ncurses::waddstr(win.win, &file_name[..trim_index]);
-                ncurses::waddstr(win.win, "…");
-            } else {
-                ncurses::waddstr(win.win, &file_name);
-            }
-        },
-        Err(e) => {
-            ncurses::waddstr(win.win, format!("{:?}", e).as_str());
-        },
-    };
-}
-
-
 pub fn display_options(win: &structs::JoshutoWindow, keymap: &HashMap<i32, JoshutoCommand>)
 {
     ncurses::werase(win.win);
@@ -229,6 +236,62 @@ pub fn display_options(win: &structs::JoshutoWindow, keymap: &HashMap<i32, Joshu
     }
     ncurses::wnoutrefresh(win.win);
 }
+
+pub fn redraw_views(joshuto_view : &structs::JoshutoView,
+        parent_view: Option<&structs::JoshutoDirList>,
+        curr_view: Option<&structs::JoshutoDirList>,
+        preview_view: Option<&structs::JoshutoDirList>)
+{
+    if let Some(s) = parent_view {
+        s.display_contents(&joshuto_view.left_win);
+        ncurses::wnoutrefresh(joshuto_view.left_win.win);
+    }
+
+    if let Some(s) = curr_view {
+        s.display_contents(&joshuto_view.mid_win);
+        ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+    }
+
+    if let Some(s) = preview_view {
+        s.display_contents(&joshuto_view.right_win);
+        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+    }
+}
+
+pub fn redraw_status(joshuto_view : &structs::JoshutoView,
+    curr_view: Option<&structs::JoshutoDirList>, curr_path: &path::PathBuf,
+    username: &str, hostname: &str)
+{
+    if let Some(s) = curr_view.as_ref() {
+        let dirent = s.get_dir_entry(s.index);
+        if let Some(dirent) = dirent {
+            if let Ok(file_name) = dirent.entry.file_name().into_string() {
+                wprint_path(&joshuto_view.top_win, username, hostname,
+                        curr_path, file_name.as_str());
+                wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
+            }
+        }
+    }
+}
+
+pub fn resize_handler(config_t: &config::JoshutoConfig,
+        joshuto_view : &mut structs::JoshutoView,
+        curr_path : &path::PathBuf,
+        parent_view : Option<&structs::JoshutoDirList>,
+        curr_view : Option<&structs::JoshutoDirList>,
+        preview_view : Option<&structs::JoshutoDirList>)
+{
+    joshuto_view.redraw_views();
+    ncurses::refresh();
+
+    redraw_views(joshuto_view, parent_view, curr_view, preview_view);
+
+    redraw_status(joshuto_view, curr_view, curr_path,
+            &config_t.username, &config_t.hostname);
+
+    ncurses::doupdate();
+}
+
 
 fn file_attr_apply(win : ncurses::WINDOW, coord : (i32, i32), mode : u32,
         file_extension : Option<&ffi::OsStr>, attr : ncurses::attr_t)
