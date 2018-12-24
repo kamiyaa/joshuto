@@ -9,26 +9,34 @@ use std::collections::HashMap;
 
 pub mod config;
 pub mod keymap;
-pub mod sort;
+pub mod mimetype;
 mod history;
+mod sort;
 mod structs;
 mod ui;
 mod unix;
 mod navigation;
 mod keymapll;
 
-use joshuto::keymapll::JoshutoCommand;
-use self::keymapll::Keycode;
+use self::keymapll::JoshutoCommand;
 
 fn recurse_get_keycommand<'a>(joshuto_view : &structs::JoshutoView,
     keymap: &'a HashMap<i32, JoshutoCommand>)
     -> Option<&'a JoshutoCommand>
 {
-    // TODO: print options
+    let mut term_rows: i32 = 0;
+    let mut term_cols: i32 = 0;
+    ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+
+    let keymap_len = keymap.len() as i32;
+
+    let win = structs::JoshutoWindow::new(term_rows, keymap_len,
+            ((term_rows - keymap_len) as usize, 0));
 
     let ch: i32 = ncurses::getch();
     match keymap.get(&ch) {
         Some(JoshutoCommand::CompositeKeybind(m)) => {
+            ui::display_options(&win, &keymap);
             recurse_get_keycommand(joshuto_view, &m)
         },
         Some(s) => {
@@ -88,7 +96,9 @@ fn refresh_handler(config_t: &config::JoshutoConfig,
     ncurses::doupdate();
 }
 
-pub fn run(mut config_t: config::JoshutoConfig, keymap_t: keymap::JoshutoKeymaps)
+pub fn run(mut config_t: config::JoshutoConfig,
+    keymap_t: keymap::JoshutoKeymap,
+    mimetype_t: mimetype::JoshutoMimetype)
 {
     let mut curr_path : path::PathBuf = match env::current_dir() {
             Ok(path) => { path },
@@ -468,7 +478,7 @@ pub fn run(mut config_t: config::JoshutoConfig, keymap_t: keymap::JoshutoKeymaps
                                     .unwrap()[index].entry.path();
 
                 if path.is_file() {
-                    unix::open_file(&config_t.mimetypes, &joshuto_view.bot_win, path);
+                    unix::open_file(&mimetype_t.mimetypes, &joshuto_view.bot_win, path);
                     continue;
                 }
 

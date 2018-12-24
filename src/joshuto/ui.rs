@@ -3,9 +3,11 @@ extern crate ncurses;
 use std::ffi;
 use std::fs;
 use std::path;
+use std::collections::HashMap;
 
 use joshuto::structs;
 use joshuto::unix;
+use joshuto::keymapll::JoshutoCommand;
 
 pub const DIR_COLOR     : i16 = 1;
 pub const SOCK_COLOR    : i16 = 4;
@@ -182,7 +184,7 @@ pub fn display_contents(win : &structs::JoshutoWindow,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_file(win : &structs::JoshutoWindow, file : &fs::DirEntry)
+pub fn wprint_file(win: &structs::JoshutoWindow, file : &fs::DirEntry)
 {
     match file.file_name().into_string() {
         Ok(file_name) => {
@@ -206,6 +208,22 @@ pub fn wprint_file(win : &structs::JoshutoWindow, file : &fs::DirEntry)
             ncurses::waddstr(win.win, format!("{:?}", e).as_str());
         },
     };
+}
+
+
+pub fn display_options(win: &structs::JoshutoWindow, keymap: &HashMap<i32, JoshutoCommand>)
+{
+    ncurses::werase(win.win);
+    ncurses::wmove(win.win, 0, 0);
+    let mut index = 0;
+
+    for (key, command) in keymap {
+        let coord : (i32, i32) = (index, 0);
+        ncurses::wmove(win.win, coord.0, coord.1);
+        ncurses::waddstr(win.win, format!("{} {:?}", *key as u8 as char, command).as_str());
+        index = index + 1;
+    }
+    ncurses::wnoutrefresh(win.win);
 }
 
 fn file_attr_apply(win : ncurses::WINDOW, coord : (i32, i32), mode : u32,
