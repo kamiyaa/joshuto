@@ -20,3 +20,6 @@
 "text/x-csrc" = [
 	["nano"]
 ]
+"video/mp4" = [
+	["mpv"]
+]

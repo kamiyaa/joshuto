@@ -19,13 +19,13 @@ fn main()
     println!("args: {:?}", args);
 
     let config = joshuto::config::JoshutoConfig::get_config();
-    println!("config:\n{:#?}", config);
+//    println!("config:\n{:#?}", config);
 
     let keymap = joshuto::keymap::JoshutoKeymap::get_config();
-    println!("keymap:\n{:#?}", keymap);
+//    println!("keymap:\n{:#?}", keymap);
 
     let mimetype = joshuto::mimetype::JoshutoMimetype::get_config();
-    println!("mimetype:\n{:#?}", mimetype);
+//    println!("mimetype:\n{:#?}", mimetype);
 
     joshuto::run(config, keymap, mimetype);
 }

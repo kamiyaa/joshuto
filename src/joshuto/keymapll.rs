@@ -50,7 +50,7 @@ pub enum Keycode {
     STAB = ncurses::KEY_STAB as isize,
     CTAB = ncurses::KEY_CTAB as isize,
     CATAB = ncurses::KEY_CATAB as isize,
-    ENTER = ncurses::KEY_ENTER as isize,
+//    ENTER = ncurses::KEY_ENTER as isize,
     PRINT = ncurses::KEY_PRINT as isize,    /* print key */
     LL = ncurses::KEY_LL as isize,
     A1 = ncurses::KEY_A1 as isize,
@@ -118,6 +118,8 @@ pub enum Keycode {
     RESIZE = ncurses::KEY_RESIZE as isize,
     EVENT = ncurses::KEY_EVENT as isize,
     MAX = ncurses::KEY_MAX as isize,
+
+    NEWLINE = 0xA,
 
     ZERO = 0x30,
     ONE = 0x31,
@@ -257,6 +259,7 @@ impl Keycode {
             "CTRL" => Some(Keycode::CTRL),
             "SHIFT" => Some(Keycode::SHIFT),
             "ALT" => Some(Keycode::ALT),
+
             "CODE_YES" => Some(Keycode::CODE_YES),
             "BREAK" => Some(Keycode::BREAK),
             "SRESET" => Some(Keycode::SRESET),
@@ -298,7 +301,9 @@ impl Keycode {
             "STAB" => Some(Keycode::STAB),
             "CTAB" => Some(Keycode::CTAB),
             "CATAB" => Some(Keycode::CATAB),
-            "ENTER" => Some(Keycode::ENTER),
+            "ENTER" => Some(Keycode::NEWLINE),
+
+//            "ENTER" => Some(Keycode::ENTER),
             "PRINT" => Some(Keycode::PRINT),
             "LL" => Some(Keycode::LL),
             "A1" => Some(Keycode::A1),

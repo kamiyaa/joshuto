@@ -75,7 +75,6 @@ impl JoshutoRawKeymap {
     {
         match keys.next() {
             Some(s) => {
-                print!("{:?}+", key);
                 let mut new_map: HashMap<i32, JoshutoCommand>;
 
                 let key_i32 = key.clone() as i32;
@@ -103,7 +102,6 @@ impl JoshutoRawKeymap {
                 map.insert(key as i32, JoshutoCommand::CompositeKeybind(new_map));
             }
             None => {
-                println!("{:?} -> {:?}", key, keycommand);
                 map.insert(key as i32, keycommand);
             }
         }
