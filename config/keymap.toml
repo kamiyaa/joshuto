@@ -2,53 +2,53 @@
 Quit = [ ["q"] ]
 
 MoveUp = [
-    ["UP"],
-    ["j"]
+	["UP"],
+	["j"]
 ]
 MoveDown = [
-    ["DOWN"],
-    ["h"]
+	["DOWN"],
+	["h"]
 ]
 ParentDirectory = [
-    ["LEFT"],
-    ["h"]
+	["LEFT"],
+	["h"]
 ]
 Open = [
-    ["RIGHT"],
-    ["ENTER"]
+	["RIGHT"],
+	["ENTER"]
 ]
 
 MoveHome = [
-    ["HOME"]
+	["HOME"]
 ]
 MoveEnd = [
-    ["END"]
+	["END"]
 ]
 MovePageUp = [
-    ["PPAGE"]
+	["PPAGE"]
 ]
 MovePageDown = [
-    ["NPAGE"]
+	["NPAGE"]
 ]
 
 DeleteFile = [
-    ["d", "D"],
-    [ "DELETE" ]
+	["d", "D"],
+	[ "DELETE" ]
 ]
 CutFile = [
-    [ "d", "d" ]
+	[ "d", "d" ]
 ]
 RenameFile = [
-    [ "a" ]
+	[ "a" ]
 ]
 CopyFile = [
-    ["y", "y"]
+	["y", "y"]
 ]
 
 OpenWith = [
-    [ "r" ]
+	[ "r" ]
 ]
 ToggleHiddenFiles = [
-    [ "z", "h" ],
-    ["H"]
+	[ "z", "h" ],
+	["H"]
 ]
