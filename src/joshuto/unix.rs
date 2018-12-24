@@ -7,8 +7,8 @@ use std::fs;
 use std::path;
 use std::collections::HashMap;
 
-use joshuto::structs;
 use joshuto::ui;
+use joshuto::window;
 
 pub const BITMASK  : u32 = 0o170000;
 pub const S_IFSOCK : u32 = 0o140000;   /* socket */
@@ -123,7 +123,7 @@ pub fn stringify_mode(mode : u32) -> String
 }
 
 pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
-        win: &structs::JoshutoWindow, path: &path::Path) {
+        win: &window::JoshutoWindow, path: &path::Path) {
     use std::os::unix::fs::PermissionsExt;
 
     if let Ok(metadata) = fs::metadata(path) {

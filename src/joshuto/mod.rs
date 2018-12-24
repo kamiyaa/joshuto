@@ -11,16 +11,18 @@ pub mod config;
 pub mod keymap;
 pub mod mimetype;
 mod history;
+mod navigation;
 mod sort;
 mod structs;
 mod ui;
 mod unix;
-mod navigation;
+mod window;
+
 mod keymapll;
 
 use self::keymapll::JoshutoCommand;
 
-fn recurse_get_keycommand<'a>(joshuto_view : &structs::JoshutoView,
+fn recurse_get_keycommand<'a>(joshuto_view : &window::JoshutoView,
     keymap: &'a HashMap<i32, JoshutoCommand>)
     -> Option<&'a JoshutoCommand>
 {
@@ -30,7 +32,7 @@ fn recurse_get_keycommand<'a>(joshuto_view : &structs::JoshutoView,
 
     let keymap_len = keymap.len() as i32;
 
-    let win = structs::JoshutoWindow::new(term_rows, keymap_len,
+    let win = window::JoshutoWindow::new(term_rows, keymap_len,
             ((term_rows - keymap_len) as usize, 0));
 
     let ch: i32 = ncurses::getch();
@@ -49,7 +51,7 @@ fn recurse_get_keycommand<'a>(joshuto_view : &structs::JoshutoView,
 }
 /*
 
-fn refresh_view(joshuto_view : &structs::JoshutoView,
+fn refresh_view(joshuto_view : &window::JoshutoView,
         parent_view: Option<&structs::JoshutoDirList>,
         curr_view: Option<&structs::JoshutoDirList>,
         preview_view: Option<&structs::JoshutoDirList>,
@@ -92,8 +94,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
     history.populate_to_root(&curr_path, &config_t.sort_type);
 
     ui::init_ncurses();
-    let mut joshuto_view: structs::JoshutoView =
-        structs::JoshutoView::new(config_t.column_ratio);
+    let mut joshuto_view: window::JoshutoView =
+        window::JoshutoView::new(config_t.column_ratio);
 
     /* load up directories */
     let mut curr_view: Option<structs::JoshutoDirList> =

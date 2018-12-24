@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use joshuto::config;
 use joshuto::structs;
 use joshuto::unix;
+use joshuto::window;
 use joshuto::keymapll::JoshutoCommand;
 
 pub const DIR_COLOR     : i16 = 1;
@@ -53,14 +54,14 @@ pub fn init_ncurses()
     ncurses::refresh();
 }
 
-pub fn wprint_msg(win : &structs::JoshutoWindow, err_msg : &str)
+pub fn wprint_msg(win : &window::JoshutoWindow, err_msg : &str)
 {
     ncurses::werase(win.win);
     ncurses::mvwaddstr(win.win, 0, 0, err_msg);
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_err(win : &structs::JoshutoWindow, err_msg : &str)
+pub fn wprint_err(win : &window::JoshutoWindow, err_msg : &str)
 {
     ncurses::werase(win.win);
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
@@ -69,7 +70,7 @@ pub fn wprint_err(win : &structs::JoshutoWindow, err_msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_path(win: &structs::JoshutoWindow, username: &str,
+pub fn wprint_path(win: &window::JoshutoWindow, username: &str,
         hostname: &str, path: &path::PathBuf, file_name: &str)
 {
     ncurses::werase(win.win);
@@ -92,14 +93,14 @@ pub fn wprint_path(win: &structs::JoshutoWindow, username: &str,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_mimetype(win: &structs::JoshutoWindow, mimetype: &str)
+pub fn wprint_mimetype(win: &window::JoshutoWindow, mimetype: &str)
 {
     ncurses::werase(win.win);
     wprint_msg(&win, mimetype);
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_file(win: &structs::JoshutoWindow, file : &fs::DirEntry)
+pub fn wprint_file(win: &window::JoshutoWindow, file : &fs::DirEntry)
 {
     match file.file_name().into_string() {
         Ok(file_name) => {
@@ -158,7 +159,7 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     ncurses::wnoutrefresh(win);
 }
 
-pub fn display_contents(win : &structs::JoshutoWindow,
+pub fn display_contents(win : &window::JoshutoWindow,
         entry : &structs::JoshutoDirList) {
     use std::os::unix::fs::PermissionsExt;
 
@@ -222,7 +223,7 @@ pub fn display_contents(win : &structs::JoshutoWindow,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn display_options(win: &structs::JoshutoWindow, keymap: &HashMap<i32, JoshutoCommand>)
+pub fn display_options(win: &window::JoshutoWindow, keymap: &HashMap<i32, JoshutoCommand>)
 {
     ncurses::werase(win.win);
     ncurses::wmove(win.win, 0, 0);
@@ -237,7 +238,7 @@ pub fn display_options(win: &structs::JoshutoWindow, keymap: &HashMap<i32, Joshu
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn redraw_views(joshuto_view : &structs::JoshutoView,
+pub fn redraw_views(joshuto_view : &window::JoshutoView,
         parent_view: Option<&structs::JoshutoDirList>,
         curr_view: Option<&structs::JoshutoDirList>,
         preview_view: Option<&structs::JoshutoDirList>)
@@ -258,7 +259,7 @@ pub fn redraw_views(joshuto_view : &structs::JoshutoView,
     }
 }
 
-pub fn redraw_status(joshuto_view : &structs::JoshutoView,
+pub fn redraw_status(joshuto_view : &window::JoshutoView,
     curr_view: Option<&structs::JoshutoDirList>, curr_path: &path::PathBuf,
     username: &str, hostname: &str)
 {
@@ -275,7 +276,7 @@ pub fn redraw_status(joshuto_view : &structs::JoshutoView,
 }
 
 pub fn resize_handler(config_t: &config::JoshutoConfig,
-        joshuto_view : &mut structs::JoshutoView,
+        joshuto_view : &mut window::JoshutoView,
         curr_path : &path::PathBuf,
         parent_view : Option<&structs::JoshutoDirList>,
         curr_view : Option<&structs::JoshutoDirList>,
