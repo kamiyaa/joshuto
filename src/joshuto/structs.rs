@@ -215,25 +215,35 @@ impl JoshutoView {
     }
 
     pub fn redraw_views(&mut self) {
+        let sum_ratio: usize = self.win_ratio.0 + self.win_ratio.1 + self.win_ratio.2;
+
         let mut term_rows : i32 = 0;
         let mut term_cols : i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+        let term_divide: i32 = term_cols / sum_ratio as i32;
 
-        let term_divide : usize = term_cols as usize / 7;
+        let win_xy: (i32, i32) = (1, term_cols);
+        let win_coord: (usize, usize) = (0, 0);
+        self.top_win.redraw(win_xy.0, win_xy.1, win_coord);
 
-        self.top_win.redraw(1, term_cols, (0, 0));
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.0 as i32) - 2);
+        let win_coord: (usize, usize) = (1, 0);
+        self.left_win.redraw(win_xy.0, win_xy.1, win_coord);
+
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.1 as i32) - 2);
+        let win_coord: (usize, usize) = (1, term_divide as usize * self.win_ratio.0);
+        self.mid_win.redraw(win_xy.0, win_xy.1, win_coord);
+
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.2 as i32) - 2);
+        let win_coord: (usize, usize) = (1, term_divide as usize * self.win_ratio.2);
+        self.right_win.redraw(win_xy.0, win_xy.1, win_coord);
+
+        let win_xy: (i32, i32) = (1, term_cols);
+        let win_coord: (usize, usize) = (term_rows as usize - 2, 0);
+        self.bot_win.redraw(win_xy.0, win_xy.1, win_coord);
+
         ncurses::scrollok(self.top_win.win, true);
-
-        self.left_win.redraw(term_rows - 2,
-            (term_divide * self.win_ratio.0) as i32, (1, 0));
-
-        self.mid_win.redraw(term_rows - 2,
-            (term_divide * self.win_ratio.1) as i32,
-            (1, term_divide * self.win_ratio.0));
-
-        self.right_win.redraw(term_rows - 2,
-            term_divide as i32 * 3,
-            (1, term_divide * self.win_ratio.2));
-        self.bot_win.redraw(1, term_cols, (term_rows as usize - 1, 0));
+        ncurses::scrollok(self.bot_win.win, true);
     }
 }
