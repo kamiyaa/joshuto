@@ -1,4 +1,6 @@
 #[macro_use]
+extern crate clap;
+#[macro_use]
 extern crate serde_derive;
 extern crate toml;
 extern crate xdg;
@@ -16,16 +18,16 @@ pub const MIMETYPE_FILE: &str = "mimetype.toml";
 fn main()
 {
     let args: Vec<String> = env::args().collect();
-    println!("args: {:?}", args);
+    for arg in &args {
+        if arg.as_str() == "-v" {
+            println!("{}", crate_version!());
+            return
+        }
+    }
 
     let config = joshuto::config::JoshutoConfig::get_config();
-//    println!("config:\n{:#?}", config);
-
     let keymap = joshuto::keymap::JoshutoKeymap::get_config();
-//    println!("keymap:\n{:#?}", keymap);
-
     let mimetype = joshuto::mimetype::JoshutoMimetype::get_config();
-//    println!("mimetype:\n{:#?}", mimetype);
 
     joshuto::run(config, keymap, mimetype);
 }
