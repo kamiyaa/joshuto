@@ -42,25 +42,10 @@ impl JoshutoRawConfig {
             None => (1, 3, 4),
             };
 
-        let show_hidden: bool = match self.show_hidden {
-            Some(s) => s,
-            None => false,
-            };
-
-        let case_sensitive: bool = match self.case_sensitive {
-            Some(s) => s,
-            None => false,
-            };
-
-        let sort_reverse: bool = match self.sort_reverse {
-            Some(s) => s,
-            None => false,
-            };
-
-        let folders_first: bool = match self.folders_first {
-            Some(s) => s,
-            None => true,
-            };
+        let show_hidden: bool = self.show_hidden.unwrap_or(false);
+        let case_sensitive: bool = self.case_sensitive.unwrap_or(false);
+        let sort_reverse: bool = self.sort_reverse.unwrap_or(false);
+        let folders_first: bool = self.folders_first.unwrap_or(true);
 
         let sort_struct = sort::SortStruct {
                 show_hidden,
