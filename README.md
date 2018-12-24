@@ -21,12 +21,15 @@ $ cargo build
 
 ## Configuration
 Joshuto can currently be configured using the following files:
+
 [joshuto.toml](https://github.com/kamiyaa/joshuto/blob/master/config/joshuto.toml)
  - general configurations
+
 [keymap.toml](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.toml)
  - for keybindings
    - **currently causes joshuto to have no bindings when this config is missing**
    - please take a look at [keymapll.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/keymapll.rs) for keycodes
+
 [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml)
  - for opening files with applications
    - **currently causes joshuto to be unable to open any files when this config is missing**
