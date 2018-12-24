@@ -6,6 +6,7 @@ ranger-like terminal file manager written in Rust
 
 ## Dependencies
  - ncurses
+
 Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 
 ## Installation
