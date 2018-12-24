@@ -1,0 +1,22 @@
+# specify which applications to use to open certain file types
+[mimetypes]
+"application/x-matroska" = [
+	["mpv"]
+]
+"application/x-shellscript" = [
+	["nano"],
+	["gedit"]
+]
+"image/jpeg" = [
+	["qimgv"],
+	["feh"]
+]
+"image/png" = [
+	["feh", "-F"]
+]
+"text/plain" = [
+	["nano"]
+]
+"text/x-csrc" = [
+	["nano"]
+]

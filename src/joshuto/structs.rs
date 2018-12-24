@@ -111,7 +111,7 @@ impl JoshutoWindow {
         let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
         ncurses::leaveok(win, true);
 
-        ncurses::refresh();
+        ncurses::wnoutrefresh(win);
         JoshutoWindow {
             win: win,
             rows: rows,
