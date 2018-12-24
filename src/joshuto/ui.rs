@@ -82,10 +82,12 @@ pub fn wprint_path(win: &structs::JoshutoWindow, username: &str,
             format!("{}@{} ", username, hostname).as_str());
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
 
+    ncurses::wattron(win.win, ncurses::COLOR_PAIR(DIR_COLOR));
     ncurses::waddstr(win.win, path_str);
-    ncurses::wattroff(win.win, ncurses::A_BOLD());
     ncurses::waddstr(win.win, "/");
+    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(DIR_COLOR));
     ncurses::waddstr(win.win, file_name);
+    ncurses::wattroff(win.win, ncurses::A_BOLD());
     ncurses::wnoutrefresh(win.win);
 }
 

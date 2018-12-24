@@ -12,6 +12,7 @@
 	["feh"]
 ]
 "image/png" = [
+	["qimgv"],
 	["feh", "-F"]
 ]
 "text/plain" = [
