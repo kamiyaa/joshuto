@@ -1,19 +1,54 @@
 [keymaps]
-Quit = [ "q" ]
+Quit = [ ["q"] ]
 
-MoveUp = [ "UP" ]
-MoveDown = [ "DOWN" ]
-MoveHome = [ "HOME" ]
-MoveEnd = [ "END" ]
-Open = [ "RIGHT" ]
-ParentDirectory = [ "LEFT" ]
-MovePageUp = [ "PPAGE" ]
-MovePageDown = [ "NPAGE" ]
+MoveUp = [
+    ["UP"],
+    ["j"]
+]
+MoveDown = [
+    ["DOWN"],
+    ["h"]
+]
+ParentDirectory = [
+    ["LEFT"],
+    ["h"]
+]
+Open = [
+    ["RIGHT"],
+    ["ENTER"]
+]
 
-DeleteFile = [ "d", "D" ]
-CutFile = [ "d", "d" ]
-RenameFile = [ "a" ]
-CopyFile = [ "y", "y" ]
+MoveHome = [
+    ["HOME"]
+]
+MoveEnd = [
+    ["END"]
+]
+MovePageUp = [
+    ["PPAGE"]
+]
+MovePageDown = [
+    ["NPAGE"]
+]
 
-OpenWith = [ "r" ]
-ToggleHiddenFiles = [ "z", "h" ]
+DeleteFile = [
+    ["d", "D"],
+    [ "DELETE" ]
+]
+CutFile = [
+    [ "d", "d" ]
+]
+RenameFile = [
+    [ "a" ]
+]
+CopyFile = [
+    ["y", "y"]
+]
+
+OpenWith = [
+    [ "r" ]
+]
+ToggleHiddenFiles = [
+    [ "z", "h" ],
+    ["H"]
+]

@@ -2,6 +2,7 @@ extern crate ncurses;
 
 use std::collections::HashMap;
 
+#[allow(non_camel_case_types)]
 #[derive(Debug,Clone)]
 pub enum Keycode {
     CTRL = ncurses::BUTTON_CTRL as isize,
@@ -34,23 +35,23 @@ pub enum Keycode {
     F13 = ncurses::KEY_F13 as isize,
     F14 = ncurses::KEY_F14 as isize,
     F15 = ncurses::KEY_F15 as isize,
-    DL = ncurses::KEY_DL as isize,
-    IL = ncurses::KEY_IL as isize,
-    DC = ncurses::KEY_DC as isize,
-    IC = ncurses::KEY_IC as isize,
+    DL = ncurses::KEY_DL as isize,          /* delete-line key */
+    IL = ncurses::KEY_IL as isize,          /* insert-line key */
+    DC = ncurses::KEY_DC as isize,          /* delete-character key */
+    IC = ncurses::KEY_IC as isize,          /* insert-character key */
     EIC = ncurses::KEY_EIC as isize,
     CLEAR = ncurses::KEY_CLEAR as isize,
     EOS = ncurses::KEY_EOS as isize,
     EOL = ncurses::KEY_EOL as isize,
     SF = ncurses::KEY_SF as isize,
     SR = ncurses::KEY_SR as isize,
-    NPAGE = ncurses::KEY_NPAGE as isize,
-    PPAGE = ncurses::KEY_PPAGE as isize,
+    NPAGE = ncurses::KEY_NPAGE as isize,    /* next-page key */
+    PPAGE = ncurses::KEY_PPAGE as isize,    /* previous-page key */
     STAB = ncurses::KEY_STAB as isize,
     CTAB = ncurses::KEY_CTAB as isize,
     CATAB = ncurses::KEY_CATAB as isize,
     ENTER = ncurses::KEY_ENTER as isize,
-    PRINT = ncurses::KEY_PRINT as isize,
+    PRINT = ncurses::KEY_PRINT as isize,    /* print key */
     LL = ncurses::KEY_LL as isize,
     A1 = ncurses::KEY_A1 as isize,
     A3 = ncurses::KEY_A3 as isize,
@@ -284,8 +285,8 @@ impl Keycode {
             "F15" => Some(Keycode::F15),
             "DL" => Some(Keycode::DL),
             "IL" => Some(Keycode::IL),
-            "DC" => Some(Keycode::DC),
-            "IC" => Some(Keycode::IC),
+            "DELETE" => Some(Keycode::DC),
+            "INSERT" => Some(Keycode::IC),
             "EIC" => Some(Keycode::EIC),
             "CLEAR" => Some(Keycode::CLEAR),
             "EOS" => Some(Keycode::EOS),
@@ -418,6 +419,29 @@ impl JoshutoCommand {
             "ToggleHiddenFiles" => Some(JoshutoCommand::ToggleHiddenFiles),
             _ => None,
         }
+    }
 
+    pub fn clone(&self) -> Self
+    {
+        match self {
+            JoshutoCommand::Quit => JoshutoCommand::Quit,
+            JoshutoCommand::MoveUp => JoshutoCommand::MoveUp,
+            JoshutoCommand::MoveDown => JoshutoCommand::MoveDown,
+            JoshutoCommand::MovePageUp => JoshutoCommand::MovePageUp,
+            JoshutoCommand::MovePageDown => JoshutoCommand::MovePageDown,
+            JoshutoCommand::MoveHome => JoshutoCommand::MoveHome,
+            JoshutoCommand::MoveEnd => JoshutoCommand::MoveEnd,
+            JoshutoCommand::ParentDirectory => JoshutoCommand::ParentDirectory,
+
+            JoshutoCommand::DeleteFile => JoshutoCommand::DeleteFile,
+            JoshutoCommand::RenameFile => JoshutoCommand::RenameFile,
+            JoshutoCommand::CutFile => JoshutoCommand::CutFile,
+            JoshutoCommand::CopyFile => JoshutoCommand::CopyFile,
+            JoshutoCommand::Open => JoshutoCommand::Open,
+            JoshutoCommand::OpenWith => JoshutoCommand::OpenWith,
+            JoshutoCommand::ToggleHiddenFiles => JoshutoCommand::ToggleHiddenFiles,
+
+            JoshutoCommand::CompositeKeybind(_) => JoshutoCommand::Quit,
+        }
     }
 }

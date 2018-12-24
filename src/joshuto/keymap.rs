@@ -8,7 +8,7 @@ use joshuto::keymapll::Keycode;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawKeymaps {
-    keymaps: Option<HashMap<String, Vec<String>>>,
+    keymaps: Option<HashMap<String, Vec<Vec<String>>>>,
 }
 
 impl JoshutoRawKeymaps {
@@ -36,24 +36,26 @@ impl JoshutoRawKeymaps {
         }
     }
 
-    fn unflatten_hashmap(map: HashMap<String, Vec<String>>) -> HashMap<i32, JoshutoCommand>
+    fn unflatten_hashmap(map: HashMap<String, Vec<Vec<String>>>) -> HashMap<i32, JoshutoCommand>
     {
         let mut new_map: HashMap<i32, JoshutoCommand> = HashMap::new();
 
         for (keycommand, keycomb) in &map {
             match JoshutoCommand::from_str(&keycommand) {
                 Some(keybind) => {
-                    let mut keys = keycomb.iter();
-                    if let Some(key) = keys.next() {
-                        let key = match Keycode::from_str(&key) {
-                            Some(s) => s,
-                            None => {
-                                eprintln!("Error: Unknown keycode for: {:?}", &keycommand);
-                                process::exit(1);
-                            }
-                        };
-                        JoshutoRawKeymaps::insert_keycommand(&mut new_map, &mut keys,
-                            key, keybind);
+                    for comb in keycomb {
+                        let mut keys = comb.iter();
+                        if let Some(key) = keys.next() {
+                            let key = match Keycode::from_str(&key) {
+                                Some(s) => s,
+                                None => {
+                                    eprintln!("Error: Unknown keycode for: {:?}", &keycommand);
+                                    process::exit(1);
+                                }
+                            };
+                            JoshutoRawKeymaps::insert_keycommand(&mut new_map, &mut keys,
+                                key, keybind.clone());
+                        }
                     }
                 }
                 None => {
