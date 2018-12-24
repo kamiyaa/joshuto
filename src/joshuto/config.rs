@@ -12,6 +12,9 @@ use joshuto::sort;
 pub struct JoshutoRawConfig {
     show_hidden: Option<bool>,
     sort_type: Option<String>,
+    folders_first: Option<bool>,
+    sort_reverse: Option<bool>,
+    case_sensitive: Option<bool>,
     column_ratio: Option<[usize; 3]>,
 }
 
@@ -22,6 +25,9 @@ impl JoshutoRawConfig {
         JoshutoRawConfig {
             show_hidden: Some(false),
             sort_type: Some(String::from("natural")),
+            folders_first: None,
+            sort_reverse: None,
+            case_sensitive: None,
             column_ratio: Some([1, 3, 4]),
         }
     }
@@ -41,11 +47,26 @@ impl JoshutoRawConfig {
             None => false,
             };
 
+        let case_sensitive: bool = match self.case_sensitive {
+            Some(s) => s,
+            None => false,
+            };
+
+        let sort_reverse: bool = match self.sort_reverse {
+            Some(s) => s,
+            None => false,
+            };
+
+        let folders_first: bool = match self.folders_first {
+            Some(s) => s,
+            None => true,
+            };
+
         let sort_struct = sort::SortStruct {
                 show_hidden,
-                folders_first: true,
-                case_sensitive: false,
-                reverse: false,
+                folders_first,
+                case_sensitive,
+                sort_reverse,
             };
 
         let sort_type: sort::SortType = match self.sort_type {
@@ -84,7 +105,7 @@ impl JoshutoConfig {
                 show_hidden: false,
                 folders_first: true,
                 case_sensitive: false,
-                reverse: false,
+                sort_reverse: false,
             };
         let sort_type = sort::SortType::SortNatural(sort_struct);
 
