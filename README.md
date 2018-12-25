@@ -36,3 +36,6 @@ Joshuto can currently be configured using the following files:
    - **currently causes program to be unable to open any files when this config is missing**
 
 Place these config files in your `XDG_CONFIG_DIR/joshuto` (usually `$HOME/.config/joshuto/`)
+
+## Features/Bugs
+Please create an issue :)
