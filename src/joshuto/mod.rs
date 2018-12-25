@@ -32,22 +32,32 @@ fn recurse_get_keycommand<'a>(joshuto_view : &window::JoshutoView,
 
     let keymap_len = keymap.len() as i32;
 
-    let win = window::JoshutoWindow::new(term_rows, keymap_len,
-            ((term_rows - keymap_len) as usize, 0));
+    let mut win = window::JoshutoPanel::new(keymap_len + 1, term_cols,
+            ((term_rows - keymap_len - 2) as usize, 0));
+    win.move_to_top();
+    ui::display_options(&win, &keymap);
+    ncurses::doupdate();
 
     let ch: i32 = ncurses::getch();
+
+    let keycommand: Option<&'a JoshutoCommand>;
+
+    win.destroy();
+    ncurses::update_panels();
+    ncurses::doupdate();
+
     match keymap.get(&ch) {
         Some(JoshutoCommand::CompositeKeybind(m)) => {
-            ui::display_options(&win, &keymap);
-            recurse_get_keycommand(joshuto_view, &m)
+            keycommand = recurse_get_keycommand(joshuto_view, &m);
         },
         Some(s) => {
-            Some(s)
+            keycommand = Some(s);
         },
         _ => {
-            None
+            keycommand = None;
         }
     }
+    keycommand
 }
 /*
 
@@ -174,9 +184,18 @@ pub fn run(mut config_t: config::JoshutoConfig,
         match keymap_t.keymaps.get(&ch) {
             Some(JoshutoCommand::CompositeKeybind(m)) => {
                 match recurse_get_keycommand(&joshuto_view, &m) {
-                    Some(s) => keycommand = &s,
-                    None => continue,
+                    Some(s) => {
+                        ncurses::update_panels();
+                        ncurses::doupdate();
+                        keycommand = &s;
+                    }
+                    None => {
+                        ncurses::update_panels();
+                        ncurses::doupdate();
+                        continue
+                    },
                 }
+
             },
             Some(s) => {
                 keycommand = &s;
