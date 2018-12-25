@@ -89,7 +89,7 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn display_contents(&self, win: &window::JoshutoWindow)
+    pub fn display_contents(&self, win: &window::JoshutoPanel)
     {
         ui::display_contents(win, self);
     }

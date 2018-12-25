@@ -9,52 +9,15 @@ pub struct JoshutoWindow {
 }
 
 impl JoshutoWindow {
-    pub fn new(rows : i32, cols : i32, coords : (usize, usize)) -> JoshutoWindow
+    /* coords (y, x) */
+    pub fn new(rows: i32, cols: i32, coords: (usize, usize)) -> Self
     {
         let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
-        ncurses::leaveok(win, true);
-
-        ncurses::wnoutrefresh(win);
-        JoshutoWindow {
-            win: win,
-            rows: rows,
-            cols: cols,
-            coords: coords,
-        }
-    }
-
-    pub fn redraw(&mut self, rows : i32, cols : i32, coords : (usize, usize))
-    {
-        ncurses::delwin(self.win);
-        self.rows = rows;
-        self.cols = cols;
-        self.coords = coords;
-        self.win = ncurses::newwin(self.rows, self.cols, self.coords.0 as i32,
-                self.coords.1 as i32);
-        ncurses::leaveok(self.win, true);
-        ncurses::wnoutrefresh(self.win);
-    }
-}
-
-pub struct JoshutoPanel {
-    pub win: ncurses::WINDOW,
-    pub panel: ncurses::PANEL,
-    pub rows: i32,
-    pub cols: i32,
-    pub coords: (usize, usize)
-}
-
-impl JoshutoPanel {
-    pub fn new(rows : i32, cols : i32, coords : (usize, usize)) -> JoshutoWindow
-    {
-        let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
-        let panel = ncurses::panel::new_panel(win);
         ncurses::leaveok(win, true);
 
         ncurses::wnoutrefresh(win);
         JoshutoWindow {
             win,
-            panel,
             rows,
             cols,
             coords,
@@ -63,7 +26,17 @@ impl JoshutoPanel {
 
     pub fn redraw(&mut self, rows : i32, cols : i32, coords : (usize, usize))
     {
+        self.destroy();
+        self.create(rows, cols, coords);
+    }
+
+    pub fn destroy(&mut self)
+    {
         ncurses::delwin(self.win);
+    }
+
+    fn create(&mut self, rows: i32, cols: i32, coords: (usize, usize))
+    {
         self.rows = rows;
         self.cols = cols;
         self.coords = coords;
@@ -75,17 +48,73 @@ impl JoshutoPanel {
 }
 
 #[derive(Debug)]
+pub struct JoshutoPanel {
+    pub win: ncurses::WINDOW,
+    pub panel: ncurses::PANEL,
+    pub rows: i32,
+    pub cols: i32,
+    pub coords: (usize, usize)
+}
+
+impl JoshutoPanel {
+    pub fn new(rows : i32, cols : i32, coords : (usize, usize)) -> Self
+    {
+        let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
+        let panel = ncurses::new_panel(win);
+        ncurses::leaveok(win, true);
+
+        ncurses::wnoutrefresh(win);
+        JoshutoPanel {
+            win,
+            panel,
+            rows,
+            cols,
+            coords,
+        }
+    }
+
+    pub fn move_to_top(&self)
+    {
+        ncurses::top_panel(self.panel);
+    }
+
+    pub fn redraw(&mut self, rows: i32, cols: i32, coords: (usize, usize))
+    {
+        self.destroy();
+        self.create(rows, cols, coords);
+    }
+
+    pub fn destroy(&mut self)
+    {
+        ncurses::del_panel(self.panel);
+        ncurses::delwin(self.win);
+    }
+
+    fn create(&mut self, rows: i32, cols: i32, coords: (usize, usize))
+    {
+        self.rows = rows;
+        self.cols = cols;
+        self.coords = coords;
+        self.win = ncurses::newwin(self.rows, self.cols, self.coords.0 as i32,
+                self.coords.1 as i32);
+        self.panel = ncurses::new_panel(self.win);
+        ncurses::leaveok(self.win, true);
+        ncurses::wnoutrefresh(self.win);
+    }
+}
+
+#[derive(Debug)]
 pub struct JoshutoView {
-    pub top_win : JoshutoWindow,
-    pub left_win : JoshutoWindow,
-    pub mid_win : JoshutoWindow,
-    pub right_win : JoshutoWindow,
-    pub bot_win : JoshutoWindow,
-    pub win_ratio : (usize, usize, usize),
+    pub top_win: JoshutoPanel,
+    pub left_win: JoshutoPanel,
+    pub mid_win: JoshutoPanel,
+    pub right_win: JoshutoPanel,
+    pub bot_win: JoshutoPanel,
+    pub win_ratio: (usize, usize, usize),
 }
 
 impl JoshutoView {
-    pub fn new(win_ratio : (usize, usize, usize)) -> JoshutoView
+    pub fn new(win_ratio : (usize, usize, usize)) -> Self
     {
         let sum_ratio: usize = win_ratio.0 + win_ratio.1 + win_ratio.2;
 
@@ -96,23 +125,23 @@ impl JoshutoView {
 
         let win_xy: (i32, i32) = (1, term_cols);
         let win_coord: (usize, usize) = (0, 0);
-        let top_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
+        let top_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 2);
         let win_coord: (usize, usize) = (1, 0);
-        let left_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
+        let left_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.1 as i32) - 2);
         let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.0);
-        let mid_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
+        let mid_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.2 as i32) - 2);
         let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.2);
-        let right_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
+        let right_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
         let win_xy: (i32, i32) = (1, term_cols);
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
-        let bot_win = JoshutoWindow::new(win_xy.0, win_xy.1, win_coord);
+        let bot_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
         ncurses::scrollok(top_win.win, true);
         ncurses::scrollok(bot_win.win, true);

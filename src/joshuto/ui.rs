@@ -54,14 +54,14 @@ pub fn init_ncurses()
     ncurses::refresh();
 }
 
-pub fn wprint_msg(win : &window::JoshutoWindow, err_msg : &str)
+pub fn wprint_msg(win : &window::JoshutoPanel, err_msg : &str)
 {
     ncurses::werase(win.win);
     ncurses::mvwaddstr(win.win, 0, 0, err_msg);
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_err(win : &window::JoshutoWindow, err_msg : &str)
+pub fn wprint_err(win : &window::JoshutoPanel, err_msg : &str)
 {
     ncurses::werase(win.win);
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
@@ -70,7 +70,7 @@ pub fn wprint_err(win : &window::JoshutoWindow, err_msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_path(win: &window::JoshutoWindow, username: &str,
+pub fn wprint_path(win: &window::JoshutoPanel, username: &str,
         hostname: &str, path: &path::PathBuf, file_name: &str)
 {
     ncurses::werase(win.win);
@@ -93,14 +93,14 @@ pub fn wprint_path(win: &window::JoshutoWindow, username: &str,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_mimetype(win: &window::JoshutoWindow, mimetype: &str)
+pub fn wprint_mimetype(win: &window::JoshutoPanel, mimetype: &str)
 {
     ncurses::werase(win.win);
     wprint_msg(&win, mimetype);
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_file(win: &window::JoshutoWindow, file : &fs::DirEntry)
+pub fn wprint_file(win: &window::JoshutoPanel, file : &fs::DirEntry)
 {
     match file.file_name().into_string() {
         Ok(file_name) => {
@@ -159,7 +159,7 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     ncurses::wnoutrefresh(win);
 }
 
-pub fn display_contents(win : &window::JoshutoWindow,
+pub fn display_contents(win : &window::JoshutoPanel,
         entry : &structs::JoshutoDirList) {
     use std::os::unix::fs::PermissionsExt;
 
@@ -223,16 +223,16 @@ pub fn display_contents(win : &window::JoshutoWindow,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn display_options(win: &window::JoshutoWindow, keymap: &HashMap<i32, JoshutoCommand>)
+pub fn display_options(win: &window::JoshutoPanel, keymap: &HashMap<i32, JoshutoCommand>)
 {
     ncurses::werase(win.win);
-    ncurses::wmove(win.win, 0, 0);
-    let mut index = 0;
+    ncurses::mvwhline(win.win, 0, 0, '-' as u32, 10000);
+    let mut index = 1;
 
     for (key, command) in keymap {
         let coord : (i32, i32) = (index, 0);
         ncurses::wmove(win.win, coord.0, coord.1);
-        ncurses::waddstr(win.win, format!("{} {:?}", *key as u8 as char, command).as_str());
+        ncurses::waddstr(win.win, format!("  {}\t{:?}", *key as u8 as char, command).as_str());
         index = index + 1;
     }
     ncurses::wnoutrefresh(win.win);

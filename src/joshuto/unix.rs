@@ -123,7 +123,7 @@ pub fn stringify_mode(mode : u32) -> String
 }
 
 pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
-        win: &window::JoshutoWindow, path: &path::Path) {
+        win: &window::JoshutoPanel, path: &path::Path) {
     use std::os::unix::fs::PermissionsExt;
 
     if let Ok(metadata) = fs::metadata(path) {
