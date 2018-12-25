@@ -9,9 +9,9 @@ use joshuto::window;
 
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
-    pub entry : fs::DirEntry,
-    pub selected : bool,
-    pub marked : bool,
+    pub entry: fs::DirEntry,
+    pub selected: bool,
+    pub marked: bool,
 }
 
 #[derive(Debug)]

@@ -115,9 +115,9 @@ fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<
                         None
                     } else {
                         let dir_entry = structs::JoshutoDirEntry {
-                            entry : direntry,
-                            selected : false,
-                            marked : false,
+                            entry: direntry,
+                            selected: false,
+                            marked: false,
                         };
                         Some(dir_entry)
                     }

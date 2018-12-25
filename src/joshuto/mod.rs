@@ -21,6 +21,7 @@ mod window;
 mod keymapll;
 
 use self::keymapll::JoshutoCommand;
+use self::keymapll::Keycode;
 
 fn recurse_get_keycommand<'a>(joshuto_view : &window::JoshutoView,
     keymap: &'a HashMap<i32, JoshutoCommand>)
@@ -40,24 +41,26 @@ fn recurse_get_keycommand<'a>(joshuto_view : &window::JoshutoView,
 
     let ch: i32 = ncurses::getch();
 
-    let keycommand: Option<&'a JoshutoCommand>;
-
     win.destroy();
     ncurses::update_panels();
     ncurses::doupdate();
 
-    match keymap.get(&ch) {
-        Some(JoshutoCommand::CompositeKeybind(m)) => {
-            keycommand = recurse_get_keycommand(joshuto_view, &m);
-        },
-        Some(s) => {
-            keycommand = Some(s);
-        },
-        _ => {
-            keycommand = None;
+
+    if ch == Keycode::ESCAPE as i32 {
+        None
+    } else {
+        match keymap.get(&ch) {
+            Some(JoshutoCommand::CompositeKeybind(m)) => {
+                recurse_get_keycommand(joshuto_view, &m)
+            },
+            Some(s) => {
+                Some(s)
+            },
+            _ => {
+                None
+            }
         }
     }
-    keycommand
 }
 /*
 

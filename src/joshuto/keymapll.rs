@@ -1,5 +1,7 @@
 extern crate ncurses;
 
+use std;
+use std::fmt;
 use std::collections::HashMap;
 
 #[allow(non_camel_case_types)]
@@ -122,6 +124,7 @@ pub enum Keycode {
 
     TAB = 0x9,
     NEWLINE = 0xA,
+    ESCAPE = 0x1B,
 
     ZERO = 0x30,
     ONE = 0x31,
@@ -404,6 +407,35 @@ pub enum JoshutoCommand {
     ToggleHiddenFiles,
 
     CompositeKeybind(HashMap<i32, JoshutoCommand>),
+}
+
+impl std::fmt::Display for JoshutoCommand {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            JoshutoCommand::Quit => write!(f, "quit"),
+            JoshutoCommand::ReloadDirList => write!(f, "reload_directory"),
+
+            JoshutoCommand::MoveUp => write!(f, "move_up"),
+            JoshutoCommand::MoveDown => write!(f, "move_down"),
+            JoshutoCommand::MovePageUp => write!(f, "page_up"),
+            JoshutoCommand::MovePageDown => write!(f, "page_down"),
+            JoshutoCommand::MoveHome => write!(f, "home"),
+            JoshutoCommand::MoveEnd => write!(f, "end"),
+            JoshutoCommand::ParentDirectory => write!(f, "parent_directory"),
+
+            JoshutoCommand::DeleteFile => write!(f, "delete"),
+            JoshutoCommand::RenameFile => write!(f, "rename"),
+            JoshutoCommand::CutFile => write!(f, "cut"),
+            JoshutoCommand::CopyFile => write!(f, "copy"),
+            JoshutoCommand::PasteFile => write!(f, "paste"),
+            JoshutoCommand::Open => write!(f, "open"),
+            JoshutoCommand::OpenWith => write!(f, "open_with"),
+            JoshutoCommand::ToggleHiddenFiles => write!(f, "toggle_hidden"),
+
+            JoshutoCommand::CompositeKeybind(_) => write!(f, "..."),
+        }
+    }
+
 }
 
 impl JoshutoCommand {

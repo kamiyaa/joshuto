@@ -14,6 +14,7 @@ serde = "1.0.82"
 serde_derive = "1.0.82"
 toml = "0.4.10"
 tree_magic = "0.2.1"
+wcwidth = "1.0.1"
 whoami = "0.2.4"
 xdg = "2.2.0"
 
