@@ -26,9 +26,8 @@ Joshuto can currently be configured using the following files:
 [joshuto.toml](https://github.com/kamiyaa/joshuto/blob/master/config/joshuto.toml)
  - general configurations
 
-[keymap.toml](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.toml)
+[keymap.conf](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.conf)
  - for keybindings
-   - **currently causes program to have no bindings when this config is missing**
    - please take a look at [keymapll.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/keymapll.rs) for keycodes
 
 [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml)
