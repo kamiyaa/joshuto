@@ -213,44 +213,18 @@ pub fn run(mut config_t: config::JoshutoConfig,
             JoshutoCommand::ReloadDirList => {
                 
             },
-            JoshutoCommand::MoveUp => {
-                let curr_index = curr_view.as_ref().unwrap().index;
-                if curr_index <= 0 {
-                    continue;
-                }
-
-                preview_view = match navigation::set_dir_cursor_index(&mut history,
-                        curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
-                        curr_index - 1) {
-                    Ok(s) => s,
-                    Err(e) => {
-                        ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
-                        None
-                    },
-                };
-
-                ui::redraw_views(&joshuto_view,
-                                None.as_ref(),
-                                curr_view.as_ref(),
-                                preview_view.as_ref());
-
-                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
-                        &config_t.username, &config_t.hostname);
-
-                ncurses::doupdate();
-            },
-            JoshutoCommand::MoveDown => {
+            JoshutoCommand::CursorMove(s) => {
                 let curr_index = curr_view.as_ref().unwrap().index;
                 let dir_len = curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap().len() as i32;
-
-                if curr_index + 1 >= dir_len {
+                if curr_index as i32 + s <= 0 && curr_index == 0 ||
+                        curr_index as i32 + s >= dir_len && curr_index == dir_len - 1 {
                     continue;
                 }
 
                 preview_view = match navigation::set_dir_cursor_index(&mut history,
                         curr_view.as_mut().unwrap(), preview_view, &config_t.sort_type,
-                        curr_index + 1) {
+                        curr_index + s) {
                     Ok(s) => s,
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
@@ -268,13 +242,13 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 ncurses::doupdate();
             },
-            JoshutoCommand::MovePageUp => {
+            JoshutoCommand::CursorMovePageUp => {
                 let curr_index = curr_view.as_ref().unwrap().index as usize;
                 if curr_index <= 0 {
                     continue;
                 }
 
-                let half_page : i32 = joshuto_view.mid_win.cols / 2;
+                let half_page: i32 = joshuto_view.mid_win.cols / 2;
                 let curr_index = if curr_index < half_page as usize {
                     0
                 } else {
@@ -301,7 +275,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 ncurses::doupdate();
             },
-            JoshutoCommand::MovePageDown => {
+            JoshutoCommand::CursorMovePageDown => {
                 let curr_index = curr_view.as_ref().unwrap().index as usize;
                 let dir_len = curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap().len();
@@ -337,7 +311,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 ncurses::doupdate();
             },
-            JoshutoCommand::MoveHome => {
+            JoshutoCommand::CursorMoveHome => {
                 let curr_index = curr_view.as_ref().unwrap().index;
                 if curr_index <= 0 {
                     continue;
@@ -362,7 +336,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 ncurses::doupdate();
             },
-            JoshutoCommand::MoveEnd => {
+            JoshutoCommand::CursorMoveEnd => {
                 let curr_index = curr_view.as_ref().unwrap().index;
                 let dir_len = curr_view.as_ref().unwrap()
                                 .contents.as_ref().unwrap().len() as i32;
@@ -441,7 +415,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 ncurses::doupdate();
             },
-            JoshutoCommand::DeleteFile => {
+            JoshutoCommand::DeleteFiles => {
                 if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
                     continue;
                 }
@@ -478,13 +452,13 @@ pub fn run(mut config_t: config::JoshutoConfig,
             JoshutoCommand::RenameFile => {
 
             },
-            JoshutoCommand::CutFile => {
+            JoshutoCommand::CutFiles => {
 
             },
-            JoshutoCommand::CopyFile => {
+            JoshutoCommand::CopyFiles => {
 
             },
-            JoshutoCommand::PasteFile => {
+            JoshutoCommand::PasteFiles => {
 
             },
             JoshutoCommand::Open => {

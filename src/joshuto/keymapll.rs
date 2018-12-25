@@ -5,6 +5,7 @@ use std::fmt;
 use std::collections::HashMap;
 
 #[allow(non_camel_case_types)]
+#[allow(dead_code)]
 #[derive(Debug,Clone)]
 pub enum Keycode {
     CTRL = ncurses::BUTTON_CTRL as isize,
@@ -31,9 +32,8 @@ pub enum Keycode {
     CTAB = ncurses::KEY_CTAB as isize,
     DC = ncurses::KEY_DC as isize,          /* delete-character key */
     DL = ncurses::KEY_DL as isize,          /* delete-line key */
-    DOWN = ncurses::KEY_DOWN as isize,
     EIC = ncurses::KEY_EIC as isize,
-    END = ncurses::KEY_END as isize,
+
 //    ENTER = ncurses::KEY_ENTER as isize,
     EOL = ncurses::KEY_EOL as isize,
     EOS = ncurses::KEY_EOS as isize,
@@ -57,10 +57,9 @@ pub enum Keycode {
     F9 = ncurses::KEY_F9 as isize,
     FIND = ncurses::KEY_FIND as isize,
     HELP = ncurses::KEY_HELP as isize,
-    HOME = ncurses::KEY_HOME as isize,
+
     IC = ncurses::KEY_IC as isize,          /* insert-character key */
     IL = ncurses::KEY_IL as isize,          /* insert-line key */
-    LEFT = ncurses::KEY_LEFT as isize,
     LL = ncurses::KEY_LL as isize,
     MARK = ncurses::KEY_MARK as isize,
     MAX = ncurses::KEY_MAX as isize,
@@ -82,7 +81,6 @@ pub enum Keycode {
     RESIZE = ncurses::KEY_RESIZE as isize,
     RESTART = ncurses::KEY_RESTART as isize,
     RESUME = ncurses::KEY_RESUME as isize,
-    RIGHT = ncurses::KEY_RIGHT as isize,
     SAVE = ncurses::KEY_SAVE as isize,
     SBEG = ncurses::KEY_SBEG as isize,
     SCANCEL = ncurses::KEY_SCANCEL as isize,
@@ -119,8 +117,13 @@ pub enum Keycode {
     SUNDO = ncurses::KEY_SUNDO as isize,
     SUSPEND = ncurses::KEY_SUSPEND as isize,
     UNDO = ncurses::KEY_UNDO as isize,
-    UP = ncurses::KEY_UP as isize,
 
+    UP = ncurses::KEY_UP as isize,
+    DOWN = ncurses::KEY_DOWN as isize,
+    LEFT = ncurses::KEY_LEFT as isize,
+    RIGHT = ncurses::KEY_RIGHT as isize,
+    HOME = ncurses::KEY_HOME as isize,
+    END = ncurses::KEY_END as isize,
 
     TAB = 0x9,
     NEWLINE = 0xA,
@@ -389,19 +392,18 @@ pub enum JoshutoCommand {
 
     ReloadDirList,
 
-    MoveUp,
-    MoveDown,
-    MovePageUp,
-    MovePageDown,
-    MoveHome,
-    MoveEnd,
+    CursorMove(i32),
+    CursorMovePageUp,
+    CursorMovePageDown,
+    CursorMoveHome,
+    CursorMoveEnd,
     ParentDirectory,
 
-    DeleteFile,
+    DeleteFiles,
     RenameFile,
-    CutFile,
-    CopyFile,
-    PasteFile,
+    CutFiles,
+    CopyFiles,
+    PasteFiles,
     Open,
     OpenWith,
     ToggleHiddenFiles,
@@ -415,19 +417,18 @@ impl std::fmt::Display for JoshutoCommand {
             JoshutoCommand::Quit => write!(f, "quit"),
             JoshutoCommand::ReloadDirList => write!(f, "reload_directory"),
 
-            JoshutoCommand::MoveUp => write!(f, "move_up"),
-            JoshutoCommand::MoveDown => write!(f, "move_down"),
-            JoshutoCommand::MovePageUp => write!(f, "page_up"),
-            JoshutoCommand::MovePageDown => write!(f, "page_down"),
-            JoshutoCommand::MoveHome => write!(f, "home"),
-            JoshutoCommand::MoveEnd => write!(f, "end"),
+            JoshutoCommand::CursorMove(s) => write!(f, "move {}", s),
+            JoshutoCommand::CursorMovePageUp => write!(f, "page_up"),
+            JoshutoCommand::CursorMovePageDown => write!(f, "page_down"),
+            JoshutoCommand::CursorMoveHome => write!(f, "home"),
+            JoshutoCommand::CursorMoveEnd => write!(f, "end"),
             JoshutoCommand::ParentDirectory => write!(f, "parent_directory"),
 
-            JoshutoCommand::DeleteFile => write!(f, "delete"),
+            JoshutoCommand::DeleteFiles => write!(f, "delete"),
             JoshutoCommand::RenameFile => write!(f, "rename"),
-            JoshutoCommand::CutFile => write!(f, "cut"),
-            JoshutoCommand::CopyFile => write!(f, "copy"),
-            JoshutoCommand::PasteFile => write!(f, "paste"),
+            JoshutoCommand::CutFiles => write!(f, "cut"),
+            JoshutoCommand::CopyFiles => write!(f, "copy"),
+            JoshutoCommand::PasteFiles => write!(f, "paste"),
             JoshutoCommand::Open => write!(f, "open"),
             JoshutoCommand::OpenWith => write!(f, "open_with"),
             JoshutoCommand::ToggleHiddenFiles => write!(f, "toggle_hidden"),
@@ -440,26 +441,36 @@ impl std::fmt::Display for JoshutoCommand {
 
 impl JoshutoCommand {
 
-    pub fn from_str(keybind: &str) -> Option<Self>
+    pub fn from_args(keybind: &[&str]) -> Option<Self>
     {
-        match keybind {
+        match keybind[0] {
             "Quit" => Some(JoshutoCommand::Quit),
 
             "ReloadDirList" => Some(JoshutoCommand::ReloadDirList),
 
-            "MoveUp" => Some(JoshutoCommand::MoveUp),
-            "MoveDown" => Some(JoshutoCommand::MoveDown),
-            "MovePageUp" => Some(JoshutoCommand::MovePageUp),
-            "MovePageDown" => Some(JoshutoCommand::MovePageDown),
-            "MoveHome" => Some(JoshutoCommand::MoveHome),
-            "MoveEnd" => Some(JoshutoCommand::MoveEnd),
+            "CursorMove" => {
+                if keybind.len() > 1 {
+                    match keybind[1].parse::<i32>().unwrap() {
+                        s => {
+                            Some(JoshutoCommand::CursorMove(s))
+                        },
+                        _ => { None },
+                    }
+                } else {
+                    None
+                }
+            }
+            "CursorMovePageUp" => Some(JoshutoCommand::CursorMovePageUp),
+            "CursorMovePageDown" => Some(JoshutoCommand::CursorMovePageDown),
+            "CursorMoveHome" => Some(JoshutoCommand::CursorMoveHome),
+            "CursorMoveEnd" => Some(JoshutoCommand::CursorMoveEnd),
             "ParentDirectory" => Some(JoshutoCommand::ParentDirectory),
 
-            "DeleteFile" => Some(JoshutoCommand::DeleteFile),
+            "DeleteFiles" => Some(JoshutoCommand::DeleteFiles),
             "RenameFile" => Some(JoshutoCommand::RenameFile),
-            "CutFile" => Some(JoshutoCommand::CutFile),
-            "CopyFile" => Some(JoshutoCommand::CopyFile),
-            "PasteFile" => Some(JoshutoCommand::PasteFile),
+            "CutFiles" => Some(JoshutoCommand::CutFiles),
+            "CopyFiles" => Some(JoshutoCommand::CopyFiles),
+            "PasteFiles" => Some(JoshutoCommand::PasteFiles),
             "Open" => Some(JoshutoCommand::Open),
             "OpenWith" => Some(JoshutoCommand::OpenWith),
             "ToggleHiddenFiles" => Some(JoshutoCommand::ToggleHiddenFiles),
@@ -473,19 +484,18 @@ impl JoshutoCommand {
             JoshutoCommand::Quit => JoshutoCommand::Quit,
             JoshutoCommand::ReloadDirList => JoshutoCommand::ReloadDirList,
 
-            JoshutoCommand::MoveUp => JoshutoCommand::MoveUp,
-            JoshutoCommand::MoveDown => JoshutoCommand::MoveDown,
-            JoshutoCommand::MovePageUp => JoshutoCommand::MovePageUp,
-            JoshutoCommand::MovePageDown => JoshutoCommand::MovePageDown,
-            JoshutoCommand::MoveHome => JoshutoCommand::MoveHome,
-            JoshutoCommand::MoveEnd => JoshutoCommand::MoveEnd,
+            JoshutoCommand::CursorMove(s) => JoshutoCommand::CursorMove(*s),
+            JoshutoCommand::CursorMovePageUp => JoshutoCommand::CursorMovePageUp,
+            JoshutoCommand::CursorMovePageDown => JoshutoCommand::CursorMovePageDown,
+            JoshutoCommand::CursorMoveHome => JoshutoCommand::CursorMoveHome,
+            JoshutoCommand::CursorMoveEnd => JoshutoCommand::CursorMoveEnd,
             JoshutoCommand::ParentDirectory => JoshutoCommand::ParentDirectory,
 
-            JoshutoCommand::DeleteFile => JoshutoCommand::DeleteFile,
+            JoshutoCommand::DeleteFiles => JoshutoCommand::DeleteFiles,
             JoshutoCommand::RenameFile => JoshutoCommand::RenameFile,
-            JoshutoCommand::CutFile => JoshutoCommand::CutFile,
-            JoshutoCommand::CopyFile => JoshutoCommand::CopyFile,
-            JoshutoCommand::PasteFile => JoshutoCommand::PasteFile,
+            JoshutoCommand::CutFiles => JoshutoCommand::CutFiles,
+            JoshutoCommand::CopyFiles => JoshutoCommand::CopyFiles,
+            JoshutoCommand::PasteFiles => JoshutoCommand::PasteFiles,
             JoshutoCommand::Open => JoshutoCommand::Open,
             JoshutoCommand::OpenWith => JoshutoCommand::OpenWith,
             JoshutoCommand::ToggleHiddenFiles => JoshutoCommand::ToggleHiddenFiles,

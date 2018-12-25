@@ -10,10 +10,10 @@ use std::env;
 
 mod joshuto;
 
-pub const PROGRAM_NAME: &str = "joshuto";
-pub const CONFIG_FILE: &str = "joshuto.toml";
-pub const KEYMAP_FILE: &str = "keymap.toml";
-pub const MIMETYPE_FILE: &str = "mimetype.toml";
+const PROGRAM_NAME: &str = "joshuto";
+const CONFIG_FILE: &str = "joshuto.toml";
+const MIMETYPE_FILE: &str = "mimetype.toml";
+const KEYMAP_FILE: &str = "keymap.conf";
 
 fn main()
 {
@@ -26,8 +26,9 @@ fn main()
     }
 
     let config = joshuto::config::JoshutoConfig::get_config();
-    let keymap = joshuto::keymap::JoshutoKeymap::get_config();
     let mimetype = joshuto::mimetype::JoshutoMimetype::get_config();
+    let keymap = joshuto::keymap::JoshutoKeymap::get_config();
+//    println!("{:#?}", keymap);
 
     joshuto::run(config, keymap, mimetype);
 }

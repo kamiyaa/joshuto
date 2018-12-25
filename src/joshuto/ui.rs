@@ -1,4 +1,5 @@
 extern crate ncurses;
+extern crate wcwidth;
 
 use std::ffi;
 use std::fs;
@@ -100,19 +101,61 @@ pub fn wprint_mimetype(win: &window::JoshutoPanel, mimetype: &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_file(win: &window::JoshutoPanel, file : &fs::DirEntry)
+fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
+    coord: (i32, i32)) -> usize
 {
+    const FILE_UNITS: [&str ; 6] = ["B", "K", "M", "G", "T", "E"];
+    const CONV_RATE: f64 = 1024.0;
+
+    match file.metadata() {
+        Ok(metadata) => {
+            let mut file_size = metadata.len() as f64;
+            let mut index = 0;
+            while file_size > CONV_RATE {
+                file_size = file_size / CONV_RATE;
+                index += 1;
+            }
+
+            ncurses::wmove(win.win, coord.0, win.cols - 6);
+            if file_size >= 1000.0 {
+                ncurses::waddstr(win.win,
+                    format!("{:.0} {}", file_size, FILE_UNITS[index]).as_str());
+            } else if file_size >= 100.0 {
+                ncurses::waddstr(win.win,
+                    format!(" {:.0} {}", file_size, FILE_UNITS[index]).as_str());
+            } else if file_size >= 10.0 {
+                ncurses::waddstr(win.win,
+                    format!("{:.1} {}", file_size, FILE_UNITS[index]).as_str());
+            } else {
+                ncurses::waddstr(win.win,
+                    format!("{:.2} {}", file_size, FILE_UNITS[index]).as_str());
+            }
+        },
+        Err(e) => {
+            ncurses::waddstr(win.win, format!("{:?}", e).as_str());
+        },
+    };
+    6
+}
+
+fn wprint_file_name(win: &window::JoshutoPanel, file : &fs::DirEntry,
+    coord: (i32, i32), offset: usize)
+{
+    let offset = offset + 3;
+    ncurses::wmove(win.win, coord.0, coord.1);
     match file.file_name().into_string() {
         Ok(file_name) => {
             ncurses::waddstr(win.win, " ");
-            let name_len = file_name.len();
-            if name_len >= win.cols as usize {
-                let mut trim_index: usize = win.cols as usize - 3;
-                for (index, _) in file_name.char_indices() {
-                    if index >= win.cols as usize - 3 {
+            let name_len = wcwidth::str_width(file_name.as_str()).unwrap_or(win.cols as usize);
+            if name_len >= win.cols as usize - 1 {
+                let mut trim_index: usize = win.cols as usize - offset;
+                let mut total: usize = 0;
+                for (index, ch) in file_name.char_indices() {
+                    if total >= win.cols as usize - offset {
                         trim_index = index;
                         break;
                     }
+                    total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
                 }
                 ncurses::waddstr(win.win, &file_name[..trim_index]);
                 ncurses::waddstr(win.win, "…");
@@ -159,6 +202,14 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
     ncurses::wnoutrefresh(win);
 }
 
+pub fn wprint_direntry(win: &window::JoshutoPanel,
+        file: &fs::DirEntry, coord: (i32, i32))
+{
+//    let offset = wprint_file_size(win, file, coord);
+    let offset = 6;
+    wprint_file_name(win, file, coord, offset);
+}
+
 pub fn display_contents(win : &window::JoshutoPanel,
         entry : &structs::JoshutoDirList) {
     use std::os::unix::fs::PermissionsExt;
@@ -195,9 +246,8 @@ pub fn display_contents(win : &window::JoshutoPanel,
     ncurses::wmove(win.win, 0, 0);
 
     for i in start..end {
-        let coord : (i32, i32) = (i as i32 - start as i32, 0);
-        ncurses::wmove(win.win, coord.0, coord.1);
-        wprint_file(win, &dir_contents[i].entry);
+        let coord: (i32, i32) = (i as i32 - start as i32, 0);
+        wprint_direntry(win, &dir_contents[i].entry, coord);
 
         if let Ok(metadata) = &dir_contents[i].entry.metadata() {
             mode = metadata.permissions().mode();
@@ -232,7 +282,7 @@ pub fn display_options(win: &window::JoshutoPanel, keymap: &HashMap<i32, Joshuto
     for (key, command) in keymap {
         let coord : (i32, i32) = (index, 0);
         ncurses::wmove(win.win, coord.0, coord.1);
-        ncurses::waddstr(win.win, format!("  {}\t{:?}", *key as u8 as char, command).as_str());
+        ncurses::waddstr(win.win, format!("  {}\t{}", *key as u8 as char, command).as_str());
         index = index + 1;
     }
     ncurses::wnoutrefresh(win.win);
