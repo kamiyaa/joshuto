@@ -2,6 +2,7 @@ use std;
 use std::fs;
 use std::path;
 use std::time;
+use std::ffi;
 
 use joshuto::sort;
 use joshuto::ui;
@@ -17,6 +18,7 @@ pub struct JoshutoDirEntry {
 #[derive(Debug)]
 pub struct JoshutoDirList {
     pub index: i32,
+    pub path: path::PathBuf,
     pub need_update: bool,
     pub modified: time::SystemTime,
     pub contents: Option<Vec<JoshutoDirEntry>>,
@@ -41,31 +43,42 @@ impl JoshutoDirList {
 
         Ok(JoshutoDirList {
             index,
-            need_update : false,
-            modified: modified,
+            path: path.clone().to_path_buf(),
+            need_update: false,
+            modified,
             contents: Some(dir_contents),
             selection: Vec::new(),
         })
     }
 
-    pub fn update(&mut self, path : &path::Path, sort_type: &sort::SortType)
+    pub fn update(&mut self, sort_type: &sort::SortType)
     {
         let sort_func = sort_type.compare_func();
 
         self.need_update = false;
 
-        if let Ok(mut dir_contents) = JoshutoDirList::read_dir_list(path, sort_type) {
+        if let Ok(mut dir_contents) = JoshutoDirList::read_dir_list(&self.path, sort_type) {
             dir_contents.sort_by(&sort_func);
-            self.contents = Some(dir_contents);
-            if self.index >= 0 &&
-                    self.index as usize >= self.contents.as_ref().unwrap().len() {
-                if self.contents.as_ref().unwrap().len() > 0 {
-                    self.index = (self.contents.as_ref().unwrap().len() - 1) as i32;
+
+            if self.index >= 0 {
+                let indexed_filename = match self.contents.as_ref() {
+                    Some(s) => {
+                        s[self.index as usize].entry.file_name()
+                    },
+                    None => ffi::OsString::from(""),
+                };
+                for (i, entry) in dir_contents.iter().enumerate() {
+                    if indexed_filename == entry.entry.file_name() {
+                        self.index = i as i32;
+                        break;
+                    }
                 }
             }
+
+            self.contents = Some(dir_contents);
         }
 
-        if let Ok(metadata) = std::fs::metadata(&path) {
+        if let Ok(metadata) = std::fs::metadata(&self.path) {
             match metadata.modified() {
                 Ok(s) => { self.modified = s; },
                 Err(e) => { eprintln!("{}", e); },
@@ -73,6 +86,21 @@ impl JoshutoDirList {
         }
     }
 
+    pub fn get_curr_entry(&self) -> Option<&JoshutoDirEntry>
+    {
+        match self.contents {
+            Some(ref s) => {
+                if self.index >= 0 && (self.index as usize) < s.len() {
+                    Some(&s[self.index as usize])
+                } else {
+                    None
+                }
+            },
+            None => {
+                None
+            }
+        }
+    }
     pub fn get_dir_entry(&self, index: i32) -> Option<&JoshutoDirEntry>
     {
         match self.contents {
