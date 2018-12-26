@@ -8,7 +8,7 @@ use joshuto::structs;
 use joshuto::sort;
 
 pub struct History {
-    pub map : HashMap<path::PathBuf, structs::JoshutoDirList>,
+    map: HashMap<path::PathBuf, structs::JoshutoDirList>,
 }
 
 impl History {
@@ -65,7 +65,7 @@ impl History {
                     dir_entry.need_update = true;
                 }
                 if dir_entry.need_update {
-                    dir_entry.update(&path, &sort_type);
+                    dir_entry.update(&sort_type);
                 }
                 Ok(dir_entry)
             },
