@@ -1,58 +1,12 @@
 extern crate ncurses;
 
 #[derive(Debug)]
-pub struct JoshutoWindow {
-    pub win     : ncurses::WINDOW,
-    pub rows    : i32,
-    pub cols    : i32,
-    pub coords  : (usize, usize)
-}
-
-impl JoshutoWindow {
-    /* coords (y, x) */
-    pub fn new(rows: i32, cols: i32, coords: (usize, usize)) -> Self
-    {
-        let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
-        ncurses::leaveok(win, true);
-
-        ncurses::wnoutrefresh(win);
-        JoshutoWindow {
-            win,
-            rows,
-            cols,
-            coords,
-        }
-    }
-
-    pub fn redraw(&mut self, rows : i32, cols : i32, coords : (usize, usize))
-    {
-        self.destroy();
-        self.create(rows, cols, coords);
-    }
-
-    pub fn destroy(&mut self)
-    {
-        ncurses::delwin(self.win);
-    }
-
-    fn create(&mut self, rows: i32, cols: i32, coords: (usize, usize))
-    {
-        self.rows = rows;
-        self.cols = cols;
-        self.coords = coords;
-        self.win = ncurses::newwin(self.rows, self.cols, self.coords.0 as i32,
-                self.coords.1 as i32);
-        ncurses::leaveok(self.win, true);
-        ncurses::wnoutrefresh(self.win);
-    }
-}
-
-#[derive(Debug)]
 pub struct JoshutoPanel {
     pub win: ncurses::WINDOW,
     pub panel: ncurses::PANEL,
     pub rows: i32,
     pub cols: i32,
+    /* coords (y, x) */
     pub coords: (usize, usize)
 }
 
