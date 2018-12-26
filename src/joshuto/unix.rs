@@ -130,23 +130,14 @@ pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
         let permissions : fs::Permissions = metadata.permissions();
         let mode = permissions.mode();
         if is_reg(mode) {
-            let lossy_path: String = path.as_os_str().to_os_string().into_string().unwrap();
             let mime_type: String = get_mime_type(path);
 
             if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
                 let mime_args_len = mime_args.len();
                 if mime_args_len > 0 {
-                    let program_name = mime_args[0][0].clone();
-
-                    let mut args_list : Vec<String> = Vec::with_capacity(mime_args_len);
-                    for i in 1..mime_args[0].len() {
-                        args_list.push(mime_args[0][i].clone());
-                    }
-                    args_list.push(lossy_path);
-
                     ncurses::savetty();
                     ncurses::endwin();
-                    exec_with(program_name, args_list);
+                    open_with(path, &mime_args[0]);
                     ncurses::resetty();
                     ncurses::refresh();
                 }
@@ -160,4 +151,19 @@ pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
         ui::wprint_err(win, "Failed to read metadata, unable to determine filetype");
     }
     ncurses::doupdate();
+}
+
+pub fn open_with(path: &path::Path, args: &Vec<String>)
+{
+    let args_len = args.len();
+    let lossy_path: String = path.as_os_str().to_os_string().into_string().unwrap();
+    let program_name = args[0].clone();
+
+    let mut args_list : Vec<String> = Vec::with_capacity(args_len);
+    for i in 1..args.len() {
+        args_list.push(args[i].clone());
+    }
+    args_list.push(lossy_path);
+
+    exec_with(program_name, args_list);
 }
