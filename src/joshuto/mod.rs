@@ -3,6 +3,7 @@ extern crate ncurses;
 
 use std;
 use std::env;
+use std::fs;
 use std::path;
 use std::process;
 use std::collections::HashMap;
@@ -23,20 +24,24 @@ mod keymapll;
 use self::keymapll::JoshutoCommand;
 use self::keymapll::Keycode;
 
-fn recurse_get_keycommand<'a>(joshuto_view : &window::JoshutoView,
-    keymap: &'a HashMap<i32, JoshutoCommand>)
+fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, JoshutoCommand>)
     -> Option<&'a JoshutoCommand>
 {
     let mut term_rows: i32 = 0;
     let mut term_cols: i32 = 0;
     ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-    let keymap_len = keymap.len() as i32;
+    let keymap_len = keymap.len();
 
-    let mut win = window::JoshutoPanel::new(keymap_len + 1, term_cols,
-            ((term_rows - keymap_len - 2) as usize, 0));
+    let mut win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
+            ((term_rows - keymap_len as i32 - 2) as usize, 0));
+    let mut display_vec: Vec<String> = Vec::with_capacity(keymap_len);
+    for (key, val) in keymap {
+        display_vec.push(format!("  {}\t{}", *key as u8 as char, val));
+    }
+    display_vec.sort();
     win.move_to_top();
-    ui::display_options(&win, &keymap);
+    ui::display_options(&win, &display_vec);
     ncurses::doupdate();
 
     let ch: i32 = ncurses::getch();
@@ -51,7 +56,7 @@ fn recurse_get_keycommand<'a>(joshuto_view : &window::JoshutoView,
     } else {
         match keymap.get(&ch) {
             Some(JoshutoCommand::CompositeKeybind(m)) => {
-                recurse_get_keycommand(joshuto_view, &m)
+                recurse_get_keycommand(&m)
             },
             Some(s) => {
                 Some(s)
@@ -60,6 +65,59 @@ fn recurse_get_keycommand<'a>(joshuto_view : &window::JoshutoView,
                 None
             }
         }
+    }
+}
+
+fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
+        direntry: &fs::DirEntry)
+{
+    let mut term_rows: i32 = 0;
+    let mut term_cols: i32 = 0;
+    ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+
+    let mimetype_len = mimetypes.len() as i32;
+
+    let pathbuf = direntry.path();
+    let mimetype = unix::get_mime_type(pathbuf.as_path());
+
+    let mut win = window::JoshutoPanel::new(mimetype_len + 1, term_cols,
+            ((term_rows - mimetype_len - 2) as usize, 0));
+
+    let mut display_vec: Vec<String> = Vec::new();
+    let mut empty_vec: Vec<Vec<String>> = Vec::new();
+    let mimetype_options: &Vec<Vec<String>>;
+    match mimetypes.get(&mimetype) {
+        Some(s) => {
+            mimetype_options = s;
+        },
+        None => {
+            mimetype_options = &empty_vec;
+        },
+    }
+
+    display_vec.reserve(mimetype_options.len());
+    for (i, val) in mimetype_options.iter().enumerate() {
+        display_vec.push(format!("  {}\t{}", i+1, val.join(" ")));
+    }
+    display_vec.sort();
+
+    win.move_to_top();
+    ui::display_options(&win, &display_vec);
+    ncurses::doupdate();
+
+    let ch: i32 = ncurses::getch();
+
+    win.destroy();
+    ncurses::update_panels();
+    ncurses::doupdate();
+
+    let index = ch - '1' as i32;
+    if index >= 0 && index < mimetype_options.len() as i32 {
+        ncurses::savetty();
+        ncurses::endwin();
+        unix::open_with(pathbuf.as_path(), &mimetype_options[index as usize]);
+        ncurses::resetty();
+        ncurses::refresh();
     }
 }
 /*
@@ -186,7 +244,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
         match keymap_t.keymaps.get(&ch) {
             Some(JoshutoCommand::CompositeKeybind(m)) => {
-                match recurse_get_keycommand(&joshuto_view, &m) {
+                match recurse_get_keycommand(&m) {
                     Some(s) => {
                         ncurses::update_panels();
                         ncurses::doupdate();
@@ -416,15 +474,18 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 ncurses::doupdate();
             },
             JoshutoCommand::DeleteFiles => {
-                if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
+                let index = curr_view.as_ref().unwrap().index;
+                if index < 0 || curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
                     continue;
                 }
-                let index = curr_view.as_ref().unwrap().index as usize;
-                let file_name = &curr_view.as_ref().unwrap()
-                                    .contents.as_ref()
-                                    .unwrap()[index].entry.file_name();
+                let index = index as usize;
+                let file_name = &curr_view.as_ref()
+                                    .unwrap().contents.as_ref()
+                                    .unwrap()[index].entry.file_name().into_string()
+                                    .unwrap();
+
                 ui::wprint_msg(&joshuto_view.bot_win,
-                    format!("Delete {:?}? (y/n)", file_name).as_str());
+                    format!("Delete {}? (y/n)", file_name).as_str());
                 ncurses::doupdate();
                 let ch2 = ncurses::wgetch(joshuto_view.bot_win.win);
                 if ch2 == 'y' as i32 {
@@ -433,13 +494,18 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                         .unwrap()[index].entry.path();
                     match std::fs::remove_file(path) {
                         Ok(_s) => {
-                            curr_view.as_mut().unwrap().update(&curr_path,
-                                &config_t.sort_type);
-                            ui::display_contents(&joshuto_view.mid_win,
-                                curr_view.as_ref().unwrap());
                             ui::wprint_msg(&joshuto_view.bot_win,
                                 format!("Deleted {:?}!", file_name).as_str());
-                            ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+                            if let Some(s) = curr_view.as_mut() {
+                                s.update(&config_t.sort_type);
+                            }
+                            if let Some(s) = preview_view.as_mut() {
+                                s.update(&config_t.sort_type);
+                            }
+                            ui::redraw_views(&joshuto_view,
+                                    None.as_ref(),
+                                    curr_view.as_ref(),
+                                    preview_view.as_ref());
                         },
                         Err(e) => {
                             ui::wprint_err(&joshuto_view.bot_win,
@@ -447,6 +513,9 @@ pub fn run(mut config_t: config::JoshutoConfig,
                         }
                     }
                 }
+
+                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
                 ncurses::doupdate();
             },
             JoshutoCommand::RenameFile => {
@@ -526,7 +595,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 };
                             } else {
                                 ncurses::werase(joshuto_view.right_win.win);
-                                ui::wprint_err(&joshuto_view.right_win, "Not a directory");
                             }
 
                             ui::redraw_views(&joshuto_view,
@@ -547,7 +615,11 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 }
             },
             JoshutoCommand::OpenWith => {
-
+                if let Some(s) = curr_view.as_ref() {
+                    if let Some(entry) = s.get_curr_entry() {
+                        open_with(&mimetype_t.mimetypes, &entry.entry);
+                    }
+                }
             },
             JoshutoCommand::ToggleHiddenFiles => {
                 {
@@ -557,34 +629,19 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 }
 
                 if let Some(s) = curr_view.as_mut() {
-                    s.update(&curr_path, &config_t.sort_type);
-                    ui::display_contents(&joshuto_view.mid_win, &s);
-                    ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+                    s.update(&config_t.sort_type);
                 }
-
                 if let Some(s) = parent_view.as_mut() {
-                    if curr_path.parent() != None {
-                        s.update(curr_path.parent().unwrap(), &config_t.sort_type);
-                        ui::display_contents(&joshuto_view.left_win, &s);
-                        ncurses::wnoutrefresh(joshuto_view.left_win.win);
-                    }
+                    s.update(&config_t.sort_type);
                 }
-
                 if let Some(s) = preview_view.as_mut() {
-                    if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() > 0 {
-                        let index : usize = curr_view.as_ref().unwrap().index as usize;
-                        let dirent : &structs::JoshutoDirEntry = &curr_view.as_ref().unwrap()
-                                        .contents.as_ref().unwrap()[index];
-
-                        ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
-                                &config_t.username, &config_t.hostname);
-
-                        s.update(dirent.entry.path().as_path(), &config_t.sort_type);
-
-                        ui::display_contents(&joshuto_view.right_win, &s);
-                        ncurses::wnoutrefresh(joshuto_view.right_win.win);
-                    }
+                    s.update(&config_t.sort_type);
                 }
+
+                ui::redraw_views(&joshuto_view,
+                        parent_view.as_ref(),
+                        curr_view.as_ref(),
+                        preview_view.as_ref());
                 ncurses::doupdate();
             },
             _ => {

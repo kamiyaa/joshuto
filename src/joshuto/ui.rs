@@ -1,6 +1,7 @@
 extern crate ncurses;
 extern crate wcwidth;
 
+use std;
 use std::ffi;
 use std::fs;
 use std::path;
@@ -273,16 +274,15 @@ pub fn display_contents(win : &window::JoshutoPanel,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn display_options(win: &window::JoshutoPanel, keymap: &HashMap<i32, JoshutoCommand>)
+pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
 {
     ncurses::werase(win.win);
     ncurses::mvwhline(win.win, 0, 0, '-' as u32, 10000);
     let mut index = 1;
 
-    for (key, command) in keymap {
-        let coord : (i32, i32) = (index, 0);
-        ncurses::wmove(win.win, coord.0, coord.1);
-        ncurses::waddstr(win.win, format!("  {}\t{}", *key as u8 as char, command).as_str());
+    for val in vals {
+        ncurses::wmove(win.win, index, 0);
+        ncurses::waddstr(win.win, val.as_str());
         index = index + 1;
     }
     ncurses::wnoutrefresh(win.win);
@@ -305,6 +305,9 @@ pub fn redraw_views(joshuto_view : &window::JoshutoView,
 
     if let Some(s) = preview_view {
         s.display_contents(&joshuto_view.right_win);
+        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+    } else {
+        ncurses::werase(joshuto_view.right_win.win);
         ncurses::wnoutrefresh(joshuto_view.right_win.win);
     }
 }
