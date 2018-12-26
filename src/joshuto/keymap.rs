@@ -5,8 +5,6 @@ use std::fs;
 use std::io;
 use std::io::BufRead;
 use std::process;
-use std::slice;
-use std::ops;
 
 use joshuto::keymapll::JoshutoCommand;
 use joshuto::keymapll::Keycode;
@@ -157,21 +155,31 @@ impl JoshutoKeymap {
     {
         let mut keymaps: HashMap<i32, JoshutoCommand> = HashMap::new();
 
-        let dirs = xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "").unwrap();
-
-        let config_path = dirs.find_config_file(::KEYMAP_FILE)?;
-        if let Ok(f) = fs::File::open(config_path) {
-            let mut reader = io::BufReader::new(f);
-            for line in reader.lines() {
-                if let Ok(mut line) = line {
-                    JoshutoKeymap::parse_line(&mut keymaps, line);
+        match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
+            Ok(dirs) => {
+                let config_path = dirs.find_config_file(::KEYMAP_FILE)?;
+                match fs::File::open(config_path) {
+                    Ok(f) => {
+                        let mut reader = io::BufReader::new(f);
+                        for line in reader.lines() {
+                            if let Ok(mut line) = line {
+                                JoshutoKeymap::parse_line(&mut keymaps, line);
+                            }
+                        }
+                        Some(JoshutoKeymap {
+                            keymaps,
+                        })
+                    },
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        process::exit(1);
+                    },
                 }
-            }
-            Some(JoshutoKeymap {
-                keymaps,
-            })
-        } else {
-            None
+            },
+            Err(e) => {
+                eprintln!("{}", e);
+                None
+            },
         }
     }
 
@@ -182,7 +190,6 @@ impl JoshutoKeymap {
                 config
             }
             None => {
-                println!("somethign happened");
                 JoshutoKeymap::new()
             }
         }

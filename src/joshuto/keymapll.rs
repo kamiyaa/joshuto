@@ -450,11 +450,14 @@ impl JoshutoCommand {
 
             "CursorMove" => {
                 if keybind.len() > 1 {
-                    match keybind[1].parse::<i32>().unwrap() {
-                        s => {
+                    match keybind[1].parse::<i32>() {
+                        Ok(s) => {
                             Some(JoshutoCommand::CursorMove(s))
                         },
-                        _ => { None },
+                        Err(e) => {
+                            eprintln!("{}", e);
+                            None
+                        },
                     }
                 } else {
                     None
