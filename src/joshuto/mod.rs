@@ -608,7 +608,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
             JoshutoCommand::CopyFiles => {
 
             },
-            JoshutoCommand::PasteFiles => {
+            JoshutoCommand::PasteFiles{overwrite} => {
 
             },
             JoshutoCommand::Open => {

@@ -90,8 +90,14 @@ impl DirHistory {
     }
 }
 
+enum FileOp {
+    Cut,
+    Copy,
+}
+
 pub struct FileClipboard {
     files: Vec<path::PathBuf>,
+    fileop: FileOp,
 }
 
 impl FileClipboard {
@@ -100,11 +106,70 @@ impl FileClipboard {
     {
         FileClipboard {
             files: Vec::new(),
+            fileop: FileOp::Copy,
         }
     }
 
-    pub fn copy()
+    pub fn copy(&mut self, dirlist: &structs::JoshutoDirList)
     {
-        
+        if let Some(contents) = dirlist.contents.as_ref() {
+            self.files = contents.iter()
+                    .filter(|entry| entry.selected)
+                    .map(|entry| entry.entry.path()).collect();
+            self.fileop = FileOp::Copy;
+        }
+    }
+
+    pub fn paste(&mut self, destination: path::PathBuf) {
+
+        let mut destination = destination;
+        for path in &self.files {
+            match path.file_name() {
+                Some(ref s) => {
+                    destination.push(&s);
+                    if !destination.exists() {
+                        match self.fileop {
+                            FileOp::Copy => {
+                                fs::copy(&path, &destination);
+                            },
+                            FileOp::Cut => {
+
+                            },
+                        }
+                    } else {
+
+                    }
+                    destination.pop();
+                }
+                None => {
+                    
+                }
+            }
+        }
+        self.files.clear();
+    }
+
+    pub fn paste_overwrite(&mut self, destination: path::PathBuf) {
+        let mut destination = destination;
+        for path in &self.files {
+            match path.file_name() {
+                Some(ref s) => {
+                    destination.push(&s);
+                    match self.fileop {
+                        FileOp::Copy => {
+                            fs::copy(&path, &destination);
+                        },
+                        FileOp::Cut => {
+
+                        },
+                    }
+                    destination.pop();
+                }
+                None => {
+                    
+                }
+            }
+        }
+        self.files.clear();
     }
 }

@@ -22,7 +22,7 @@ pub enum JoshutoCommand {
     RenameFile,
     CutFiles,
     CopyFiles,
-    PasteFiles,
+    PasteFiles{ overwrite: bool },
     Open,
     OpenWith,
     ToggleHiddenFiles,
@@ -51,7 +51,7 @@ impl std::fmt::Display for JoshutoCommand {
             JoshutoCommand::RenameFile => write!(f, "rename"),
             JoshutoCommand::CutFiles => write!(f, "cut"),
             JoshutoCommand::CopyFiles => write!(f, "copy"),
-            JoshutoCommand::PasteFiles => write!(f, "paste"),
+            JoshutoCommand::PasteFiles{overwrite} => write!(f, "paste overwrite={}", overwrite),
             JoshutoCommand::Open => write!(f, "open"),
             JoshutoCommand::OpenWith => write!(f, "open_with"),
             JoshutoCommand::ToggleHiddenFiles => write!(f, "toggle_hidden"),
@@ -108,7 +108,7 @@ impl JoshutoCommand {
             "RenameFile" => Some(JoshutoCommand::RenameFile),
             "CutFiles" => Some(JoshutoCommand::CutFiles),
             "CopyFiles" => Some(JoshutoCommand::CopyFiles),
-            "PasteFiles" => Some(JoshutoCommand::PasteFiles),
+            "PasteFiles" => Some(JoshutoCommand::PasteFiles{overwrite: false}),
             "Open" => Some(JoshutoCommand::Open),
             "OpenWith" => Some(JoshutoCommand::OpenWith),
             "ToggleHiddenFiles" => Some(JoshutoCommand::ToggleHiddenFiles),
@@ -138,10 +138,13 @@ impl JoshutoCommand {
             JoshutoCommand::RenameFile => JoshutoCommand::RenameFile,
             JoshutoCommand::CutFiles => JoshutoCommand::CutFiles,
             JoshutoCommand::CopyFiles => JoshutoCommand::CopyFiles,
-            JoshutoCommand::PasteFiles => JoshutoCommand::PasteFiles,
+            JoshutoCommand::PasteFiles{overwrite} => JoshutoCommand::PasteFiles{overwrite: *overwrite},
+
             JoshutoCommand::Open => JoshutoCommand::Open,
             JoshutoCommand::OpenWith => JoshutoCommand::OpenWith,
             JoshutoCommand::ToggleHiddenFiles => JoshutoCommand::ToggleHiddenFiles,
+
+            JoshutoCommand::MarkFiles{toggle, all} => JoshutoCommand::MarkFiles{toggle: *toggle, all: *all},
 
             JoshutoCommand::CompositeKeybind(_) => JoshutoCommand::Quit,
 

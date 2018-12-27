@@ -43,6 +43,8 @@ impl JoshutoKeymap {
                 Keycode::RIGHT => JoshutoCommand::Open,
                 Keycode::HOME => JoshutoCommand::CursorMoveHome,
                 Keycode::END => JoshutoCommand::CursorMoveEnd,
+
+                Keycode::SPACE => JoshutoCommand::MarkFiles{toggle: true, all: false},
                 'a' => JoshutoCommand::RenameFile,
                 'd' => JoshutoCommand::CompositeKeybind(
                     new_keymap![
@@ -60,7 +62,7 @@ impl JoshutoKeymap {
                 ),
                 'p' => JoshutoCommand::CompositeKeybind(
                     new_keymap![
-                    'p' => JoshutoCommand::PasteFiles]
+                    'p' => JoshutoCommand::PasteFiles{overwrite: false}]
                 ),
                 'z' => JoshutoCommand::CompositeKeybind(
                     new_keymap![
