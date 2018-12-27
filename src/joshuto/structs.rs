@@ -22,14 +22,14 @@ pub struct JoshutoDirList {
     pub need_update: bool,
     pub modified: time::SystemTime,
     pub contents: Option<Vec<JoshutoDirEntry>>,
-    pub selection: Vec<fs::DirEntry>,
+    pub selected: usize
 }
 
 impl JoshutoDirList {
 
-    pub fn new(path: &path::Path, sort_type: &sort::SortType) -> Result<JoshutoDirList, std::io::Error>
+    pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<JoshutoDirList, std::io::Error>
     {
-        let mut dir_contents = JoshutoDirList::read_dir_list(path, sort_type)?;
+        let mut dir_contents = JoshutoDirList::read_dir_list(path.as_path(), sort_type)?;
 
         dir_contents.sort_by(&sort_type.compare_func());
 
@@ -43,11 +43,11 @@ impl JoshutoDirList {
 
         Ok(JoshutoDirList {
             index,
-            path: path.clone().to_path_buf(),
+            path,
             need_update: false,
             modified,
             contents: Some(dir_contents),
-            selection: Vec::new(),
+            selected: 0,
         })
     }
 
@@ -88,20 +88,10 @@ impl JoshutoDirList {
 
     pub fn get_curr_entry(&self) -> Option<&JoshutoDirEntry>
     {
-        match self.contents {
-            Some(ref s) => {
-                if self.index >= 0 && (self.index as usize) < s.len() {
-                    Some(&s[self.index as usize])
-                } else {
-                    None
-                }
-            },
-            None => {
-                None
-            }
-        }
+        self.get_dir_entry(self.index)
     }
-    pub fn get_dir_entry(&self, index: i32) -> Option<&JoshutoDirEntry>
+
+    fn get_dir_entry(&self, index: i32) -> Option<&JoshutoDirEntry>
     {
         match self.contents {
             Some(ref s) => {
@@ -113,6 +103,26 @@ impl JoshutoDirList {
             },
             None => {
                 None
+            }
+        }
+    }
+
+    pub fn mark_curr_toggle(&mut self)
+    {
+        let index = self.index;
+        self.mark_toggle(index);
+    }
+
+    fn mark_toggle(&mut self, index: i32) {
+        if let Some(ref mut s) = self.contents {
+            if index >= 0 && (index as usize) < s.len() {
+                let tmp_bool = !s[index as usize].selected;
+                s[index as usize].selected = tmp_bool;
+                if tmp_bool == true {
+                    self.selected = self.selected + 1;
+                } else {
+                    self.selected = self.selected - 1;
+                }
             }
         }
     }
