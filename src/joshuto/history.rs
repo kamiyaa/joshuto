@@ -7,15 +7,15 @@ use std::path;
 use joshuto::structs;
 use joshuto::sort;
 
-pub struct History {
+pub struct DirHistory {
     map: HashMap<path::PathBuf, structs::JoshutoDirList>,
 }
 
-impl History {
+impl DirHistory {
 
     pub fn new() -> Self
     {
-        History {
+        DirHistory {
             map: HashMap::new()
         }
     }
@@ -33,7 +33,7 @@ impl History {
         while pathbuf.parent() != None {
             {
                 let parent = pathbuf.parent().unwrap().to_path_buf();
-                match structs::JoshutoDirList::new(parent.as_path(), sort_type) {
+                match structs::JoshutoDirList::new(parent.clone(), sort_type) {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.as_ref().unwrap().iter().enumerate() {
                             if dirent.entry.path() == pathbuf {
@@ -70,7 +70,7 @@ impl History {
                 Ok(dir_entry)
             },
             None => {
-                structs::JoshutoDirList::new(&path, &sort_type)
+                structs::JoshutoDirList::new(path.clone().to_path_buf(), &sort_type)
             }
         }
     }
@@ -86,9 +86,25 @@ impl History {
 
     pub fn depecrate_all_entries(&mut self)
     {
-        for (_, direntry) in self.map.iter_mut() {
-            direntry.need_update = true;
-        }
+        self.map.iter_mut().for_each(|(_, v)| v.need_update = true);
+    }
+}
 
+pub struct FileClipboard {
+    files: Vec<path::PathBuf>,
+}
+
+impl FileClipboard {
+
+    pub fn new() -> Self
+    {
+        FileClipboard {
+            files: Vec::new(),
+        }
+    }
+
+    pub fn copy()
+    {
+        
     }
 }
