@@ -16,16 +16,16 @@ impl SortType {
     {
         match *self {
             SortType::SortNatural(ref ss) => {
-                if ss.folders_first && !ss.case_sensitive && !ss.sort_reverse {
+                if ss.sort_directories_first && !ss.sort_case_sensitive && !ss.sort_reverse {
                     SortNatural::dir_first_case_insensitive
-                } else if ss.folders_first && ss.case_sensitive && !ss.sort_reverse {
+                } else if ss.sort_directories_first && ss.sort_case_sensitive && !ss.sort_reverse {
                     SortNatural::dir_first
                 } else {
                     SortNatural::default_sort
                 }
             }
             SortType::SortMtime(ref ss) => {
-                if ss.folders_first && !ss.sort_reverse {
+                if ss.sort_directories_first && !ss.sort_reverse {
                     SortMtime::dir_first
                 } else {
                     SortMtime::default_sort
@@ -82,8 +82,8 @@ impl SortType {
 #[derive(Debug)]
 pub struct SortStruct {
     pub show_hidden: bool,
-    pub folders_first: bool,
-    pub case_sensitive: bool,
+    pub sort_directories_first: bool,
+    pub sort_case_sensitive: bool,
     pub sort_reverse: bool,
 }
 

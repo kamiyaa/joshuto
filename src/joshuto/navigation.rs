@@ -5,7 +5,7 @@ use joshuto::structs;
 use joshuto::sort;
 use joshuto::history;
 
-pub fn set_dir_cursor_index(history : &mut history::History,
+pub fn set_dir_cursor_index(history : &mut history::DirHistory,
         curr_view: &mut structs::JoshutoDirList,
         preview_view: Option<structs::JoshutoDirList>,
         sort_type: &sort::SortType,

@@ -11,6 +11,7 @@ use std::collections::HashMap;
 pub mod config;
 pub mod keymap;
 pub mod mimetype;
+mod command;
 mod history;
 mod navigation;
 mod sort;
@@ -21,7 +22,7 @@ mod window;
 
 mod keymapll;
 
-use self::keymapll::JoshutoCommand;
+use self::command::JoshutoCommand;
 use self::keymapll::Keycode;
 
 fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, JoshutoCommand>)
@@ -35,11 +36,13 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, JoshutoCommand>)
 
     let mut win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
             ((term_rows - keymap_len as i32 - 2) as usize, 0));
+
     let mut display_vec: Vec<String> = Vec::with_capacity(keymap_len);
     for (key, val) in keymap {
         display_vec.push(format!("  {}\t{}", *key as u8 as char, val));
     }
     display_vec.sort();
+
     win.move_to_top();
     ui::display_options(&win, &display_vec);
     ncurses::doupdate();
@@ -82,7 +85,6 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
     let mut win = window::JoshutoPanel::new(mimetype_len + 1, term_cols,
             ((term_rows - mimetype_len - 2) as usize, 0));
 
-    let mut display_vec: Vec<String> = Vec::new();
     let mut empty_vec: Vec<Vec<String>> = Vec::new();
     let mimetype_options: &Vec<Vec<String>>;
     match mimetypes.get(&mimetype) {
@@ -94,7 +96,7 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
         },
     }
 
-    display_vec.reserve(mimetype_options.len());
+    let mut display_vec: Vec<String> = Vec::with_capacity(mimetype_options.len());
     for (i, val) in mimetype_options.iter().enumerate() {
         display_vec.push(format!("  {}\t{}", i+1, val.join(" ")));
     }
@@ -164,11 +166,13 @@ pub fn run(mut config_t: config::JoshutoConfig,
             },
         };
 
+    ui::init_ncurses();
+
+    ncurses::printw("Loading...");
     /* keep track of where we are in directories */
-    let mut history = history::History::new();
+    let mut history = history::DirHistory::new();
     history.populate_to_root(&curr_path, &config_t.sort_type);
 
-    ui::init_ncurses();
     let mut joshuto_view: window::JoshutoView =
         window::JoshutoView::new(config_t.column_ratio);
 
@@ -198,7 +202,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
     let mut preview_view: Option<structs::JoshutoDirList>;
     if let Some(s) = curr_view.as_ref() {
-        match s.get_dir_entry(s.index) {
+        match s.get_curr_entry() {
             Some(dirent) => {
                 let preview_path = dirent.entry.path();
                 if preview_path.is_dir() {
@@ -487,7 +491,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     };
 
                 if let Some(s) = curr_view.as_ref() {
-                    match s.get_dir_entry(s.index) {
+                    match s.get_curr_entry() {
                         Some(dirent) => {
                             let preview_path = dirent.entry.path();
                             if preview_path.is_dir() {
@@ -511,6 +515,39 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 }
 
                 ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
+
+                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
+                ncurses::doupdate();
+            },
+            JoshutoCommand::MarkFiles{toggle, all} => {
+                if toggle && !all {
+                    if let Some(s) = curr_view.as_mut() {
+                        s.mark_curr_toggle();
+                        let movement = 1;
+
+                        let curr_index = s.index;
+                        let dir_len = s.contents.as_ref().unwrap().len() as i32;
+                        if curr_index as i32 + movement <= 0 && curr_index == 0 ||
+                                curr_index as i32 + movement >= dir_len && curr_index == dir_len - 1 {
+                            continue;
+                        }
+
+                        preview_view = match navigation::set_dir_cursor_index(&mut history,
+                                s, preview_view, &config_t.sort_type,
+                                curr_index + movement) {
+                            Ok(s) => s,
+                            Err(e) => {
+                                ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
+                                None
+                            },
+                        };
+                    }
+                }
+
                 ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
                 ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
