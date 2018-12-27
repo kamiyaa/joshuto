@@ -73,7 +73,14 @@ impl History {
                 structs::JoshutoDirList::new(&path, &sort_type)
             }
         }
+    }
 
+    pub fn put_back(&mut self, dirlist: Option<structs::JoshutoDirList>)
+    {
+        if let Some(s) = dirlist {
+            let path: path::PathBuf = s.path.clone();
+            self.map.insert(path, s);
+        }
     }
 
 
