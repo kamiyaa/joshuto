@@ -11,7 +11,6 @@ use joshuto::config;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
-use joshuto::keymapll::JoshutoCommand;
 
 pub const DIR_COLOR     : i16 = 1;
 pub const SOCK_COLOR    : i16 = 4;
@@ -306,7 +305,7 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
     username: &str, hostname: &str)
 {
     if let Some(s) = curr_view.as_ref() {
-        let dirent = s.get_dir_entry(s.index);
+        let dirent = s.get_curr_entry();
         if let Some(dirent) = dirent {
             if let Ok(file_name) = dirent.entry.file_name().into_string() {
                 wprint_path(&joshuto_view.top_win, username, hostname,

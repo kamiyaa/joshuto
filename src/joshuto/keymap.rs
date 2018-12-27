@@ -6,7 +6,7 @@ use std::io;
 use std::io::BufRead;
 use std::process;
 
-use joshuto::keymapll::JoshutoCommand;
+use joshuto::command::JoshutoCommand;
 use joshuto::keymapll::Keycode;
 
 const MAP_COMMAND: &str = "map";
