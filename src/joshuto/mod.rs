@@ -50,7 +50,6 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, JoshutoCommand>)
     ncurses::update_panels();
     ncurses::doupdate();
 
-
     if ch == Keycode::ESCAPE as i32 {
         None
     } else {
@@ -105,12 +104,17 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
     ui::display_options(&win, &display_vec);
     ncurses::doupdate();
 
-    let ch: i32 = ncurses::getch();
+    let mut user_input: String = String::new();
+    ncurses::echo();
+    ncurses::wmove(win.win, mimetype_len + 1, 0);
+    ncurses::printw(":open_with ");
+    ncurses::wgetstr(win.win, &mut user_input);
+    eprintln!("{}", user_input);
 
     win.destroy();
     ncurses::update_panels();
     ncurses::doupdate();
-
+/*
     let index = ch - '1' as i32;
     if index >= 0 && index < mimetype_options.len() as i32 {
         ncurses::savetty();
@@ -118,7 +122,7 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
         unix::open_with(pathbuf.as_path(), &mimetype_options[index as usize]);
         ncurses::resetty();
         ncurses::refresh();
-    }
+    }*/
 }
 /*
 
@@ -192,13 +196,13 @@ pub fn run(mut config_t: config::JoshutoConfig,
             None => { None },
         };
 
-    let mut preview_view : Option<structs::JoshutoDirList>;
+    let mut preview_view: Option<structs::JoshutoDirList>;
     if let Some(s) = curr_view.as_ref() {
         match s.get_dir_entry(s.index) {
             Some(dirent) => {
                 let preview_path = dirent.entry.path();
                 if preview_path.is_dir() {
-                    preview_view = match structs::JoshutoDirList::new(&preview_path, &config_t.sort_type) {
+                    preview_view = match history.pop_or_create(&preview_path, &config_t.sort_type) {
                         Ok(s) => { Some(s) },
                         Err(e) => {
                             eprintln!("{}", e);
@@ -207,8 +211,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     };
                 } else {
                     preview_view = None;
-                    let mimetype = unix::get_mime_type(&dirent.entry.path());
-                    ui::wprint_mimetype(&joshuto_view.right_win, &mimetype);
                 }
             },
             None => {
@@ -222,10 +224,9 @@ pub fn run(mut config_t: config::JoshutoConfig,
     ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
             &config_t.username, &config_t.hostname);
 
-    ui::redraw_views(&joshuto_view,
-                    parent_view.as_ref(),
-                    curr_view.as_ref(),
-                    preview_view.as_ref());
+    ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
+    ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+    ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
     ncurses::doupdate();
 
@@ -290,10 +291,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     },
                 };
 
-                ui::redraw_views(&joshuto_view,
-                                None.as_ref(),
-                                curr_view.as_ref(),
-                                preview_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
                 ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                         &config_t.username, &config_t.hostname);
@@ -323,10 +322,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     },
                 };
 
-                ui::redraw_views(&joshuto_view,
-                                None.as_ref(),
-                                curr_view.as_ref(),
-                                preview_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
                 ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                         &config_t.username, &config_t.hostname);
@@ -359,10 +356,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     },
                 };
 
-                ui::redraw_views(&joshuto_view,
-                                None.as_ref(),
-                                curr_view.as_ref(),
-                                preview_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
                 ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                         &config_t.username, &config_t.hostname);
@@ -384,10 +379,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     },
                 };
 
-                ui::redraw_views(&joshuto_view,
-                                None.as_ref(),
-                                curr_view.as_ref(),
-                                preview_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
                 ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                         &config_t.username, &config_t.hostname);
@@ -412,10 +405,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     },
                 };
 
-                ui::redraw_views(&joshuto_view,
-                                None.as_ref(),
-                                curr_view.as_ref(),
-                                preview_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
                 ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                         &config_t.username, &config_t.hostname);
@@ -429,13 +420,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 match env::set_current_dir(curr_path.as_path()) {
                     Ok(_) => {
-                        if let Some(s) = preview_view {
-                            let index : usize = curr_view.as_ref().unwrap().index as usize;
-                            let path : path::PathBuf = curr_view.as_ref().unwrap()
-                                                .contents.as_ref()
-                                                .unwrap()[index].entry.path();
-                            history.insert(path, s);
-                        }
+                        history.put_back(preview_view);
 
                         preview_view = curr_view;
                         curr_view = parent_view;
@@ -457,16 +442,77 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 parent_view = None;
                             },
                         };
-
-                        ui::redraw_views(&joshuto_view,
-                                parent_view.as_ref(),
-                                curr_view.as_ref(),
-                                preview_view.as_ref());
+                        ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
+                        ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                        ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
                     },
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                     },
                 };
+
+                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
+                ncurses::doupdate();
+            },
+            JoshutoCommand::ChangeDirectory(ref s) => {
+                curr_path = s.clone();
+
+                history.put_back(parent_view);
+                history.put_back(curr_view);
+                history.put_back(preview_view);
+                
+
+                curr_view = match history.pop_or_create(&curr_path, &config_t.sort_type) {
+                    Ok(s) => { Some(s) },
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        process::exit(1);
+                    },
+                };
+
+                parent_view =
+                    match curr_path.parent() {
+                        Some(parent) => {
+                            match history.pop_or_create(&parent, &config_t.sort_type) {
+                                Ok(s) => { Some(s) },
+                                Err(e) => {
+                                    eprintln!("{}", e);
+                                    process::exit(1);
+                                },
+                            }
+                        },
+                        None => { None },
+                    };
+
+                if let Some(s) = curr_view.as_ref() {
+                    match s.get_dir_entry(s.index) {
+                        Some(dirent) => {
+                            let preview_path = dirent.entry.path();
+                            if preview_path.is_dir() {
+                                preview_view = match history.pop_or_create(&preview_path, &config_t.sort_type) {
+                                    Ok(s) => { Some(s) },
+                                    Err(e) => {
+                                        eprintln!("{}", e);
+                                        None
+                                    },
+                                };
+                            } else {
+                                preview_view = None;
+                            }
+                        },
+                        None => {
+                            preview_view = None;
+                        }
+                    }
+                } else {
+                    preview_view = None
+                }
+
+                ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
                 ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                         &config_t.username, &config_t.hostname);
@@ -502,10 +548,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
                             if let Some(s) = preview_view.as_mut() {
                                 s.update(&config_t.sort_type);
                             }
-                            ui::redraw_views(&joshuto_view,
-                                    None.as_ref(),
-                                    curr_view.as_ref(),
-                                    preview_view.as_ref());
+                            ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                            ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
                         },
                         Err(e) => {
                             ui::wprint_err(&joshuto_view.bot_win,
@@ -548,11 +592,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 if path.is_dir() {
                     match env::set_current_dir(&path) {
                         Ok(_) => {
-                            if let Some(s) = parent_view {
-                                if let Some(path) = curr_path.parent() {
-                                    history.insert(path.to_path_buf(), s);
-                                }
-                            }
+                            history.put_back(parent_view);
 
                             parent_view = curr_view;
                             curr_view = preview_view;
@@ -571,10 +611,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                     &config_t.username, &config_t.hostname);
 
                             if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
-                                ui::redraw_views(&joshuto_view,
-                                        parent_view.as_ref(),
-                                        curr_view.as_ref(),
-                                        preview_view.as_ref());
+                                ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
+                                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
+
                                 ncurses::doupdate();
                                 continue;
                             }
@@ -597,14 +637,12 @@ pub fn run(mut config_t: config::JoshutoConfig,
                                 ncurses::werase(joshuto_view.right_win.win);
                             }
 
-                            ui::redraw_views(&joshuto_view,
-                                    parent_view.as_ref(),
-                                    curr_view.as_ref(),
-                                    preview_view.as_ref());
+                            ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
+                            ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                            ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
 
                             ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                                     &config_t.username, &config_t.hostname);
-
 
                             ncurses::doupdate();
                         }
@@ -638,10 +676,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     s.update(&config_t.sort_type);
                 }
 
-                ui::redraw_views(&joshuto_view,
-                        parent_view.as_ref(),
-                        curr_view.as_ref(),
-                        preview_view.as_ref());
+                ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+                ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
+
                 ncurses::doupdate();
             },
             _ => {

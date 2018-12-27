@@ -288,28 +288,17 @@ pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn redraw_views(joshuto_view : &window::JoshutoView,
-        parent_view: Option<&structs::JoshutoDirList>,
-        curr_view: Option<&structs::JoshutoDirList>,
-        preview_view: Option<&structs::JoshutoDirList>)
+pub fn redraw_view(win: &window::JoshutoPanel,
+        view: Option<&structs::JoshutoDirList>
+        )
 {
-    if let Some(s) = parent_view {
-        s.display_contents(&joshuto_view.left_win);
-        ncurses::wnoutrefresh(joshuto_view.left_win.win);
-    }
-
-    if let Some(s) = curr_view {
-        s.display_contents(&joshuto_view.mid_win);
-        ncurses::wnoutrefresh(joshuto_view.mid_win.win);
-    }
-
-    if let Some(s) = preview_view {
-        s.display_contents(&joshuto_view.right_win);
-        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+    if let Some(s) = view {
+        s.display_contents(win);
+        ncurses::wnoutrefresh(win.win);
     } else {
-        ncurses::werase(joshuto_view.right_win.win);
-        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+        ncurses::werase(win.win);
     }
+    ncurses::wnoutrefresh(win.win);
 }
 
 pub fn redraw_status(joshuto_view : &window::JoshutoView,
@@ -329,16 +318,18 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
 }
 
 pub fn resize_handler(config_t: &config::JoshutoConfig,
-        joshuto_view : &mut window::JoshutoView,
-        curr_path : &path::PathBuf,
-        parent_view : Option<&structs::JoshutoDirList>,
-        curr_view : Option<&structs::JoshutoDirList>,
-        preview_view : Option<&structs::JoshutoDirList>)
+        joshuto_view: &mut window::JoshutoView,
+        curr_path: &path::PathBuf,
+        parent_view: Option<&structs::JoshutoDirList>,
+        curr_view: Option<&structs::JoshutoDirList>,
+        preview_view: Option<&structs::JoshutoDirList>)
 {
     joshuto_view.redraw_views();
     ncurses::refresh();
 
-    redraw_views(joshuto_view, parent_view, curr_view, preview_view);
+    redraw_view(&joshuto_view.left_win, parent_view);
+    redraw_view(&joshuto_view.mid_win, curr_view);
+    redraw_view(&joshuto_view.right_win, preview_view);
 
     redraw_status(joshuto_view, curr_view, curr_path,
             &config_t.username, &config_t.hostname);
