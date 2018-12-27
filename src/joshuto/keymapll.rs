@@ -1,8 +1,9 @@
 extern crate ncurses;
 
 use std;
-use std::fmt;
 use std::collections::HashMap;
+use std::fmt;
+use std::path;
 
 #[allow(non_camel_case_types)]
 #[allow(dead_code)]
@@ -399,6 +400,8 @@ pub enum JoshutoCommand {
     CursorMoveEnd,
     ParentDirectory,
 
+    ChangeDirectory(path::PathBuf),
+
     DeleteFiles,
     RenameFile,
     CutFiles,
@@ -424,6 +427,8 @@ impl std::fmt::Display for JoshutoCommand {
             JoshutoCommand::CursorMoveEnd => write!(f, "end"),
             JoshutoCommand::ParentDirectory => write!(f, "parent_directory"),
 
+            JoshutoCommand::ChangeDirectory(s) => write!(f, "cd {}", s.to_str().unwrap()),
+
             JoshutoCommand::DeleteFiles => write!(f, "delete"),
             JoshutoCommand::RenameFile => write!(f, "rename"),
             JoshutoCommand::CutFiles => write!(f, "cut"),
@@ -445,7 +450,6 @@ impl JoshutoCommand {
     {
         match keybind[0] {
             "Quit" => Some(JoshutoCommand::Quit),
-
             "ReloadDirList" => Some(JoshutoCommand::ReloadDirList),
 
             "CursorMove" => {
@@ -462,12 +466,21 @@ impl JoshutoCommand {
                 } else {
                     None
                 }
-            }
+            },
             "CursorMovePageUp" => Some(JoshutoCommand::CursorMovePageUp),
             "CursorMovePageDown" => Some(JoshutoCommand::CursorMovePageDown),
             "CursorMoveHome" => Some(JoshutoCommand::CursorMoveHome),
             "CursorMoveEnd" => Some(JoshutoCommand::CursorMoveEnd),
             "ParentDirectory" => Some(JoshutoCommand::ParentDirectory),
+
+            "ChangeDirectory" => {
+                if keybind.len() > 1 {
+                    let path = path::PathBuf::from(keybind[1]);
+                    Some(JoshutoCommand::ChangeDirectory(path))
+                } else {
+                    None
+                }
+            },
 
             "DeleteFiles" => Some(JoshutoCommand::DeleteFiles),
             "RenameFile" => Some(JoshutoCommand::RenameFile),
@@ -494,6 +507,8 @@ impl JoshutoCommand {
             JoshutoCommand::CursorMoveEnd => JoshutoCommand::CursorMoveEnd,
             JoshutoCommand::ParentDirectory => JoshutoCommand::ParentDirectory,
 
+            JoshutoCommand::ChangeDirectory(s) => JoshutoCommand::ChangeDirectory(s.clone()),
+
             JoshutoCommand::DeleteFiles => JoshutoCommand::DeleteFiles,
             JoshutoCommand::RenameFile => JoshutoCommand::RenameFile,
             JoshutoCommand::CutFiles => JoshutoCommand::CutFiles,
@@ -504,6 +519,8 @@ impl JoshutoCommand {
             JoshutoCommand::ToggleHiddenFiles => JoshutoCommand::ToggleHiddenFiles,
 
             JoshutoCommand::CompositeKeybind(_) => JoshutoCommand::Quit,
+
+            _ => JoshutoCommand::Quit,
         }
     }
 }
