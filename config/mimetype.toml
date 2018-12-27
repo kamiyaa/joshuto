@@ -1,5 +1,8 @@
 # specify which applications to use to open certain file types
 [mimetypes]
+"audio/mpeg" = [
+	["mpv"]
+]
 "application/x-matroska" = [
 	["mpv"]
 ]
@@ -20,6 +23,9 @@
 ]
 "text/x-csrc" = [
 	["nano"]
+]
+"audio/x-wav" = [
+	[ "mpv" ]
 ]
 "video/mp4" = [
 	["mpv"]

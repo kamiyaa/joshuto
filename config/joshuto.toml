@@ -1,9 +1,9 @@
 # sort_type options: size, natural, basename, atime, ctime, mtime, type, random
 ## currently only supports: natural, mtime
 sort_type = "natural"
-case_sensitive = false
+sort_case_sensitive = false
 sort_reverse = false
-folders_first = true
+sort_directories_first = true
 
 # show hidden files
 show_hidden = false
