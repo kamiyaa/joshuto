@@ -20,9 +20,9 @@ impl DirHistory {
         }
     }
 
-    pub fn insert(&mut self, pathbuf: path::PathBuf, dirlist: structs::JoshutoDirList)
+    pub fn insert(&mut self, dirlist: structs::JoshutoDirList)
     {
-        self.map.insert(pathbuf, dirlist);
+        self.map.insert(dirlist.path.clone(), dirlist);
     }
 
     pub fn populate_to_root(&mut self, pathbuf: &path::PathBuf,
@@ -56,7 +56,7 @@ impl DirHistory {
        sort_type: &sort::SortType)
             -> Result<structs::JoshutoDirList, std::io::Error>
     {
-        match self.map.remove(path) {
+        match self.map.remove(&path.to_path_buf()) {
             Some(mut dir_entry) => {
                 let metadata = fs::metadata(&path)?;
                 let modified = metadata.modified()?;
@@ -78,8 +78,7 @@ impl DirHistory {
     pub fn put_back(&mut self, dirlist: Option<structs::JoshutoDirList>)
     {
         if let Some(s) = dirlist {
-            let path: path::PathBuf = s.path.clone();
-            self.map.insert(path, s);
+            self.map.insert(s.path.clone(), s);
         }
     }
 
