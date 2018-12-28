@@ -12,6 +12,8 @@ use joshuto::keymapll::Keycode;
 const MAP_COMMAND: &str = "map";
 const ALIAS_COMMAND: &str = "alias";
 
+const COMMENT_DELIMITER: char = '#';
+
 macro_rules! new_keymap {
 
     ($($key: expr => $val: expr),*) => [
@@ -75,15 +77,11 @@ impl JoshutoKeymap {
         }
     }
 
-    fn insert_keycommand(map: &mut HashMap<i32, JoshutoCommand>,
-            keys: &[&str], keycommand: JoshutoCommand)
-    {
-        let keys_len = keys.len();
 
-        if keys_len == 0 {
-            return;
-        }
-        else if keys.len() == 1 {
+    fn insert_keycommand(map: &mut HashMap<i32, JoshutoCommand>,
+            keycommand: JoshutoCommand, keys: &[&str])
+    {
+        if keys.len() == 1 {
             match Keycode::from_str(keys[0]) {
                 Some(s) => {
                     map.insert(s as i32, keycommand);
@@ -106,7 +104,7 @@ impl JoshutoKeymap {
                             new_map = HashMap::new();
                         }
                     }
-                    JoshutoKeymap::insert_keycommand(&mut new_map, &keys[1..], keycommand);
+                    JoshutoKeymap::insert_keycommand(&mut new_map, keycommand, &keys[1..]);
                     let composite_command = JoshutoCommand::CompositeKeybind(new_map);
                     map.insert(s as i32, composite_command);
                 },
@@ -119,37 +117,33 @@ impl JoshutoKeymap {
     {
         let mut line = line;
         {
-            let mut trunc_index: Option<usize> = None;
-            for (index, ch) in line.char_indices() {
-                if ch == '#' {
-                    trunc_index = Some(index);
-                    break;
-                }
-            }
-            if let Some(trunc_index) = trunc_index {
+            if let Some(trunc_index) = line.find(COMMENT_DELIMITER) {
                 line.truncate(trunc_index as usize);
             }
         }
-        let splitargs: Vec<&str> = line.as_str().split_whitespace().collect();
-        let splitargs_len = splitargs.len();
-        if splitargs_len > 0 {
-            match splitargs[0] {
-                MAP_COMMAND => {
-                    if splitargs_len > 2 {
-                        let keys: Vec<&str> = splitargs[1].split(',').collect();
-                        let keycommand_args = &splitargs[2..];
-                        match JoshutoCommand::from_args(&keycommand_args) {
-                            Some(s) => {
-                                JoshutoKeymap::insert_keycommand(map, &keys[..], s);
-                            },
-                            None => {
-                                println!("Unknown command: {:?}", keycommand_args);
-                            },
-                        }
-                    }
-                },
-                _ => {},
-            }
+        if line.len() == 0 {
+            return;
+        }
+
+        let args: Vec<&str> = JoshutoCommand::split_shell_style(&line);
+
+        if args.len() == 0 {
+            return;
+        }
+        eprintln!("args: {:?}", args);
+        match args[0] {
+            MAP_COMMAND => {
+                let keys_vec: Vec<&str> = args[1].split(',').collect();
+                match JoshutoCommand::from_args(&args[2..]) {
+                    Some(s) => {
+                        JoshutoKeymap::insert_keycommand(map, s, &keys_vec[..]);
+                    },
+                    None => {
+                        println!("Unknown command: {}", args[2]);
+                    },
+                }
+            },
+            _ => eprintln!("Error: Unknown command: {}", args[0]),
         }
     }
 
@@ -165,6 +159,7 @@ impl JoshutoKeymap {
                         let mut reader = io::BufReader::new(f);
                         for line in reader.lines() {
                             if let Ok(mut line) = line {
+                                line.push('\n');
                                 JoshutoKeymap::parse_line(&mut keymaps, line);
                             }
                         }

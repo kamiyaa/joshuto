@@ -296,6 +296,7 @@ impl Keycode {
             "EIC" => Some(Keycode::EIC),
             "END" => Some(Keycode::END),
 //          "ENTER" => Some(Keycode::ENTER),
+
             "ENTER" => Some(Keycode::NEWLINE),
             "EOL" => Some(Keycode::EOL),
             "EOS" => Some(Keycode::EOS),

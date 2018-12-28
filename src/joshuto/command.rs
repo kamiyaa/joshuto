@@ -67,55 +67,97 @@ impl std::fmt::Display for JoshutoCommand {
 }
 
 impl JoshutoCommand {
-
-    pub fn from_args(keybind: &[&str]) -> Option<Self>
+    pub fn split_shell_style(line: &String) -> Vec<&str>
     {
-        match keybind[0] {
-            "Quit" => Some(JoshutoCommand::Quit),
-            "ReloadDirList" => Some(JoshutoCommand::ReloadDirList),
+        let mut args: Vec<&str> = Vec::new();
+        let mut char_ind = line.char_indices();
 
-            "CursorMove" => {
-                if keybind.len() > 1 {
-                    match keybind[1].parse::<i32>() {
-                        Ok(s) => {
-                            Some(JoshutoCommand::CursorMove(s))
-                        },
-                        Err(e) => {
-                            eprintln!("{}", e);
-                            None
-                        },
+        while let Some((i, ch)) = char_ind.next() {
+            if ch.is_whitespace() {
+                continue;
+            }
+            let mut end_ind = i;
+            if ch == '\'' {
+                while let Some((j, ch)) = char_ind.next() {
+                    if ch == '\'' {
+                        args.push(&line[i+1..j]);
+                        break;
                     }
-                } else {
-                    None
                 }
-            },
-            "CursorMovePageUp" => Some(JoshutoCommand::CursorMovePageUp),
-            "CursorMovePageDown" => Some(JoshutoCommand::CursorMovePageDown),
-            "CursorMoveHome" => Some(JoshutoCommand::CursorMoveHome),
-            "CursorMoveEnd" => Some(JoshutoCommand::CursorMoveEnd),
-            "ParentDirectory" => Some(JoshutoCommand::ParentDirectory),
-
-            "ChangeDirectory" => {
-                if keybind.len() > 1 {
-                    let path = path::PathBuf::from(keybind[1]);
-                    Some(JoshutoCommand::ChangeDirectory(path))
-                } else {
-                    None
+            } else if ch == '"'{
+                while let Some((j, ch)) = char_ind.next() {
+                    if ch == '"' {
+                        args.push(&line[i+1..j]);
+                        break;
+                    }
                 }
-            },
+            } else {
+                while let Some((j, ch)) = char_ind.next() {
+                    if ch.is_whitespace() {
+                        args.push(&line[i..j]);
+                        break;
+                    }
+                }
+            }
+        }
+        args
+    }
 
-            "DeleteFiles" => Some(JoshutoCommand::DeleteFiles),
-            "RenameFile" => Some(JoshutoCommand::RenameFile),
-            "CutFiles" => Some(JoshutoCommand::CutFiles),
-            "CopyFiles" => Some(JoshutoCommand::CopyFiles),
-            "PasteFiles" => Some(JoshutoCommand::PasteFiles{overwrite: false}),
-            "Open" => Some(JoshutoCommand::Open),
-            "OpenWith" => Some(JoshutoCommand::OpenWith),
-            "ToggleHiddenFiles" => Some(JoshutoCommand::ToggleHiddenFiles),
+    pub fn from_args(command: &[&str]) -> Option<Self>
+    {
+        let command_len = command.len();
+        if command_len > 0 {
+            match command[0] {
+                "Quit" => Some(JoshutoCommand::Quit),
+                "ReloadDirList" => Some(JoshutoCommand::ReloadDirList),
 
-            "MarkFiles" => Some(JoshutoCommand::MarkFiles{toggle: true, all: false}),
+                "CursorMove" => {
+                    if command_len > 1 {
+                        match command[1].parse::<i32>() {
+                            Ok(s) => {
+                                Some(JoshutoCommand::CursorMove(s))
+                            },
+                            Err(e) => {
+                                eprintln!("{}", e);
+                                None
+                            },
+                        }
+                    } else {
+                        None
+                    }
+                },
+                "CursorMovePageUp" => Some(JoshutoCommand::CursorMovePageUp),
+                "CursorMovePageDown" => Some(JoshutoCommand::CursorMovePageDown),
+                "CursorMoveHome" => Some(JoshutoCommand::CursorMoveHome),
+                "CursorMoveEnd" => Some(JoshutoCommand::CursorMoveEnd),
+                "ParentDirectory" => Some(JoshutoCommand::ParentDirectory),
 
-            _ => None,
+                "ChangeDirectory" => {
+                    if command_len > 1 {
+                        let path = path::PathBuf::from(&command[1]);
+                        Some(JoshutoCommand::ChangeDirectory(path))
+                    } else {
+                        None
+                    }
+                },
+
+                "DeleteFiles" => Some(JoshutoCommand::DeleteFiles),
+                "RenameFile" => Some(JoshutoCommand::RenameFile),
+                "CutFiles" => Some(JoshutoCommand::CutFiles),
+                "CopyFiles" => Some(JoshutoCommand::CopyFiles),
+                "PasteFiles" => {
+                    Some(JoshutoCommand::PasteFiles{overwrite: false})
+                },
+                "Open" => Some(JoshutoCommand::Open),
+                "OpenWith" => Some(JoshutoCommand::OpenWith),
+                "ToggleHiddenFiles" => Some(JoshutoCommand::ToggleHiddenFiles),
+
+                "MarkFiles" => Some(JoshutoCommand::MarkFiles{toggle: true, all: false}),
+
+                _ => None,
+            }
+        } else {
+            None
         }
     }
 

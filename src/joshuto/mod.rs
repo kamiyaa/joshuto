@@ -274,7 +274,16 @@ pub fn run(mut config_t: config::JoshutoConfig,
         match *keycommand {
             JoshutoCommand::Quit => break,
             JoshutoCommand::ReloadDirList => {
-                
+                if let Some(s) = curr_view.as_mut() {
+                    s.update(&config_t.sort_type);
+                }
+
+                ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
+
+                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+
+                ncurses::doupdate();
             },
             JoshutoCommand::CursorMove(s) => {
                 let curr_index = curr_view.as_ref().unwrap().index;
@@ -449,24 +458,28 @@ pub fn run(mut config_t: config::JoshutoConfig,
                         ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
                         ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
                         ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
+
+                        ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                                &config_t.username, &config_t.hostname);
                     },
                     Err(e) => {
                         ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
                     },
                 };
 
-                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
-                        &config_t.username, &config_t.hostname);
-
                 ncurses::doupdate();
             },
             JoshutoCommand::ChangeDirectory(ref s) => {
+                if !s.exists() {
+                    ui::wprint_err(&joshuto_view.bot_win, "Error: No such file or directory");
+                    ncurses::doupdate();
+                    continue;
+                }
                 curr_path = s.clone();
 
                 history.put_back(parent_view);
                 history.put_back(curr_view);
                 history.put_back(preview_view);
-                
 
                 curr_view = match history.pop_or_create(&curr_path, &config_t.sort_type) {
                     Ok(s) => { Some(s) },
@@ -684,9 +697,9 @@ pub fn run(mut config_t: config::JoshutoConfig,
                             ncurses::doupdate();
                         }
                         Err(e) => {
-                            ui::wprint_err(&joshuto_view.bot_win, format!("{}", e).as_str());
+                            ui::wprint_err(&joshuto_view.bot_win, format!("{}: {:?}", e, path).as_str());
                         }
-                    };
+                    }
                 }
             },
             JoshutoCommand::OpenWith => {
