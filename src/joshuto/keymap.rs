@@ -1,3 +1,4 @@
+extern crate fs_extra;
 extern crate xdg;
 
 use std::collections::HashMap;
@@ -29,7 +30,6 @@ macro_rules! new_keymap {
     ]
 }
 
-#[derive(Debug)]
 pub struct JoshutoKeymap {
     pub keymaps: HashMap<i32, JoshutoCommand>,
 }
@@ -64,7 +64,7 @@ impl JoshutoKeymap {
                 ),
                 'p' => JoshutoCommand::CompositeKeybind(
                     new_keymap![
-                    'p' => JoshutoCommand::PasteFiles{overwrite: false}]
+                    'p' => JoshutoCommand::PasteFiles(fs_extra::dir::CopyOptions::new())]
                 ),
                 'z' => JoshutoCommand::CompositeKeybind(
                     new_keymap![
@@ -97,7 +97,7 @@ impl JoshutoKeymap {
                             new_map = m;
                         },
                         Some(_) => {
-                            eprintln!("Error: Keybindings ambiguous: {:?}", &keycommand);
+                            eprintln!("Error: Keybindings ambiguous");
                             process::exit(1);
                         },
                         None => {

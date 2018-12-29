@@ -1,9 +1,10 @@
+extern crate fs_extra;
+
 use std;
 use std::collections::HashMap;
 use std::fmt;
 use std::path;
 
-#[derive(Debug)]
 pub enum JoshutoCommand {
     Quit,
 
@@ -22,7 +23,7 @@ pub enum JoshutoCommand {
     RenameFile,
     CutFiles,
     CopyFiles,
-    PasteFiles{ overwrite: bool },
+    PasteFiles(fs_extra::dir::CopyOptions),
     Open,
     OpenWith,
     ToggleHiddenFiles,
@@ -51,7 +52,7 @@ impl std::fmt::Display for JoshutoCommand {
             JoshutoCommand::RenameFile => write!(f, "rename"),
             JoshutoCommand::CutFiles => write!(f, "cut"),
             JoshutoCommand::CopyFiles => write!(f, "copy"),
-            JoshutoCommand::PasteFiles{overwrite} => write!(f, "paste overwrite={}", overwrite),
+            JoshutoCommand::PasteFiles(options) => write!(f, "paste overwrite={}", options.overwrite),
             JoshutoCommand::Open => write!(f, "open"),
             JoshutoCommand::OpenWith => write!(f, "open_with"),
             JoshutoCommand::ToggleHiddenFiles => write!(f, "toggle_hidden"),
@@ -103,17 +104,17 @@ impl JoshutoCommand {
         args
     }
 
-    pub fn from_args(command: &[&str]) -> Option<Self>
+    pub fn from_args(args: &[&str]) -> Option<Self>
     {
-        let command_len = command.len();
-        if command_len > 0 {
-            match command[0] {
+        let args_len = args.len();
+        if args_len > 0 {
+            match args[0] {
                 "Quit" => Some(JoshutoCommand::Quit),
                 "ReloadDirList" => Some(JoshutoCommand::ReloadDirList),
 
                 "CursorMove" => {
-                    if command_len > 1 {
-                        match command[1].parse::<i32>() {
+                    if args_len > 1 {
+                        match args[1].parse::<i32>() {
                             Ok(s) => {
                                 Some(JoshutoCommand::CursorMove(s))
                             },
@@ -133,8 +134,8 @@ impl JoshutoCommand {
                 "ParentDirectory" => Some(JoshutoCommand::ParentDirectory),
 
                 "ChangeDirectory" => {
-                    if command_len > 1 {
-                        let path = path::PathBuf::from(&command[1]);
+                    if args_len > 1 {
+                        let path = path::PathBuf::from(&args[1]);
                         Some(JoshutoCommand::ChangeDirectory(path))
                     } else {
                         None
@@ -146,7 +147,21 @@ impl JoshutoCommand {
                 "CutFiles" => Some(JoshutoCommand::CutFiles),
                 "CopyFiles" => Some(JoshutoCommand::CopyFiles),
                 "PasteFiles" => {
-                    Some(JoshutoCommand::PasteFiles{overwrite: false})
+                    let mut options = fs_extra::dir::CopyOptions::new();
+                    for i in 1..args_len {
+                        let splitargs: Vec<&str> = args[i].split('=').collect();
+                        if splitargs.len() == 2 {
+                            match splitargs[0] {
+                                "overwrite" => {
+                                    if let Ok(s) = splitargs[1].parse::<bool>() {
+                                        options.overwrite = s;
+                                    }
+                                },
+                                _ => eprintln!("Unknown option for PasteFile: {}", args[i]),
+                            }
+                        }
+                    }
+                    Some(JoshutoCommand::PasteFiles(options))
                 },
                 "Open" => Some(JoshutoCommand::Open),
                 "OpenWith" => Some(JoshutoCommand::OpenWith),
@@ -180,7 +195,6 @@ impl JoshutoCommand {
             JoshutoCommand::RenameFile => JoshutoCommand::RenameFile,
             JoshutoCommand::CutFiles => JoshutoCommand::CutFiles,
             JoshutoCommand::CopyFiles => JoshutoCommand::CopyFiles,
-            JoshutoCommand::PasteFiles{overwrite} => JoshutoCommand::PasteFiles{overwrite: *overwrite},
 
             JoshutoCommand::Open => JoshutoCommand::Open,
             JoshutoCommand::OpenWith => JoshutoCommand::OpenWith,

@@ -19,7 +19,7 @@ pub struct JoshutoDirEntry {
 pub struct JoshutoDirList {
     pub index: i32,
     pub path: path::PathBuf,
-    pub need_update: bool,
+    pub update_needed: bool,
     pub modified: time::SystemTime,
     pub contents: Option<Vec<JoshutoDirEntry>>,
     pub selected: usize
@@ -44,23 +44,35 @@ impl JoshutoDirList {
         Ok(JoshutoDirList {
             index,
             path,
-            need_update: false,
+            update_needed: false,
             modified,
             contents: Some(dir_contents),
             selected: 0,
         })
     }
 
+    pub fn need_update(&self) -> bool
+    {
+        if let Ok(metadata) = std::fs::metadata(&self.path) {
+            if let Ok(modified) = metadata.modified() {
+                return self.modified < modified;
+            }
+        }
+        return true;
+    }
+
     pub fn update(&mut self, sort_type: &sort::SortType)
     {
         let sort_func = sort_type.compare_func();
 
-        self.need_update = false;
+        self.update_needed = false;
 
         if let Ok(mut dir_contents) = JoshutoDirList::read_dir_list(&self.path, sort_type) {
             dir_contents.sort_by(&sort_func);
 
-            if self.index >= 0 {
+            if self.index >= dir_contents.len() as i32 {
+                self.index = self.index - 1;
+            } else if self.index >= 0 && dir_contents.len() > 0 {
                 let indexed_filename = match self.contents.as_ref() {
                     Some(s) => {
                         s[self.index as usize].entry.file_name()
@@ -73,8 +85,11 @@ impl JoshutoDirList {
                         break;
                     }
                 }
+            } else if dir_contents.len() > 0 {
+                self.index = 0;
+            } else {
+                self.index = -1;
             }
-
             self.contents = Some(dir_contents);
         }
 

@@ -1,3 +1,4 @@
+extern crate fs_extra;
 
 use std;
 use std::collections::HashMap;
@@ -58,13 +59,8 @@ impl DirHistory {
     {
         match self.map.remove(&path.to_path_buf()) {
             Some(mut dir_entry) => {
-                let metadata = fs::metadata(&path)?;
-                let modified = metadata.modified()?;
-                if modified > dir_entry.modified {
-                    dir_entry.modified = modified;
-                    dir_entry.need_update = true;
-                }
-                if dir_entry.need_update {
+
+                if dir_entry.update_needed || dir_entry.need_update() {
                     dir_entry.update(&sort_type);
                 }
                 Ok(dir_entry)
@@ -85,7 +81,7 @@ impl DirHistory {
 
     pub fn depecrate_all_entries(&mut self)
     {
-        self.map.iter_mut().for_each(|(_, v)| v.need_update = true);
+        self.map.iter_mut().for_each(|(_, v)| v.update_needed = true);
     }
 }
 
@@ -100,7 +96,6 @@ pub struct FileClipboard {
 }
 
 impl FileClipboard {
-
     pub fn new() -> Self
     {
         FileClipboard {
@@ -109,66 +104,122 @@ impl FileClipboard {
         }
     }
 
-    pub fn copy(&mut self, dirlist: &structs::JoshutoDirList)
+    pub fn prepare(dirlist: &structs::JoshutoDirList)
+            -> Option<Vec<path::PathBuf>>
     {
         if let Some(contents) = dirlist.contents.as_ref() {
-            self.files = contents.iter()
+            let selected: Vec<path::PathBuf> = contents.iter()
                     .filter(|entry| entry.selected)
                     .map(|entry| entry.entry.path()).collect();
-            self.fileop = FileOp::Copy;
+            if selected.len() > 0 {
+                Some(selected)
+            } else if dirlist.index >= 0 {
+                Some(vec![contents[dirlist.index as usize].entry.path()])
+            } else {
+                None
+            }
+        } else {
+            None
         }
     }
 
-    pub fn paste(&mut self, destination: path::PathBuf) {
+    pub fn prepare_cut(&mut self, dirlist: &structs::JoshutoDirList)
+    {
+        match FileClipboard::prepare(dirlist) {
+            Some(s) => {
+                self.files = s;
+                self.fileop = FileOp::Cut;
+            }
+            None => {},
+        }
+    }
 
+    pub fn cut(&mut self, destination: path::PathBuf, options: &fs_extra::dir::CopyOptions) {
         let mut destination = destination;
+        let cut_options = fs_extra::file::CopyOptions {
+                overwrite: options.overwrite,
+                skip_exist: options.skip_exist,
+                buffer_size: options.buffer_size,
+            };
         for path in &self.files {
-            match path.file_name() {
-                Some(ref s) => {
-                    destination.push(&s);
-                    if !destination.exists() {
-                        match self.fileop {
-                            FileOp::Copy => {
-                                fs::copy(&path, &destination);
-                            },
-                            FileOp::Cut => {
-
-                            },
-                        }
-                    } else {
-
-                    }
-                    destination.pop();
-                }
-                None => {
-                    
-                }
+            if path.is_dir() {
+                fs_extra::dir::move_dir(&path, &destination, options);
+            } else {
+                let mut comp = path.components().rev();
+                destination.push(comp.next().unwrap());
+                fs_extra::file::move_file(&path, &destination, &cut_options);
+                destination.pop();
             }
         }
         self.files.clear();
     }
 
-    pub fn paste_overwrite(&mut self, destination: path::PathBuf) {
+    pub fn prepare_copy(&mut self, dirlist: &structs::JoshutoDirList)
+    {
+        match FileClipboard::prepare(dirlist) {
+            Some(s) => {
+                self.files = s;
+                self.fileop = FileOp::Copy;
+            }
+            None => {},
+        }
+    }
+
+    pub fn copy(&mut self, destination: path::PathBuf, options: &fs_extra::dir::CopyOptions) {
         let mut destination = destination;
         for path in &self.files {
-            match path.file_name() {
-                Some(ref s) => {
-                    destination.push(&s);
-                    match self.fileop {
-                        FileOp::Copy => {
-                            fs::copy(&path, &destination);
-                        },
-                        FileOp::Cut => {
-
-                        },
-                    }
-                    destination.pop();
-                }
-                None => {
-                    
-                }
+            if path.is_dir() {
+                fs_extra::dir::copy(&path, &destination, options);
+            } else {
+                let mut comp = path.components().rev();
+                destination.push(comp.next().unwrap());
+                std::fs::copy(&path, &destination);
+                destination.pop();
             }
         }
         self.files.clear();
+    }
+
+    pub fn paste(&mut self, destination: path::PathBuf, options: &fs_extra::dir::CopyOptions) {
+        match self.fileop {
+            FileOp::Copy => self.copy(destination, options),
+            FileOp::Cut => self.cut(destination, options),
+        }
+    }
+}
+
+pub struct DeleteClipboard {
+    files: Vec<path::PathBuf>,
+}
+
+impl DeleteClipboard {
+    pub fn new() -> Self
+    {
+        DeleteClipboard {
+            files: Vec::new(),
+        }
+    }
+
+    pub fn prepare(&mut self, dirlist: &structs::JoshutoDirList)
+    {
+        match FileClipboard::prepare(dirlist) {
+            Some(s) => {
+                self.files = s;
+            }
+            None => {},
+        }
+    }
+
+    pub fn execute(&mut self) -> std::io::Result<()>
+    {
+        for path in &self.files {
+            if path.is_dir() {
+                std::fs::remove_dir_all(&path)?;
+            } else {
+                std::fs::remove_file(&path)?;
+            }
+        }
+        self.files.clear();
+        Ok(())
     }
 }

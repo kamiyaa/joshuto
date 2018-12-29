@@ -126,33 +126,41 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
         ncurses::refresh();
     }*/
 }
-/*
 
-fn refresh_view(joshuto_view : &window::JoshutoView,
-        parent_view: Option<&structs::JoshutoDirList>,
-        curr_view: Option<&structs::JoshutoDirList>,
-        preview_view: Option<&structs::JoshutoDirList>,
+
+fn update_views(joshuto_view : &window::JoshutoView,
+        parent_view: Option<&mut structs::JoshutoDirList>,
+        curr_view: Option<&mut structs::JoshutoDirList>,
+        preview_view: Option<&mut structs::JoshutoDirList>,
         config_t: &config::JoshutoConfig,
-
         )
 {
     if let Some(s) = parent_view {
-        s.update(
-        s.display_contents(&joshuto_view.left_win);
-        ncurses::wnoutrefresh(joshuto_view.left_win.win);
+        if s.update_needed || s.need_update() {
+            s.update(&config_t.sort_type);
+            s.display_contents(&joshuto_view.left_win);
+            ncurses::wnoutrefresh(joshuto_view.left_win.win);
+        }
     }
 
     if let Some(s) = curr_view {
-        s.display_contents(&joshuto_view.mid_win);
-        ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+        if s.update_needed || s.need_update() {
+            s.update(&config_t.sort_type);
+            s.display_contents(&joshuto_view.mid_win);
+            ncurses::wnoutrefresh(joshuto_view.mid_win.win);
+        }
     }
 
     if let Some(s) = preview_view {
-        s.display_contents(&joshuto_view.right_win);
-        ncurses::wnoutrefresh(joshuto_view.right_win.win);
+        if s.update_needed || s.need_update() {
+            s.update(&config_t.sort_type);
+            s.display_contents(&joshuto_view.right_win);
+            ncurses::wnoutrefresh(joshuto_view.right_win.win);
+        }
     }
+
+    ncurses::doupdate();
 }
-*/
 
 pub fn run(mut config_t: config::JoshutoConfig,
     keymap_t: keymap::JoshutoKeymap,
@@ -224,6 +232,8 @@ pub fn run(mut config_t: config::JoshutoConfig,
     } else {
         preview_view = None
     }
+
+    let mut clipboard = history::FileClipboard::new();
 
     ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
             &config_t.username, &config_t.hostname);
@@ -569,60 +579,46 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
                 ncurses::doupdate();
             },
-            JoshutoCommand::DeleteFiles => {
-                let index = curr_view.as_ref().unwrap().index;
-                if index < 0 || curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
-                    continue;
-                }
-                let index = index as usize;
-                let file_name = &curr_view.as_ref()
-                                    .unwrap().contents.as_ref()
-                                    .unwrap()[index].entry.file_name().into_string()
-                                    .unwrap();
-
-                ui::wprint_msg(&joshuto_view.bot_win,
-                    format!("Delete {}? (y/n)", file_name).as_str());
-                ncurses::doupdate();
-                let ch2 = ncurses::wgetch(joshuto_view.bot_win.win);
-                if ch2 == 'y' as i32 {
-                    let path = &curr_view.as_ref().unwrap()
-                                        .contents.as_ref()
-                                        .unwrap()[index].entry.path();
-                    match std::fs::remove_file(path) {
-                        Ok(_s) => {
-                            ui::wprint_msg(&joshuto_view.bot_win,
-                                format!("Deleted {:?}!", file_name).as_str());
-                            if let Some(s) = curr_view.as_mut() {
-                                s.update(&config_t.sort_type);
-                            }
-                            if let Some(s) = preview_view.as_mut() {
-                                s.update(&config_t.sort_type);
-                            }
-                            ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
-                            ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
-                        },
-                        Err(e) => {
-                            ui::wprint_err(&joshuto_view.bot_win,
-                                format!("{}", e).as_str());
-                        }
-                    }
-                }
-
-                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
-                        &config_t.username, &config_t.hostname);
-                ncurses::doupdate();
-            },
             JoshutoCommand::RenameFile => {
 
             },
             JoshutoCommand::CutFiles => {
-
+                if let Some(s) = curr_view.as_ref() {
+                    clipboard.prepare_cut(s);
+                }
             },
             JoshutoCommand::CopyFiles => {
-
+                if let Some(s) = curr_view.as_ref() {
+                    clipboard.prepare_copy(s);
+                }
             },
-            JoshutoCommand::PasteFiles{overwrite} => {
+            JoshutoCommand::PasteFiles(ref options) => {
+                clipboard.paste(curr_path.to_path_buf().clone(), options);
+                update_views(&joshuto_view, parent_view.as_mut(), curr_view.as_mut(), preview_view.as_mut(), &config_t);
+            },
+            JoshutoCommand::DeleteFiles => {
+                let mut clipboard = history::DeleteClipboard::new();
+                clipboard.prepare(curr_view.as_ref().unwrap());
 
+                ui::wprint_msg(&joshuto_view.bot_win,
+                    format!("Delete selected files? (Y/n)").as_str());
+                ncurses::doupdate();
+
+                let ch = ncurses::wgetch(joshuto_view.bot_win.win);
+                if ch == Keycode::LOWER_Y as i32 || ch == Keycode::NEWLINE as i32 {
+                    match clipboard.execute() {
+                        Ok(()) => {},
+                        Err(e) => {
+                            eprintln!("{}", e);
+                        },
+                    }
+                    update_views(&joshuto_view, None.as_mut(), curr_view.as_mut(), preview_view.as_mut(), &config_t);
+                }
+
+                ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
+                        &config_t.username, &config_t.hostname);
+                ui::wprint_msg(&joshuto_view.bot_win, "Deleted files");
+                ncurses::doupdate();
             },
             JoshutoCommand::Open => {
                 if curr_view.as_ref().unwrap().contents.as_ref().unwrap().len() == 0 {
