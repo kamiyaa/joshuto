@@ -53,7 +53,7 @@ pub fn exec_with(program : String, args : Vec<String>)
     match child.spawn() {
         Ok(mut ch) => {
             match ch.wait() {
-                Ok(exit_code) => println!("program exited with code: {}", exit_code),
+                Ok(exit_code) => {},
                 Err(e) => eprintln!("{}", e),
             }
         },
