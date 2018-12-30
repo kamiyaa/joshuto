@@ -167,15 +167,15 @@ impl FileClipboard {
 
     pub fn copy(&mut self, destination: path::PathBuf, options: &fs_extra::dir::CopyOptions) {
         let mut destination = destination;
-        for path in &self.files {
-            if path.is_dir() {
-                fs_extra::dir::copy(&path, &destination, options);
-            } else {
-                let mut comp = path.components().rev();
-                destination.push(comp.next().unwrap());
-                std::fs::copy(&path, &destination);
-                destination.pop();
-            }
+        let handle = |process_info: fs_extra::TransitProcess| {
+            eprintln!("{}", process_info.copied_bytes);
+            fs_extra::dir::TransitProcessResult::ContinueOrAbort
+        };
+
+        match fs_extra::copy_items_with_progress(&self.files, &destination, &options, handle)
+        {
+            Ok(s) => {},
+            Err(e) => {},
         }
         self.files.clear();
     }
