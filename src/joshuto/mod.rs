@@ -2,11 +2,12 @@
 extern crate ncurses;
 
 use std;
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::path;
 use std::process;
-use std::collections::HashMap;
+use std::thread;
 
 pub mod config;
 pub mod keymap;
@@ -77,13 +78,8 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
     let mut term_cols: i32 = 0;
     ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-    let mimetype_len = mimetypes.len() as i32;
-
     let pathbuf = direntry.path();
     let mimetype = unix::get_mime_type(pathbuf.as_path());
-
-    let mut win = window::JoshutoPanel::new(mimetype_len + 1, term_cols,
-            ((term_rows - mimetype_len - 2) as usize, 0));
 
     let mut empty_vec: Vec<Vec<String>> = Vec::new();
     let mimetype_options: &Vec<Vec<String>>;
@@ -96,35 +92,81 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
         },
     }
 
-    let mut display_vec: Vec<String> = Vec::with_capacity(mimetype_options.len());
+    let option_size = mimetype_options.len();
+    let mut win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
+            (term_rows as usize - option_size - 2, 0));
+
+    let mut display_vec: Vec<String> = Vec::with_capacity(option_size);
     for (i, val) in mimetype_options.iter().enumerate() {
-        display_vec.push(format!("  {}\t{}", i+1, val.join(" ")));
+        display_vec.push(format!("  {}\t{}", i, val.join(" ")));
     }
     display_vec.sort();
 
     win.move_to_top();
     ui::display_options(&win, &display_vec);
+    // ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_VISIBLE);
     ncurses::doupdate();
+
+    ncurses::wmove(win.win, option_size as i32 + 1, 0);
+    ncurses::wprintw(win.win, ":open_with ");
+
+    let mut cur_ind = ":open_with ".len();
 
     let mut user_input: String = String::new();
-    ncurses::echo();
-    ncurses::wmove(win.win, mimetype_len + 1, 0);
-    ncurses::printw(":open_with ");
-    ncurses::wgetstr(win.win, &mut user_input);
-    eprintln!("{}", user_input);
+    loop {
+        ncurses::wprintw(win.win, "_");
+        ncurses::wmove(win.win, option_size as i32 + 1, cur_ind as i32);
+        let ch: i32 = ncurses::wgetch(win.win);
+        if ch == Keycode::ESCAPE as i32 {
+            win.destroy();
+            ncurses::update_panels();
+            ncurses::doupdate();
+            return;
+        }
+        if ch == Keycode::ENTER as i32 {
+            break;
+        }
+        if ch == Keycode::BACKSPACE as i32 || ch == 127 {
+            match user_input.pop() {
+                Some(_) => {
+                    cur_ind = cur_ind - 1;
+                    ncurses::mvwdelch(win.win, option_size as i32 + 1, cur_ind as i32);
+                },
+                None => {},
+            }
+//            ncurses::wmove(win.win, option_size as i32 + 1, cur_ind as i32);
+            continue;
+        }
+        user_input.push(ch as u8 as char);
+        cur_ind = cur_ind + 1;
+
+        ncurses::wprintw(win.win, (ch as u8 as char).to_string().as_str());
+    }
 
     win.destroy();
+    // ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
     ncurses::update_panels();
     ncurses::doupdate();
-/*
-    let index = ch - '1' as i32;
-    if index >= 0 && index < mimetype_options.len() as i32 {
-        ncurses::savetty();
-        ncurses::endwin();
-        unix::open_with(pathbuf.as_path(), &mimetype_options[index as usize]);
-        ncurses::resetty();
-        ncurses::refresh();
-    }*/
+
+    match user_input.parse::<usize>() {
+        Ok(s) => {
+            if s < mimetype_options.len() {
+                ncurses::savetty();
+                ncurses::endwin();
+                unix::open_with(pathbuf.as_path(), &mimetype_options[s]);
+                ncurses::resetty();
+                ncurses::refresh();
+            }
+        }
+        Err(_) => {
+            let args: Vec<String> = user_input.split_whitespace().map(|x| String::from(x)).collect();
+            ncurses::savetty();
+            ncurses::endwin();
+            unix::open_with(pathbuf.as_path(), &args);
+            ncurses::resetty();
+            ncurses::refresh();
+        }
+    }
 }
 
 
@@ -593,7 +635,17 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 }
             },
             JoshutoCommand::PasteFiles(ref options) => {
-                clipboard.paste(curr_path.to_path_buf().clone(), options);
+                let pathclone = curr_path.to_path_buf().clone();
+                let options = options.clone();
+
+                let child = thread::spawn(move || {
+                    clipboard.paste(pathclone, &options);
+                });
+
+                let res = child.join();
+
+                clipboard = history::FileClipboard::new();
+
                 update_views(&joshuto_view, parent_view.as_mut(), curr_view.as_mut(), preview_view.as_mut(), &config_t);
             },
             JoshutoCommand::DeleteFiles => {
@@ -605,7 +657,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                 ncurses::doupdate();
 
                 let ch = ncurses::wgetch(joshuto_view.bot_win.win);
-                if ch == Keycode::LOWER_Y as i32 || ch == Keycode::NEWLINE as i32 {
+                if ch == Keycode::LOWER_Y as i32 || ch == Keycode::ENTER as i32 {
                     match clipboard.execute() {
                         Ok(()) => {},
                         Err(e) => {
