@@ -11,6 +11,7 @@ use joshuto::config;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
+use joshuto::keymapll::Keycode;
 
 pub const DIR_COLOR     : i16 = 1;
 pub const SOCK_COLOR    : i16 = 4;
@@ -277,12 +278,10 @@ pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
 {
     ncurses::werase(win.win);
     ncurses::mvwhline(win.win, 0, 0, '-' as u32, 10000);
-    let mut index = 1;
 
-    for val in vals {
-        ncurses::wmove(win.win, index, 0);
+    for (i, val) in vals.iter().enumerate() {
+        ncurses::wmove(win.win, (i+1) as i32, 0);
         ncurses::waddstr(win.win, val.as_str());
-        index = index + 1;
     }
     ncurses::wnoutrefresh(win.win);
 }
