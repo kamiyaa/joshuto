@@ -16,7 +16,6 @@ pub enum Keycode {
     A1 = ncurses::KEY_A1 as isize,
     A3 = ncurses::KEY_A3 as isize,
     B2 = ncurses::KEY_B2 as isize,
-    BACKSPACE = ncurses::KEY_BACKSPACE as isize,
     BEG = ncurses::KEY_BEG as isize,
     BREAK = ncurses::KEY_BREAK as isize,
     BTAB = ncurses::KEY_BTAB as isize,
@@ -34,8 +33,6 @@ pub enum Keycode {
     DC = ncurses::KEY_DC as isize,          /* delete-character key */
     DL = ncurses::KEY_DL as isize,          /* delete-line key */
     EIC = ncurses::KEY_EIC as isize,
-
-//    ENTER = ncurses::KEY_ENTER as isize,
     EOL = ncurses::KEY_EOL as isize,
     EOS = ncurses::KEY_EOS as isize,
     EVENT = ncurses::KEY_EVENT as isize,
@@ -126,9 +123,10 @@ pub enum Keycode {
     HOME = ncurses::KEY_HOME as isize,
     END = ncurses::KEY_END as isize,
 
+    BACKSPACE = 0x7F,
     SPACE = 0x20,
     TAB = 0x9,
-    NEWLINE = 0xA,
+    ENTER = 0xA,
     ESCAPE = 0x1B,
 
     ZERO = 0x30,
@@ -295,9 +293,8 @@ impl Keycode {
             "DOWN" => Some(Keycode::DOWN),
             "EIC" => Some(Keycode::EIC),
             "END" => Some(Keycode::END),
-//          "ENTER" => Some(Keycode::ENTER),
 
-            "ENTER" => Some(Keycode::NEWLINE),
+            "ENTER" => Some(Keycode::ENTER),
             "EOL" => Some(Keycode::EOL),
             "EOS" => Some(Keycode::EOS),
             "EVENT" => Some(Keycode::EVENT),

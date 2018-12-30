@@ -130,7 +130,6 @@ impl JoshutoKeymap {
         if args.len() == 0 {
             return;
         }
-        eprintln!("args: {:?}", args);
         match args[0] {
             MAP_COMMAND => {
                 let keys_vec: Vec<&str> = args[1].split(',').collect();
