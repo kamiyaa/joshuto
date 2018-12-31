@@ -1,7 +1,6 @@
 extern crate toml;
 extern crate xdg;
 
-use std;
 use std::fs;
 use std::collections::HashMap;
 use std::process;

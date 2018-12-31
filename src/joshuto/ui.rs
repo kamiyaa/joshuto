@@ -1,7 +1,6 @@
 extern crate ncurses;
 extern crate wcwidth;
 
-use std;
 use std::ffi;
 use std::fs;
 use std::path;
@@ -218,7 +217,7 @@ pub fn display_contents(win : &window::JoshutoPanel,
     let mut mode : u32 = 0;
 
     let index = entry.index as usize;
-    let dir_contents = entry.contents.as_ref().unwrap();
+    let dir_contents = &entry.contents;
     let vec_len = dir_contents.len();
     if vec_len == 0 {
         wprint_err(win, "empty");

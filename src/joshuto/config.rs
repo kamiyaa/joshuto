@@ -79,7 +79,7 @@ impl JoshutoRawConfig {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct JoshutoConfig {
     pub username: String,
     pub hostname: String,

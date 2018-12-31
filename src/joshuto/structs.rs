@@ -2,7 +2,6 @@ use std;
 use std::fs;
 use std::path;
 use std::time;
-use std::ffi;
 
 use joshuto::sort;
 use joshuto::ui;
@@ -21,7 +20,7 @@ pub struct JoshutoDirList {
     pub path: path::PathBuf,
     pub update_needed: bool,
     pub modified: time::SystemTime,
-    pub contents: Option<Vec<JoshutoDirEntry>>,
+    pub contents: Vec<JoshutoDirEntry>,
     pub selected: usize
 }
 
@@ -29,13 +28,13 @@ impl JoshutoDirList {
 
     pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<JoshutoDirList, std::io::Error>
     {
-        let mut dir_contents = JoshutoDirList::read_dir_list(path.as_path(), sort_type)?;
+        let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
 
-        dir_contents.sort_by(&sort_type.compare_func());
+        contents.sort_by(&sort_type.compare_func());
 
         let modified = std::fs::metadata(&path)?.modified()?;
 
-        let index = if dir_contents.len() > 0 {
+        let index = if contents.len() > 0 {
                 0
             } else {
                 -1
@@ -46,7 +45,7 @@ impl JoshutoDirList {
             path,
             update_needed: false,
             modified,
-            contents: Some(dir_contents),
+            contents,
             selected: 0,
         })
     }
@@ -67,18 +66,13 @@ impl JoshutoDirList {
 
         self.update_needed = false;
 
-        if let Ok(mut dir_contents) = JoshutoDirList::read_dir_list(&self.path, sort_type) {
+        if let Ok(mut dir_contents) = Self::read_dir_list(&self.path, sort_type) {
             dir_contents.sort_by(&sort_func);
 
             if self.index >= dir_contents.len() as i32 {
                 self.index = self.index - 1;
             } else if self.index >= 0 && dir_contents.len() > 0 {
-                let indexed_filename = match self.contents.as_ref() {
-                    Some(s) => {
-                        s[self.index as usize].entry.file_name()
-                    },
-                    None => ffi::OsString::from(""),
-                };
+                let indexed_filename = self.contents[self.index as usize].entry.file_name();
                 for (i, entry) in dir_contents.iter().enumerate() {
                     if indexed_filename == entry.entry.file_name() {
                         self.index = i as i32;
@@ -90,7 +84,7 @@ impl JoshutoDirList {
             } else {
                 self.index = -1;
             }
-            self.contents = Some(dir_contents);
+            self.contents = dir_contents;
         }
 
         if let Ok(metadata) = std::fs::metadata(&self.path) {
@@ -108,17 +102,10 @@ impl JoshutoDirList {
 
     fn get_dir_entry(&self, index: i32) -> Option<&JoshutoDirEntry>
     {
-        match self.contents {
-            Some(ref s) => {
-                if index >= 0 && (index as usize) < s.len() {
-                    Some(&s[index as usize])
-                } else {
-                    None
-                }
-            },
-            None => {
-                None
-            }
+        if index >= 0 && (index as usize) < self.contents.len() {
+            Some(&self.contents[index as usize])
+        } else {
+            None
         }
     }
 
@@ -129,15 +116,13 @@ impl JoshutoDirList {
     }
 
     fn mark_toggle(&mut self, index: i32) {
-        if let Some(ref mut s) = self.contents {
-            if index >= 0 && (index as usize) < s.len() {
-                let tmp_bool = !s[index as usize].selected;
-                s[index as usize].selected = tmp_bool;
-                if tmp_bool == true {
-                    self.selected = self.selected + 1;
-                } else {
-                    self.selected = self.selected - 1;
-                }
+        if index >= 0 && (index as usize) < self.contents.len() {
+            let tmp_bool = !self.contents[index as usize].selected;
+            self.contents[index as usize].selected = tmp_bool;
+            if tmp_bool {
+                self.selected = self.selected + 1;
+            } else {
+                self.selected = self.selected - 1;
             }
         }
     }
@@ -165,3 +150,4 @@ impl JoshutoDirList {
         }
     }
 }
+

@@ -5,7 +5,7 @@ use std::time;
 
 use joshuto::structs;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SortType {
     SortNatural(SortStruct),
     SortMtime(SortStruct),
@@ -79,7 +79,7 @@ impl SortType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SortStruct {
     pub show_hidden: bool,
     pub sort_directories_first: bool,

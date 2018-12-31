@@ -36,7 +36,7 @@ impl DirHistory {
                 let parent = pathbuf.parent().unwrap().to_path_buf();
                 match structs::JoshutoDirList::new(parent.clone(), sort_type) {
                     Ok(mut s) => {
-                        for (i, dirent) in s.contents.as_ref().unwrap().iter().enumerate() {
+                        for (i, dirent) in s.contents.iter().enumerate() {
                             if dirent.entry.path() == pathbuf {
                                 s.index = i as i32;
                                 break;
@@ -107,17 +107,13 @@ impl FileClipboard {
     pub fn prepare(dirlist: &structs::JoshutoDirList)
             -> Option<Vec<path::PathBuf>>
     {
-        if let Some(contents) = dirlist.contents.as_ref() {
-            let selected: Vec<path::PathBuf> = contents.iter()
-                    .filter(|entry| entry.selected)
-                    .map(|entry| entry.entry.path()).collect();
-            if selected.len() > 0 {
-                Some(selected)
-            } else if dirlist.index >= 0 {
-                Some(vec![contents[dirlist.index as usize].entry.path()])
-            } else {
-                None
-            }
+        let selected: Vec<path::PathBuf> = dirlist.contents.iter()
+                .filter(|entry| entry.selected)
+                .map(|entry| entry.entry.path()).collect();
+        if selected.len() > 0 {
+            Some(selected)
+        } else if dirlist.index >= 0 {
+            Some(vec![dirlist.contents[dirlist.index as usize].entry.path()])
         } else {
             None
         }
