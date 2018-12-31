@@ -7,7 +7,8 @@ use std::io;
 use std::io::BufRead;
 use std::process;
 
-use joshuto::command::JoshutoCommand;
+use joshuto::command;
+use joshuto::command::*;
 use joshuto::keymapll::Keycode;
 
 const MAP_COMMAND: &str = "map";
@@ -19,7 +20,7 @@ macro_rules! new_keymap {
 
     ($($key: expr => $val: expr),*) => [
         {
-            let mut map: HashMap<i32, JoshutoCommand> = HashMap::new();
+            let mut map: HashMap<i32, Box<dyn JoshutoCommand>> = HashMap::new();
 
             $(
                 map.insert($key as i32, $val);
@@ -30,55 +31,42 @@ macro_rules! new_keymap {
     ]
 }
 
+#[derive(Debug)]
 pub struct JoshutoKeymap {
-    pub keymaps: HashMap<i32, JoshutoCommand>,
+    pub keymaps: HashMap<i32, CommandKeybind>,
 }
+
 
 impl JoshutoKeymap {
     pub fn new() -> Self
     {
-        let keymaps: HashMap<i32, JoshutoCommand> =
-            new_keymap![
-                Keycode::UP => JoshutoCommand::CursorMove(-1),
-                Keycode::DOWN => JoshutoCommand::CursorMove(-1),
-                Keycode::LEFT => JoshutoCommand::ParentDirectory,
-                Keycode::RIGHT => JoshutoCommand::Open,
-                Keycode::HOME => JoshutoCommand::CursorMoveHome,
-                Keycode::END => JoshutoCommand::CursorMoveEnd,
+        let mut keymaps: HashMap<i32, CommandKeybind> = HashMap::new();
 
-                Keycode::SPACE => JoshutoCommand::MarkFiles{toggle: true, all: false},
-                'a' => JoshutoCommand::RenameFile,
-                'd' => JoshutoCommand::CompositeKeybind(
-                    new_keymap![
-                    'd' => JoshutoCommand::CutFiles,
-                    'D' => JoshutoCommand::DeleteFiles]
-                ),
-                'k' => JoshutoCommand::CursorMove(-1),
-                'j' => JoshutoCommand::CursorMove(1),
-                'h' => JoshutoCommand::ParentDirectory,
-                'l' => JoshutoCommand::Open,
-                'q' => JoshutoCommand::Quit,
-                'y' => JoshutoCommand::CompositeKeybind(
-                    new_keymap![
-                    'y' => JoshutoCommand::CopyFiles]
-                ),
-                'p' => JoshutoCommand::CompositeKeybind(
-                    new_keymap![
-                    'p' => JoshutoCommand::PasteFiles(fs_extra::dir::CopyOptions::new())]
-                ),
-                'z' => JoshutoCommand::CompositeKeybind(
-                    new_keymap![
-                    'h' => JoshutoCommand::ToggleHiddenFiles]
-                )
-            ];
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMove::new(-1)));
+        keymaps.insert(Keycode::UP as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMove::new(1)));
+        keymaps.insert(Keycode::DOWN as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::ParentDirectory::new()));
+        keymaps.insert(Keycode::LEFT as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::Quit::new()));
+        keymaps.insert(Keycode::LOWER_Q as i32, command);
+
+        println!("{:?}", keymaps);
 
         JoshutoKeymap {
             keymaps,
         }
     }
 
-
-    fn insert_keycommand(map: &mut HashMap<i32, JoshutoCommand>,
+/*
+    fn insert_keycommand(map: &mut HashMap<i32, Box<dyn JoshutoCommand>>,
             keycommand: JoshutoCommand, keys: &[&str])
     {
         if keys.len() == 1 {
@@ -113,7 +101,7 @@ impl JoshutoKeymap {
         }
     }
 
-    fn parse_line(map: &mut HashMap<i32, JoshutoCommand>, line: String)
+    fn parse_line(map: &mut HashMap<i32, Box<dyn JoshutoCommand>>, line: String)
     {
         let mut line = line;
         {
@@ -145,10 +133,11 @@ impl JoshutoKeymap {
             _ => eprintln!("Error: Unknown command: {}", args[0]),
         }
     }
+*/
 
     fn read_config() -> Option<JoshutoKeymap>
     {
-        let mut keymaps: HashMap<i32, JoshutoCommand> = HashMap::new();
+        let mut keymaps: HashMap<i32, CommandKeybind> = HashMap::new();
 
         match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
             Ok(dirs) => {
@@ -159,7 +148,7 @@ impl JoshutoKeymap {
                         for line in reader.lines() {
                             if let Ok(mut line) = line {
                                 line.push('\n');
-                                JoshutoKeymap::parse_line(&mut keymaps, line);
+                            //    JoshutoKeymap::parse_line(&mut keymaps, line);
                             }
                         }
                         Some(JoshutoKeymap {
@@ -181,13 +170,14 @@ impl JoshutoKeymap {
 
     pub fn get_config() -> JoshutoKeymap
     {
-        match JoshutoKeymap::read_config() {
-            Some(config) => {
-                config
-            }
-            None => {
+//        match JoshutoKeymap::read_config() {
+//            Some(config) => {
+//                config
+//            }
+//            None => {
                 JoshutoKeymap::new()
-            }
-        }
+//            }
+//        }
     }
 }
+
