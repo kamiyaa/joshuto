@@ -1,4 +1,5 @@
 extern crate fs_extra;
+extern crate ncurses;
 
 use std;
 use std::fmt;
@@ -9,6 +10,10 @@ use std::sync;
 use joshuto;
 use joshuto::command;
 use joshuto::structs;
+use joshuto::ui;
+use joshuto::window;
+
+use joshuto::keymapll::Keycode;
 
 lazy_static! {
     static ref selected_files: sync::Mutex<Vec<path::PathBuf>> = sync::Mutex::new(vec![]);
@@ -21,7 +26,7 @@ fn set_file_op(operation: FileOp)
     *data = operation;
 }
 
-pub fn get_selected_files(dirlist: &structs::JoshutoDirList)
+pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
         -> Option<Vec<path::PathBuf>>
 {
     let selected: Vec<path::PathBuf> = dirlist.contents.iter()
@@ -39,7 +44,7 @@ pub fn get_selected_files(dirlist: &structs::JoshutoDirList)
 fn repopulated_selected_files(dirlist: &Option<structs::JoshutoDirList>) -> bool
 {
     if let Some(s) = dirlist.as_ref() {
-        if let Some(contents) = get_selected_files(s) {
+        if let Some(contents) = collect_selected_paths(s) {
             let mut data = selected_files.lock().unwrap();
             *data = contents;
             return true;
@@ -59,23 +64,23 @@ pub struct FileClipboard {
 }
 
 #[derive(Debug)]
-pub struct Cut;
+pub struct CutFiles;
 
-impl Cut {
-    pub fn new() -> Self { Cut }
-    pub fn command() -> &'static str { "Cut" }
+impl CutFiles {
+    pub fn new() -> Self { CutFiles }
+    pub fn command() -> &'static str { "CutFiles" }
 }
 
-impl command::JoshutoCommand for Cut {}
+impl command::JoshutoCommand for CutFiles {}
 
-impl std::fmt::Display for Cut {
+impl std::fmt::Display for CutFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for Cut {
+impl command::Runnable for CutFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         if repopulated_selected_files(&context.curr_list) {
@@ -85,23 +90,23 @@ impl command::Runnable for Cut {
 }
 
 #[derive(Debug)]
-pub struct Copy;
+pub struct CopyFiles;
 
-impl Copy {
-    pub fn new() -> Self { Copy }
-    pub fn command() -> &'static str { "Copy" }
+impl CopyFiles {
+    pub fn new() -> Self { CopyFiles }
+    pub fn command() -> &'static str { "CopyFiles" }
 }
 
-impl command::JoshutoCommand for Copy {}
+impl command::JoshutoCommand for CopyFiles {}
 
-impl std::fmt::Display for Copy {
+impl std::fmt::Display for CopyFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for Copy {
+impl command::Runnable for CopyFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         if repopulated_selected_files(&context.curr_list) {
@@ -110,30 +115,29 @@ impl command::Runnable for Copy {
     }
 }
 
-pub struct Paste {
+pub struct PasteFiles {
     options: fs_extra::dir::CopyOptions,
 }
 
-impl Paste {
+impl PasteFiles {
     pub fn new(options: fs_extra::dir::CopyOptions) -> Self
     {
-        Paste {
+        PasteFiles {
             options,
         }
     }
-    pub fn command() -> &'static str { "Paste" }
+    pub fn command() -> &'static str { "PasteFiles" }
 
-
-    fn cut(&self, destination: &path::PathBuf, options: &fs_extra::dir::CopyOptions) {
+    fn cut(&self, destination: &path::PathBuf, win: &window::JoshutoPanel) {
         let mut destination = destination;
         let handle = |process_info: fs_extra::TransitProcess| {
-            eprintln!("{}", process_info.copied_bytes);
+            ui::wprint_msg(win, format!("{}", process_info.copied_bytes).as_str());
             fs_extra::dir::TransitProcessResult::ContinueOrAbort
         };
 
         let mut files = selected_files.lock().unwrap();
 
-        match fs_extra::move_items_with_progress(&files, &destination, &options, handle)
+        match fs_extra::move_items_with_progress(&files, &destination, &self.options, handle)
         {
             Ok(s) => {},
             Err(e) => {},
@@ -141,16 +145,16 @@ impl Paste {
         files.clear();
     }
 
-    fn copy(&self, destination: &path::PathBuf, options: &fs_extra::dir::CopyOptions) {
+    fn copy(&self, destination: &path::PathBuf, win: &window::JoshutoPanel) {
         let mut destination = destination;
         let handle = |process_info: fs_extra::TransitProcess| {
-            eprintln!("{}", process_info.copied_bytes);
+            ui::wprint_msg(win, format!("{}", process_info.copied_bytes).as_str());
             fs_extra::dir::TransitProcessResult::ContinueOrAbort
         };
 
         let mut files = selected_files.lock().unwrap();
 
-        match fs_extra::copy_items_with_progress(&files, &destination, &options, handle)
+        match fs_extra::copy_items_with_progress(&files, &destination, &self.options, handle)
         {
             Ok(s) => {},
             Err(e) => {},
@@ -159,70 +163,96 @@ impl Paste {
     }
 }
 
-impl command::JoshutoCommand for Paste {}
+impl command::JoshutoCommand for PasteFiles {}
 
-impl std::fmt::Display for Paste {
+impl std::fmt::Display for PasteFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
         write!(f, "{} overwrite={}", Self::command(), self.options.overwrite)
     }
 }
 
-impl std::fmt::Debug for Paste {
+impl std::fmt::Debug for PasteFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for Paste {
+impl command::Runnable for PasteFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let destination = &context.curr_path;
         let file_operation = fileop.lock().unwrap();
 
         match *file_operation {
-            FileOp::Copy => self.copy(destination, &self.options),
-            FileOp::Cut => self.cut(destination, &self.options),
+            FileOp::Copy => self.copy(&context.curr_path, &context.views.bot_win),
+            FileOp::Cut => self.cut(&context.curr_path, &context.views.bot_win),
         }
+
+        context.reload_dirlists();
+
+        ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
+        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
+        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+
+        ui::redraw_status(&context.views, context.curr_list.as_ref(),
+                &context.curr_path,
+                &context.config_t.username, &context.config_t.hostname);
+
+        ncurses::doupdate();
     }
 }
 
+#[derive(Debug)]
+pub struct DeleteFiles;
 
-/*
-pub struct DeleteClipboard {
-    files: Vec<path::PathBuf>,
+impl DeleteFiles {
+    pub fn new() -> Self { DeleteFiles }
+    pub fn command() -> &'static str { "DeleteFiles" }
 }
 
-impl DeleteClipboard {
-    pub fn new() -> Self
-    {
-        DeleteClipboard {
-            files: Vec::new(),
-        }
-    }
+impl command::JoshutoCommand for DeleteFiles {}
 
-    pub fn prepare(&mut self, dirlist: &structs::JoshutoDirList)
+impl std::fmt::Display for DeleteFiles {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        match FileClipboard::prepare(dirlist) {
-            Some(s) => {
-                self.files = s;
+        write!(f, "{}", Self::command())
+    }
+}
+
+impl command::Runnable for DeleteFiles {
+    fn execute(&self, context: &mut joshuto::JoshutoContext)
+    {
+
+        ui::wprint_msg(&context.views.bot_win,
+            format!("Delete selected files? (Y/n)").as_str());
+        ncurses::doupdate();
+
+        let ch = ncurses::wgetch(context.views.bot_win.win);
+        if ch == Keycode::LOWER_Y as i32 || ch == Keycode::ENTER as i32 {
+            if let Some(s) = context.curr_list.as_mut() {
+                if let Some(paths) = collect_selected_paths(s) {
+                    for path in &paths {
+                        if path.is_dir() {
+                            std::fs::remove_dir_all(&path);
+                        } else {
+                            std::fs::remove_file(&path);
+                        }
+                    }
+                }
             }
-            None => {},
-        }
-    }
+            context.reload_dirlists();
 
-    pub fn execute(&mut self) -> std::io::Result<()>
-    {
-        for path in &self.files {
-            if path.is_dir() {
-                std::fs::remove_dir_all(&path)?;
-            } else {
-                std::fs::remove_file(&path)?;
-            }
+            ui::wprint_msg(&context.views.bot_win, "Deleted files");
+
+            ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
+            ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
+            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+        } else {
+            ui::redraw_status(&context.views, context.curr_list.as_ref(),
+                    &context.curr_path,
+                    &context.config_t.username, &context.config_t.hostname);
         }
-        self.files.clear();
-        Ok(())
+        ncurses::doupdate();
     }
 }
-*/

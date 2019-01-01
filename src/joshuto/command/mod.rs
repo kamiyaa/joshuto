@@ -27,9 +27,10 @@ pub use self::cursor_move::CursorMoveHome;
 pub use self::cursor_move::CursorMoveEnd;
 
 mod file_operation;
-pub use self::file_operation::Cut;
-pub use self::file_operation::Copy;
-pub use self::file_operation::Paste;
+pub use self::file_operation::CutFiles;
+pub use self::file_operation::CopyFiles;
+pub use self::file_operation::PasteFiles;
+pub use self::file_operation::DeleteFiles;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
