@@ -41,10 +41,10 @@ impl command::Runnable for CursorMove {
             Some(ref mut curr_list) => {
                 let curr_index = curr_list.index;
 
-                let new_index = curr_index + self.movement;
+                let new_index = curr_list.index + self.movement;
 
                 let dir_len = curr_list.contents.len() as i32;
-                if new_index <= 0 && curr_index == 0 ||
+                if new_index <= 0 && curr_index <= 0 ||
                         new_index >= dir_len && curr_index == dir_len - 1 {
                     return;
                 }
