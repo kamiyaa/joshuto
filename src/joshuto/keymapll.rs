@@ -30,7 +30,7 @@ pub enum Keycode {
     COPY = ncurses::KEY_COPY as isize,
     CREATE = ncurses::KEY_CREATE as isize,
     CTAB = ncurses::KEY_CTAB as isize,
-    DC = ncurses::KEY_DC as isize,          /* delete-character key */
+    DELETE = ncurses::KEY_DC as isize,          /* delete-character key */
     DL = ncurses::KEY_DL as isize,          /* delete-line key */
     EIC = ncurses::KEY_EIC as isize,
     EOL = ncurses::KEY_EOL as isize,
@@ -288,7 +288,7 @@ impl Keycode {
             "COPY" => Some(Keycode::COPY),
             "CREATE" => Some(Keycode::CREATE),
             "CTAB" => Some(Keycode::CTAB),
-            "DELETE" => Some(Keycode::DC),
+            "DELETE" => Some(Keycode::DELETE),
             "DL" => Some(Keycode::DL),
             "DOWN" => Some(Keycode::DOWN),
             "EIC" => Some(Keycode::EIC),

@@ -82,11 +82,19 @@ impl JoshutoKeymap {
                 Box::new(command::CursorMoveEnd::new()));
         keymaps.insert(Keycode::END as i32, command);
 
+        let command = CommandKeybind::SimpleKeybind(
+            Box::new(command::DeleteFiles::new()));
+        keymaps.insert(Keycode::DELETE as i32, command);
+
         {
             let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
             let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::Cut::new()));
+                Box::new(command::CutFiles::new()));
             subkeymap.insert(Keycode::LOWER_D as i32, command);
+
+            let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::DeleteFiles::new()));
+            subkeymap.insert(Keycode::UPPER_D as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
             keymaps.insert(Keycode::LOWER_D as i32, command);
@@ -96,7 +104,7 @@ impl JoshutoKeymap {
             let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
 
             let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::Copy::new()));
+                Box::new(command::CopyFiles::new()));
             subkeymap.insert(Keycode::LOWER_Y as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
@@ -108,13 +116,13 @@ impl JoshutoKeymap {
 
             let options = fs_extra::dir::CopyOptions::new();
             let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::Paste::new(options)));
+                Box::new(command::PasteFiles::new(options)));
             subkeymap.insert(Keycode::LOWER_P as i32, command);
 
             let mut options = fs_extra::dir::CopyOptions::new();
             options.overwrite = true;
             let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::Paste::new(options)));
+                Box::new(command::PasteFiles::new(options)));
             subkeymap.insert(Keycode::UPPER_P as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
