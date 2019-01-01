@@ -52,6 +52,8 @@ pub fn init_ncurses()
     /* error message */
     ncurses::init_pair(ERR_COLOR, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
 
+    ncurses::printw("Loading...");
+
     ncurses::refresh();
 }
 

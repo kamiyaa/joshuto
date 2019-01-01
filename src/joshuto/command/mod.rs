@@ -27,18 +27,21 @@ pub use self::cursor_move::CursorMoveHome;
 pub use self::cursor_move::CursorMoveEnd;
 
 mod file_operation;
-
-pub trait Runnable {
-    fn execute(&self, context: &mut joshuto::JoshutoContext);
-}
-
-pub trait JoshutoCommand: Runnable + std::fmt::Display + std::fmt::Debug {}
+pub use self::file_operation::Cut;
+pub use self::file_operation::Copy;
+pub use self::file_operation::Paste;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(Box<dyn JoshutoCommand>),
     CompositeKeybind(HashMap<i32, CommandKeybind>),
 }
+
+pub trait Runnable {
+    fn execute(&self, context: &mut joshuto::JoshutoContext);
+}
+
+pub trait JoshutoCommand: Runnable + std::fmt::Display + std::fmt::Debug {}
 
 impl std::fmt::Display for CommandKeybind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

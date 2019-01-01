@@ -318,8 +318,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
 {
     ui::init_ncurses();
 
-    ncurses::printw("Loading...");
-
     ncurses::doupdate();
 
     let mut tabs: Vec<JoshutoContext> = Vec::new();
