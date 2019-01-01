@@ -58,6 +58,30 @@ impl JoshutoKeymap {
                 Box::new(command::Quit::new()));
         keymaps.insert(Keycode::LOWER_Q as i32, command);
 
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::Open::new()));
+        keymaps.insert(Keycode::RIGHT as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::Open::new()));
+        keymaps.insert(Keycode::ENTER as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMovePageUp::new()));
+        keymaps.insert(Keycode::PPAGE as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMovePageDown::new()));
+        keymaps.insert(Keycode::NPAGE as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMoveHome::new()));
+        keymaps.insert(Keycode::HOME as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMoveEnd::new()));
+        keymaps.insert(Keycode::END as i32, command);
+
         println!("{:?}", keymaps);
 
         JoshutoKeymap {

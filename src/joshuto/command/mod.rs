@@ -14,9 +14,11 @@ mod parent_directory;
 pub use self::open::Open;
 mod open;
 pub use self::cursor_move::CursorMove;
+pub use self::cursor_move::CursorMovePageUp;
+pub use self::cursor_move::CursorMovePageDown;
+pub use self::cursor_move::CursorMoveHome;
+pub use self::cursor_move::CursorMoveEnd;
 mod cursor_move;
-pub use self::cursor_page_up::CursorMovePageUp;
-mod cursor_page_up;
 
 pub trait Runnable {
     fn execute(&self, context: &mut joshuto::JoshutoContext);
