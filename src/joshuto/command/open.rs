@@ -19,7 +19,7 @@ pub struct Open;
 
 impl Open {
     pub fn new() -> Self { Open }
-    fn command() -> &'static str { "Open" }
+    pub fn command() -> &'static str { "Open" }
 }
 
 impl command::JoshutoCommand for Open {}
@@ -78,9 +78,6 @@ impl command::Runnable for Open {
                 }
             }
 
-            ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                    &context.config_t.username, &context.config_t.hostname);
-
             if let Some(s) = context.curr_list.as_ref() {
                 if s.contents.len() > 0 {
                     let dirent: &structs::JoshutoDirEntry = &s.contents[s.index as usize];
@@ -105,6 +102,9 @@ impl command::Runnable for Open {
             ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
             ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
             ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+
+            ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
+                    &context.config_t.username, &context.config_t.hostname);
 
             ncurses::doupdate();
         }

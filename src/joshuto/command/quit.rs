@@ -1,25 +1,17 @@
-extern crate fs_extra;
-extern crate ncurses;
-
 use std;
 use std::fmt;
 use std::process;
 
 use joshuto;
 use joshuto::command;
+use joshuto::ui;
 
 #[derive(Debug)]
 pub struct Quit;
 
 impl Quit {
-    pub fn new() -> Self
-    {
-        Quit
-    }
-    fn command() -> &'static str
-    {
-        "Quit"
-    }
+    pub fn new() -> Self { Quit }
+    pub fn command() -> &'static str { "Quit" }
 }
 
 impl command::JoshutoCommand for Quit {}
@@ -34,7 +26,7 @@ impl std::fmt::Display for Quit {
 impl command::Runnable for Quit {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        ncurses::endwin();
+        ui::end_ncurses();
         process::exit(0);
     }
 }

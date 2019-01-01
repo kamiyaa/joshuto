@@ -22,7 +22,7 @@ impl CursorMove {
             movement,
         }
     }
-    fn command() -> &'static str { "CursorMove" }
+    pub fn command() -> &'static str { "CursorMove" }
 }
 
 impl command::JoshutoCommand for CursorMove {}
@@ -84,7 +84,7 @@ pub struct CursorMovePageUp;
 
 impl CursorMovePageUp {
     pub fn new() -> Self { CursorMovePageUp }
-    fn command() -> &'static str { "CursorMovePageUp" }
+    pub fn command() -> &'static str { "CursorMovePageUp" }
 }
 
 impl command::JoshutoCommand for CursorMovePageUp {}
@@ -149,7 +149,7 @@ pub struct CursorMovePageDown;
 
 impl CursorMovePageDown {
     pub fn new() -> Self { CursorMovePageDown }
-    fn command() -> &'static str { "CursorMovePageDown" }
+    pub fn command() -> &'static str { "CursorMovePageDown" }
 }
 
 impl command::JoshutoCommand for CursorMovePageDown {}
@@ -217,7 +217,7 @@ impl CursorMoveHome {
     {
         CursorMoveHome
     }
-    fn command() -> &'static str { "CursorMoveHome" }
+    pub fn command() -> &'static str { "CursorMoveHome" }
 }
 
 impl command::JoshutoCommand for CursorMoveHome {}
@@ -276,7 +276,7 @@ impl CursorMoveEnd {
     {
         CursorMoveEnd
     }
-    fn command() -> &'static str { "CursorMoveHome" }
+    pub fn command() -> &'static str { "CursorMoveHome" }
 }
 
 impl command::JoshutoCommand for CursorMoveEnd {}
