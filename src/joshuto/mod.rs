@@ -28,7 +28,6 @@ use self::command::JoshutoCommand;
 use self::keymapll::Keycode;
 
 pub struct JoshutoContext<'a> {
-    pub clipboard: history::FileClipboard,
     pub curr_path: path::PathBuf,
     pub history: history::DirHistory,
 
@@ -111,8 +110,6 @@ impl<'a> JoshutoContext<'a> {
             preview_view = None
         }
 
-        let clipboard = history::FileClipboard::new();
-
         ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
                 &config_t.username, &config_t.hostname);
 
@@ -123,7 +120,6 @@ impl<'a> JoshutoContext<'a> {
         ncurses::doupdate();
 
         JoshutoContext {
-            clipboard,
             curr_path,
             history,
             threads: Vec::new(),
@@ -282,7 +278,6 @@ fn open_with(mimetypes: &HashMap<String, Vec<Vec<String>>>,
     }
 }
 
-
 fn update_views(joshuto_view : &window::JoshutoView,
         parent_view: Option<&mut structs::JoshutoDirList>,
         curr_view: Option<&mut structs::JoshutoDirList>,
@@ -365,5 +360,4 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
         keycommand.execute(&mut tabs[index]);
     }
-    ncurses::endwin();
 }

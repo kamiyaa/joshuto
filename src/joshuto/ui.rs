@@ -55,6 +55,11 @@ pub fn init_ncurses()
     ncurses::refresh();
 }
 
+pub fn end_ncurses()
+{
+        ncurses::endwin();
+}
+
 pub fn wprint_msg(win : &window::JoshutoPanel, err_msg : &str)
 {
     ncurses::werase(win.win);
