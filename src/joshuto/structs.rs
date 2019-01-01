@@ -69,20 +69,22 @@ impl JoshutoDirList {
         if let Ok(mut dir_contents) = Self::read_dir_list(&self.path, sort_type) {
             dir_contents.sort_by(&sort_func);
 
-            if self.index >= dir_contents.len() as i32 {
+            if dir_contents.len() == 0 {
+                self.index = -1;
+            } else if self.index >= dir_contents.len() as i32 {
                 self.index = self.index - 1;
-            } else if self.index >= 0 && dir_contents.len() > 0 {
-                let indexed_filename = self.contents[self.index as usize].entry.file_name();
+            } else if self.index >= 0 && (self.index as usize) < self.contents.len() {
+                let index = self.index;
+                let curr_file_name = self.contents[index as usize].entry.file_name();
+
                 for (i, entry) in dir_contents.iter().enumerate() {
-                    if indexed_filename == entry.entry.file_name() {
+                    if curr_file_name == entry.entry.file_name() {
                         self.index = i as i32;
                         break;
                     }
                 }
-            } else if dir_contents.len() > 0 {
-                self.index = 0;
             } else {
-                self.index = -1;
+                self.index = 0;
             }
             self.contents = dir_contents;
         }
@@ -150,4 +152,3 @@ impl JoshutoDirList {
         }
     }
 }
-
