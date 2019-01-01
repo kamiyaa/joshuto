@@ -62,18 +62,18 @@ pub fn end_ncurses()
         ncurses::endwin();
 }
 
-pub fn wprint_msg(win : &window::JoshutoPanel, err_msg : &str)
+pub fn wprint_msg(win : &window::JoshutoPanel, msg : &str)
 {
     ncurses::werase(win.win);
-    ncurses::mvwaddstr(win.win, 0, 0, err_msg);
+    ncurses::mvwaddstr(win.win, 0, 0, msg);
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_err(win : &window::JoshutoPanel, err_msg : &str)
+pub fn wprint_err(win : &window::JoshutoPanel, msg : &str)
 {
     ncurses::werase(win.win);
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
-    ncurses::mvwaddstr(win.win, 0, 0, err_msg);
+    ncurses::mvwaddstr(win.win, 0, 0, msg);
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::wnoutrefresh(win.win);
 }

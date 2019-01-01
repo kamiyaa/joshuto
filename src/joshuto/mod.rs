@@ -133,6 +133,44 @@ impl<'a> JoshutoContext<'a> {
         }
     }
 
+    pub fn reload_dirlists(&mut self)
+    {
+        let mut gone = false;
+        if let Some(s) = self.curr_list.as_mut() {
+            if !s.path.exists() {
+                gone = true;
+            } else if s.need_update() {
+                s.update(&self.config_t.sort_type);
+            }
+        }
+        if gone {
+            self.curr_list = None;
+        }
+
+        let mut gone = false;
+        if let Some(s) = self.parent_list.as_mut() {
+            if !s.path.exists() {
+                gone = true;
+            } else if s.need_update() {
+                s.update(&self.config_t.sort_type);
+            }
+        }
+        if gone {
+            self.parent_list = None;
+        }
+
+        let mut gone = false;
+        if let Some(s) = self.preview_list.as_mut() {
+            if !s.path.exists() {
+                gone = true;
+            } else if s.need_update() {
+                s.update(&self.config_t.sort_type);
+            }
+        }
+        if gone {
+            self.preview_list = None;
+        }
+    }
 }
 
 fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
