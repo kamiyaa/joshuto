@@ -168,8 +168,6 @@ impl JoshutoKeymap {
             keymaps.insert(Keycode::LOWER_P as i32, command);
         }
 
-        println!("{:?}", keymaps);
-
         JoshutoKeymap {
             keymaps,
         }

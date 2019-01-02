@@ -254,16 +254,13 @@ fn update_views(joshuto_view : &window::JoshutoView,
 
 pub fn resize_handler(context: &mut JoshutoContext)
 {
-    eprintln!("redrawing views...");
     context.views.redraw_views();
     ncurses::refresh();
 
-    eprintln!("redrawing contents to view...");
     ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
     ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
     ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
 
-    eprintln!("redrawing status to view...");
     ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
             &context.config_t.username, &context.config_t.hostname);
 
