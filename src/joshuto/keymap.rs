@@ -47,26 +47,42 @@ impl JoshutoKeymap {
     {
         let mut keymaps: HashMap<i32, CommandKeybind> = HashMap::new();
 
-        let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::CursorMove::new(-1)));
-        keymaps.insert(Keycode::UP as i32, command);
-
-        let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::CursorMove::new(1)));
-        keymaps.insert(Keycode::DOWN as i32, command);
-
-        let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::ParentDirectory::new()));
-        keymaps.insert(Keycode::LEFT as i32, command);
-
+        // quit
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::Quit::new()));
         keymaps.insert(Keycode::LOWER_Q as i32, command);
 
+        // up
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMove::new(-1)));
+        keymaps.insert(Keycode::UP as i32, command);
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMove::new(-1)));
+        keymaps.insert(Keycode::LOWER_K as i32, command);
+
+        // down
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMove::new(1)));
+        keymaps.insert(Keycode::DOWN as i32, command);
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::CursorMove::new(1)));
+        keymaps.insert(Keycode::LOWER_J as i32, command);
+
+        // left
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::ParentDirectory::new()));
+        keymaps.insert(Keycode::LEFT as i32, command);
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::ParentDirectory::new()));
+        keymaps.insert(Keycode::LOWER_H as i32, command);
+
+        // right
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::OpenFile::new()));
         keymaps.insert(Keycode::RIGHT as i32, command);
-
+        let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::OpenFile::new()));
+        keymaps.insert(Keycode::LOWER_L as i32, command);
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::OpenFile::new()));
         keymaps.insert(Keycode::ENTER as i32, command);
