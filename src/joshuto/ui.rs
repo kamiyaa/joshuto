@@ -341,6 +341,63 @@ pub fn resize_handler(config_t: &config::JoshutoConfig,
     ncurses::doupdate();
 }
 
+pub fn get_str(win: &window::JoshutoPanel, coord: (i32, i32)) -> Option<String>
+{
+    let mut user_input: String = String::new();
+
+    let mut curs_x = coord.1;
+
+    ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_STANDOUT(), 0);
+    ncurses::wrefresh(win.win);
+
+    loop {
+        let ch: i32 = ncurses::wgetch(win.win);
+
+        ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_NORMAL(), 0);
+
+        if ch == Keycode::ESCAPE as i32 {
+            return None;
+        } else if ch == Keycode::ENTER as i32 {
+            break;
+        } else if ch == Keycode::BACKSPACE as i32 {
+            let user_input_len = user_input.len();
+            ncurses::mvwprintw(win.win, coord.0, coord.1 + user_input_len as i32 - 1, " ");
+            if user_input_len > 0 {
+                if curs_x - coord.1 >= user_input_len as i32 {
+                    curs_x = curs_x - 1;
+                    ncurses::mvwdelch(win.win, coord.0, curs_x);
+                    user_input.pop();
+                } else {
+                    user_input.remove((curs_x - coord.1 - 1) as usize);
+                    curs_x = curs_x - 1;
+                }
+            }
+        } else if ch == Keycode::LEFT as i32 {
+            if curs_x > coord.1 {
+                curs_x = curs_x - 1;
+            }
+        } else if ch == Keycode::RIGHT as i32 {
+            if curs_x < coord.1 + user_input.len() as i32 {
+                curs_x = curs_x + 1;
+            }
+        } else {
+            if curs_x - coord.1 >= user_input.len() as i32 {
+                user_input.push(ch as u8 as char);
+                curs_x = curs_x + 1;
+            } else {
+                user_input.insert((curs_x - coord.1) as usize, ch as u8 as char);
+                curs_x = curs_x + 1;
+            }
+        }
+        ncurses::mvwprintw(win.win, coord.0, coord.1, user_input.as_str());
+
+        ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_STANDOUT(), 0);
+        ncurses::wrefresh(win.win);
+    }
+
+    return Some(user_input);
+}
+
 
 fn file_attr_apply(win : ncurses::WINDOW, coord : (i32, i32), mode : u32,
         file_extension : Option<&ffi::OsStr>, attr : ncurses::attr_t)
