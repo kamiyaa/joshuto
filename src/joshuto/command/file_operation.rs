@@ -58,11 +58,6 @@ enum FileOp {
     Copy,
 }
 
-pub struct FileClipboard {
-    files: Vec<path::PathBuf>,
-    fileop: FileOp,
-}
-
 #[derive(Debug)]
 pub struct CutFiles;
 
@@ -156,10 +151,12 @@ impl PasteFiles {
 
         match fs_extra::copy_items_with_progress(&files, &destination, &self.options, handle)
         {
-            Ok(s) => {},
-            Err(e) => {},
+            Ok(_) => {
+                files.clear();
+            },
+            Err(_) => {
+            },
         }
-        files.clear();
     }
 }
 
@@ -263,6 +260,53 @@ pub struct RenameFile;
 impl RenameFile {
     pub fn new() -> Self { RenameFile }
     pub fn command() -> &'static str { "RenameFile" }
+
+    pub fn rename_file(path: &path::PathBuf, context: &mut joshuto::JoshutoContext)
+    {
+        if let Some(file_name) = path.file_name() {
+            let mut term_rows: i32 = 0;
+            let mut term_cols: i32 = 0;
+            ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+
+            let mut win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
+            ncurses::keypad(win.win, true);
+
+            const PROMPT: &str = ":rename_file ";
+            ncurses::wprintw(win.win, PROMPT);
+
+            win.move_to_top();
+            ncurses::doupdate();
+
+            ncurses::wmove(win.win, 0, PROMPT.len() as i32);
+
+            match ui::get_str(&win, (0, PROMPT.len() as i32)) {
+                Some(s) => {
+                    let mut new_path = path.parent().unwrap().to_path_buf();
+                    new_path.push(s);
+                    match fs::rename(&path, &new_path) {
+                        Ok(_) => {
+                            context.reload_dirlists();
+
+                            ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
+                            ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
+                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+
+                            ui::redraw_status(&context.views, context.curr_list.as_ref(),
+                                    &context.curr_path,
+                                    &context.config_t.username, &context.config_t.hostname);
+                        },
+                        Err(e) => {
+                            ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                        },
+                    }
+                },
+                None => {},
+            }
+            win.destroy();
+            ncurses::update_panels();
+            ncurses::doupdate();
+        }
+    }
 }
 
 impl command::JoshutoCommand for RenameFile {}
@@ -277,36 +321,16 @@ impl std::fmt::Display for RenameFile {
 impl command::Runnable for RenameFile {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
+        let dirlist = match context.curr_list.as_ref() {
+                Some(s) => match s.get_curr_entry() {
+                    Some(s) => Some(s.entry.path()),
+                    None => None,
+                },
+                None => None,
+            };
 
-        ui::wprint_msg(&context.views.bot_win,
-            format!("Delete selected files? (Y/n)").as_str());
-        ncurses::doupdate();
-
-        let ch = ncurses::wgetch(context.views.bot_win.win);
-        if ch == Keycode::LOWER_Y as i32 || ch == Keycode::ENTER as i32 {
-            if let Some(s) = context.curr_list.as_mut() {
-                if let Some(paths) = collect_selected_paths(s) {
-                    for path in &paths {
-                        if path.is_dir() {
-                            std::fs::remove_dir_all(&path);
-                        } else {
-                            std::fs::remove_file(&path);
-                        }
-                    }
-                }
-            }
-            context.reload_dirlists();
-
-            ui::wprint_msg(&context.views.bot_win, "Deleted files");
-
-            ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-            ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
-        } else {
-            ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                    &context.curr_path,
-                    &context.config_t.username, &context.config_t.hostname);
+        if let Some(path) = dirlist {
+            Self::rename_file(&path, context);
         }
-        ncurses::doupdate();
     }
 }

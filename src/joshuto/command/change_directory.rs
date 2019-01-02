@@ -2,16 +2,13 @@ extern crate fs_extra;
 extern crate ncurses;
 
 use std;
-use std::env;
 use std::fmt;
 use std::path;
 use std::process;
 
 use joshuto;
 use joshuto::command;
-use joshuto::structs;
 use joshuto::ui;
-use joshuto::unix;
 
 #[derive(Debug)]
 pub struct ChangeDirectory {

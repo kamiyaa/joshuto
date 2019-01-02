@@ -1,12 +1,10 @@
 extern crate fs_extra;
 extern crate ncurses;
+extern crate mime_guess;
 
 use std;
-use std::collections::HashMap;
 use std::env;
-use std::fs;
 use std::fmt;
-use std::mem;
 use std::path;
 
 use joshuto;
@@ -51,7 +49,7 @@ impl command::Runnable for OpenFile {
         }
 
         if path.is_file() {
-            unix::open_file(&context.mimetype_t.mimetypes, &context.views.bot_win, path.as_path());
+            unix::open_file(&context.mimetype_t, &context.views.bot_win, path.as_path());
         } else if path.is_dir() {
             match env::set_current_dir(&path) {
                 Ok(_) => {},
@@ -197,18 +195,26 @@ impl OpenFileWith {
         let mut term_cols: i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let mimetype = unix::get_mime_type(pathbuf.as_path());
+        let file_ext: Option<&str> = match pathbuf.extension() {
+            Some(s) => s.to_str(),
+            None => None,
+            };
 
-        let mut empty_vec: Vec<Vec<String>> = Vec::new();
-        let mimetype_options: &Vec<Vec<String>>;
-        match mimetype_t.mimetypes.get(&mimetype) {
-            Some(s) => {
-                mimetype_options = s;
+        let mimetype: Option<&str> = match file_ext {
+            Some(extstr) => mime_guess::get_mime_type_str(extstr),
+            None => None,
+            };
+
+        let empty_vec: Vec<Vec<String>> = Vec::new();
+        let mimetype_options: &Vec<Vec<String>> = match mimetype {
+            Some(mimetype) => {
+                match mimetype_t.mimetypes.get(mimetype) {
+                    Some(s) => s,
+                    None => &empty_vec,
+                }
             },
-            None => {
-                mimetype_options = &empty_vec;
-            },
-        }
+            None => &empty_vec,
+            };
 
         let option_size = mimetype_options.len();
         let mut win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
