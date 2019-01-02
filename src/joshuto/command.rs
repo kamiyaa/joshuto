@@ -34,6 +34,9 @@ pub use self::file_operation::PasteFiles;
 pub use self::file_operation::DeleteFiles;
 pub use self::file_operation::RenameFile;
 
+mod show_hidden;
+pub use self::show_hidden::ToggleHiddenFiles;
+
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(Box<dyn JoshutoCommand>),

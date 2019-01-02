@@ -102,6 +102,16 @@ impl JoshutoKeymap {
         {
             let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
             let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::ToggleHiddenFiles::new()));
+            subkeymap.insert(Keycode::LOWER_H as i32, command);
+
+            let command = CommandKeybind::CompositeKeybind(subkeymap);
+            keymaps.insert(Keycode::LOWER_Z as i32, command);
+        }
+
+        {
+            let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
+            let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CutFiles::new()));
             subkeymap.insert(Keycode::LOWER_D as i32, command);
 
