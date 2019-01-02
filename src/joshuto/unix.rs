@@ -1,13 +1,13 @@
 extern crate libc;
 extern crate toml;
-extern crate tree_magic;
 extern crate ncurses;
 
 use std::fs;
 use std::path;
-use std::collections::HashMap;
+use std::process;
 
 use joshuto::ui;
+use joshuto::mimetype;
 use joshuto::window;
 
 pub const BITMASK  : u32 = 0o170000;
@@ -19,10 +19,7 @@ pub const S_IFDIR  : u32 = 0o040000;   /* directory */
 pub const S_IFCHR  : u32 = 0o020000;   /* character device */
 pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
-pub fn is_reg(mode : u32) -> bool
-{
-    mode & BITMASK == S_IFREG
-}
+pub fn is_reg(mode : u32) -> bool { mode & BITMASK == S_IFREG }
 
 pub fn get_unix_filetype(mode : u32) -> &'static str
 {
@@ -35,31 +32,6 @@ pub fn get_unix_filetype(mode : u32) -> &'static str
         S_IFSOCK => "inode/socket",
         S_IFREG => "inode/regular",
         _ => "unknown",
-    }
-}
-
-pub fn get_mime_type(path: &path::Path) -> String
-{
-    tree_magic::from_filepath(path)
-}
-
-pub fn exec_with(program : String, args : Vec<String>)
-{
-    use std::process::Command;
-
-    let mut child = Command::new(program);
-    child.args(args);
-
-    match child.spawn() {
-        Ok(mut ch) => {
-            match ch.wait() {
-                Ok(exit_code) => {},
-                Err(e) => eprintln!("{}", e),
-            }
-        },
-        Err(e) => {
-            eprintln!("{:?}", e);
-        },
     }
 }
 
@@ -122,48 +94,78 @@ pub fn stringify_mode(mode : u32) -> String
     mode_str
 }
 
-pub fn open_file(mime_map: &HashMap<String, Vec<Vec<String>>>,
+pub fn open_file(mimetype_t: &mimetype::JoshutoMimetype,
         win: &window::JoshutoPanel, path: &path::Path) {
     use std::os::unix::fs::PermissionsExt;
 
     if let Ok(metadata) = fs::metadata(path) {
         let permissions : fs::Permissions = metadata.permissions();
         let mode = permissions.mode();
-        if is_reg(mode) {
-            let mime_type: String = get_mime_type(path);
-
-            if let Some(mime_args) = mime_map.get(mime_type.as_str()) {
-                let mime_args_len = mime_args.len();
-                if mime_args_len > 0 {
-                    ncurses::savetty();
-                    ncurses::endwin();
-                    open_with(path, &mime_args[0]);
-                    ncurses::resetty();
-                    ncurses::refresh();
-                }
-            } else {
-                ui::wprint_err(win, format!("Don't know how to open: {}", mime_type).as_str());
-            }
-        } else {
-            ui::wprint_err(win, format!("Don't know how to open: {}", get_unix_filetype(mode)).as_str());
+        if !is_reg(mode) {
+            ui::wprint_err(win, "Failed to read metadata, unable to determine filetype");
+            ncurses::doupdate();
+            return;
         }
-    } else {
-        ui::wprint_err(win, "Failed to read metadata, unable to determine filetype");
+
+        let file_ext: Option<&str> = match path.extension() {
+            Some(s) => s.to_str(),
+            None => None,
+            };
+
+        let mimetype: Option<&str> = match file_ext {
+            Some(extstr) => mime_guess::get_mime_type_str(extstr),
+            None => None,
+            };
+
+        let empty_vec: Vec<Vec<String>> = Vec::new();
+        let mimetype_options: &Vec<Vec<String>> = match mimetype {
+            Some(mimetype) => {
+                match mimetype_t.mimetypes.get(mimetype) {
+                    Some(s) => s,
+                    None => &empty_vec,
+                }
+            },
+            None => &empty_vec,
+            };
+
+        if mimetype_options.len() > 0 {
+            ncurses::savetty();
+            ncurses::endwin();
+            open_with(path, &mimetype_options[0]);
+            ncurses::resetty();
+            ncurses::refresh();
+        } else {
+            ui::wprint_err(win, "Don't know how to open: ");
+            match mimetype {
+                Some(s) => ncurses::wprintw(win.win, s),
+                None => ncurses::wprintw(win.win, "Unknown file type"),
+            };
+        }
+        ncurses::doupdate();
     }
-    ncurses::doupdate();
 }
 
 pub fn open_with(path: &path::Path, args: &Vec<String>)
 {
-    let args_len = args.len();
     let lossy_path: String = path.as_os_str().to_os_string().into_string().unwrap();
-    let program_name = args[0].clone();
+    let program = args[0].clone();
+    let args_len = args.len();
 
-    let mut args_list : Vec<String> = Vec::with_capacity(args_len);
-    for i in 1..args.len() {
-        args_list.push(args[i].clone());
+    let mut command = process::Command::new(program);
+    for i in 1..args_len {
+        command.arg(args[i].clone());
     }
-    args_list.push(lossy_path);
+    command.arg(path.as_os_str());
 
-    exec_with(program_name, args_list);
+    match command.spawn() {
+        Ok(mut handle) => {
+            match handle.wait() {
+                Ok(exit_code) => {},
+                Err(e) => eprintln!("{}", e),
+            }
+        },
+        Err(e) => {
+            eprintln!("{:?}", e);
+        },
+    }
 }
