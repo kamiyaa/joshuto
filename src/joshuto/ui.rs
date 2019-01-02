@@ -148,17 +148,22 @@ fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
 fn wprint_file_name(win: &window::JoshutoPanel, file : &fs::DirEntry,
     coord: (i32, i32), offset: usize)
 {
-    let offset = offset + 3;
+    let offset = offset;
     ncurses::wmove(win.win, coord.0, coord.1);
     match file.file_name().into_string() {
         Ok(file_name) => {
             ncurses::waddstr(win.win, " ");
             let name_len = wcwidth::str_width(file_name.as_str()).unwrap_or(win.cols as usize);
-            if name_len >= win.cols as usize - 1 {
-                let mut trim_index: usize = win.cols as usize - offset;
+            if name_len + 1 >= win.cols as usize {
+                let mut trim_index: usize = if offset > win.cols as usize {
+                        0
+                    } else {
+                        win.cols as usize - offset
+                    };
+
                 let mut total: usize = 0;
                 for (index, ch) in file_name.char_indices() {
-                    if total >= win.cols as usize - offset {
+                    if total >= trim_index {
                         trim_index = index;
                         break;
                     }
@@ -227,15 +232,20 @@ pub fn wprint_direntry(win: &window::JoshutoPanel,
         file: &fs::DirEntry, coord: (i32, i32))
 {
 //    let offset = wprint_file_size(win, file, coord);
-    let offset = 6;
+    let offset = 3;
     wprint_file_name(win, file, coord, offset);
 }
 
-pub fn display_contents(win : &window::JoshutoPanel,
-        entry : &structs::JoshutoDirList) {
+pub fn display_contents(win: &window::JoshutoPanel,
+        entry: &structs::JoshutoDirList) {
     use std::os::unix::fs::PermissionsExt;
 
-    let mut mode : u32 = 0;
+    ncurses::werase(win.win);
+    if win.cols <= 6 {
+        return;
+    }
+
+    let mut mode: u32 = 0;
 
     let index = entry.index as usize;
     let dir_contents = &entry.contents;
@@ -255,7 +265,7 @@ pub fn display_contents(win : &window::JoshutoPanel,
     } else if index <= offset {
         start = 0;
         end = win.rows as usize;
-    } else if index - offset + win.rows as usize >= vec_len {
+    } else if index + win.rows as usize >= vec_len + offset  {
         start = vec_len - win.rows as usize;
         end = vec_len;
     } else {
@@ -263,7 +273,6 @@ pub fn display_contents(win : &window::JoshutoPanel,
         end = start + win.rows as usize;
     }
 
-    ncurses::werase(win.win);
     ncurses::wmove(win.win, 0, 0);
 
     for i in start..end {
@@ -333,26 +342,6 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
             }
         }
     }
-}
-
-pub fn resize_handler(config_t: &config::JoshutoConfig,
-        joshuto_view: &mut window::JoshutoView,
-        curr_path: &path::PathBuf,
-        parent_view: Option<&structs::JoshutoDirList>,
-        curr_view: Option<&structs::JoshutoDirList>,
-        preview_view: Option<&structs::JoshutoDirList>)
-{
-    joshuto_view.redraw_views();
-    ncurses::refresh();
-
-    redraw_view(&joshuto_view.left_win, parent_view);
-    redraw_view(&joshuto_view.mid_win, curr_view);
-    redraw_view(&joshuto_view.right_win, preview_view);
-
-    redraw_status(joshuto_view, curr_view, curr_path,
-            &config_t.username, &config_t.hostname);
-
-    ncurses::doupdate();
 }
 
 pub fn get_str(win: &window::JoshutoPanel, coord: (i32, i32)) -> Option<String>
