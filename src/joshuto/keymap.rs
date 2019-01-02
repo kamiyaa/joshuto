@@ -59,12 +59,16 @@ impl JoshutoKeymap {
         keymaps.insert(Keycode::LOWER_Q as i32, command);
 
         let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::Open::new()));
+                Box::new(command::OpenFile::new()));
         keymaps.insert(Keycode::RIGHT as i32, command);
 
         let command = CommandKeybind::SimpleKeybind(
-                Box::new(command::Open::new()));
+                Box::new(command::OpenFile::new()));
         keymaps.insert(Keycode::ENTER as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+            Box::new(command::OpenFileWith::new()));
+        keymaps.insert(Keycode::LOWER_R as i32, command);
 
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMovePageUp::new()));
