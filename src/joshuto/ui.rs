@@ -4,7 +4,6 @@ extern crate wcwidth;
 use std::ffi;
 use std::fs;
 use std::path;
-use std::collections::HashMap;
 
 use joshuto::config;
 use joshuto::structs;
@@ -25,15 +24,16 @@ pub fn init_ncurses()
     let locale_conf = ncurses::LcCategory::all;
 
     ncurses::setlocale(locale_conf, "");
+    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
     ncurses::initscr();
     ncurses::cbreak();
-    ncurses::raw();
 
     ncurses::keypad(ncurses::stdscr(), true);
     ncurses::start_color();
     ncurses::use_default_colors();
     ncurses::noecho();
+    ncurses::set_escdelay(0);
 
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
@@ -176,12 +176,12 @@ fn wprint_file_name(win: &window::JoshutoPanel, file : &fs::DirEntry,
     };
 }
 
-pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
+pub fn wprint_file_info(win: ncurses::WINDOW, file: &fs::DirEntry)
 {
     use std::os::unix::fs::PermissionsExt;
 
-    const FILE_UNITS : [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "ExB"];
-    const CONV_RATE : u64 = 1024;
+    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "ExB"];
+    const CONV_RATE: f64 = 1024.0;
 
     ncurses::werase(win);
     ncurses::wmove(win, 0, 0);
@@ -190,17 +190,31 @@ pub fn wprint_file_info(win : ncurses::WINDOW, file : &fs::DirEntry)
             let permissions : fs::Permissions = metadata.permissions();
             let mode = permissions.mode();
 
-            let mut file_size = metadata.len();
+            let mut file_size = metadata.len() as f64;
             let mut index = 0;
             while file_size > CONV_RATE {
                 file_size = file_size / CONV_RATE;
                 index += 1;
             }
+            let file_type: &str = unix::get_unix_filetype(mode);
 
-            ncurses::waddstr(win,
-                format!("{:?} {}  {} {}", mode, unix::stringify_mode(mode),
-                    file_size, FILE_UNITS[index]).as_str()
-                );
+            ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
+            ncurses::waddstr(win, "  ");
+            if file_size >= 1000.0 {
+                ncurses::waddstr(win,
+                    format!("{:.0}{}", file_size, FILE_UNITS[index]).as_str());
+            } else if file_size >= 100.0 {
+                ncurses::waddstr(win,
+                    format!(" {:.0}{}", file_size, FILE_UNITS[index]).as_str());
+            } else if file_size >= 10.0 {
+                ncurses::waddstr(win,
+                    format!("{:.1}{}", file_size, FILE_UNITS[index]).as_str());
+            } else {
+                ncurses::waddstr(win,
+                    format!("{:.2}{}", file_size, FILE_UNITS[index]).as_str());
+            }
+            ncurses::waddstr(win, " ");
+            ncurses::waddstr(win, file_type);
         },
         Err(e) => {
             ncurses::waddstr(win, format!("{:?}", e).as_str());
