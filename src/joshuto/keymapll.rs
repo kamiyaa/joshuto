@@ -1,10 +1,5 @@
 extern crate ncurses;
 
-use std;
-use std::collections::HashMap;
-use std::fmt;
-use std::path;
-
 #[allow(non_camel_case_types)]
 #[allow(dead_code)]
 #[derive(Debug,Clone)]

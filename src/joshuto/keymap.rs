@@ -16,6 +16,7 @@ const ALIAS_COMMAND: &str = "alias";
 
 const COMMENT_DELIMITER: char = '#';
 
+/*
 macro_rules! new_keymap {
 
     ($($key: expr => $val: expr),*) => [
@@ -30,6 +31,10 @@ macro_rules! new_keymap {
         }
     ]
 }
+*/
+
+
+/* #define KEY_ALT(x) KEY_F(60) + (x - 'A') */
 
 #[derive(Debug)]
 pub struct JoshutoKeymap {
@@ -89,6 +94,10 @@ impl JoshutoKeymap {
         let command = CommandKeybind::SimpleKeybind(
             Box::new(command::DeleteFiles::new()));
         keymaps.insert(Keycode::DELETE as i32, command);
+
+        let command = CommandKeybind::SimpleKeybind(
+            Box::new(command::RenameFile::new()));
+        keymaps.insert(Keycode::LOWER_A as i32, command);
 
         {
             let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
