@@ -13,8 +13,9 @@ pub use self::quit::Quit;
 mod parent_directory;
 pub use self::parent_directory::ParentDirectory;
 
-mod open;
-pub use self::open::Open;
+mod open_file;
+pub use self::open_file::OpenFile;
+pub use self::open_file::OpenFileWith;
 
 mod change_directory;
 pub use self::change_directory::ChangeDirectory;

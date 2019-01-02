@@ -256,3 +256,57 @@ impl command::Runnable for DeleteFiles {
         ncurses::doupdate();
     }
 }
+
+#[derive(Debug)]
+pub struct RenameFile;
+
+impl RenameFile {
+    pub fn new() -> Self { RenameFile }
+    pub fn command() -> &'static str { "RenameFile" }
+}
+
+impl command::JoshutoCommand for RenameFile {}
+
+impl std::fmt::Display for RenameFile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        write!(f, "{}", Self::command())
+    }
+}
+
+impl command::Runnable for RenameFile {
+    fn execute(&self, context: &mut joshuto::JoshutoContext)
+    {
+
+        ui::wprint_msg(&context.views.bot_win,
+            format!("Delete selected files? (Y/n)").as_str());
+        ncurses::doupdate();
+
+        let ch = ncurses::wgetch(context.views.bot_win.win);
+        if ch == Keycode::LOWER_Y as i32 || ch == Keycode::ENTER as i32 {
+            if let Some(s) = context.curr_list.as_mut() {
+                if let Some(paths) = collect_selected_paths(s) {
+                    for path in &paths {
+                        if path.is_dir() {
+                            std::fs::remove_dir_all(&path);
+                        } else {
+                            std::fs::remove_file(&path);
+                        }
+                    }
+                }
+            }
+            context.reload_dirlists();
+
+            ui::wprint_msg(&context.views.bot_win, "Deleted files");
+
+            ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
+            ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
+            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+        } else {
+            ui::redraw_status(&context.views, context.curr_list.as_ref(),
+                    &context.curr_path,
+                    &context.config_t.username, &context.config_t.hostname);
+        }
+        ncurses::doupdate();
+    }
+}

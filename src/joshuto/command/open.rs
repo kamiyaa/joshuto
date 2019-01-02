@@ -15,23 +15,23 @@ use joshuto::ui;
 use joshuto::unix;
 
 #[derive(Debug)]
-pub struct Open;
+pub struct OpenFile;
 
-impl Open {
-    pub fn new() -> Self { Open }
-    pub fn command() -> &'static str { "Open" }
+impl OpenFile {
+    pub fn new() -> Self { OpenFile }
+    pub fn command() -> &'static str { "OpenFile" }
 }
 
-impl command::JoshutoCommand for Open {}
+impl command::JoshutoCommand for OpenFile {}
 
-impl std::fmt::Display for Open {
+impl std::fmt::Display for OpenFile {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for Open {
+impl command::Runnable for OpenFile {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         let index: usize;
