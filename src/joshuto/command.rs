@@ -32,6 +32,7 @@ pub use self::file_operation::CutFiles;
 pub use self::file_operation::CopyFiles;
 pub use self::file_operation::PasteFiles;
 pub use self::file_operation::DeleteFiles;
+pub use self::file_operation::RenameFile;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
@@ -63,7 +64,6 @@ pub fn split_shell_style(line: &String) -> Vec<&str>
         if ch.is_whitespace() {
             continue;
         }
-        let mut end_ind = i;
         if ch == '\'' {
             while let Some((j, ch)) = char_ind.next() {
                 if ch == '\'' {

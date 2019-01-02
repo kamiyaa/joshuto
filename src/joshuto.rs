@@ -4,7 +4,6 @@ extern crate ncurses;
 use std;
 use std::collections::HashMap;
 use std::env;
-use std::fs;
 use std::path;
 use std::process;
 use std::thread;
