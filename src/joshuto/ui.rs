@@ -365,19 +365,38 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
     }
 }
 
-pub fn get_str(win: &window::JoshutoPanel, coord: (i32, i32)) -> Option<String>
+pub enum RenameStart {
+    Append,
+    Prepend,
+    Extension
+}
+
+pub fn get_str(win: &window::JoshutoPanel,
+        coord: (i32, i32)) -> Option<String>
 {
-    let mut user_input: String = String::new();
+    let user_input: String = String::new();
 
-    let mut curs_x = coord.1;
+    get_str_mut(user_input, win, coord, coord.1)
+}
 
-    ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_STANDOUT(), 0);
-    ncurses::wrefresh(win.win);
+pub fn get_str_prefill_pos(win: &window::JoshutoPanel,
+        coord: (i32, i32), user_input: String, start: i32) -> Option<String>
+{
+    get_str_mut(user_input, win, coord, start as i32)
+}
+
+pub fn get_str_mut(mut user_input: String,
+        win: &window::JoshutoPanel, coord: (i32, i32), start: i32) -> Option<String>
+{
+    let mut curs_x = start;
 
     loop {
-        let ch: i32 = ncurses::wgetch(win.win);
+        ncurses::mvwprintw(win.win, coord.0, coord.1, user_input.as_str());
+        ncurses::wprintw(win.win, " ");
+        ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_STANDOUT(), 0);
+        ncurses::wrefresh(win.win);
 
-        ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_NORMAL(), 0);
+        let ch: i32 = ncurses::wgetch(win.win);
 
         if ch == Keycode::ESCAPE as i32 {
             return None;
@@ -413,15 +432,10 @@ pub fn get_str(win: &window::JoshutoPanel, coord: (i32, i32)) -> Option<String>
                 curs_x = curs_x + 1;
             }
         }
-        ncurses::mvwprintw(win.win, coord.0, coord.1, user_input.as_str());
-
-        ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_STANDOUT(), 0);
-        ncurses::wrefresh(win.win);
     }
 
     return Some(user_input);
 }
-
 
 fn file_attr_apply(win : ncurses::WINDOW, coord : (i32, i32), mode : u32,
         file_extension : Option<&ffi::OsStr>, attr : ncurses::attr_t)

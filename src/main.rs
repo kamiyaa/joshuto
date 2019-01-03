@@ -31,7 +31,7 @@ fn main()
     let mimetype = joshuto::mimetype::JoshutoMimetype::get_config();
     let keymap = joshuto::keymap::JoshutoKeymap::get_config();
 //    println!("{:#?}", keymap);
-//    println!("{:?}", keymap.keymaps);
+//    println!("{:#?}", keymap.keymaps);
 
     joshuto::run(config, keymap, mimetype);
 }
