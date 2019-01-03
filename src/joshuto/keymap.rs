@@ -12,7 +12,8 @@ use joshuto::command::*;
 use joshuto::keymapll::Keycode;
 
 const MAP_COMMAND: &str = "map";
-const ALIAS_COMMAND: &str = "alias";
+// const ALIAS_COMMAND: &str = "alias";
+const NEWTAB_COMMAND: &str = "newtab";
 
 const COMMENT_DELIMITER: char = '#';
 
@@ -112,7 +113,7 @@ impl JoshutoKeymap {
         keymaps.insert(Keycode::DELETE as i32, command);
 
         let command = CommandKeybind::SimpleKeybind(
-            Box::new(command::RenameFile::new()));
+            Box::new(command::RenameFile::new(command::RenameFileMethod::Append)));
         keymaps.insert(Keycode::LOWER_A as i32, command);
 
         {
@@ -173,23 +174,22 @@ impl JoshutoKeymap {
         }
     }
 
-/*
-    fn insert_keycommand(map: &mut HashMap<i32, Box<dyn JoshutoCommand>>,
-            keycommand: JoshutoCommand, keys: &[&str])
+    fn insert_keycommand(map: &mut HashMap<i32, CommandKeybind>,
+            keycommand: Box<dyn JoshutoCommand>, keys: &[&str])
     {
         if keys.len() == 1 {
             match Keycode::from_str(keys[0]) {
                 Some(s) => {
-                    map.insert(s as i32, keycommand);
+                    map.insert(s as i32, CommandKeybind::SimpleKeybind(keycommand));
                 },
                 None => {}
             }
         } else {
             match Keycode::from_str(keys[0]) {
                 Some(s) => {
-                    let mut new_map: HashMap<i32, JoshutoCommand>;
+                    let mut new_map: HashMap<i32, CommandKeybind>;
                     match map.remove(&(s.clone() as i32)) {
-                        Some(JoshutoCommand::CompositeKeybind(mut m)) => {
+                        Some(CommandKeybind::CompositeKeybind(mut m)) => {
                             new_map = m;
                         },
                         Some(_) => {
@@ -201,7 +201,7 @@ impl JoshutoKeymap {
                         }
                     }
                     JoshutoKeymap::insert_keycommand(&mut new_map, keycommand, &keys[1..]);
-                    let composite_command = JoshutoCommand::CompositeKeybind(new_map);
+                    let composite_command = CommandKeybind::CompositeKeybind(new_map);
                     map.insert(s as i32, composite_command);
                 },
                 None => {}
@@ -209,7 +209,7 @@ impl JoshutoKeymap {
         }
     }
 
-    fn parse_line(map: &mut HashMap<i32, Box<dyn JoshutoCommand>>, line: String)
+    fn parse_line(map: &mut HashMap<i32, CommandKeybind>, line: String)
     {
         let mut line = line;
         {
@@ -220,18 +220,20 @@ impl JoshutoKeymap {
         if line.len() == 0 {
             return;
         }
+        line.push('\n');
 
-        let args: Vec<&str> = JoshutoCommand::split_shell_style(&line);
+        let args: Vec<&str> = command::split_shell_style(&line);
 
         if args.len() == 0 {
             return;
         }
+
         match args[0] {
             MAP_COMMAND => {
                 let keys_vec: Vec<&str> = args[1].split(',').collect();
-                match JoshutoCommand::from_args(&args[2..]) {
-                    Some(s) => {
-                        JoshutoKeymap::insert_keycommand(map, s, &keys_vec[..]);
+                match command::from_args(&args[2..]) {
+                    Some(command) => {
+                        JoshutoKeymap::insert_keycommand(map, command, &keys_vec[..]);
                     },
                     None => {
                         println!("Unknown command: {}", args[2]);
@@ -241,22 +243,19 @@ impl JoshutoKeymap {
             _ => eprintln!("Error: Unknown command: {}", args[0]),
         }
     }
-*/
 
     fn read_config() -> Option<JoshutoKeymap>
     {
-        let mut keymaps: HashMap<i32, CommandKeybind> = HashMap::new();
-
         match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
             Ok(dirs) => {
                 let config_path = dirs.find_config_file(::KEYMAP_FILE)?;
                 match fs::File::open(config_path) {
                     Ok(f) => {
+                        let mut keymaps: HashMap<i32, CommandKeybind> = HashMap::new();
                         let mut reader = io::BufReader::new(f);
                         for line in reader.lines() {
                             if let Ok(mut line) = line {
-                                line.push('\n');
-                            //    JoshutoKeymap::parse_line(&mut keymaps, line);
+                                JoshutoKeymap::parse_line(&mut keymaps, line);
                             }
                         }
                         Some(JoshutoKeymap {
@@ -278,14 +277,14 @@ impl JoshutoKeymap {
 
     pub fn get_config() -> JoshutoKeymap
     {
-//        match JoshutoKeymap::read_config() {
-//            Some(config) => {
-//                config
-//            }
-//            None => {
+        match JoshutoKeymap::read_config() {
+            Some(config) => {
+                config
+            }
+            None => {
                 JoshutoKeymap::new()
-//            }
-//        }
+            }
+        }
     }
 }
 
