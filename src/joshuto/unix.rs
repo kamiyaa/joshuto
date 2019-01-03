@@ -19,7 +19,7 @@ pub const S_IFDIR  : u32 = 0o040000;   /* directory */
 pub const S_IFCHR  : u32 = 0o020000;   /* character device */
 pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
-pub fn is_reg(mode : u32) -> bool { mode & BITMASK == S_IFREG }
+pub fn is_reg(mode: u32) -> bool { mode & BITMASK == S_IFREG }
 
 pub fn get_unix_filetype(mode : u32) -> &'static str
 {
@@ -119,13 +119,15 @@ pub fn open_file(mimetype_t: &mimetype::JoshutoMimetype,
 
         let empty_vec: Vec<Vec<String>> = Vec::new();
         let mimetype_options: &Vec<Vec<String>> = match mimetype {
-            Some(mimetype) => {
-                match mimetype_t.mimetypes.get(mimetype) {
-                    Some(s) => s,
-                    None => &empty_vec,
+                Some(mimetype) => {
+                    match mimetype_t.mimetypes.get(mimetype) {
+                        Some(s) => s,
+                        None => &empty_vec,
+                    }
+                },
+                None => {
+                    &empty_vec
                 }
-            },
-            None => &empty_vec,
             };
 
         if mimetype_options.len() > 0 {
@@ -135,10 +137,9 @@ pub fn open_file(mimetype_t: &mimetype::JoshutoMimetype,
             ncurses::resetty();
             ncurses::refresh();
         } else {
-            ui::wprint_err(win, "Don't know how to open: ");
             match mimetype {
-                Some(s) => ncurses::wprintw(win.win, s),
-                None => ncurses::wprintw(win.win, "Unknown file type"),
+                Some(s) => ui::wprint_err(win, format!("Don't know how to open: {}", s).as_str()),
+                None => ui::wprint_err(win, "Uh oh, mime_guess says unknown file type :("),
             };
         }
         ncurses::doupdate();
