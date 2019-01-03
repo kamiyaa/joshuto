@@ -163,7 +163,7 @@ impl OpenFileWith {
 
         ncurses::wmove(win.win, option_size as i32 + 1, 0);
         const PROMPT: &str = ":open_with ";
-        ncurses::wprintw(win.win, PROMPT);
+        ncurses::waddstr(win.win, PROMPT);
 
         let mut cur_ind = PROMPT.len();
 
