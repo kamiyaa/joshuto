@@ -145,21 +145,39 @@ fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
     6
 }
 
-fn wprint_file_name(win: &window::JoshutoPanel, file : &fs::DirEntry,
-    coord: (i32, i32), offset: usize)
+fn wprint_file_name(win: &window::JoshutoPanel, file: &fs::DirEntry,
+        coord: (i32, i32), offset: usize)
 {
-    let offset = offset;
+    let mut offset = offset;
     ncurses::wmove(win.win, coord.0, coord.1);
+
     match file.file_name().into_string() {
         Ok(file_name) => {
             ncurses::waddstr(win.win, " ");
             let name_len = wcwidth::str_width(file_name.as_str()).unwrap_or(win.cols as usize);
-            if name_len + 1 >= win.cols as usize {
-                let mut trim_index: usize = if offset > win.cols as usize {
-                        0
-                    } else {
-                        win.cols as usize - offset
-                    };
+            if name_len + 1 < win.cols as usize {
+                ncurses::waddstr(win.win, &file_name);
+            } else {
+                let mut extension = String::new();
+                let path = file.path();
+
+                match path.extension() {
+                    Some(s) => {
+                        extension = s.to_os_string().into_string().unwrap();
+                        offset = offset + wcwidth::str_width(extension.as_str()).unwrap_or(0) + 1;
+                    },
+                    None => {
+
+
+                    },
+                }
+
+                let mut trim_index: usize;
+                if offset > win.cols as usize {
+                    trim_index = 0;
+                } else {
+                    trim_index = win.cols as usize - offset;
+                }
 
                 let mut total: usize = 0;
                 for (index, ch) in file_name.char_indices() {
@@ -169,10 +187,13 @@ fn wprint_file_name(win: &window::JoshutoPanel, file : &fs::DirEntry,
                     }
                     total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
                 }
+
                 ncurses::waddstr(win.win, &file_name[..trim_index]);
                 ncurses::waddstr(win.win, "…");
-            } else {
-                ncurses::waddstr(win.win, &file_name);
+                if extension.len() > 0 {
+                    ncurses::waddstr(win.win, ".");
+                    ncurses::waddstr(win.win, &extension);
+                }
             }
         },
         Err(e) => {
