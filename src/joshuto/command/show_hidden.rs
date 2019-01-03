@@ -34,6 +34,18 @@ impl command::Runnable for ToggleHiddenFiles {
             let opposite = !context.config_t.sort_type.show_hidden();
             context.config_t.sort_type.set_show_hidden(opposite);
             context.history.depecrate_all_entries();
+
+            if let Some(s) = context.curr_list.as_mut() {
+                s.update_needed = true;
+            }
+
+            if let Some(s) = context.preview_list.as_mut() {
+                s.update_needed = true;
+            }
+
+            if let Some(s) = context.parent_list.as_mut() {
+                s.update_needed = true;
+            }
         }
 
         context.reload_dirlists();

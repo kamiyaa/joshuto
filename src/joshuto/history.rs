@@ -57,7 +57,7 @@ impl DirHistory {
         match self.map.remove(&path.to_path_buf()) {
             Some(mut dir_entry) => {
 
-                if dir_entry.update_needed || dir_entry.need_update() {
+                if dir_entry.need_update() {
                     dir_entry.update(&sort_type);
                 }
                 Ok(dir_entry)
