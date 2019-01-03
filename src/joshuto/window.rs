@@ -96,10 +96,6 @@ impl JoshutoView {
         let win_xy: (i32, i32) = (1, term_cols);
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
         let bot_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
-
-        ncurses::scrollok(top_win.win, true);
-        ncurses::scrollok(bot_win.win, true);
-
 /*
         ncurses::scrollok(top_win.win, true);
         ncurses::scrollok(left_win.win, true);
@@ -149,8 +145,5 @@ impl JoshutoView {
         let win_xy: (i32, i32) = (1, term_cols);
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
         self.bot_win.redraw(win_xy.0, win_xy.1, win_coord);
-
-        ncurses::scrollok(self.top_win.win, true);
-        ncurses::scrollok(self.bot_win.win, true);
     }
 }
