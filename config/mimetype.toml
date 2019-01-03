@@ -1,15 +1,18 @@
 # specify which applications to use to open certain file types
 [mimetypes]
-"audio/mpeg" = [
-	["mpv"]
+"application/x-7z-compressed" = [
+	["file-roller"]
 ]
-"application/x-matroska" = [
-	["mpv"]
-]
+
 "application/x-shellscript" = [
 	["nano"],
 	["gedit"]
 ]
+
+"audio/mpeg" = [
+	["mpv"]
+]
+
 "image/jpeg" = [
 	["qimgv"],
 	["feh"]
@@ -21,12 +24,32 @@
 "text/plain" = [
 	["nano"]
 ]
+
+"text/x-rust" = [
+	["nano"]
+]
+
 "text/x-csrc" = [
 	["nano"]
 ]
+
+"text/x-markdown" = [
+    ["nano"]
+]
+
+"text/x-toml" = [
+    ["nano"]
+]
+
 "audio/x-wav" = [
 	[ "mpv" ]
 ]
 "video/mp4" = [
+	["mpv"]
+]
+"video/webm" = [
+	["mpv"]
+]
+"video/x-matroska" = [
 	["mpv"]
 ]
