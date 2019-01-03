@@ -11,7 +11,7 @@ pub struct Quit;
 
 impl Quit {
     pub fn new() -> Self { Quit }
-    pub fn command() -> &'static str { "Quit" }
+    pub fn command() -> &'static str { "quit" }
 }
 
 impl command::JoshutoCommand for Quit {}

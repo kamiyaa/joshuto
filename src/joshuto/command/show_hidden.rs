@@ -15,7 +15,7 @@ pub struct ToggleHiddenFiles;
 
 impl ToggleHiddenFiles {
     pub fn new() -> Self { ToggleHiddenFiles }
-    pub fn command() -> &'static str { "ToggleHiddenFiles" }
+    pub fn command() -> &'static str { "toggle_hidden" }
 }
 
 impl command::JoshutoCommand for ToggleHiddenFiles {}

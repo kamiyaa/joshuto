@@ -22,7 +22,7 @@ impl ChangeDirectory {
             path,
         }
     }
-    pub fn command() -> &'static str { "ChangeDirectory" }
+    pub const fn command() -> &'static str { "change_directory" }
 }
 
 impl command::JoshutoCommand for ChangeDirectory {}

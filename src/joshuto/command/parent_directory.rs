@@ -14,7 +14,7 @@ pub struct ParentDirectory;
 
 impl ParentDirectory {
     pub fn new() -> Self { ParentDirectory }
-    pub fn command() -> &'static str { "ParentDirectory" }
+    pub fn command() -> &'static str { "parent_directory" }
 }
 
 impl command::JoshutoCommand for ParentDirectory {}

@@ -63,7 +63,7 @@ pub struct CutFiles;
 
 impl CutFiles {
     pub fn new() -> Self { CutFiles }
-    pub fn command() -> &'static str { "CutFiles" }
+    pub fn command() -> &'static str { "cut_files" }
 }
 
 impl command::JoshutoCommand for CutFiles {}
@@ -89,7 +89,7 @@ pub struct CopyFiles;
 
 impl CopyFiles {
     pub fn new() -> Self { CopyFiles }
-    pub fn command() -> &'static str { "CopyFiles" }
+    pub fn command() -> &'static str { "copy_files" }
 }
 
 impl command::JoshutoCommand for CopyFiles {}
@@ -121,7 +121,7 @@ impl PasteFiles {
             options,
         }
     }
-    pub fn command() -> &'static str { "PasteFiles" }
+    pub fn command() -> &'static str { "paste_files" }
 
     fn cut(&self, destination: &path::PathBuf, win: &window::JoshutoPanel) {
         let mut destination = destination;
@@ -205,7 +205,7 @@ pub struct DeleteFiles;
 
 impl DeleteFiles {
     pub fn new() -> Self { DeleteFiles }
-    pub fn command() -> &'static str { "DeleteFiles" }
+    pub fn command() -> &'static str { "delete_files" }
 }
 
 impl command::JoshutoCommand for DeleteFiles {}
@@ -255,57 +255,65 @@ impl command::Runnable for DeleteFiles {
 }
 
 #[derive(Debug)]
-pub struct RenameFile;
+pub enum RenameFileMethod {
+    Append,
+    Prepend,
+    Overwrite
+}
+
+#[derive(Debug)]
+pub struct RenameFile {
+    method: RenameFileMethod,
+}
 
 impl RenameFile {
-    pub fn new() -> Self { RenameFile }
-    pub fn command() -> &'static str { "RenameFile" }
-
-    pub fn rename_file(path: &path::PathBuf, context: &mut joshuto::JoshutoContext)
+    pub fn new(method: RenameFileMethod) -> Self
     {
-        if let Some(file_name) = path.file_name() {
-            let mut term_rows: i32 = 0;
-            let mut term_cols: i32 = 0;
-            ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-
-            let mut win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
-            ncurses::keypad(win.win, true);
-
-            const PROMPT: &str = ":rename_file ";
-            ncurses::wprintw(win.win, PROMPT);
-
-            win.move_to_top();
-            ncurses::doupdate();
-
-            ncurses::wmove(win.win, 0, PROMPT.len() as i32);
-
-            match ui::get_str(&win, (0, PROMPT.len() as i32)) {
-                Some(s) => {
-                    let mut new_path = path.parent().unwrap().to_path_buf();
-                    new_path.push(s);
-                    match fs::rename(&path, &new_path) {
-                        Ok(_) => {
-                            context.reload_dirlists();
-
-                            ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-                            ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
-
-                            ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                                    &context.curr_path,
-                                    &context.config_t.username, &context.config_t.hostname);
-                        },
-                        Err(e) => {
-                            ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
-                        },
-                    }
-                },
-                None => {},
-            }
-            win.destroy();
-            ncurses::update_panels();
-            ncurses::doupdate();
+        RenameFile {
+            method,
         }
+    }
+    pub fn command() -> &'static str { "rename_file" }
+
+    pub fn rename_file(path: &path::PathBuf, context: &mut joshuto::JoshutoContext, user_input: String, start: i32)
+    {
+        let mut term_rows: i32 = 0;
+        let mut term_cols: i32 = 0;
+        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+
+        let mut win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
+        ncurses::keypad(win.win, true);
+
+        const PROMPT: &str = ":rename_file ";
+        ncurses::wprintw(win.win, PROMPT);
+
+        win.move_to_top();
+        ncurses::doupdate();
+
+        if let Some(s) = ui::get_str_prefill_pos(&win, (0, PROMPT.len() as i32), user_input, start + PROMPT.len() as i32) {
+            let mut new_path = path.parent().unwrap().to_path_buf();
+            new_path.push(s);
+            match fs::rename(&path, &new_path) {
+                Ok(_) => {
+                    context.reload_dirlists();
+
+                    ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
+                    ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
+                    ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+
+                    ui::redraw_status(&context.views, context.curr_list.as_ref(),
+                            &context.curr_path,
+                            &context.config_t.username, &context.config_t.hostname);
+                },
+                Err(e) => {
+                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                },
+            }
+        }
+
+        win.destroy();
+        ncurses::update_panels();
+        ncurses::doupdate();
     }
 }
 
@@ -330,7 +338,22 @@ impl command::Runnable for RenameFile {
             };
 
         if let Some(path) = dirlist {
-            Self::rename_file(&path, context);
+            if let Some(file_name) = path.file_name() {
+                if let Ok(user_input) = file_name.to_os_string().into_string() {
+                    match self.method {
+                        RenameFileMethod::Append => {
+                            let start = user_input.len() as i32;
+                            Self::rename_file(&path, context, user_input, start);
+                        },
+                        RenameFileMethod::Prepend => {
+                            Self::rename_file(&path, context, user_input, 0);
+                        },
+                        RenameFileMethod::Overwrite => {
+                            Self::rename_file(&path, context, String::new(), 0);
+                        },
+                    }
+                }
+            }
         }
     }
 }
