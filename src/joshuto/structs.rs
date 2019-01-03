@@ -52,6 +52,9 @@ impl JoshutoDirList {
 
     pub fn need_update(&self) -> bool
     {
+        if self.update_needed {
+            return true;
+        }
         if let Ok(metadata) = std::fs::metadata(&self.path) {
             if let Ok(modified) = metadata.modified() {
                 return self.modified < modified;
@@ -72,7 +75,7 @@ impl JoshutoDirList {
             if dir_contents.len() == 0 {
                 self.index = -1;
             } else if self.index >= dir_contents.len() as i32 {
-                self.index = self.index - 1;
+                self.index = dir_contents.len() as i32 - 1;
             } else if self.index >= 0 && (self.index as usize) < self.contents.len() {
                 let index = self.index;
                 let curr_file_name = self.contents[index as usize].entry.file_name();
