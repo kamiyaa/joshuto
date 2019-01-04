@@ -39,5 +39,8 @@ Joshuto can currently be configured using the following files:
 
 Place these config files in your `XDG_CONFIG_DIR/joshuto` (usually `$HOME/.config/joshuto/`)
 
+## Contributing
+Create a pull request please :)
+
 ## Features/Bugs
-Please create an issue :)
+Create an ssue please :)
