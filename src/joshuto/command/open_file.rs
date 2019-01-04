@@ -49,7 +49,45 @@ impl command::Runnable for OpenFile {
         }
 
         if path.is_file() {
-            unix::open_file(&context.mimetype_t, &context.views.bot_win, path.as_path());
+            let file_ext: Option<&str> = match path.extension() {
+                Some(s) => s.to_str(),
+                None => None,
+                };
+
+            let mimetype: Option<&str> = match file_ext {
+                Some(extstr) => mime_guess::get_mime_type_str(extstr),
+                None => None,
+                };
+
+            let empty_vec: Vec<Vec<String>> = Vec::new();
+            let mimetype_options: &Vec<Vec<String>> = match mimetype {
+                    Some(mimetype) => {
+                        match context.mimetype_t.mimetypes.get(mimetype) {
+                            Some(s) => s,
+                            None => &empty_vec,
+                        }
+                    },
+                    None => {
+                        &empty_vec
+                    }
+                };
+
+            if mimetype_options.len() > 0 {
+                ncurses::savetty();
+                ncurses::endwin();
+                unix::open_with(path.as_path(), &mimetype_options[0]);
+                ncurses::resetty();
+                ncurses::refresh();
+            } else {
+                match mimetype {
+                    Some(s) => ui::wprint_err(&context.views.bot_win,
+                                format!("Don't know how to open: {}", s).as_str()),
+                    None => ui::wprint_err(&context.views.bot_win,
+                                "Uh oh, mime_guess says unknown file type :("),
+                };
+            }
+            ncurses::doupdate();
+
         } else if path.is_dir() {
             match env::set_current_dir(&path) {
                 Ok(_) => {},

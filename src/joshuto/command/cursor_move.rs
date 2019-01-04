@@ -60,16 +60,21 @@ impl command::Runnable for CursorMove {
                 if new_path.is_dir() {
                     match context.history.pop_or_create(new_path.as_path(),
                             &context.config_t.sort_type) {
-                        Ok(s) => context.preview_list = Some(s),
-                        Err(e) => eprintln!("{}", e),
+                        Ok(s) => {
+                            context.preview_list = Some(s);
+                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                        },
+                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
                     }
+                } else {
+                    ncurses::werase(context.views.right_win.win);
+                    ncurses::wnoutrefresh(context.views.right_win.win);
                 }
             },
             None => {},
         }
 
         ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
 
         ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
                 &context.config_t.username, &context.config_t.hostname);
@@ -121,20 +126,26 @@ impl command::Runnable for CursorMovePageUp {
 
                 curr_list.index = new_index;
                 let curr_index = curr_list.index as usize;
+                let new_path = &curr_list.contents[curr_index].path;
 
-                if curr_list.contents[curr_index].path.is_dir() {
-                    match context.history.pop_or_create(&curr_list.contents[curr_index].path,
+                if new_path.is_dir() {
+                    match context.history.pop_or_create(new_path.as_path(),
                             &context.config_t.sort_type) {
-                        Ok(s) => context.preview_list = Some(s),
-                        Err(e) => eprintln!("{}", e),
+                        Ok(s) => {
+                            context.preview_list = Some(s);
+                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                        },
+                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
                     }
+                } else {
+                    ncurses::werase(context.views.right_win.win);
+                    ncurses::wnoutrefresh(context.views.right_win.win);
                 }
             },
             None => {},
         }
 
         ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
 
         ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
                 &context.config_t.username, &context.config_t.hostname);
@@ -164,19 +175,19 @@ impl command::Runnable for CursorMovePageDown {
     {
         match context.curr_list {
             Some(ref mut curr_list) => {
-                let curr_index = curr_list.index as usize;
+                let curr_index = curr_list.index;
                 let dir_len = curr_list.contents.len();
 
-                if curr_index >= dir_len - 1 {
+                if curr_index >= dir_len as i32 - 1 {
                     return;
                 }
 
                 let half_page = context.views.mid_win.cols as usize / 2;
 
-                let new_index = if curr_index as usize + half_page >= dir_len {
-                    (dir_len - 1)
+                let new_index = if curr_index + half_page as i32 >= dir_len as i32 {
+                    (dir_len - 1) as i32
                 } else {
-                    curr_index as usize + half_page
+                    curr_index + half_page as i32
                 };
 
                 let dir_list = context.preview_list.take();
@@ -184,22 +195,28 @@ impl command::Runnable for CursorMovePageDown {
                     context.history.insert(s);
                 }
 
-                curr_list.index = new_index as i32;
-                let new_path = &curr_list.contents[new_index].path;
+                curr_list.index = new_index;
+                let curr_index = curr_list.index as usize;
+                let new_path = &curr_list.contents[curr_index].path;
 
                 if new_path.is_dir() {
                     match context.history.pop_or_create(new_path.as_path(),
                             &context.config_t.sort_type) {
-                        Ok(s) => context.preview_list = Some(s),
-                        Err(e) => eprintln!("{}", e),
+                        Ok(s) => {
+                            context.preview_list = Some(s);
+                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                        },
+                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
                     }
+                } else {
+                    ncurses::werase(context.views.right_win.win);
+                    ncurses::wnoutrefresh(context.views.right_win.win);
                 }
             },
             None => {},
         }
 
         ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
 
         ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
                 &context.config_t.username, &context.config_t.hostname);
@@ -245,16 +262,21 @@ impl command::Runnable for CursorMoveHome {
                 if new_path.is_dir() {
                     match context.history.pop_or_create(new_path.as_path(),
                             &context.config_t.sort_type) {
-                        Ok(s) => context.preview_list = Some(s),
-                        Err(e) => eprintln!("{}", e),
+                        Ok(s) => {
+                            context.preview_list = Some(s);
+                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                        },
+                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
                     }
+                } else {
+                    ncurses::werase(context.views.right_win.win);
+                    ncurses::wnoutrefresh(context.views.right_win.win);
                 }
             },
             None => {},
         }
 
         ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
 
         ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
                 &context.config_t.username, &context.config_t.hostname);
@@ -297,20 +319,27 @@ impl command::Runnable for CursorMoveEnd {
                 }
 
                 curr_list.index = dir_len as i32 - 1;
+                let curr_index = curr_list.index as usize;
+                let new_path = &curr_list.contents[curr_index].path;
 
-                if curr_list.contents[curr_list.index as usize].path.is_dir() {
-                    match context.history.pop_or_create(&curr_list.contents[curr_list.index as usize].path,
+                if new_path.is_dir() {
+                    match context.history.pop_or_create(new_path.as_path(),
                             &context.config_t.sort_type) {
-                        Ok(s) => context.preview_list = Some(s),
-                        Err(e) => eprintln!("{}", e),
+                        Ok(s) => {
+                            context.preview_list = Some(s);
+                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                        },
+                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
                     }
+                } else {
+                    ncurses::werase(context.views.right_win.win);
+                    ncurses::wnoutrefresh(context.views.right_win.win);
                 }
             },
             None => {},
         }
 
         ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
 
         ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
                 &context.config_t.username, &context.config_t.hostname);

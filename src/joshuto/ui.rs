@@ -17,6 +17,7 @@ pub const IMG_COLOR     : i16 = 12;
 pub const VID_COLOR     : i16 = 13;
 pub const SELECT_COLOR  : i16 = 25;
 pub const ERR_COLOR     : i16 = 40;
+pub const EMPTY_COLOR   : i16 = 50;
 
 pub fn init_ncurses()
 {
@@ -50,6 +51,8 @@ pub fn init_ncurses()
     ncurses::init_pair(SELECT_COLOR, ncurses::COLOR_YELLOW, -1);
     /* error message */
     ncurses::init_pair(ERR_COLOR, ncurses::COLOR_RED, -1);
+    /* empty */
+    ncurses::init_pair(EMPTY_COLOR, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
 
     ncurses::printw("Loading...");
 
@@ -76,6 +79,15 @@ pub fn wprint_err(win: &window::JoshutoPanel, msg : &str)
     ncurses::mvwaddstr(win.win, 0, 0, msg);
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::wattroff(win.win, ncurses::A_BOLD());
+    ncurses::wnoutrefresh(win.win);
+}
+
+pub fn wprint_empty(win: &window::JoshutoPanel, msg : &str)
+{
+    ncurses::werase(win.win);
+    ncurses::wattron(win.win, ncurses::COLOR_PAIR(EMPTY_COLOR));
+    ncurses::mvwaddstr(win.win, 0, 0, msg);
+    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(EMPTY_COLOR));
     ncurses::wnoutrefresh(win.win);
 }
 
@@ -255,7 +267,7 @@ pub fn display_contents(win: &window::JoshutoPanel,
     let dir_contents = &entry.contents;
     let vec_len = dir_contents.len();
     if vec_len == 0 {
-        wprint_err(win, "empty");
+        wprint_empty(win, "empty");
         return;
     }
 
