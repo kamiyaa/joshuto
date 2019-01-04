@@ -138,54 +138,45 @@ fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
 }
 
 fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
-        coord: (i32, i32), offset: usize)
+        coord: (i32, i32))
 {
-    let mut offset = offset;
-    ncurses::wmove(win.win, coord.0, coord.1);
-
-    ncurses::waddstr(win.win, " ");
     let file_name = &file.file_name_as_string;
 
-    let name_len = wcwidth::str_width(file_name).unwrap_or(win.cols as usize);
-    if name_len + 1 < win.cols as usize {
+    ncurses::wmove(win.win, coord.0, coord.1);
+    ncurses::waddstr(win.win, " ");
+
+    let name_visual_space = wcwidth::str_width(file_name).unwrap_or(win.cols as usize);
+    if name_visual_space + 1 < win.cols as usize {
         ncurses::waddstr(win.win, &file_name);
-    } else {
-        let mut extension = String::new();
-
-        match file.path.extension() {
-            Some(s) => {
-                extension = s.to_os_string().into_string().unwrap();
-                offset = offset + wcwidth::str_width(extension.as_str()).unwrap_or(0) + 1;
-            },
-            None => {
-
-
-            },
-        }
-
-        let mut trim_index: usize;
-        if offset > win.cols as usize {
-            trim_index = 0;
-        } else {
-            trim_index = win.cols as usize - offset;
-        }
-
-        let mut total: usize = 0;
-        for (index, ch) in file_name.char_indices() {
-            if total >= trim_index {
-                trim_index = index;
-                break;
-            }
-            total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
-        }
-
-        ncurses::waddstr(win.win, &file_name[..trim_index]);
-        ncurses::waddstr(win.win, "…");
-        if extension.len() > 0 {
-            ncurses::waddstr(win.win, ".");
-            ncurses::waddstr(win.win, &extension);
-        }
+        return;
     }
+
+    let mut win_cols = win.cols;
+
+    if let Some(ext) = file_name.rfind('.') {
+        let extension: &str = &file_name[ext..];
+        let ext_len = wcwidth::str_width(extension).unwrap_or(extension.len());
+        win_cols = win_cols - ext_len as i32;
+        ncurses::mvwaddstr(win.win, coord.0, win_cols, &extension);
+    }
+    win_cols = win_cols - 2;
+
+    ncurses::wmove(win.win, coord.0, coord.1 + 1);
+
+
+    let mut trim_index: usize = file_name.len();
+
+    let mut total: usize = 0;
+    for (index, ch) in file_name.char_indices() {
+        if total >= win_cols as usize {
+            trim_index = index;
+            break;
+        }
+        total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
+    }
+
+    ncurses::waddstr(win.win, &file_name[..trim_index]);
+    ncurses::waddstr(win.win, "…");
 }
 
 pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
@@ -243,8 +234,8 @@ pub fn wprint_direntry(win: &window::JoshutoPanel,
         file: &structs::JoshutoDirEntry, coord: (i32, i32))
 {
 //    let offset = wprint_file_size(win, file, coord);
-    let offset = 3;
-    wprint_file_name(win, file, coord, offset);
+//    let offset = 3;
+    wprint_file_name(win, file, coord);
 }
 
 pub fn display_contents(win: &window::JoshutoPanel,
