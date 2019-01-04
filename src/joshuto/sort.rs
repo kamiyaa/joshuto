@@ -92,7 +92,9 @@ fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<struc
     match result {
         Ok(direntry) => {
             let dir_entry = structs::JoshutoDirEntry {
-                entry: direntry,
+                file_name: direntry.file_name(),
+                path: direntry.path(),
+                file_type: direntry.file_type(),
                 selected: false,
                 marked: false,
             };
@@ -115,7 +117,9 @@ fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<
                         None
                     } else {
                         let dir_entry = structs::JoshutoDirEntry {
-                            entry: direntry,
+                            file_name: direntry.file_name(),
+                            path: direntry.path(),
+                            file_type: direntry.file_type(),
                             selected: false,
                             marked: false,
                         };
@@ -139,19 +143,16 @@ impl SortNatural {
     pub fn dir_first_case_insensitive(file1 : &structs::JoshutoDirEntry,
         file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
     {
-        let f1_entry = &file1.entry;
-        let f2_entry = &file2.entry;
+        let f1_isdir = file1.path.is_dir();
+        let f2_isdir = file2.path.is_dir();
 
-        let f1_path = f1_entry.path();
-        let f2_path = f2_entry.path();
-
-        if f1_path.is_dir() && !f2_path.is_dir() {
+        if f1_isdir && !f2_isdir {
             cmp::Ordering::Less
-        } else if !f1_path.is_dir() && f2_path.is_dir() {
+        } else if !f1_isdir && f2_isdir {
             cmp::Ordering::Greater
         } else {
-            let f1_name = f1_entry.file_name().into_string().unwrap().to_lowercase();
-            let f2_name = f2_entry.file_name().into_string().unwrap().to_lowercase();
+            let f1_name = file1.file_name.clone().into_string().unwrap().to_lowercase();
+            let f2_name = file2.file_name.clone().into_string().unwrap().to_lowercase();
             if f1_name <= f2_name {
                 cmp::Ordering::Less
             } else {
@@ -160,39 +161,25 @@ impl SortNatural {
         }
     }
 
-    pub fn dir_first(file1 : &structs::JoshutoDirEntry,
-        file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
+    pub fn dir_first(file1: &structs::JoshutoDirEntry,
+        file2: &structs::JoshutoDirEntry) -> cmp::Ordering
     {
-        let f1_entry = &file1.entry;
-        let f2_entry = &file2.entry;
+        let f1_isdir = file1.path.is_dir();
+        let f2_isdir = file2.path.is_dir();
 
-        let f1_path = f1_entry.path();
-        let f2_path = f2_entry.path();
-
-        if f1_path.is_dir() && !f2_path.is_dir() {
+        if f1_isdir && !f2_isdir {
             cmp::Ordering::Less
-        } else if !f1_path.is_dir() && f2_path.is_dir() {
+        } else if !f1_isdir && f2_isdir {
             cmp::Ordering::Greater
         } else {
-            let f1_name = f1_entry.file_name();
-            let f2_name = f2_entry.file_name();
-            if f1_name <= f2_name {
-                cmp::Ordering::Less
-            } else {
-                cmp::Ordering::Greater
-            }
+            Self::default_sort(file1, file2)
         }
     }
 
     pub fn default_sort(file1 : &structs::JoshutoDirEntry,
         file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
     {
-        let f1_entry = &file1.entry;
-        let f2_entry = &file2.entry;
-
-        let f1_name = f1_entry.file_name();
-        let f2_name = f2_entry.file_name();
-        if f1_name <= f2_name {
+        if file1.file_name <= file2.file_name {
             cmp::Ordering::Less
         } else {
             cmp::Ordering::Greater
@@ -205,41 +192,31 @@ impl SortMtime {
     pub fn dir_first(file1 : &structs::JoshutoDirEntry,
             file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
     {
-        fn compare(file1: &fs::DirEntry, file2: &fs::DirEntry)
+        fn compare(file1 : &structs::JoshutoDirEntry, file2 : &structs::JoshutoDirEntry)
                 -> Result<cmp::Ordering, std::io::Error>
         {
-            let f1_path = file1.path();
-            let f2_path = file2.path();
+            let f1_isdir = file1.path.is_dir();
+            let f2_isdir = file2.path.is_dir();
 
-            if f1_path.is_dir() && !f2_path.is_dir() {
+            if f1_isdir && !f2_isdir {
                 Ok(cmp::Ordering::Less)
-            } else if !f1_path.is_dir() && f2_path.is_dir() {
+            } else if !f1_isdir && f2_isdir {
                 Ok(cmp::Ordering::Greater)
             } else {
-                let f1_meta: fs::Metadata = file1.metadata()?;
-                let f2_meta: fs::Metadata = file2.metadata()?;
-
-                let f1_mtime: time::SystemTime = f1_meta.modified()?;
-                let f2_mtime: time::SystemTime = f2_meta.modified()?;
-
-                Ok(if f1_mtime <= f2_mtime {
-                        cmp::Ordering::Less
-                    } else {
-                        cmp::Ordering::Greater
-                })
+                Ok(SortMtime::default_sort(file1, file2))
             }
         }
-        compare(&file1.entry, &file2.entry).unwrap_or(cmp::Ordering::Less)
+        compare(&file1, &file2).unwrap_or(cmp::Ordering::Less)
     }
 
-    pub fn default_sort(file1 : &structs::JoshutoDirEntry,
-            file2 : &structs::JoshutoDirEntry) -> cmp::Ordering
+    pub fn default_sort(file1: &structs::JoshutoDirEntry,
+            file2: &structs::JoshutoDirEntry) -> cmp::Ordering
     {
-        fn compare(file1: &fs::DirEntry, file2: &fs::DirEntry)
+        fn compare(file1 : &structs::JoshutoDirEntry, file2 : &structs::JoshutoDirEntry)
                 -> Result<cmp::Ordering, std::io::Error>
         {
-            let f1_meta: fs::Metadata = file1.metadata()?;
-            let f2_meta: fs::Metadata = file2.metadata()?;
+            let f1_meta: fs::Metadata = std::fs::metadata(&file1.path)?;
+            let f2_meta: fs::Metadata = std::fs::metadata(&file2.path)?;
 
             let f1_mtime: time::SystemTime = f1_meta.modified()?;
             let f2_mtime: time::SystemTime = f2_meta.modified()?;
@@ -250,7 +227,7 @@ impl SortMtime {
                     cmp::Ordering::Greater
             })
         }
-        compare(&file1.entry, &file2.entry).unwrap_or(cmp::Ordering::Less)
+        compare(&file1, &file2).unwrap_or(cmp::Ordering::Less)
     }
 }
 

@@ -46,7 +46,7 @@ impl<'a> JoshutoContext<'a> {
     pub fn new(config_t: &config::JoshutoConfig,
         mimetype_t: &'a mimetype::JoshutoMimetype) -> Self
     {
-        let curr_path : path::PathBuf = match env::current_dir() {
+        let curr_path: path::PathBuf = match env::current_dir() {
             Ok(path) => { path },
             Err(e) => {
                 eprintln!("{}", e);
@@ -89,9 +89,8 @@ impl<'a> JoshutoContext<'a> {
         if let Some(s) = curr_view.as_ref() {
             match s.get_curr_entry() {
                 Some(dirent) => {
-                    let preview_path = dirent.entry.path();
-                    if preview_path.is_dir() {
-                        preview_view = match history.pop_or_create(&preview_path, &config_t.sort_type) {
+                    if dirent.path.is_dir() {
+                        preview_view = match history.pop_or_create(&dirent.path, &config_t.sort_type) {
                             Ok(s) => { Some(s) },
                             Err(e) => {
                                 eprintln!("{}", e);

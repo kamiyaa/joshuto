@@ -1,5 +1,6 @@
 use std;
 use std::fs;
+use std::ffi;
 use std::path;
 use std::time;
 
@@ -9,7 +10,9 @@ use joshuto::window;
 
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
-    pub entry: fs::DirEntry,
+    pub file_name: ffi::OsString,
+    pub path: path::PathBuf,
+    pub file_type: Result<fs::FileType, std::io::Error>,
     pub selected: bool,
     pub marked: bool,
 }
@@ -78,10 +81,10 @@ impl JoshutoDirList {
                 self.index = dir_contents.len() as i32 - 1;
             } else if self.index >= 0 && (self.index as usize) < self.contents.len() {
                 let index = self.index;
-                let curr_file_name = self.contents[index as usize].entry.file_name();
+                let curr_file_name = &self.contents[index as usize].file_name;
 
                 for (i, entry) in dir_contents.iter().enumerate() {
-                    if curr_file_name == entry.entry.file_name() {
+                    if *curr_file_name == entry.file_name {
                         self.index = i as i32;
                         break;
                     }
@@ -97,6 +100,30 @@ impl JoshutoDirList {
                 Ok(s) => { self.modified = s; },
                 Err(e) => { eprintln!("{}", e); },
             };
+        }
+    }
+
+
+    pub fn display_contents(&self, win: &window::JoshutoPanel)
+    {
+        ui::display_contents(win, self);
+    }
+
+    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
+            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
+    {
+        let filter_func = sort_type.filter_func();
+
+        match fs::read_dir(path) {
+            Ok(results) => {
+                let mut result_vec : Vec<JoshutoDirEntry> = results
+                        .filter_map(filter_func)
+                        .collect();
+                Ok(result_vec)
+            },
+            Err(e) => {
+                Err(e)
+            },
         }
     }
 
@@ -129,29 +156,6 @@ impl JoshutoDirList {
             } else {
                 self.selected = self.selected - 1;
             }
-        }
-    }
-
-    pub fn display_contents(&self, win: &window::JoshutoPanel)
-    {
-        ui::display_contents(win, self);
-    }
-
-    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
-            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
-    {
-        let filter_func = sort_type.filter_func();
-
-        match fs::read_dir(path) {
-            Ok(results) => {
-                let mut result_vec : Vec<JoshutoDirEntry> = results
-                        .filter_map(filter_func)
-                        .collect();
-                Ok(result_vec)
-            },
-            Err(e) => {
-                Err(e)
-            },
         }
     }
 }

@@ -137,13 +137,13 @@ fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
     6
 }
 
-fn wprint_file_name(win: &window::JoshutoPanel, file: &fs::DirEntry,
+fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
         coord: (i32, i32), offset: usize)
 {
     let mut offset = offset;
     ncurses::wmove(win.win, coord.0, coord.1);
 
-    match file.file_name().into_string() {
+    match file.file_name.clone().into_string() {
         Ok(file_name) => {
             ncurses::waddstr(win.win, " ");
             let name_len = wcwidth::str_width(file_name.as_str()).unwrap_or(win.cols as usize);
@@ -151,9 +151,8 @@ fn wprint_file_name(win: &window::JoshutoPanel, file: &fs::DirEntry,
                 ncurses::waddstr(win.win, &file_name);
             } else {
                 let mut extension = String::new();
-                let path = file.path();
 
-                match path.extension() {
+                match file.path.extension() {
                     Some(s) => {
                         extension = s.to_os_string().into_string().unwrap();
                         offset = offset + wcwidth::str_width(extension.as_str()).unwrap_or(0) + 1;
@@ -194,7 +193,7 @@ fn wprint_file_name(win: &window::JoshutoPanel, file: &fs::DirEntry,
     };
 }
 
-pub fn wprint_file_info(win: ncurses::WINDOW, file: &fs::DirEntry)
+pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 {
     use std::os::unix::fs::PermissionsExt;
 
@@ -203,7 +202,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &fs::DirEntry)
 
     ncurses::werase(win);
     ncurses::wmove(win, 0, 0);
-    match file.metadata() {
+    match fs::metadata(&file.path) {
         Ok(metadata) => {
             let permissions : fs::Permissions = metadata.permissions();
             let mode = permissions.mode();
@@ -242,7 +241,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &fs::DirEntry)
 }
 
 pub fn wprint_direntry(win: &window::JoshutoPanel,
-        file: &fs::DirEntry, coord: (i32, i32))
+        file: &structs::JoshutoDirEntry, coord: (i32, i32))
 {
 //    let offset = wprint_file_size(win, file, coord);
     let offset = 3;
@@ -290,9 +289,9 @@ pub fn display_contents(win: &window::JoshutoPanel,
 
     for i in start..end {
         let coord: (i32, i32) = (i as i32 - start as i32, 0);
-        wprint_direntry(win, &dir_contents[i].entry, coord);
+        wprint_direntry(win, &dir_contents[i], coord);
 
-        if let Ok(metadata) = &dir_contents[i].entry.metadata() {
+        if let Ok(metadata) = fs::metadata(&dir_contents[i].path) {
             mode = metadata.permissions().mode();
         }
 
@@ -305,10 +304,10 @@ pub fn display_contents(win: &window::JoshutoPanel,
         } else if mode != 0 {
             if index == i {
                 file_attr_apply(win.win, coord, mode,
-                    dir_contents[i].entry.path().extension(), ncurses::A_STANDOUT());
+                    dir_contents[i].path.extension(), ncurses::A_STANDOUT());
             } else {
                 file_attr_apply(win.win, coord, mode,
-                    dir_contents[i].entry.path().extension(), ncurses::A_NORMAL());
+                    dir_contents[i].path.extension(), ncurses::A_NORMAL());
             }
         }
 
@@ -348,10 +347,10 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
     if let Some(s) = curr_view.as_ref() {
         let dirent = s.get_curr_entry();
         if let Some(dirent) = dirent {
-            if let Ok(file_name) = dirent.entry.file_name().into_string() {
+            if let Ok(file_name) = dirent.file_name.clone().into_string() {
                 wprint_path(&joshuto_view.top_win, username, hostname,
                         curr_path, file_name.as_str());
-                wprint_file_info(joshuto_view.bot_win.win, &dirent.entry);
+                wprint_file_info(joshuto_view.bot_win.win, &dirent);
             }
         }
     }

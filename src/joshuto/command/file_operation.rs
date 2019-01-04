@@ -33,11 +33,11 @@ pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
 {
     let selected: Vec<path::PathBuf> = dirlist.contents.iter()
             .filter(|entry| entry.selected)
-            .map(|entry| entry.entry.path()).collect();
+            .map(|entry| entry.path.clone()).collect();
     if selected.len() > 0 {
         Some(selected)
     } else if dirlist.index >= 0 {
-        Some(vec![dirlist.contents[dirlist.index as usize].entry.path()])
+        Some(vec![dirlist.contents[dirlist.index as usize].path.clone()])
     } else {
         None
     }
@@ -423,7 +423,7 @@ impl command::Runnable for RenameFile {
     {
         let dirlist = match context.curr_list.as_ref() {
                 Some(s) => match s.get_curr_entry() {
-                    Some(s) => Some(s.entry.path()),
+                    Some(s) => Some(s.path.clone()),
                     None => None,
                 },
                 None => None,

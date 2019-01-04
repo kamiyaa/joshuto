@@ -56,7 +56,7 @@ impl command::Runnable for CursorMove {
 
                 curr_list.index = new_index;
                 let curr_index = curr_list.index as usize;
-                let new_path: path::PathBuf = curr_list.contents[curr_index].entry.path();
+                let new_path = &curr_list.contents[curr_index].path;
 
                 if new_path.is_dir() {
                     match context.history.pop_or_create(new_path.as_path(),
@@ -122,10 +122,9 @@ impl command::Runnable for CursorMovePageUp {
 
                 curr_list.index = new_index;
                 let curr_index = curr_list.index as usize;
-                let new_path: path::PathBuf = curr_list.contents[curr_index].entry.path();
 
-                if new_path.is_dir() {
-                    match context.history.pop_or_create(new_path.as_path(),
+                if curr_list.contents[curr_index].path.is_dir() {
+                    match context.history.pop_or_create(&curr_list.contents[curr_index].path,
                             &context.config_t.sort_type) {
                         Ok(s) => context.preview_list = Some(s),
                         Err(e) => eprintln!("{}", e),
@@ -187,7 +186,7 @@ impl command::Runnable for CursorMovePageDown {
                 }
 
                 curr_list.index = new_index as i32;
-                let new_path: path::PathBuf = curr_list.contents[new_index].entry.path();
+                let new_path = &curr_list.contents[new_index].path;
 
                 if new_path.is_dir() {
                     match context.history.pop_or_create(new_path.as_path(),
@@ -242,7 +241,7 @@ impl command::Runnable for CursorMoveHome {
                 }
 
                 curr_list.index = 0;
-                let new_path: path::PathBuf = curr_list.contents[curr_list.index as usize].entry.path();
+                let new_path = &curr_list.contents[curr_list.index as usize].path;
 
                 if new_path.is_dir() {
                     match context.history.pop_or_create(new_path.as_path(),
@@ -299,10 +298,9 @@ impl command::Runnable for CursorMoveEnd {
                 }
 
                 curr_list.index = dir_len as i32 - 1;
-                let new_path: path::PathBuf = curr_list.contents[curr_list.index as usize].entry.path();
 
-                if new_path.is_dir() {
-                    match context.history.pop_or_create(new_path.as_path(),
+                if curr_list.contents[curr_list.index as usize].path.is_dir() {
+                    match context.history.pop_or_create(&curr_list.contents[curr_list.index as usize].path,
                             &context.config_t.sort_type) {
                         Ok(s) => context.preview_list = Some(s),
                         Err(e) => eprintln!("{}", e),

@@ -43,7 +43,11 @@ impl command::Runnable for ChangeDirectory {
             return;
         }
 
+        context.curr_path = self.path.clone();
+
         {
+            context.history.populate_to_root(&context.curr_path, &context.config_t.sort_type);
+
             let parent_list = context.parent_list.take();
             context.history.put_back(parent_list);
 
@@ -54,16 +58,13 @@ impl command::Runnable for ChangeDirectory {
             context.history.put_back(preview_list);
         }
 
-        context.curr_path = self.path.clone();
-
         context.curr_list = match context.history.pop_or_create(&context.curr_path,
                     &context.config_t.sort_type) {
             Ok(s) => {
                 if let Some(dirent) = s.get_curr_entry() {
-                    let preview_path = dirent.entry.path();
-                    if preview_path.is_dir() {
+                    if dirent.path.is_dir() {
                         context.preview_list = match context.history.pop_or_create(
-                                    &preview_path, &context.config_t.sort_type) {
+                                    &dirent.path, &context.config_t.sort_type) {
                             Ok(s) => {
                                 Some(s)
                             },

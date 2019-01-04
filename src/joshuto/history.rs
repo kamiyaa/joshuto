@@ -34,7 +34,7 @@ impl DirHistory {
                 match structs::JoshutoDirList::new(parent.clone(), sort_type) {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.iter().enumerate() {
-                            if dirent.entry.path() == pathbuf {
+                            if dirent.path == pathbuf {
                                 s.index = i as i32;
                                 break;
                             }
@@ -56,7 +56,6 @@ impl DirHistory {
     {
         match self.map.remove(&path.to_path_buf()) {
             Some(mut dir_entry) => {
-
                 if dir_entry.need_update() {
                     dir_entry.update(&sort_type);
                 }

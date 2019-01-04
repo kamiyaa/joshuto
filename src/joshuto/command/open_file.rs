@@ -42,7 +42,7 @@ impl command::Runnable for OpenFile {
                 return;
             } else {
                 index = s.index as usize;
-                path = s.contents[index].entry.path();
+                path = s.contents[index].path.clone();
             }
         } else {
             return;
@@ -82,7 +82,7 @@ impl command::Runnable for OpenFile {
             if let Some(s) = context.curr_list.as_ref() {
                 if s.contents.len() > 0 {
                     let dirent: &structs::JoshutoDirEntry = &s.contents[s.index as usize];
-                    let new_path: path::PathBuf = dirent.entry.path();
+                    let new_path: path::PathBuf = dirent.path.clone();
 
                     if new_path.is_dir() {
                         context.preview_list = match context.history.pop_or_create(
@@ -213,8 +213,7 @@ impl command::Runnable for OpenFileWith {
     {
         if let Some(s) = context.curr_list.as_ref() {
             if let Some(direntry) = s.get_curr_entry() {
-                let path = direntry.entry.path();
-                OpenFileWith::open_with(path, &context.mimetype_t);
+                OpenFileWith::open_with(direntry.path.clone(), &context.mimetype_t);
             }
         }
     }
