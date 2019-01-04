@@ -13,7 +13,7 @@ use joshuto::keymapll::Keycode;
 
 const MAP_COMMAND: &str = "map";
 // const ALIAS_COMMAND: &str = "alias";
-const NEWTAB_COMMAND: &str = "newtab";
+// const NEWTAB_COMMAND: &str = "newtab";
 
 const COMMENT_DELIMITER: char = '#';
 

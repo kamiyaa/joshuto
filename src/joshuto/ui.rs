@@ -47,9 +47,9 @@ pub fn init_ncurses()
     /* video files */
     ncurses::init_pair(VID_COLOR, ncurses::COLOR_MAGENTA, -1);
     /* selected files */
-    ncurses::init_pair(SELECT_COLOR, ncurses::COLOR_YELLOW, ncurses::COLOR_BLACK);
+    ncurses::init_pair(SELECT_COLOR, ncurses::COLOR_YELLOW, -1);
     /* error message */
-    ncurses::init_pair(ERR_COLOR, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
+    ncurses::init_pair(ERR_COLOR, ncurses::COLOR_RED, -1);
 
     ncurses::printw("Loading...");
 
@@ -68,12 +68,14 @@ pub fn wprint_msg(win : &window::JoshutoPanel, msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_err(win : &window::JoshutoPanel, msg : &str)
+pub fn wprint_err(win: &window::JoshutoPanel, msg : &str)
 {
     ncurses::werase(win.win);
+    ncurses::wattron(win.win, ncurses::A_BOLD());
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
     ncurses::mvwaddstr(win.win, 0, 0, msg);
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
+    ncurses::wattroff(win.win, ncurses::A_BOLD());
     ncurses::wnoutrefresh(win.win);
 }
 
@@ -100,10 +102,12 @@ pub fn wprint_path(win: &window::JoshutoPanel, username: &str,
     ncurses::wnoutrefresh(win.win);
 }
 
+/*
+
 fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
     coord: (i32, i32)) -> usize
 {
-    const FILE_UNITS: [&str ; 6] = ["B", "K", "M", "G", "T", "E"];
+    const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "E"];
     const CONV_RATE: f64 = 1024.0;
 
     match file.metadata() {
@@ -136,15 +140,14 @@ fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
     };
     6
 }
+*/
 
 fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
         coord: (i32, i32))
 {
+    ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
+
     let file_name = &file.file_name_as_string;
-
-    ncurses::wmove(win.win, coord.0, coord.1);
-    ncurses::waddstr(win.win, " ");
-
     let name_visual_space = wcwidth::str_width(file_name).unwrap_or(win.cols as usize);
     if name_visual_space + 1 < win.cols as usize {
         ncurses::waddstr(win.win, &file_name);
@@ -162,7 +165,6 @@ fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
     win_cols = win_cols - 2;
 
     ncurses::wmove(win.win, coord.0, coord.1 + 1);
-
 
     let mut trim_index: usize = file_name.len();
 
@@ -476,18 +478,6 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
 
     return Some(user_str);
 
-}
-
-pub fn create_loading_bar() -> window::JoshutoPanel
-{
-    let mut term_rows: i32 = 0;
-    let mut term_cols: i32 = 0;
-    ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-
-    let win = window::JoshutoPanel::new(1, term_cols,
-            ((term_rows - 1) as usize, 0));
-    win.move_to_bottom();
-    win
 }
 
 pub fn draw_loading_bar(win: &window::JoshutoPanel, percentage: f32)

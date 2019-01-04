@@ -21,6 +21,7 @@ pub const S_IFIFO  : u32 = 0o010000;   /* FIFO */
 
 pub fn is_reg(mode: u32) -> bool { mode & BITMASK == S_IFREG }
 
+/*
 pub fn get_unix_filetype(mode : u32) -> &'static str
 {
     match mode & BITMASK {
@@ -34,6 +35,7 @@ pub fn get_unix_filetype(mode : u32) -> &'static str
         _ => "unknown",
     }
 }
+*/
 
 pub fn is_executable(mode : u32) -> bool
 {

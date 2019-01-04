@@ -3,7 +3,6 @@ extern crate ncurses;
 
 use std;
 use std::fmt;
-use std::path;
 
 use joshuto;
 use joshuto::ui;

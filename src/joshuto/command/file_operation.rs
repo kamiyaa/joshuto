@@ -131,7 +131,7 @@ impl PasteFiles {
     }
     pub fn command() -> &'static str { "paste_files" }
 
-    fn cut(&self, destination: &path::PathBuf, win: &window::JoshutoPanel)
+    fn cut(&self, destination: &path::PathBuf)
             -> (sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)
     {
         let (tx, rx) = sync::mpsc::channel();
@@ -195,7 +195,7 @@ impl PasteFiles {
         (rx, child)
     }
 
-    fn copy(&self, destination: &path::PathBuf, win: &window::JoshutoPanel)
+    fn copy(&self, destination: &path::PathBuf)
             -> (sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)
     {
         let (tx, rx) = sync::mpsc::channel();
@@ -249,8 +249,8 @@ impl command::Runnable for PasteFiles {
         let file_operation = fileop.lock().unwrap();
 
         let cprocess = match *file_operation {
-                FileOp::Copy => self.copy(&context.curr_path, &context.views.bot_win),
-                FileOp::Cut => self.cut(&context.curr_path, &context.views.bot_win),
+                FileOp::Copy => self.copy(&context.curr_path),
+                FileOp::Cut => self.cut(&context.curr_path),
             };
         context.threads.push(cprocess);
 
@@ -282,7 +282,7 @@ impl DeleteFiles {
         let (tx, rx) = sync::mpsc::channel();
         let total = paths.len();
 
-        let child = thread::spawn(move || {
+        let _child = thread::spawn(move || {
             let mut deleted = 0;
             for path in &paths {
                 if let Ok(metadata) = std::fs::symlink_metadata(path) {
@@ -441,11 +441,7 @@ impl command::Runnable for RenameFile {
             if let Some(s) = s.get_curr_entry() {
                 path = Some(s.path.clone());
                 file_name = Some(s.file_name_as_string.clone());
-            } else {
-                return;
             }
-        } else {
-            return;
         }
 
         if let Some(file_name) = file_name {
