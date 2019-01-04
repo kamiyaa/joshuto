@@ -53,20 +53,20 @@ pub fn is_executable(mode : u32) -> bool
 
 pub fn stringify_mode(mode : u32) -> String
 {
-    let mut mode_str : String = String::with_capacity(10);
+    let mut mode_str: String = String::with_capacity(10);
 
-    const LIBC_FILE_VALS : [(u32, char) ; 7] = [
-        (S_IFSOCK, 's'),
-        (S_IFLNK, 'l'),
+    const LIBC_FILE_VALS: [(u32, char) ; 7] = [
         (S_IFREG, '-'),
-        (S_IFBLK, 'b'),
         (S_IFDIR, 'd'),
+        (S_IFLNK, 'l'),
+        (S_IFSOCK, 's'),
+        (S_IFBLK, 'b'),
         (S_IFCHR, 'c'),
         (S_IFIFO, 'f'),
     ];
 
     for val in LIBC_FILE_VALS.iter() {
-        if mode & val.0 != 0 {
+        if (mode & val.0) != 0 {
             mode_str.push(val.1);
             break;
         }

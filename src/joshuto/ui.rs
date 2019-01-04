@@ -197,9 +197,9 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 
     ncurses::werase(win);
     ncurses::wmove(win, 0, 0);
-    match fs::metadata(&file.path) {
+    match fs::symlink_metadata(&file.path) {
         Ok(metadata) => {
-            let permissions : fs::Permissions = metadata.permissions();
+            let permissions: fs::Permissions = metadata.permissions();
             let mode = permissions.mode();
 
             let mut file_size = metadata.len() as f64;
@@ -286,7 +286,7 @@ pub fn display_contents(win: &window::JoshutoPanel,
         let coord: (i32, i32) = (i as i32 - start as i32, 0);
         wprint_direntry(win, &dir_contents[i], coord);
 
-        if let Ok(metadata) = fs::metadata(&dir_contents[i].path) {
+        if let Ok(metadata) = fs::symlink_metadata(&dir_contents[i].path) {
             mode = metadata.permissions().mode();
         }
 
@@ -505,14 +505,14 @@ fn file_attr_apply(win: ncurses::WINDOW, coord : (i32, i32), mode : u32,
         file_extension: Option<&ffi::OsStr>, attr : ncurses::attr_t)
 {
     match mode & unix::BITMASK {
-        unix::S_IFDIR => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, DIR_COLOR);
-        },
         unix::S_IFLNK | unix::S_IFCHR | unix::S_IFBLK => {
             ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, SOCK_COLOR);
         },
         unix::S_IFSOCK | unix::S_IFIFO => {
             ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, SOCK_COLOR);
+        },
+        unix::S_IFDIR => {
+            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, DIR_COLOR);
         },
         unix::S_IFREG => {
             if unix::is_executable(mode) == true {

@@ -159,8 +159,8 @@ impl SortNatural {
         } else if !f1_isdir && f2_isdir {
             cmp::Ordering::Greater
         } else {
-            let f1_name = file1.file_name.clone().into_string().unwrap().to_lowercase();
-            let f2_name = file2.file_name.clone().into_string().unwrap().to_lowercase();
+            let f1_name = file1.file_name_as_string.to_lowercase();
+            let f2_name = file2.file_name_as_string.to_lowercase();
             if f1_name <= f2_name {
                 cmp::Ordering::Less
             } else {

@@ -421,19 +421,23 @@ impl std::fmt::Display for RenameFile {
 impl command::Runnable for RenameFile {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let dirlist = match context.curr_list.as_ref() {
-                Some(s) => match s.get_curr_entry() {
-                    Some(s) => Some(s.path.clone()),
-                    None => None,
-                },
-                None => None,
-            };
+        let mut path: Option<path::PathBuf> = None;
+        let mut file_name: Option<String> = None;
 
-        if let Some(path) = dirlist {
-            if let Some(file_name) = path.file_name() {
-                if let Ok(file_str) = file_name.to_os_string().into_string() {
-                    self.rename_file(&path, context, file_str);
-                }
+        if let Some(s) = context.curr_list.as_ref() {
+            if let Some(s) = s.get_curr_entry() {
+                path = Some(s.path.clone());
+                file_name = Some(s.file_name_as_string.clone());
+            } else {
+                return;
+            }
+        } else {
+            return;
+        }
+
+        if let Some(file_name) = file_name {
+            if let Some(path) = path {
+                self.rename_file(&path, context, file_name);
             }
         }
     }
