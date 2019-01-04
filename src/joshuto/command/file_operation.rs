@@ -7,6 +7,7 @@ use std::fmt;
 use std::fs;
 use std::path;
 use std::sync;
+use std::thread;
 
 use joshuto;
 use joshuto::command;
@@ -111,6 +112,12 @@ impl command::Runnable for CopyFiles {
     }
 }
 
+#[derive(Debug,Clone)]
+pub struct ProgressInfo {
+    pub bytes_finished: u64,
+    pub total_bytes: u64,
+}
+
 pub struct PasteFiles {
     options: fs_extra::dir::CopyOptions,
 }
@@ -124,40 +131,88 @@ impl PasteFiles {
     }
     pub fn command() -> &'static str { "paste_files" }
 
-    fn cut(&self, destination: &path::PathBuf, win: &window::JoshutoPanel) {
-        let mut destination = destination;
-        let handle = |process_info: fs_extra::TransitProcess| {
-            ui::wprint_msg(win, format!("{}", process_info.copied_bytes).as_str());
-            fs_extra::dir::TransitProcessResult::ContinueOrAbort
-        };
+    fn cut(&self, destination: &path::PathBuf, win: &window::JoshutoPanel)
+            -> (sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)
+    {
+        let (tx, rx) = sync::mpsc::channel();
 
-        let mut files = selected_files.lock().unwrap();
+        let mut destination = destination.clone();
+        let options = self.options.clone();
 
-        match fs_extra::move_items_with_progress(&files, &destination, &self.options, handle)
-        {
-            Ok(s) => {},
-            Err(e) => {},
-        }
-        files.clear();
+        let mut move_options = fs_extra::file::CopyOptions::new();
+        move_options.overwrite = options.overwrite;
+        move_options.skip_exist = options.skip_exist;
+        move_options.buffer_size = options.buffer_size;
+
+        let child = thread::spawn(move || {
+            let mut paths = selected_files.lock().unwrap();
+
+            let mut progress_info = ProgressInfo {
+                    bytes_finished: 0,
+                    total_bytes: paths.len() as u64,
+                };
+
+            for path in (*paths).iter() {
+                let file_name = path.file_name().unwrap().to_str().unwrap();
+                destination.push(file_name);
+                if options.skip_exist && destination.exists() {
+                    continue;
+                }
+
+                match std::fs::rename(&path, &destination) {
+                    Ok(_) => {
+                        destination.pop();
+                    },
+                    Err(_) => {
+                        destination.pop();
+                        if path.is_dir() {
+                            fs_extra::dir::move_dir(&path, &destination, &options);
+                        } else {
+                            fs_extra::file::move_file(&path, &destination, &move_options);
+                        }
+                    }
+                }
+
+                progress_info.bytes_finished = progress_info.bytes_finished + 1;
+                tx.send(progress_info.clone()).unwrap();
+            }
+
+            paths.clear();
+            0
+        });
+
+        (rx, child)
     }
 
-    fn copy(&self, destination: &path::PathBuf, win: &window::JoshutoPanel) {
-        let mut destination = destination;
-        let handle = |process_info: fs_extra::TransitProcess| {
-            ui::wprint_msg(win, format!("{}", process_info.copied_bytes).as_str());
-            fs_extra::dir::TransitProcessResult::ContinueOrAbort
-        };
+    fn copy(&self, destination: &path::PathBuf, win: &window::JoshutoPanel)
+            -> (sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)
+    {
+        let (tx, rx) = sync::mpsc::channel();
 
-        let mut files = selected_files.lock().unwrap();
+        let destination = destination.clone();
+        let options = self.options.clone();
 
-        match fs_extra::copy_items_with_progress(&files, &destination, &self.options, handle)
-        {
-            Ok(_) => {
-                files.clear();
-            },
-            Err(_) => {
-            },
-        }
+        let child = thread::spawn(move || {
+            let mut files = selected_files.lock().unwrap();
+
+            let handle = |process_info: fs_extra::TransitProcess| {
+                let progress_info = ProgressInfo {
+                        bytes_finished: process_info.copied_bytes,
+                        total_bytes: process_info.total_bytes,
+                    };
+                tx.send(progress_info).unwrap();
+                fs_extra::dir::TransitProcessResult::ContinueOrAbort
+            };
+
+            match fs_extra::copy_items_with_progress(&files, &destination, &options, handle) {
+                Ok(_) => {},
+                Err(_) => {},
+            }
+            files.clear();
+            0
+        });
+
+        (rx, child)
     }
 }
 
@@ -182,12 +237,15 @@ impl command::Runnable for PasteFiles {
     {
         let file_operation = fileop.lock().unwrap();
 
-        match *file_operation {
-            FileOp::Copy => self.copy(&context.curr_path, &context.views.bot_win),
-            FileOp::Cut => self.cut(&context.curr_path, &context.views.bot_win),
-        }
+        let cprocess = match *file_operation {
+                FileOp::Copy => self.copy(&context.curr_path, &context.views.bot_win),
+                FileOp::Cut => self.cut(&context.curr_path, &context.views.bot_win),
+            };
+        context.threads.push(cprocess);
 
         context.reload_dirlists();
+
+        ncurses::timeout(0);
 
         ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
         ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
@@ -207,6 +265,38 @@ pub struct DeleteFiles;
 impl DeleteFiles {
     pub fn new() -> Self { DeleteFiles }
     pub fn command() -> &'static str { "delete_files" }
+
+    pub fn remove_files(paths: Vec<path::PathBuf>, win: &window::JoshutoPanel)
+    {
+        let (tx, rx) = sync::mpsc::channel();
+        let total = paths.len();
+
+        let child = thread::spawn(move || {
+            let mut deleted = 0;
+            for path in &paths {
+                if path.is_dir() {
+                    std::fs::remove_dir_all(&path).unwrap();
+                } else {
+                    std::fs::remove_file(&path).unwrap();
+                }
+                deleted = deleted + 1;
+                tx.send(deleted).unwrap();
+            }
+        });
+
+        while let Ok(deleted) = rx.recv() {
+            if deleted == total {
+                ncurses::werase(win.win);
+                ncurses::wnoutrefresh(win.win);
+                ncurses::doupdate();
+                break;
+            }
+            let percent = (deleted as f64 / total as f64) as f32;
+            ui::draw_loading_bar(win, percent);
+            ncurses::wnoutrefresh(win.win);
+            ncurses::doupdate();
+        }
+    }
 }
 
 impl command::JoshutoCommand for DeleteFiles {}
@@ -230,13 +320,7 @@ impl command::Runnable for DeleteFiles {
         if ch == Keycode::LOWER_Y as i32 || ch == Keycode::ENTER as i32 {
             if let Some(s) = context.curr_list.as_mut() {
                 if let Some(paths) = collect_selected_paths(s) {
-                    for path in &paths {
-                        if path.is_dir() {
-                            std::fs::remove_dir_all(&path);
-                        } else {
-                            std::fs::remove_file(&path);
-                        }
-                    }
+                    Self::remove_files(paths, &context.views.bot_win);
                 }
             }
             context.reload_dirlists();
@@ -253,6 +337,7 @@ impl command::Runnable for DeleteFiles {
         }
         ncurses::doupdate();
     }
+
 }
 
 #[derive(Debug)]
@@ -295,7 +380,6 @@ impl RenameFile {
             RenameFileMethod::Append => ui::get_str_append(&win, (0, PROMPT.len() as i32), start_str),
             RenameFileMethod::Prepend => ui::get_str_prepend(&win, (0, PROMPT.len() as i32), start_str),
             RenameFileMethod::Overwrite => ui::get_str(&win, (0, PROMPT.len() as i32)),
-            _ => ui::get_str(&win, (0, PROMPT.len() as i32)),
             };
 
         if let Some(s) = user_input {

@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::env;
 use std::path;
 use std::process;
+use std::sync;
 use std::thread;
 
 pub mod config;
@@ -30,7 +31,7 @@ pub struct JoshutoContext<'a> {
     pub curr_path: path::PathBuf,
     pub history: history::DirHistory,
 
-    pub threads: Vec<thread::JoinHandle<i32>>,
+    pub threads: Vec<(sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)>,
     pub views: window::JoshutoView,
     pub curr_list: Option<structs::JoshutoDirList>,
     pub parent_list: Option<structs::JoshutoDirList>,
@@ -217,41 +218,6 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     }
 }
 
-fn update_views(joshuto_view : &window::JoshutoView,
-        parent_view: Option<&mut structs::JoshutoDirList>,
-        curr_view: Option<&mut structs::JoshutoDirList>,
-        preview_view: Option<&mut structs::JoshutoDirList>,
-        config_t: &config::JoshutoConfig,
-        )
-{
-    if let Some(s) = parent_view {
-        if s.update_needed || s.need_update() {
-            s.update(&config_t.sort_type);
-            s.display_contents(&joshuto_view.left_win);
-            ncurses::wnoutrefresh(joshuto_view.left_win.win);
-        }
-    }
-
-    if let Some(s) = curr_view {
-        if s.update_needed || s.need_update() {
-            s.update(&config_t.sort_type);
-            s.display_contents(&joshuto_view.mid_win);
-            ncurses::wnoutrefresh(joshuto_view.mid_win.win);
-        }
-    }
-
-    if let Some(s) = preview_view {
-        if s.update_needed || s.need_update() {
-            s.update(&config_t.sort_type);
-            s.display_contents(&joshuto_view.right_win);
-            ncurses::wnoutrefresh(joshuto_view.right_win.win);
-        }
-    }
-
-    ncurses::doupdate();
-}
-
-
 pub fn resize_handler(context: &mut JoshutoContext)
 {
     context.views.redraw_views();
@@ -267,7 +233,7 @@ pub fn resize_handler(context: &mut JoshutoContext)
     ncurses::doupdate();
 }
 
-pub fn run(mut config_t: config::JoshutoConfig,
+pub fn run(config_t: config::JoshutoConfig,
     keymap_t: keymap::JoshutoKeymap,
     mimetype_t: mimetype::JoshutoMimetype)
 {
@@ -281,13 +247,42 @@ pub fn run(mut config_t: config::JoshutoConfig,
         tabs.push(context);
     }
 
-    let mut index: usize = 0;
+    let index: usize = 0;
     loop {
         let ch: i32 = ncurses::getch();
 
         if ch == ncurses::KEY_RESIZE {
             resize_handler(&mut tabs[index]);
             continue;
+        }
+
+        if tabs[index].threads.len() > 0 {
+            ncurses::timeout(0);
+        } else {
+            ncurses::timeout(-1);
+        }
+
+        {
+            let mut i = 0;
+
+            while i < tabs[index].threads.len() {
+                if let Ok(progress_info) = &tabs[index].threads[i].0.recv() {
+                    eprintln!("{}/{}", progress_info.bytes_finished, progress_info.total_bytes);
+                    if progress_info.bytes_finished == progress_info.total_bytes {
+                        let (rx, chandle) = tabs[index].threads.remove(i);
+                        ncurses::werase(tabs[index].views.load_bar.win);
+                        ncurses::wnoutrefresh(tabs[index].views.load_bar.win);
+                        ncurses::doupdate();
+                    } else {
+                        let percent = (progress_info.bytes_finished as f64 /
+                                progress_info.total_bytes as f64) as f32;
+                        ui::draw_loading_bar(&tabs[index].views.load_bar, percent);
+                        ncurses::wnoutrefresh(tabs[index].views.load_bar.win);
+                        ncurses::doupdate();
+                    }
+                }
+                i = i + 1;
+            }
         }
 
         let keycommand: &std::boxed::Box<dyn JoshutoCommand>;

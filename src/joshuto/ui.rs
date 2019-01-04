@@ -5,7 +5,6 @@ use std::ffi;
 use std::fs;
 use std::path;
 
-use joshuto::config;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
@@ -98,13 +97,6 @@ pub fn wprint_path(win: &window::JoshutoPanel, username: &str,
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(DIR_COLOR));
     ncurses::waddstr(win.win, file_name);
     ncurses::wattroff(win.win, ncurses::A_BOLD());
-    ncurses::wnoutrefresh(win.win);
-}
-
-pub fn wprint_mimetype(win: &window::JoshutoPanel, mimetype: &str)
-{
-    ncurses::werase(win.win);
-    wprint_msg(&win, mimetype);
     ncurses::wnoutrefresh(win.win);
 }
 
@@ -365,16 +357,10 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
     }
 }
 
-pub enum RenameStart {
-    Append,
-    Prepend,
-    Extension
-}
-
 pub fn get_str(win: &window::JoshutoPanel,
         coord: (i32, i32)) -> Option<String>
 {
-    let mut user_input: Vec<(u8, char)> = Vec::new();
+    let user_input: Vec<(u8, char)> = Vec::new();
     get_str_prefill(win, coord, user_input, coord.1, 0)
 }
 
@@ -382,15 +368,15 @@ pub fn get_str_append(win: &window::JoshutoPanel,
         coord: (i32, i32), start_str: String) -> Option<String>
 {
     let mut user_input: Vec<(u8, char)> = Vec::new();
-    for (ind, ch) in start_str.char_indices() {
+    for (_, ch) in start_str.char_indices() {
         let char_len = wcwidth::char_width(ch).unwrap_or(1);
         user_input.push((char_len, ch));
     }
-    let mut curr_index = user_input.len();
     let mut curs_x = coord.1;
     for (size, _) in &user_input {
         curs_x = curs_x + (*size) as i32;
     }
+    let curr_index = user_input.len();
     get_str_prefill(win, coord, user_input, curs_x, curr_index)
 }
 
@@ -398,7 +384,7 @@ pub fn get_str_prepend(win: &window::JoshutoPanel,
         coord: (i32, i32), start_str: String) -> Option<String>
 {
     let mut user_input: Vec<(u8, char)> = Vec::new();
-    for (ind, ch) in start_str.char_indices() {
+    for (_, ch) in start_str.char_indices() {
         let char_len = wcwidth::char_width(ch).unwrap_or(1);
         user_input.push((char_len, ch));
     }
@@ -476,7 +462,7 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
 
             if curr_index > 0 {
                 let (size, _) = user_input.remove(curr_index);
-                if (curr_index > user_input_len) {
+                if curr_index > user_input_len {
                     curr_index = curr_index - 1;
                     curs_x = curs_x - size as i32;
                 }
@@ -499,68 +485,32 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
             curr_index = curr_index + 1;
         }
     }
-    let user_str: String = user_input.iter().map(|(size, ch)| ch).collect();
+    let user_str: String = user_input.iter().map(|(_, ch)| ch).collect();
 
     return Some(user_str);
 
 }
 
-/*
-pub fn get_str_mut(mut user_input: Vec<(usize, char)>,
-        win: &window::JoshutoPanel, coord: (i32, i32), start: i32) -> Option<String>
+pub fn create_loading_bar() -> window::JoshutoPanel
 {
-    let mut curs_x = start;
+    let mut term_rows: i32 = 0;
+    let mut term_cols: i32 = 0;
+    ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-    loop {
-        ncurses::mvwprintw(win.win, coord.0, coord.1, user_input.as_str());
-        ncurses::wprintw(win.win, " ");
-        ncurses::mvwchgat(win.win, coord.0, curs_x, 1, ncurses::A_STANDOUT(), 0);
-        ncurses::wrefresh(win.win);
-
-        let ch: i32 = ncurses::wgetch(win.win);
-
-        if ch == Keycode::ESCAPE as i32 {
-            return None;
-        } else if ch == Keycode::ENTER as i32 {
-            break;
-        } else if ch == Keycode::BACKSPACE as i32 {
-            let user_input_len = user_input.len();
-            ncurses::mvwprintw(win.win, coord.0, coord.1 + user_input_len as i32 - 1, " ");
-            if user_input_len > 0 {
-                if curs_x - coord.1 >= user_input_len as i32 {
-                    curs_x = curs_x - 1;
-                    ncurses::mvwdelch(win.win, coord.0, curs_x);
-                    user_input.pop();
-                } else {
-                    user_input.remove((curs_x - coord.1 - 1) as usize);
-                    curs_x = curs_x - 1;
-                }
-            }
-        } else if ch == Keycode::LEFT as i32 {
-            if curs_x > coord.1 {
-                curs_x = curs_x - 1;
-            }
-        } else if ch == Keycode::RIGHT as i32 {
-            if curs_x < coord.1 + user_input.len() as i32 {
-                curs_x = curs_x + 1;
-            }
-        } else {
-            if curs_x - coord.1 >= user_input.len() as i32 {
-                user_input.push(ch as u8 as char);
-                curs_x = curs_x + 1;
-            } else {
-                user_input.insert((curs_x - coord.1) as usize, ch as u8 as char);
-                curs_x = curs_x + 1;
-            }
-        }
-    }
-
-    return Some(user_input);
+    let win = window::JoshutoPanel::new(1, term_cols,
+            ((term_rows - 1) as usize, 0));
+    win.move_to_bottom();
+    win
 }
-*/
 
-fn file_attr_apply(win : ncurses::WINDOW, coord : (i32, i32), mode : u32,
-        file_extension : Option<&ffi::OsStr>, attr : ncurses::attr_t)
+pub fn draw_loading_bar(win: &window::JoshutoPanel, percentage: f32)
+{
+    let cols: i32 = (win.cols as f32 * percentage) as i32;
+    ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(), 0);
+}
+
+fn file_attr_apply(win: ncurses::WINDOW, coord : (i32, i32), mode : u32,
+        file_extension: Option<&ffi::OsStr>, attr : ncurses::attr_t)
 {
     match mode & unix::BITMASK {
         unix::S_IFDIR => {
