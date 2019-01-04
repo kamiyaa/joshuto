@@ -264,6 +264,8 @@ pub fn run(config_t: config::JoshutoConfig,
         {
             let mut i = 0;
 
+            let mut something_finished = false;
+
             while i < tabs[index].threads.len() {
                 if let Ok(progress_info) = &tabs[index].threads[i].0.recv() {
                     if progress_info.bytes_finished == progress_info.total_bytes {
@@ -271,6 +273,7 @@ pub fn run(config_t: config::JoshutoConfig,
                         ncurses::werase(tabs[index].views.load_bar.win);
                         ncurses::wnoutrefresh(tabs[index].views.load_bar.win);
                         ncurses::doupdate();
+                        something_finished = true;
                     } else {
                         let percent = (progress_info.bytes_finished as f64 /
                                 progress_info.total_bytes as f64) as f32;
@@ -280,6 +283,20 @@ pub fn run(config_t: config::JoshutoConfig,
                     }
                 }
                 i = i + 1;
+            }
+
+            if something_finished {
+                tabs[index].reload_dirlists();
+
+                ui::redraw_view(&tabs[index].views.left_win, tabs[index].parent_list.as_ref());
+                ui::redraw_view(&tabs[index].views.mid_win, tabs[index].curr_list.as_ref());
+                ui::redraw_view(&tabs[index].views.right_win, tabs[index].preview_list.as_ref());
+
+                ui::redraw_status(&tabs[index].views, tabs[index].curr_list.as_ref(),
+                        &tabs[index].curr_path,
+                        &tabs[index].config_t.username, &tabs[index].config_t.hostname);
+
+                ncurses::doupdate();
             }
         }
 

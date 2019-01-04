@@ -164,11 +164,22 @@ impl PasteFiles {
                         destination.pop();
                     },
                     Err(_) => {
-                        destination.pop();
-                        if path.is_dir() {
-                            fs_extra::dir::move_dir(&path, &destination, &options);
+                        if let Ok(metadata) = std::fs::symlink_metadata(path) {
+                            if metadata.is_dir() {
+                                destination.pop();
+                                match fs_extra::dir::move_dir(&path, &destination, &options) {
+                                    Ok(_) => {},
+                                    Err(e) => eprintln!("dir: {}", e),
+                                }
+                            } else {
+                                match fs_extra::file::move_file(&path, &destination, &move_options) {
+                                    Ok(_) => {},
+                                    Err(e) => eprintln!("file: {}", e),
+                                }
+                                destination.pop();
+                            }
                         } else {
-                            fs_extra::file::move_file(&path, &destination, &move_options);
+                            destination.pop();
                         }
                     }
                 }

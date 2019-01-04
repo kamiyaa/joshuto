@@ -208,7 +208,6 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
                 file_size = file_size / CONV_RATE;
                 index += 1;
             }
-            let file_type: &str = unix::get_unix_filetype(mode);
 
             ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
             ncurses::waddstr(win, "  ");
@@ -226,7 +225,12 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
                     format!("{:.2}{}", file_size, FILE_UNITS[index]).as_str());
             }
             ncurses::waddstr(win, " ");
-            ncurses::waddstr(win, file_type);
+            if mode >> 9 & unix::S_IFLNK >> 9 == mode >> 9 {
+                if let Ok(path) = fs::read_link(&file.path) {
+                    ncurses::waddstr(win, " -> ");
+                    ncurses::waddstr(win, path.to_str().unwrap());
+                }
+            }
         },
         Err(e) => {
             ncurses::waddstr(win, format!("{:?}", e).as_str());
