@@ -51,7 +51,7 @@ pub fn is_executable(mode : u32) -> bool
     return false;
 }
 
-pub fn stringify_mode(mode : u32) -> String
+pub fn stringify_mode(mode: u32) -> String
 {
     let mut mode_str: String = String::with_capacity(10);
 
@@ -65,13 +65,6 @@ pub fn stringify_mode(mode : u32) -> String
         (S_IFIFO, 'f'),
     ];
 
-    for val in LIBC_FILE_VALS.iter() {
-        if (mode & val.0) != 0 {
-            mode_str.push(val.1);
-            break;
-        }
-    }
-
     const LIBC_PERMISSION_VALS : [(u32, char) ; 9] = [
             (libc::S_IRUSR, 'r'),
             (libc::S_IWUSR, 'w'),
@@ -83,6 +76,15 @@ pub fn stringify_mode(mode : u32) -> String
             (libc::S_IWOTH, 'w'),
             (libc::S_IXOTH, 'x'),
     ];
+
+    let mode_shifted = mode >> 9;
+    for val in LIBC_FILE_VALS.iter() {
+        let val_shifted = val.0 >> 9;
+        if mode_shifted & val_shifted == mode_shifted {
+            mode_str.push(val.1);
+            break;
+        }
+    }
 
     for val in LIBC_PERMISSION_VALS.iter() {
         if mode & val.0 != 0 {
