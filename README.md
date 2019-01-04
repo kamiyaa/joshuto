@@ -1,8 +1,9 @@
-# WORK IN PROGRESS
-
 # joshuto
 
-ranger-like terminal file manager written in Rust
+ranger-like terminal file manager written in Rust.
+Is a work in progress.
+
+![Alt text](joshuto_screenshot.png?raw=true "joshuto")
 
 ## Dependencies
  - ncurses

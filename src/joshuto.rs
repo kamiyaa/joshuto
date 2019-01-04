@@ -266,7 +266,6 @@ pub fn run(config_t: config::JoshutoConfig,
 
             while i < tabs[index].threads.len() {
                 if let Ok(progress_info) = &tabs[index].threads[i].0.recv() {
-                    eprintln!("{}/{}", progress_info.bytes_finished, progress_info.total_bytes);
                     if progress_info.bytes_finished == progress_info.total_bytes {
                         let (rx, chandle) = tabs[index].threads.remove(i);
                         ncurses::werase(tabs[index].views.load_bar.win);
