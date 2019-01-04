@@ -274,10 +274,12 @@ impl DeleteFiles {
         let child = thread::spawn(move || {
             let mut deleted = 0;
             for path in &paths {
-                if path.is_dir() {
-                    std::fs::remove_dir_all(&path).unwrap();
-                } else {
-                    std::fs::remove_file(&path).unwrap();
+                if let Ok(metadata) = std::fs::symlink_metadata(path) {
+                    if metadata.is_dir() {
+                        std::fs::remove_dir_all(&path).unwrap();
+                    } else {
+                        std::fs::remove_file(&path).unwrap();
+                    }
                 }
                 deleted = deleted + 1;
                 tx.send(deleted).unwrap();
