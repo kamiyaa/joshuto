@@ -11,6 +11,7 @@ use joshuto::window;
 #[derive(Debug)]
 pub struct JoshutoDirEntry {
     pub file_name: ffi::OsString,
+    pub file_name_as_string: String,
     pub path: path::PathBuf,
     pub file_type: Result<fs::FileType, std::io::Error>,
     pub selected: bool,

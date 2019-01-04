@@ -143,54 +143,49 @@ fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
     let mut offset = offset;
     ncurses::wmove(win.win, coord.0, coord.1);
 
-    match file.file_name.clone().into_string() {
-        Ok(file_name) => {
-            ncurses::waddstr(win.win, " ");
-            let name_len = wcwidth::str_width(file_name.as_str()).unwrap_or(win.cols as usize);
-            if name_len + 1 < win.cols as usize {
-                ncurses::waddstr(win.win, &file_name);
-            } else {
-                let mut extension = String::new();
+    ncurses::waddstr(win.win, " ");
+    let file_name = &file.file_name_as_string;
 
-                match file.path.extension() {
-                    Some(s) => {
-                        extension = s.to_os_string().into_string().unwrap();
-                        offset = offset + wcwidth::str_width(extension.as_str()).unwrap_or(0) + 1;
-                    },
-                    None => {
+    let name_len = wcwidth::str_width(file_name).unwrap_or(win.cols as usize);
+    if name_len + 1 < win.cols as usize {
+        ncurses::waddstr(win.win, &file_name);
+    } else {
+        let mut extension = String::new();
+
+        match file.path.extension() {
+            Some(s) => {
+                extension = s.to_os_string().into_string().unwrap();
+                offset = offset + wcwidth::str_width(extension.as_str()).unwrap_or(0) + 1;
+            },
+            None => {
 
 
-                    },
-                }
+            },
+        }
 
-                let mut trim_index: usize;
-                if offset > win.cols as usize {
-                    trim_index = 0;
-                } else {
-                    trim_index = win.cols as usize - offset;
-                }
+        let mut trim_index: usize;
+        if offset > win.cols as usize {
+            trim_index = 0;
+        } else {
+            trim_index = win.cols as usize - offset;
+        }
 
-                let mut total: usize = 0;
-                for (index, ch) in file_name.char_indices() {
-                    if total >= trim_index {
-                        trim_index = index;
-                        break;
-                    }
-                    total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
-                }
-
-                ncurses::waddstr(win.win, &file_name[..trim_index]);
-                ncurses::waddstr(win.win, "…");
-                if extension.len() > 0 {
-                    ncurses::waddstr(win.win, ".");
-                    ncurses::waddstr(win.win, &extension);
-                }
+        let mut total: usize = 0;
+        for (index, ch) in file_name.char_indices() {
+            if total >= trim_index {
+                trim_index = index;
+                break;
             }
-        },
-        Err(e) => {
-            ncurses::waddstr(win.win, format!("{:?}", e).as_str());
-        },
-    };
+            total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
+        }
+
+        ncurses::waddstr(win.win, &file_name[..trim_index]);
+        ncurses::waddstr(win.win, "…");
+        if extension.len() > 0 {
+            ncurses::waddstr(win.win, ".");
+            ncurses::waddstr(win.win, &extension);
+        }
+    }
 }
 
 pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
@@ -347,11 +342,9 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
     if let Some(s) = curr_view.as_ref() {
         let dirent = s.get_curr_entry();
         if let Some(dirent) = dirent {
-            if let Ok(file_name) = dirent.file_name.clone().into_string() {
-                wprint_path(&joshuto_view.top_win, username, hostname,
-                        curr_path, file_name.as_str());
-                wprint_file_info(joshuto_view.bot_win.win, &dirent);
-            }
+            wprint_path(&joshuto_view.top_win, username, hostname,
+                    curr_path, dirent.file_name_as_string.as_str());
+            wprint_file_info(joshuto_view.bot_win.win, &dirent);
         }
     }
 }

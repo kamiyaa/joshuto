@@ -91,9 +91,13 @@ fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<struc
 {
     match result {
         Ok(direntry) => {
+            let file_name = direntry.file_name();
+            let file_name_as_string: String = file_name.clone().into_string().unwrap();
+            let path = direntry.path();
             let dir_entry = structs::JoshutoDirEntry {
-                file_name: direntry.file_name(),
-                path: direntry.path(),
+                file_name,
+                file_name_as_string,
+                path,
                 file_type: direntry.file_type(),
                 selected: false,
                 marked: false,
@@ -116,9 +120,13 @@ fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<
                     if file_name.starts_with(".") {
                         None
                     } else {
+                        let file_name = direntry.file_name();
+                        let file_name_as_string: String = file_name.clone().into_string().unwrap();
+                        let path = direntry.path();
                         let dir_entry = structs::JoshutoDirEntry {
-                            file_name: direntry.file_name(),
-                            path: direntry.path(),
+                            file_name,
+                            file_name_as_string,
+                            path,
                             file_type: direntry.file_type(),
                             selected: false,
                             marked: false,
