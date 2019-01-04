@@ -499,10 +499,7 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
             curr_index = curr_index + 1;
         }
     }
-    let mut user_str: String = String::new();
-    for (_, ch) in &user_input {
-        user_str.push(*ch);
-    }
+    let user_str: String = user_input.iter().map(|(size, ch)| ch).collect();
 
     return Some(user_str);
 

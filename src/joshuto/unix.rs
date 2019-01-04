@@ -148,7 +148,6 @@ pub fn open_file(mimetype_t: &mimetype::JoshutoMimetype,
 
 pub fn open_with(path: &path::Path, args: &Vec<String>)
 {
-    let lossy_path: String = path.as_os_str().to_os_string().into_string().unwrap();
     let program = args[0].clone();
     let args_len = args.len();
 
@@ -161,7 +160,7 @@ pub fn open_with(path: &path::Path, args: &Vec<String>)
     match command.spawn() {
         Ok(mut handle) => {
             match handle.wait() {
-                Ok(exit_code) => {},
+                Ok(_) => {},
                 Err(e) => eprintln!("{}", e),
             }
         },

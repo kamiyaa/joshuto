@@ -29,6 +29,7 @@ pub use self::cursor_move::CursorMoveHome;
 pub use self::cursor_move::CursorMoveEnd;
 
 mod file_operation;
+pub use self::file_operation::ProgressInfo;
 pub use self::file_operation::CutFiles;
 pub use self::file_operation::CopyFiles;
 pub use self::file_operation::PasteFiles;
@@ -38,6 +39,9 @@ pub use self::file_operation::RenameFileMethod;
 
 mod show_hidden;
 pub use self::show_hidden::ToggleHiddenFiles;
+
+mod selection;
+pub use self::selection::SelectFiles;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
@@ -139,6 +143,8 @@ pub fn from_args(args: &[&str]) -> Option<Box<dyn JoshutoCommand>>
         "cursor_move_page_up" => Some(Box::new(self::CursorMovePageUp::new())),
         "cursor_move_page_down" => Some(Box::new(self::CursorMovePageDown::new())),
 
+        "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
+
         "cut_files" => Some(Box::new(self::CutFiles::new())),
         "copy_files" => Some(Box::new(self::CopyFiles::new())),
         "paste_files" => {
@@ -183,7 +189,34 @@ pub fn from_args(args: &[&str]) -> Option<Box<dyn JoshutoCommand>>
             }
             Some(Box::new(self::RenameFile::new(method)))
         }
-        "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
+        "select_files" => {
+            let mut toggle = false;
+            let mut all = false;
+            for arg in &args[1..] {
+                let splitarg: Vec<&str> = arg.split('=').collect();
+                if splitarg.len() == 2 {
+                    match splitarg[0] {
+                        "toggle" => {
+                            if let Ok(s) = splitarg[1].parse::<bool>() {
+                                toggle = s;
+                            } else {
+                                eprintln!("Failed to parse: {}", arg);
+                            }
+                        },
+                        "all" => {
+                            if let Ok(s) = splitarg[1].parse::<bool>() {
+                                all = s;
+                            } else {
+                                eprintln!("Failed to parse: {}", arg);
+                            }
+                        },
+                        _ => {},
+                    }
+                }
+            }
+            Some(Box::new(self::SelectFiles::new(toggle, all)))
+        }
+
         _ => None,
     }
 }

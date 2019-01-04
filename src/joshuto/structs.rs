@@ -114,13 +114,13 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn mark_curr_toggle(&mut self)
+    pub fn curr_toggle_select(&mut self)
     {
         let index = self.index;
-        self.mark_toggle(index);
+        self.toggle_select(index);
     }
 
-    fn mark_toggle(&mut self, index: i32) {
+    fn toggle_select(&mut self, index: i32) {
         if index >= 0 && (index as usize) < self.contents.len() {
             let tmp_bool = !self.contents[index as usize].selected;
             self.contents[index as usize].selected = tmp_bool;
