@@ -165,9 +165,7 @@ impl OpenFileWith {
         const PROMPT: &str = ":open_with ";
         ncurses::waddstr(win.win, PROMPT);
 
-        let mut cur_ind = PROMPT.len();
-
-        match ui::get_str(&win, (option_size as i32 + 1, cur_ind as i32)) {
+        match ui::get_str(&win, (option_size as i32 + 1, PROMPT.len() as i32)) {
             Some(user_input) => {
                 win.destroy();
                 ncurses::update_panels();
