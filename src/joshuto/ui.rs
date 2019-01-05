@@ -99,9 +99,12 @@ pub fn wprint_path(win: &window::JoshutoPanel, username: &str,
         };
     ncurses::wattron(win.win, ncurses::A_BOLD());
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
-    ncurses::mvwaddstr(win.win, 0, 0,
-            format!("{}@{} ", username, hostname).as_str());
+    ncurses::mvwaddstr(win.win, 0, 0, username);
+    ncurses::waddstr(win.win, "@");
+    ncurses::waddstr(win.win, hostname);
     ncurses::wattroff(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
+
+    ncurses::waddstr(win.win, " ");
 
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(DIR_COLOR));
     ncurses::waddstr(win.win, path_str);
@@ -236,7 +239,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
             }
         },
         Err(e) => {
-            ncurses::waddstr(win, format!("{:?}", e).as_str());
+            ncurses::waddstr(win, e.to_string().as_str());
         },
     };
     ncurses::wnoutrefresh(win);

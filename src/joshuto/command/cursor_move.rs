@@ -64,7 +64,7 @@ impl CursorMove {
                         context.preview_list = Some(s);
                         ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
                     },
-                    Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
+                    Err(e) => ui::wprint_err(&context.views.right_win, e.to_string().as_str()),
                 }
             } else {
                 ncurses::werase(context.views.right_win.win);

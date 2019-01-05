@@ -325,8 +325,7 @@ impl command::Runnable for DeleteFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
 
-        ui::wprint_msg(&context.views.bot_win,
-            format!("Delete selected files? (Y/n)").as_str());
+        ui::wprint_msg(&context.views.bot_win, "Delete selected files? (Y/n)");
         ncurses::doupdate();
 
         let ch = ncurses::wgetch(context.views.bot_win.win);

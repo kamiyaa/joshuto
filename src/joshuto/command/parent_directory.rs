@@ -54,7 +54,7 @@ impl command::Runnable for ParentDirectory {
                                 Some(s)
                             },
                             Err(e) => {
-                                ui::wprint_err(&context.views.left_win, format!("{}", e).as_str());
+                                ui::wprint_err(&context.views.left_win, e.to_string().as_str());
                                 None
                             },
                         };
@@ -72,7 +72,7 @@ impl command::Runnable for ParentDirectory {
                         &context.config_t.username, &&context.config_t.hostname);
             },
             Err(e) => {
-                ui::wprint_err(&context.views.bot_win, format!("{}", e).as_str());
+                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
             },
         };
 

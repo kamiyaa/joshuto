@@ -16,7 +16,7 @@ serde = "1.0.82"
 serde_derive = "1.0.82"
 toml = "0.4.10"
 wcwidth = "1.0.1"
-whoami = "0.2.4"
+whoami = "0.3.0"
 xdg = "2.2.0"
 
 # clap = "*"

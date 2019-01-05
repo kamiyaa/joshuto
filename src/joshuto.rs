@@ -323,9 +323,6 @@ pub fn run(config_t: config::JoshutoConfig,
                 continue;
             }
         }
-
-//        ncurses::printw(format!("{}", *keycommand).as_str());
-
         keycommand.execute(&mut tabs[index]);
     }
 }

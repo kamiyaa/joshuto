@@ -113,7 +113,7 @@ impl command::Runnable for OpenFile {
             match path.strip_prefix(context.curr_path.as_path()) {
                 Ok(s) => context.curr_path.push(s),
                 Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, format!("{}", e).as_str());
+                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
                     return;
                 }
             }
@@ -129,7 +129,7 @@ impl command::Runnable for OpenFile {
                             Ok(s) => { Some(s) },
                             Err(e) => {
                                 ui::wprint_err(&context.views.right_win,
-                                        format!("{}", e).as_str());
+                                        e.to_string().as_str());
                                 None
                             },
                         };
