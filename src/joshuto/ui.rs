@@ -322,7 +322,9 @@ pub fn display_contents(win: &window::JoshutoPanel,
 pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
 {
     ncurses::werase(win.win);
-    ncurses::mvwhline(win.win, 0, 0, '-' as u32, 10000);
+
+    let ch = '-' as ncurses::chtype;
+    ncurses::mvwhline(win.win, 0, 0, ch, 10000);
 
     for (i, val) in vals.iter().enumerate() {
         ncurses::wmove(win.win, (i+1) as i32, 0);
