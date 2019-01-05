@@ -17,31 +17,12 @@ const MAP_COMMAND: &str = "map";
 
 const COMMENT_DELIMITER: char = '#';
 
-/*
-macro_rules! new_keymap {
-
-    ($($key: expr => $val: expr),*) => [
-        {
-            let mut map: HashMap<i32, Box<dyn JoshutoCommand>> = HashMap::new();
-
-            $(
-                map.insert($key as i32, $val);
-            )*
-
-            map
-        }
-    ]
-}
-*/
-
-
 /* #define KEY_ALT(x) KEY_F(60) + (x - 'A') */
 
 #[derive(Debug)]
 pub struct JoshutoKeymap {
     pub keymaps: HashMap<i32, CommandKeybind>,
 }
-
 
 impl JoshutoKeymap {
     pub fn new() -> Self

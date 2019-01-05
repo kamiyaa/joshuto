@@ -105,14 +105,6 @@ impl JoshutoView {
 
         let load_bar = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
         load_bar.move_to_bottom();
-/*
-        ncurses::scrollok(top_win.win, true);
-        ncurses::scrollok(left_win.win, true);
-        ncurses::scrollok(mid_win.win, true);
-        ncurses::scrollok(right_win.win, true);
-        ncurses::idlok(left_win.win, true);
-        ncurses::idlok(mid_win.win, true);
-        ncurses::idlok(right_win.win, true); */
 
         ncurses::refresh();
 

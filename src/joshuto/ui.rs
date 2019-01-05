@@ -10,14 +10,14 @@ use joshuto::unix;
 use joshuto::window;
 use joshuto::keymapll::Keycode;
 
-pub const DIR_COLOR     : i16 = 1;
-pub const SOCK_COLOR    : i16 = 4;
-pub const EXEC_COLOR    : i16 = 11;
-pub const IMG_COLOR     : i16 = 12;
-pub const VID_COLOR     : i16 = 13;
-pub const SELECT_COLOR  : i16 = 25;
-pub const ERR_COLOR     : i16 = 40;
-pub const EMPTY_COLOR   : i16 = 50;
+pub const DIR_COLOR: i16 = 1;
+pub const SOCK_COLOR: i16 = 4;
+pub const EXEC_COLOR: i16 = 11;
+pub const IMG_COLOR: i16 = 12;
+pub const VID_COLOR: i16 = 13;
+pub const SELECT_COLOR: i16 = 25;
+pub const ERR_COLOR: i16 = 40;
+pub const EMPTY_COLOR: i16 = 50;
 
 pub fn init_ncurses()
 {
@@ -252,73 +252,6 @@ pub fn wprint_direntry(win: &window::JoshutoPanel,
     wprint_file_name(win, file, coord);
 }
 
-pub fn display_contents(win: &window::JoshutoPanel,
-        entry: &structs::JoshutoDirList) {
-    use std::os::unix::fs::PermissionsExt;
-
-    ncurses::werase(win.win);
-    if win.cols <= 6 {
-        return;
-    }
-
-    let mut mode: u32 = 0;
-
-    let index = entry.index as usize;
-    let dir_contents = &entry.contents;
-    let vec_len = dir_contents.len();
-    if vec_len == 0 {
-        wprint_empty(win, "empty");
-        return;
-    }
-
-    let offset : usize = 8;
-    let start : usize;
-    let end : usize;
-
-    if win.rows as usize >= vec_len {
-        start = 0;
-        end = vec_len;
-    } else if index <= offset {
-        start = 0;
-        end = win.rows as usize;
-    } else if index + win.rows as usize >= vec_len + offset  {
-        start = vec_len - win.rows as usize;
-        end = vec_len;
-    } else {
-        start = index - offset;
-        end = start + win.rows as usize;
-    }
-
-    ncurses::wmove(win.win, 0, 0);
-
-    for i in start..end {
-        let coord: (i32, i32) = (i as i32 - start as i32, 0);
-        wprint_direntry(win, &dir_contents[i], coord);
-
-        if let Ok(metadata) = fs::symlink_metadata(&dir_contents[i].path) {
-            mode = metadata.permissions().mode();
-        }
-
-        if dir_contents[i].selected {
-            if index == i {
-                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | ncurses::A_STANDOUT(), SELECT_COLOR);
-            } else {
-                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD(), SELECT_COLOR);
-            }
-        } else if mode != 0 {
-            if index == i {
-                file_attr_apply(win.win, coord, mode,
-                    dir_contents[i].path.extension(), ncurses::A_STANDOUT());
-            } else {
-                file_attr_apply(win.win, coord, mode,
-                    dir_contents[i].path.extension(), ncurses::A_NORMAL());
-            }
-        }
-
-    }
-    ncurses::wnoutrefresh(win.win);
-}
-
 pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
 {
     ncurses::werase(win.win);
@@ -500,8 +433,81 @@ pub fn draw_loading_bar(win: &window::JoshutoPanel, percentage: f32)
     ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(), 0);
 }
 
-fn file_attr_apply(win: ncurses::WINDOW, coord : (i32, i32), mode : u32,
-        file_extension: Option<&ffi::OsStr>, attr : ncurses::attr_t)
+pub fn display_contents(win: &window::JoshutoPanel,
+        entry: &structs::JoshutoDirList) {
+    use std::os::unix::fs::PermissionsExt;
+
+    ncurses::werase(win.win);
+    if win.cols <= 6 {
+        return;
+    }
+
+    let mut mode: u32 = 0;
+
+    let index = entry.index as usize;
+    let dir_contents = &entry.contents;
+    let vec_len = dir_contents.len();
+    if vec_len == 0 {
+        wprint_empty(win, "empty");
+        return;
+    }
+
+    let offset : usize = 8;
+    let start : usize;
+    let end : usize;
+
+    if win.rows as usize >= vec_len {
+        start = 0;
+        end = vec_len;
+    } else if index <= offset {
+        start = 0;
+        end = win.rows as usize;
+    } else if index + win.rows as usize >= vec_len + offset  {
+        start = vec_len - win.rows as usize;
+        end = vec_len;
+    } else {
+        start = index - offset;
+        end = start + win.rows as usize;
+    }
+
+    ncurses::wmove(win.win, 0, 0);
+
+    for i in start..end {
+        let coord: (i32, i32) = (i as i32 - start as i32, 0);
+        wprint_direntry(win, &dir_contents[i], coord);
+
+        if let Ok(metadata) = fs::symlink_metadata(&dir_contents[i].path) {
+            mode = metadata.permissions().mode();
+        }
+
+        if dir_contents[i].selected {
+            if index == i {
+                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | ncurses::A_STANDOUT(), SELECT_COLOR);
+            } else {
+                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD(), SELECT_COLOR);
+            }
+        } else if mode != 0 {
+            let file_name = &dir_contents[i].file_name_as_string;
+            let mut extension: &str = "";
+            if let Some(ext) = file_name.rfind('.') {
+                extension = &file_name[ext+1..];
+            }
+
+            if index == i {
+                file_attr_apply(win.win, coord, mode,
+                    extension, ncurses::A_STANDOUT());
+            } else {
+                file_attr_apply(win.win, coord, mode,
+                    extension, ncurses::A_NORMAL());
+            }
+        }
+
+    }
+    ncurses::wnoutrefresh(win.win);
+}
+
+fn file_attr_apply(win: ncurses::WINDOW, coord: (i32, i32), mode: u32,
+        extension: &str, attr: ncurses::attr_t)
 {
     match mode & unix::BITMASK {
         unix::S_IFLNK | unix::S_IFCHR | unix::S_IFBLK => {
@@ -517,10 +523,8 @@ fn file_attr_apply(win: ncurses::WINDOW, coord : (i32, i32), mode : u32,
             if unix::is_executable(mode) == true {
                 ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, EXEC_COLOR);
             }
-            else if let Some(extension) = file_extension {
-                if let Some(ext) = extension.to_str() {
-                    file_ext_attr_apply(win, coord, ext, attr);
-                }
+            else if extension.len() > 0 {
+                file_ext_attr_apply(win, coord, extension, attr);
             } else {
                     ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, 0);
             }
@@ -529,8 +533,8 @@ fn file_attr_apply(win: ncurses::WINDOW, coord : (i32, i32), mode : u32,
     };
 }
 
-fn file_ext_attr_apply(win : ncurses::WINDOW, coord : (i32, i32), ext : &str,
-        attr : ncurses::attr_t)
+fn file_ext_attr_apply(win: ncurses::WINDOW, coord: (i32, i32), ext: &str,
+        attr: ncurses::attr_t)
 {
     match ext {
         "png" | "jpg" | "jpeg" | "gif" => {
