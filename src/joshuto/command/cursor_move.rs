@@ -22,25 +22,14 @@ impl CursorMove {
         }
     }
     pub fn command() -> &'static str { "cursor_move" }
-}
 
-impl command::JoshutoCommand for CursorMove {}
-
-impl std::fmt::Display for CursorMove {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
-        write!(f, "{} {}", Self::command(), self.movement)
-    }
-}
-
-impl command::Runnable for CursorMove {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+    pub fn cursor_move(movement: i32, context: &mut joshuto::JoshutoContext)
     {
         if let Some(ref mut curr_list) = context.curr_list {
             let curr_index = curr_list.index;
             let dir_len = curr_list.contents.len() as i32;
 
-            let mut new_index = curr_list.index + self.movement;
+            let mut new_index = curr_list.index + movement;
             if new_index <= 0 {
                 new_index = 0;
                 if curr_index <= 0 {
@@ -90,6 +79,22 @@ impl command::Runnable for CursorMove {
     }
 }
 
+impl command::JoshutoCommand for CursorMove {}
+
+impl std::fmt::Display for CursorMove {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        write!(f, "{} {}", Self::command(), self.movement)
+    }
+}
+
+impl command::Runnable for CursorMove {
+    fn execute(&self, context: &mut joshuto::JoshutoContext)
+    {
+        Self::cursor_move(self.movement, context);
+    }
+}
+
 #[derive(Debug)]
 pub struct CursorMovePageUp;
 
@@ -110,7 +115,7 @@ impl std::fmt::Display for CursorMovePageUp {
 impl command::Runnable for CursorMovePageUp {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let mut command: Option<CursorMove> = None;
+        let mut movement: Option<i32> = None;
 
         if let Some(ref curr_list) = context.curr_list {
             let curr_index = curr_list.index;
@@ -119,10 +124,10 @@ impl command::Runnable for CursorMovePageUp {
             }
 
             let half_page = -(context.views.mid_win.cols / 2);
-            command = Some(CursorMove::new(half_page));
+            movement = Some(half_page);
         }
-        if let Some(s) = command {
-            s.execute(context);
+        if let Some(s) = movement {
+            CursorMove::cursor_move(s, context);
         }
     }
 }
@@ -147,7 +152,7 @@ impl std::fmt::Display for CursorMovePageDown {
 impl command::Runnable for CursorMovePageDown {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let mut command: Option<CursorMove> = None;
+        let mut movement: Option<i32> = None;
 
         if let Some(ref curr_list) = context.curr_list {
             let curr_index = curr_list.index;
@@ -157,10 +162,10 @@ impl command::Runnable for CursorMovePageDown {
             }
 
             let half_page = context.views.mid_win.cols / 2;
-            command = Some(CursorMove::new(half_page));
+            movement = Some(half_page);
         }
-        if let Some(s) = command {
-            s.execute(context);
+        if let Some(s) = movement {
+            CursorMove::cursor_move(s, context);
         }
     }
 }
@@ -185,18 +190,17 @@ impl std::fmt::Display for CursorMoveHome {
 impl command::Runnable for CursorMoveHome {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let mut command: Option<CursorMove> = None;
+        let mut movement: Option<i32> = None;
 
         if let Some(ref curr_list) = context.curr_list {
             let curr_index = curr_list.index;
             if curr_index <= 0 {
                 return;
             }
-
-            command = Some(CursorMove::new(-curr_index));
+            movement = Some(-curr_index);
         }
-        if let Some(s) = command {
-            s.execute(context);
+        if let Some(s) = movement {
+            CursorMove::cursor_move(s, context);
         }
     }
 }
@@ -221,7 +225,8 @@ impl std::fmt::Display for CursorMoveEnd {
 impl command::Runnable for CursorMoveEnd {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let mut command: Option<CursorMove> = None;
+
+        let mut movement: Option<i32> = None;
 
         if let Some(ref curr_list) = context.curr_list {
             let curr_index = curr_list.index;
@@ -229,12 +234,10 @@ impl command::Runnable for CursorMoveEnd {
             if curr_index >= dir_len as i32 - 1 {
                 return;
             }
-
-            let movement = dir_len as i32 - 1 - curr_index;
-            command = Some(CursorMove::new(movement));
+            movement = Some(dir_len as i32 - 1 - curr_index);
         }
-        if let Some(s) = command {
-            s.execute(context);
+        if let Some(s) = movement {
+            CursorMove::cursor_move(s, context);
         }
     }
 }

@@ -1,7 +1,6 @@
 extern crate ncurses;
 extern crate wcwidth;
 
-use std::ffi;
 use std::fs;
 use std::path;
 
