@@ -33,7 +33,7 @@ xdg = "2.2.0"
 
 
 [dependencies.ncurses]
-version = "5.97.0"
+version = "5.98.0"
 features = [ "extended_colors", "panel" ]
 
 [features]
