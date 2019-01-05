@@ -9,6 +9,7 @@ use std::path;
 
 use joshuto;
 use joshuto::command;
+use joshuto::input;
 use joshuto::mimetype;
 use joshuto::structs;
 use joshuto::ui;
@@ -203,35 +204,35 @@ impl OpenFileWith {
         const PROMPT: &str = ":open_with ";
         ncurses::waddstr(win.win, PROMPT);
 
-        match ui::get_str(&win, (option_size as i32 + 1, PROMPT.len() as i32)) {
-            Some(user_input) => {
-                win.destroy();
-                ncurses::update_panels();
-                ncurses::doupdate();
-                match user_input.parse::<usize>() {
-                    Ok(s) => {
-                        if s < mimetype_options.len() {
-                            ncurses::savetty();
-                            ncurses::endwin();
-                            unix::open_with(pathbuf.as_path(), &mimetype_options[s]);
-                            ncurses::resetty();
-                            ncurses::refresh();
-                        }
-                    }
-                    Err(_) => {
-                        let args: Vec<String> = user_input.split_whitespace().map(|x| String::from(x)).collect();
+        let user_input = input::get_str(&win, (option_size as i32 + 1, PROMPT.len() as i32));
+
+        win.destroy();
+        ncurses::update_panels();
+        ncurses::doupdate();
+
+
+        if let Some(user_input) = user_input {
+            if user_input.len() == 0 {
+                return;
+            }
+            match user_input.parse::<usize>() {
+                Ok(s) => {
+                    if s < mimetype_options.len() {
                         ncurses::savetty();
                         ncurses::endwin();
-                        unix::open_with(pathbuf.as_path(), &args);
+                        unix::open_with(pathbuf.as_path(), &mimetype_options[s]);
                         ncurses::resetty();
                         ncurses::refresh();
                     }
                 }
-            },
-            None => {
-                win.destroy();
-                ncurses::update_panels();
-                ncurses::doupdate();
+                Err(_) => {
+                    let args: Vec<String> = user_input.split_whitespace().map(|x| String::from(x)).collect();
+                    ncurses::savetty();
+                    ncurses::endwin();
+                    unix::open_with(pathbuf.as_path(), &args);
+                    ncurses::resetty();
+                    ncurses::refresh();
+                }
             }
         }
     }

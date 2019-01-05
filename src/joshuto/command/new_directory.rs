@@ -5,6 +5,7 @@ use std::fmt;
 use std::path;
 
 use joshuto;
+use joshuto::input;
 use joshuto::ui;
 use joshuto::window;
 
@@ -43,7 +44,7 @@ impl command::Runnable for NewDirectory {
         win.move_to_top();
         ncurses::doupdate();
 
-        if let Some(user_input) = ui::get_str(&win, (0, PROMPT.len() as i32)) {
+        if let Some(user_input) = input::get_str(&win, (0, PROMPT.len() as i32)) {
             let path = path::PathBuf::from(user_input);
             match std::fs::create_dir_all(&path) {
                 Ok(_) => {

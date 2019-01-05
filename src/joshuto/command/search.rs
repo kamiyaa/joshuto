@@ -4,7 +4,7 @@ use std;
 use std::fmt;
 
 use joshuto;
-use joshuto::ui;
+use joshuto::input;
 use joshuto::window;
 
 use joshuto::command;
@@ -44,7 +44,7 @@ impl command::Runnable for Search {
 
         let mut index: Option<i32> = None;
 
-        if let Some(user_input) = ui::get_str(&win, (0, PROMPT.len() as i32)) {
+        if let Some(user_input) = input::get_str(&win, (0, PROMPT.len() as i32)) {
             if let Some(curr_list) = context.curr_list.as_ref() {
                 for (i, dirent) in (&curr_list.contents).into_iter().enumerate() {
                     if dirent.file_name_as_string.contains(user_input.as_str()) {

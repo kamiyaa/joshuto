@@ -14,7 +14,7 @@ pub mod keymap;
 pub mod mimetype;
 mod command;
 mod history;
-// mod navigation;
+mod input;
 mod sort;
 mod structs;
 mod ui;

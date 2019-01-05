@@ -11,6 +11,7 @@ use std::thread;
 
 use joshuto;
 use joshuto::command;
+use joshuto::input;
 use joshuto::keymap;
 use joshuto::structs;
 use joshuto::ui;
@@ -389,9 +390,9 @@ impl RenameFile {
         ncurses::doupdate();
 
         let user_input: Option<String> = match self.method {
-            RenameFileMethod::Append => ui::get_str_append(&win, (0, PROMPT.len() as i32), start_str),
-            RenameFileMethod::Prepend => ui::get_str_prepend(&win, (0, PROMPT.len() as i32), start_str),
-            RenameFileMethod::Overwrite => ui::get_str(&win, (0, PROMPT.len() as i32)),
+            RenameFileMethod::Append => input::get_str_append(&win, (0, PROMPT.len() as i32), start_str),
+            RenameFileMethod::Prepend => input::get_str_prepend(&win, (0, PROMPT.len() as i32), start_str),
+            RenameFileMethod::Overwrite => input::get_str(&win, (0, PROMPT.len() as i32)),
             };
 
         if let Some(s) = user_input {
