@@ -7,6 +7,8 @@ Is a work in progress.
 
 ## Dependencies
  - ncurses
+ - cargo
+ - rustc
 
 Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 
@@ -39,5 +41,8 @@ Joshuto can currently be configured using the following files:
 
 Place these config files in your `XDG_CONFIG_DIR/joshuto` (usually `$HOME/.config/joshuto/`)
 
+## Contributing
+Create a pull request please :)
+
 ## Features/Bugs
-Please create an issue :)
+Create an ssue please :)
