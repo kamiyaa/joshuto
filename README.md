@@ -7,6 +7,8 @@ Is a work in progress.
 
 ## Dependencies
  - ncurses
+ - cargo
+ - rustc
 
 Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 
