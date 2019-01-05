@@ -9,13 +9,17 @@ use std::process;
 
 use joshuto::command;
 use joshuto::command::*;
-use joshuto::keymapll::Keycode;
 
 const MAP_COMMAND: &str = "map";
 // const ALIAS_COMMAND: &str = "alias";
 // const NEWTAB_COMMAND: &str = "newtab";
 
 const COMMENT_DELIMITER: char = '#';
+
+pub const BACKSPACE: i32 = 0x7F;
+pub const TAB: i32 = 0x9;
+pub const ENTER: i32 = 0xA;
+pub const ESCAPE: i32 = 0x1B;
 
 /* #define KEY_ALT(x) KEY_F(60) + (x - 'A') */
 
@@ -32,93 +36,93 @@ impl JoshutoKeymap {
         // quit
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::Quit::new()));
-        keymaps.insert(Keycode::LOWER_Q as i32, command);
+        keymaps.insert('q' as i32, command);
 
         // up
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMove::new(-1)));
-        keymaps.insert(Keycode::UP as i32, command);
+        keymaps.insert(ncurses::KEY_UP, command);
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMove::new(-1)));
-        keymaps.insert(Keycode::LOWER_K as i32, command);
+        keymaps.insert('k' as i32, command);
 
         // down
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMove::new(1)));
-        keymaps.insert(Keycode::DOWN as i32, command);
+        keymaps.insert(ncurses::KEY_DOWN, command);
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMove::new(1)));
-        keymaps.insert(Keycode::LOWER_J as i32, command);
+        keymaps.insert('j' as i32, command);
 
         // left
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::ParentDirectory::new()));
-        keymaps.insert(Keycode::LEFT as i32, command);
+        keymaps.insert(ncurses::KEY_LEFT, command);
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::ParentDirectory::new()));
-        keymaps.insert(Keycode::LOWER_H as i32, command);
+        keymaps.insert('h' as i32, command);
 
         // right
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::OpenFile::new()));
-        keymaps.insert(Keycode::RIGHT as i32, command);
+        keymaps.insert(ncurses::KEY_RIGHT, command);
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::OpenFile::new()));
-        keymaps.insert(Keycode::LOWER_L as i32, command);
+        keymaps.insert('l' as i32, command);
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::OpenFile::new()));
-        keymaps.insert(Keycode::ENTER as i32, command);
+        keymaps.insert(ENTER, command);
 
         let command = CommandKeybind::SimpleKeybind(
             Box::new(command::OpenFileWith::new()));
-        keymaps.insert(Keycode::LOWER_R as i32, command);
+        keymaps.insert('r' as i32, command);
 
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMovePageUp::new()));
-        keymaps.insert(Keycode::PPAGE as i32, command);
+        keymaps.insert(ncurses::KEY_PPAGE, command);
 
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMovePageDown::new()));
-        keymaps.insert(Keycode::NPAGE as i32, command);
+        keymaps.insert(ncurses::KEY_NPAGE, command);
 
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMoveHome::new()));
-        keymaps.insert(Keycode::HOME as i32, command);
+        keymaps.insert(ncurses::KEY_HOME, command);
 
         let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CursorMoveEnd::new()));
-        keymaps.insert(Keycode::END as i32, command);
+        keymaps.insert(ncurses::KEY_END, command);
 
         let command = CommandKeybind::SimpleKeybind(
             Box::new(command::DeleteFiles::new()));
-        keymaps.insert(Keycode::DELETE as i32, command);
+        keymaps.insert(ncurses::KEY_DC, command);
 
         let command = CommandKeybind::SimpleKeybind(
             Box::new(command::RenameFile::new(command::RenameFileMethod::Append)));
-        keymaps.insert(Keycode::LOWER_A as i32, command);
+        keymaps.insert('a' as i32, command);
 
         {
             let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::ToggleHiddenFiles::new()));
-            subkeymap.insert(Keycode::LOWER_H as i32, command);
+            subkeymap.insert('h' as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
-            keymaps.insert(Keycode::LOWER_Z as i32, command);
+            keymaps.insert('z' as i32, command);
         }
 
         {
             let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CutFiles::new()));
-            subkeymap.insert(Keycode::LOWER_D as i32, command);
+            subkeymap.insert('d' as i32, command);
 
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::DeleteFiles::new()));
-            subkeymap.insert(Keycode::UPPER_D as i32, command);
+            subkeymap.insert('D' as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
-            keymaps.insert(Keycode::LOWER_D as i32, command);
+            keymaps.insert('d' as i32, command);
         }
 
         {
@@ -126,10 +130,10 @@ impl JoshutoKeymap {
 
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::CopyFiles::new()));
-            subkeymap.insert(Keycode::LOWER_Y as i32, command);
+            subkeymap.insert('y' as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
-            keymaps.insert(Keycode::LOWER_Y as i32, command);
+            keymaps.insert('y' as i32, command);
         }
 
         {
@@ -138,26 +142,26 @@ impl JoshutoKeymap {
             let options = fs_extra::dir::CopyOptions::new();
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::PasteFiles::new(options)));
-            subkeymap.insert(Keycode::LOWER_P as i32, command);
+            subkeymap.insert('p' as i32, command);
 
             let mut options = fs_extra::dir::CopyOptions::new();
             options.overwrite = true;
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::PasteFiles::new(options)));
-            subkeymap.insert(Keycode::LOWER_O as i32, command);
+            subkeymap.insert('o' as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
-            keymaps.insert(Keycode::LOWER_P as i32, command);
+            keymaps.insert('p' as i32, command);
         }
 
         {
             let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::NewDirectory::new()));
-            subkeymap.insert(Keycode::LOWER_K as i32, command);
+            subkeymap.insert('k' as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
-            keymaps.insert(Keycode::LOWER_M as i32, command);
+            keymaps.insert('m' as i32, command);
         }
 
         JoshutoKeymap {
@@ -165,21 +169,74 @@ impl JoshutoKeymap {
         }
     }
 
+    pub fn from_str(keycode: &str) -> Option<i32>
+    {
+        if keycode.len() == 1 {
+            for ch in keycode.chars() {
+                if ch.is_ascii() {
+                    return Some(ch as i32);
+                }
+            }
+            return None;
+        } else {
+            match keycode {
+                "Comma" => Some(',' as i32),
+                "Tab" => Some(TAB),
+                "Space" => Some(' ' as i32),
+                "Backspace" => Some(BACKSPACE),
+                "Delete" => Some(ncurses::KEY_DC),
+                "Enter" => Some(ENTER),
+                "Escape" => Some(ESCAPE),
+
+
+                "F0" => Some(ncurses::KEY_F0),
+                "F1" => Some(ncurses::KEY_F1),
+                "F2" => Some(ncurses::KEY_F2),
+                "F3" => Some(ncurses::KEY_F3),
+                "F4" => Some(ncurses::KEY_F4),
+                "F5" => Some(ncurses::KEY_F5),
+                "F6" => Some(ncurses::KEY_F6),
+                "F7" => Some(ncurses::KEY_F7),
+                "F8" => Some(ncurses::KEY_F8),
+                "F9" => Some(ncurses::KEY_F9),
+                "F10" => Some(ncurses::KEY_F10),
+                "F11" => Some(ncurses::KEY_F11),
+                "F12" => Some(ncurses::KEY_F12),
+                "F13" => Some(ncurses::KEY_F13),
+                "F14" => Some(ncurses::KEY_F14),
+                "F15" => Some(ncurses::KEY_F15),
+
+                "Insert" => Some(ncurses::KEY_IC),           /* insert-character key */
+                "PageUp" => Some(ncurses::KEY_PPAGE),        /* next-page key */
+                "PageDown" => Some(ncurses::KEY_NPAGE),      /* previous-page key */
+                "PrintScreen" => Some(ncurses::KEY_PRINT),    /* print key */
+
+                "Up" => Some(ncurses::KEY_UP),
+                "Down" => Some(ncurses::KEY_DOWN),
+                "Left" => Some(ncurses::KEY_LEFT),
+                "Right" => Some(ncurses::KEY_RIGHT),
+                "Home" => Some(ncurses::KEY_HOME),
+                "End" => Some(ncurses::KEY_END),
+                _ => None,
+            }
+        }
+    }
+
     fn insert_keycommand(map: &mut HashMap<i32, CommandKeybind>,
             keycommand: Box<dyn JoshutoCommand>, keys: &[&str])
     {
         if keys.len() == 1 {
-            match Keycode::from_str(keys[0]) {
+            match Self::from_str(keys[0]) {
                 Some(s) => {
-                    map.insert(s as i32, CommandKeybind::SimpleKeybind(keycommand));
+                    map.insert(s, CommandKeybind::SimpleKeybind(keycommand));
                 },
                 None => {}
             }
         } else {
-            match Keycode::from_str(keys[0]) {
+            match Self::from_str(keys[0]) {
                 Some(s) => {
                     let mut new_map: HashMap<i32, CommandKeybind>;
-                    match map.remove(&(s.clone() as i32)) {
+                    match map.remove(&s) {
                         Some(CommandKeybind::CompositeKeybind(mut m)) => {
                             new_map = m;
                         },
@@ -278,4 +335,3 @@ impl JoshutoKeymap {
         }
     }
 }
-

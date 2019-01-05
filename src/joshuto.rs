@@ -21,11 +21,8 @@ mod ui;
 mod unix;
 mod window;
 
-mod keymapll;
-
 use self::command::CommandKeybind;
 use self::command::JoshutoCommand;
-use self::keymapll::Keycode;
 
 pub struct JoshutoContext<'a> {
     pub curr_path: path::PathBuf,
@@ -200,7 +197,7 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     ncurses::update_panels();
     ncurses::doupdate();
 
-    if ch == Keycode::ESCAPE as i32 {
+    if ch == keymap::ESCAPE {
         None
     } else {
         match keymap.get(&ch) {

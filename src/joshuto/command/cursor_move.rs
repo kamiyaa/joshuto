@@ -23,13 +23,13 @@ impl CursorMove {
     }
     pub fn command() -> &'static str { "cursor_move" }
 
-    pub fn cursor_move(movement: i32, context: &mut joshuto::JoshutoContext)
+    pub fn cursor_move(new_index: i32, context: &mut joshuto::JoshutoContext)
     {
         if let Some(ref mut curr_list) = context.curr_list {
             let curr_index = curr_list.index;
             let dir_len = curr_list.contents.len() as i32;
 
-            let mut new_index = curr_list.index + movement;
+            let mut new_index = new_index;
             if new_index <= 0 {
                 new_index = 0;
                 if curr_index <= 0 {
@@ -91,7 +91,15 @@ impl std::fmt::Display for CursorMove {
 impl command::Runnable for CursorMove {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        Self::cursor_move(self.movement, context);
+        let mut movement: Option<i32> = None;
+
+        if let Some(ref curr_list) = context.curr_list {
+            let curr_index = curr_list.index;
+            movement = Some(curr_index + self.movement);
+        }
+        if let Some(s) = movement {
+            CursorMove::cursor_move(s, context);
+        }
     }
 }
 
@@ -123,8 +131,8 @@ impl command::Runnable for CursorMovePageUp {
                 return;
             }
 
-            let half_page = -(context.views.mid_win.cols / 2);
-            movement = Some(half_page);
+            let half_page = context.views.mid_win.cols / 2;
+            movement = Some(curr_index - half_page);
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
@@ -162,7 +170,7 @@ impl command::Runnable for CursorMovePageDown {
             }
 
             let half_page = context.views.mid_win.cols / 2;
-            movement = Some(half_page);
+            movement = Some(curr_index + half_page);
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
@@ -197,7 +205,7 @@ impl command::Runnable for CursorMoveHome {
             if curr_index <= 0 {
                 return;
             }
-            movement = Some(-curr_index);
+            movement = Some(0);
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
@@ -234,7 +242,7 @@ impl command::Runnable for CursorMoveEnd {
             if curr_index >= dir_len as i32 - 1 {
                 return;
             }
-            movement = Some(dir_len as i32 - 1 - curr_index);
+            movement = Some(dir_len as i32 - 1);
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);

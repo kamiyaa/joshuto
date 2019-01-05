@@ -11,11 +11,10 @@ use std::thread;
 
 use joshuto;
 use joshuto::command;
+use joshuto::keymap;
 use joshuto::structs;
 use joshuto::ui;
 use joshuto::window;
-
-use joshuto::keymapll::Keycode;
 
 lazy_static! {
     static ref selected_files: sync::Mutex<Vec<path::PathBuf>> = sync::Mutex::new(vec![]);
@@ -330,7 +329,7 @@ impl command::Runnable for DeleteFiles {
         ncurses::doupdate();
 
         let ch = ncurses::wgetch(context.views.bot_win.win);
-        if ch == Keycode::LOWER_Y as i32 || ch == Keycode::ENTER as i32 {
+        if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.curr_list.as_mut() {
                 if let Some(paths) = collect_selected_paths(s) {
                     Self::remove_files(paths, &context.views.bot_win);

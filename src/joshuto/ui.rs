@@ -4,10 +4,10 @@ extern crate wcwidth;
 use std::fs;
 use std::path;
 
+use joshuto::keymap;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
-use joshuto::keymapll::Keycode;
 
 pub const DIR_COLOR: i16 = 1;
 pub const SOCK_COLOR: i16 = 4;
@@ -343,16 +343,16 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
 
         let ch: i32 = ncurses::wgetch(win.win);
 
-        if ch == Keycode::ESCAPE as i32 {
+        if ch == keymap::ESCAPE {
             return None;
-        } else if ch == Keycode::ENTER as i32 {
+        } else if ch == keymap::ENTER {
             break;
-        } else if ch == Keycode::HOME as i32 {
+        } else if ch == ncurses::KEY_HOME {
             if curr_index != 0 {
                 curs_x = coord.1;
                 curr_index = 0;
             }
-        } else if ch == Keycode::END as i32 {
+        } else if ch == ncurses::KEY_END {
             let user_input_len = user_input.len();
             if curr_index != user_input_len {
                 for i in curr_index..user_input_len {
@@ -360,18 +360,18 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
                 }
                 curr_index = user_input_len;
             }
-        } else if ch == Keycode::LEFT as i32 {
+        } else if ch == ncurses::KEY_LEFT {
             if curr_index > 0 {
                 curr_index = curr_index - 1;
                 curs_x = curs_x - user_input[curr_index].0 as i32;
             }
-        } else if ch == Keycode::RIGHT as i32 {
+        } else if ch == ncurses::KEY_RIGHT {
             let user_input_len = user_input.len();
             if curr_index < user_input_len {
                 curs_x = curs_x + user_input[curr_index].0 as i32;
                 curr_index = curr_index + 1;
             }
-        } else if ch == Keycode::BACKSPACE as i32 {
+        } else if ch == keymap::BACKSPACE {
             let user_input_len = user_input.len();
 
             if user_input_len == 0 {
@@ -388,7 +388,7 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
                 let (size, _) = user_input.remove(curr_index);
                 curs_x = curs_x - size as i32;
             }
-        } else if ch == Keycode::DELETE as i32 {
+        } else if ch == ncurses::KEY_DC {
             let user_input_len = user_input.len();
 
             if user_input_len == 0 || curr_index == user_input_len {

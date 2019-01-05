@@ -40,6 +40,9 @@ pub use self::file_operation::RenameFileMethod;
 mod new_directory;
 pub use self::new_directory::NewDirectory;
 
+mod search;
+pub use self::search::Search;
+
 mod show_hidden;
 pub use self::show_hidden::ToggleHiddenFiles;
 
@@ -117,7 +120,7 @@ pub fn from_args(args: &[&str]) -> Option<Box<dyn JoshutoCommand>>
 
         "open_file" => Some(Box::new(self::OpenFile::new())),
         "open_file_with" => Some(Box::new(self::OpenFileWith::new())),
-        "change_directory" => {
+        "cd" => {
             if args_len > 1 {
                 let path = path::PathBuf::from(args[1]);
                 Some(Box::new(self::ChangeDirectory::new(path)))
@@ -192,7 +195,8 @@ pub fn from_args(args: &[&str]) -> Option<Box<dyn JoshutoCommand>>
             }
             Some(Box::new(self::RenameFile::new(method)))
         }
-        "new_directory" => Some(Box::new(self::NewDirectory::new())),
+        "mkdir" => Some(Box::new(self::NewDirectory::new())),
+        "search" => Some(Box::new(self::Search::new())),
         "select_files" => {
             let mut toggle = false;
             let mut all = false;

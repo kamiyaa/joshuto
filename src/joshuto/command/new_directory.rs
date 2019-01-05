@@ -15,7 +15,7 @@ pub struct NewDirectory;
 
 impl NewDirectory {
     pub fn new() -> Self { NewDirectory }
-    pub fn command() -> &'static str { "new_directory" }
+    pub fn command() -> &'static str { "mkdir" }
 }
 
 impl command::JoshutoCommand for NewDirectory {}
