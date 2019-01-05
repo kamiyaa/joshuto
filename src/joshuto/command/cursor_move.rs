@@ -36,50 +36,57 @@ impl std::fmt::Display for CursorMove {
 impl command::Runnable for CursorMove {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        match context.curr_list {
-            Some(ref mut curr_list) => {
-                let curr_index = curr_list.index;
+        if let Some(ref mut curr_list) = context.curr_list {
+            let curr_index = curr_list.index;
+            let dir_len = curr_list.contents.len() as i32;
 
-                let new_index = curr_list.index + self.movement;
-
-                let dir_len = curr_list.contents.len() as i32;
-                if new_index <= 0 && curr_index <= 0 ||
-                        new_index >= dir_len && curr_index == dir_len - 1 {
+            let mut new_index = curr_list.index + self.movement;
+            if new_index <= 0 {
+                new_index = 0;
+                if curr_index <= 0 {
                     return;
                 }
-
-                let dir_list = context.preview_list.take();
-                if let Some(s) = dir_list {
-                    context.history.insert(s);
+            } else if new_index >= dir_len {
+                new_index = dir_len - 1;
+                if curr_index == dir_len - 1 {
+                    return;
                 }
+            }
 
-                curr_list.index = new_index;
-                let curr_index = curr_list.index as usize;
-                let new_path = &curr_list.contents[curr_index].path;
+            let dir_list = context.preview_list.take();
+            if let Some(s) = dir_list {
+                context.history.insert(s);
+            }
 
-                if new_path.is_dir() {
-                    match context.history.pop_or_create(new_path.as_path(),
-                            &context.config_t.sort_type) {
-                        Ok(s) => {
-                            context.preview_list = Some(s);
-                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
-                        },
-                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
-                    }
-                } else {
-                    ncurses::werase(context.views.right_win.win);
-                    ncurses::wnoutrefresh(context.views.right_win.win);
-                }
-            },
-            None => {},
+            curr_list.index = new_index;
         }
 
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
+        if let Some(ref curr_list) = context.curr_list {
+            let curr_index = curr_list.index as usize;
+            let new_path = &curr_list.contents[curr_index].path;
 
-        ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
+            curr_list.display_contents(&context.views.mid_win);
+            ncurses::wnoutrefresh(context.views.mid_win.win);
 
-        ncurses::doupdate();
+            if new_path.is_dir() {
+                match context.history.pop_or_create(new_path.as_path(),
+                        &context.config_t.sort_type) {
+                    Ok(s) => {
+                        context.preview_list = Some(s);
+                        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                    },
+                    Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
+                }
+            } else {
+                ncurses::werase(context.views.right_win.win);
+                ncurses::wnoutrefresh(context.views.right_win.win);
+            }
+
+            ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
+                    &context.config_t.username, &context.config_t.hostname);
+
+            ncurses::doupdate();
+        }
     }
 }
 
@@ -103,53 +110,20 @@ impl std::fmt::Display for CursorMovePageUp {
 impl command::Runnable for CursorMovePageUp {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        match context.curr_list {
-            Some(ref mut curr_list) => {
-                let curr_index = curr_list.index;
+        let mut command: Option<CursorMove> = None;
 
-                if curr_index <= 0 {
-                    return;
-                }
+        if let Some(ref curr_list) = context.curr_list {
+            let curr_index = curr_list.index;
+            if curr_index <= 0 {
+                return;
+            }
 
-                let half_page = context.views.mid_win.cols as usize / 2;
-
-                let new_index = if curr_index <= half_page as i32 {
-                    0
-                } else {
-                    curr_index - half_page as i32
-                };
-
-                let dir_list = context.preview_list.take();
-                if let Some(s) = dir_list {
-                    context.history.insert(s);
-                }
-
-                curr_list.index = new_index;
-                let curr_index = curr_list.index as usize;
-                let new_path = &curr_list.contents[curr_index].path;
-
-                if new_path.is_dir() {
-                    match context.history.pop_or_create(new_path.as_path(),
-                            &context.config_t.sort_type) {
-                        Ok(s) => {
-                            context.preview_list = Some(s);
-                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
-                        },
-                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
-                    }
-                } else {
-                    ncurses::werase(context.views.right_win.win);
-                    ncurses::wnoutrefresh(context.views.right_win.win);
-                }
-            },
-            None => {},
+            let half_page = -(context.views.mid_win.cols / 2);
+            command = Some(CursorMove::new(half_page));
         }
-
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-
-        ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
-        ncurses::doupdate();
+        if let Some(s) = command {
+            s.execute(context);
+        }
     }
 }
 
@@ -173,54 +147,21 @@ impl std::fmt::Display for CursorMovePageDown {
 impl command::Runnable for CursorMovePageDown {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        match context.curr_list {
-            Some(ref mut curr_list) => {
-                let curr_index = curr_list.index;
-                let dir_len = curr_list.contents.len();
+        let mut command: Option<CursorMove> = None;
 
-                if curr_index >= dir_len as i32 - 1 {
-                    return;
-                }
+        if let Some(ref curr_list) = context.curr_list {
+            let curr_index = curr_list.index;
+            let dir_len = curr_list.contents.len();
+            if curr_index >= dir_len as i32 - 1 {
+                return;
+            }
 
-                let half_page = context.views.mid_win.cols as usize / 2;
-
-                let new_index = if curr_index + half_page as i32 >= dir_len as i32 {
-                    (dir_len - 1) as i32
-                } else {
-                    curr_index + half_page as i32
-                };
-
-                let dir_list = context.preview_list.take();
-                if let Some(s) = dir_list {
-                    context.history.insert(s);
-                }
-
-                curr_list.index = new_index;
-                let curr_index = curr_list.index as usize;
-                let new_path = &curr_list.contents[curr_index].path;
-
-                if new_path.is_dir() {
-                    match context.history.pop_or_create(new_path.as_path(),
-                            &context.config_t.sort_type) {
-                        Ok(s) => {
-                            context.preview_list = Some(s);
-                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
-                        },
-                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
-                    }
-                } else {
-                    ncurses::werase(context.views.right_win.win);
-                    ncurses::wnoutrefresh(context.views.right_win.win);
-                }
-            },
-            None => {},
+            let half_page = context.views.mid_win.cols / 2;
+            command = Some(CursorMove::new(half_page));
         }
-
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-
-        ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
-        ncurses::doupdate();
+        if let Some(s) = command {
+            s.execute(context);
+        }
     }
 }
 
@@ -244,44 +185,19 @@ impl std::fmt::Display for CursorMoveHome {
 impl command::Runnable for CursorMoveHome {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
+        let mut command: Option<CursorMove> = None;
 
-        match context.curr_list {
-            Some(ref mut curr_list) => {
-                if curr_list.index <= 0 {
-                    return;
-                }
+        if let Some(ref curr_list) = context.curr_list {
+            let curr_index = curr_list.index;
+            if curr_index <= 0 {
+                return;
+            }
 
-                let dir_list = context.preview_list.take();
-                if let Some(s) = dir_list {
-                    context.history.insert(s);
-                }
-
-                curr_list.index = 0;
-                let new_path = &curr_list.contents[curr_list.index as usize].path;
-
-                if new_path.is_dir() {
-                    match context.history.pop_or_create(new_path.as_path(),
-                            &context.config_t.sort_type) {
-                        Ok(s) => {
-                            context.preview_list = Some(s);
-                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
-                        },
-                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
-                    }
-                } else {
-                    ncurses::werase(context.views.right_win.win);
-                    ncurses::wnoutrefresh(context.views.right_win.win);
-                }
-            },
-            None => {},
+            command = Some(CursorMove::new(-curr_index));
         }
-
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-
-        ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
-
-        ncurses::doupdate();
+        if let Some(s) = command {
+            s.execute(context);
+        }
     }
 }
 
@@ -305,45 +221,20 @@ impl std::fmt::Display for CursorMoveEnd {
 impl command::Runnable for CursorMoveEnd {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        match context.curr_list {
-            Some(ref mut curr_list) => {
-                let dir_len = curr_list.contents.len();
+        let mut command: Option<CursorMove> = None;
 
-                if curr_list.index >= dir_len as i32 - 1 {
-                    return;
-                }
+        if let Some(ref curr_list) = context.curr_list {
+            let curr_index = curr_list.index;
+            let dir_len = curr_list.contents.len();
+            if curr_index >= dir_len as i32 - 1 {
+                return;
+            }
 
-                let dir_list = context.preview_list.take();
-                if let Some(s) = dir_list {
-                    context.history.insert(s);
-                }
-
-                curr_list.index = dir_len as i32 - 1;
-                let curr_index = curr_list.index as usize;
-                let new_path = &curr_list.contents[curr_index].path;
-
-                if new_path.is_dir() {
-                    match context.history.pop_or_create(new_path.as_path(),
-                            &context.config_t.sort_type) {
-                        Ok(s) => {
-                            context.preview_list = Some(s);
-                            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
-                        },
-                        Err(e) => ui::wprint_err(&context.views.right_win, format!("{}", e).as_str()),
-                    }
-                } else {
-                    ncurses::werase(context.views.right_win.win);
-                    ncurses::wnoutrefresh(context.views.right_win.win);
-                }
-            },
-            None => {},
+            let movement = dir_len as i32 - 1 - curr_index;
+            command = Some(CursorMove::new(movement));
         }
-
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-
-        ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
-
-        ncurses::doupdate();
+        if let Some(s) = command {
+            s.execute(context);
+        }
     }
 }
