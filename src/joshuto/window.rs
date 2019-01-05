@@ -43,7 +43,7 @@ impl JoshutoPanel {
         self.create(rows, cols, coords);
     }
 
-    pub fn destroy(&mut self)
+    pub fn destroy(&self)
     {
         ncurses::del_panel(self.panel);
         ncurses::delwin(self.win);

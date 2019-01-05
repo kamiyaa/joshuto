@@ -380,7 +380,7 @@ impl RenameFile {
         let mut term_cols: i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let mut win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
+        let win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
         ncurses::keypad(win.win, true);
 
         const PROMPT: &str = ":rename_file ";

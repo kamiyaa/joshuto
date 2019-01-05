@@ -185,7 +185,7 @@ impl OpenFileWith {
             };
 
         let option_size = mimetype_options.len();
-        let mut win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
+        let win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
                 (term_rows as usize - option_size - 2, 0));
         ncurses::keypad(win.win, true);
 

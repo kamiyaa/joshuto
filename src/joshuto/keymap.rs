@@ -144,10 +144,20 @@ impl JoshutoKeymap {
             options.overwrite = true;
             let command = CommandKeybind::SimpleKeybind(
                 Box::new(command::PasteFiles::new(options)));
-            subkeymap.insert(Keycode::UPPER_P as i32, command);
+            subkeymap.insert(Keycode::LOWER_O as i32, command);
 
             let command = CommandKeybind::CompositeKeybind(subkeymap);
             keymaps.insert(Keycode::LOWER_P as i32, command);
+        }
+
+        {
+            let mut subkeymap: HashMap<i32, CommandKeybind> = HashMap::new();
+            let command = CommandKeybind::SimpleKeybind(
+                Box::new(command::NewDirectory::new()));
+            subkeymap.insert(Keycode::LOWER_K as i32, command);
+
+            let command = CommandKeybind::CompositeKeybind(subkeymap);
+            keymaps.insert(Keycode::LOWER_M as i32, command);
         }
 
         JoshutoKeymap {

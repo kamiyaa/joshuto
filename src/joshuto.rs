@@ -181,7 +181,7 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
 
     let keymap_len = keymap.len();
 
-    let mut win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
+    let win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
             ((term_rows - keymap_len as i32 - 2) as usize, 0));
 
     let mut display_vec: Vec<String> = Vec::with_capacity(keymap_len);

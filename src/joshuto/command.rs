@@ -37,6 +37,9 @@ pub use self::file_operation::DeleteFiles;
 pub use self::file_operation::RenameFile;
 pub use self::file_operation::RenameFileMethod;
 
+mod new_directory;
+pub use self::new_directory::NewDirectory;
+
 mod show_hidden;
 pub use self::show_hidden::ToggleHiddenFiles;
 
@@ -189,6 +192,7 @@ pub fn from_args(args: &[&str]) -> Option<Box<dyn JoshutoCommand>>
             }
             Some(Box::new(self::RenameFile::new(method)))
         }
+        "new_directory" => Some(Box::new(self::NewDirectory::new())),
         "select_files" => {
             let mut toggle = false;
             let mut all = false;
