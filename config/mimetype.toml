@@ -1,5 +1,9 @@
 # specify which applications to use to open certain file types
 [mimetypes]
+"application/pdf" = [
+	["evince"]
+]	
+
 "application/x-7z-compressed" = [
 	["file-roller"]
 ]
@@ -15,11 +19,13 @@
 
 "image/jpeg" = [
 	["qimgv"],
-	["feh"]
+	["feh"],
+	["krita"]
 ]
 "image/png" = [
 	["qimgv"],
-	["feh", "-F"]
+	["feh", "-F"],
+	["krita"]
 ]
 "text/plain" = [
 	["nano"]
@@ -52,4 +58,10 @@
 ]
 "video/x-matroska" = [
 	["mpv"]
+]
+"video/x-ms-wmv" = [
+	["mpv"]
+]
+"application/vnd.oasis.opendocument.text" = [
+	["libreoffice"]
 ]
