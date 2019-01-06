@@ -301,7 +301,7 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
 pub fn draw_loading_bar(win: &window::JoshutoPanel, percentage: f32)
 {
     let cols: i32 = (win.cols as f32 * percentage) as i32;
-    ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(), 0);
+    ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(), SELECT_COLOR);
 }
 
 pub fn display_contents(win: &window::JoshutoPanel,

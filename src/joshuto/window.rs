@@ -78,7 +78,6 @@ pub struct JoshutoView {
     pub mid_win: JoshutoPanel,
     pub right_win: JoshutoPanel,
     pub bot_win: JoshutoPanel,
-    pub load_bar: JoshutoPanel,
     pub win_ratio: (usize, usize, usize),
 }
 
@@ -112,8 +111,10 @@ impl JoshutoView {
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
         let bot_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
+/*
         let load_bar = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
         load_bar.move_to_bottom();
+*/
 
         ncurses::refresh();
 
@@ -123,7 +124,6 @@ impl JoshutoView {
             mid_win,
             right_win,
             bot_win,
-            load_bar,
             win_ratio,
         }
     }
@@ -157,7 +157,9 @@ impl JoshutoView {
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
         self.bot_win.redraw(win_xy.0, win_xy.1, win_coord);
 
+/*
         self.load_bar.redraw(win_xy.0, win_xy.1, win_coord);
         self.load_bar.move_to_bottom();
+*/
     }
 }

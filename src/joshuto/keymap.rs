@@ -4,8 +4,6 @@ extern crate xdg;
 
 use std::collections::HashMap;
 use std::fs;
-use std::io;
-use std::io::BufRead;
 use std::process;
 
 use joshuto::command;
