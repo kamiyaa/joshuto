@@ -1,8 +1,5 @@
 extern crate libc;
 
-use std::ffi::CString;
-use std::ffi::CStr;
-
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct wordexp_t {
