@@ -1,5 +1,6 @@
 extern crate fs_extra;
 extern crate ncurses;
+extern crate wordexp;
 
 use std;
 use std::collections::HashMap;
@@ -113,8 +114,9 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
     match command {
         "cd" => {
             if let Some(args) = args {
-                if args.len() > 0 {
-                    let path = path::PathBuf::from(args[0].as_str());
+                let exp_strs = wordexp::wordexp(args[0].as_str(), 0);
+                if exp_strs.len() > 0 {
+                    let path = path::PathBuf::from(exp_strs[0].as_str());
                     Some(Box::new(self::ChangeDirectory::new(path)))
                 } else {
                     None

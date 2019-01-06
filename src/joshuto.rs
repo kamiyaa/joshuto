@@ -8,6 +8,7 @@ use std::path;
 use std::process;
 use std::sync;
 use std::thread;
+use std::time;
 
 pub mod config;
 pub mod keymap;
@@ -245,6 +246,8 @@ pub fn run(config_t: config::JoshutoConfig,
     }
 
     let index: usize = 0;
+    let wait_duration: time::Duration = time::Duration::from_millis(100);
+
     loop {
         let ch: i32 = ncurses::getch();
 
@@ -265,7 +268,7 @@ pub fn run(config_t: config::JoshutoConfig,
             let mut something_finished = false;
 
             while i < tabs[index].threads.len() {
-                if let Ok(progress_info) = &tabs[index].threads[i].0.recv() {
+                if let Ok(progress_info) = &tabs[index].threads[i].0.recv_timeout(wait_duration) {
                     if progress_info.bytes_finished == progress_info.total_bytes {
                         let (_, chandle) = tabs[index].threads.remove(i);
                         chandle.join().unwrap();
