@@ -1,0 +1,137 @@
+[[mapcommand]]
+keys = [ "q" ]
+command = "quit"
+
+[[mapcommand]]
+keys = [ "Up" ]
+command = "cursor_move"
+args = [ "-1" ]
+
+[[mapcommand]]
+keys = [ "Down" ]
+command = "cursor_move"
+args = [ "1" ]
+
+
+[[mapcommand]]
+keys = [ "Left" ]
+command = "parent_directory"
+
+[[mapcommand]]
+keys = [ "Right" ]
+command = "open_file"
+
+[[mapcommand]]
+keys = [ "Enter" ]
+command = "open_file"
+
+
+[[mapcommand]]
+keys = [ "Home" ]
+command = "cursor_move_home"
+
+[[mapcommand]]
+keys = [ "End" ]
+command = "cursor_move_end"
+
+
+[[mapcommand]]
+keys = [ "PageUp" ]
+command = "cursor_move_page_up"
+
+[[mapcommand]]
+keys = [ "PageDown" ]
+command = "cursor_move_page_down"
+
+
+[[mapcommand]]
+keys = [ "r" ]
+command = "open_file_with"
+
+
+[[mapcommand]]
+keys = [ "z", "h" ]
+command = "toggle_hidden"
+
+
+[[mapcommand]]
+keys = [ "d", "d" ]
+command = "cut_files"
+
+[[mapcommand]]
+keys = [ "y", "y" ]
+command = "copy_files"
+
+[[mapcommand]]
+keys = [ "p", "p" ]
+command = "paste_files"
+
+[[mapcommand]]
+keys = [ "p", "o" ]
+command = "paste_files"
+args = [ "overwrite=true" ]
+
+[[mapcommand]]
+keys = [ "a" ]
+command = "rename_file"
+args = [ "append" ]
+
+[[mapcommand]]
+keys = [ "A" ]
+command = "rename_file"
+args = [ "prepend" ]
+
+[[mapcommand]]
+keys = [ "c", "w" ]
+command = "rename_file"
+args = [ "overwrite" ]
+
+[[mapcommand]]
+keys = [ "d", "D" ]
+command = "delete_files"
+
+[[mapcommand]]
+keys = [ "Delete" ]
+command = "delete_files"
+
+
+[[mapcommand]]
+keys = [ "Space" ]
+command = "select_files"
+args = [ "toggle=true" ]
+
+[[mapcommand]]
+keys = [ "m", "k" ]
+command = "mkdir"
+
+
+[[mapcommand]]
+keys = [ "g", "r" ]
+command = "cd"
+args = [ "/" ]
+
+[[mapcommand]]
+keys = [ "g", "e" ]
+command = "cd"
+args = [ "/etc" ]
+
+[[mapcommand]]
+keys = [ "/" ]
+command = "search"
+
+
+
+## Features not yet implemented
+
+[[mapcommand]]
+keys = [ "R" ]
+command = "reload_dir_list"
+
+[[mapcommand]]
+keys = [ "Ctrl", "t" ]
+command = "new_tab"
+
+[[mapcommand]]
+keys = [ "b", "b" ]
+command = "bulk_rename"
+
