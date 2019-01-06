@@ -12,6 +12,7 @@ use std::thread;
 pub mod config;
 pub mod keymap;
 pub mod mimetype;
+pub mod theme;
 mod command;
 mod history;
 mod input;
@@ -253,7 +254,7 @@ pub fn run(config_t: config::JoshutoConfig,
         }
 
         if tabs[index].threads.len() > 0 {
-            ncurses::timeout(0);
+            ncurses::timeout(2);
         } else {
             ncurses::timeout(-1);
         }
@@ -325,4 +326,5 @@ pub fn run(config_t: config::JoshutoConfig,
         }
         keycommand.execute(&mut tabs[index]);
     }
+    ncurses::endwin();
 }

@@ -1,27 +1,25 @@
 extern crate toml;
 extern crate xdg;
 
+use std::collections::HashMap;
 use std::fs;
 use std::process;
 
-use joshuto;
-use joshuto::sort;
-
-#[derive(Debug, Deserialize)]
-pub struct JoshutoRawColorTheme {
-    fg: Option<i16>,
-    bg: Option<i16>,
-    bold: Option<bool>,
+#[derive(Debug, Deserialize, Clone)]
+pub struct JoshutoColorTheme {
+    fg: i16,
+    bg: i16,
+    bold: bool,
+    underline: bool,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawTheme {
-    default_: Option<JoshutoRawColorTheme>,
-    directory: Option<JoshutoRawColorTheme>,
-    selection: Option<JoshutoRawColorTheme>,
-    executable: Option<JoshutoRawColorTheme>,
-    socket: Option<JoshutoRawColorTheme>,
-    extensions: Option<HashMap<String, JoshutoRawColorTheme>>,
+    selection: Option<JoshutoColorTheme>,
+    directory: Option<JoshutoColorTheme>,
+    executable: Option<JoshutoColorTheme>,
+    link: Option<JoshutoColorTheme>,
+    ext: Option<HashMap<String, JoshutoColorTheme>>,
 }
 
 impl JoshutoRawTheme {
@@ -29,98 +27,119 @@ impl JoshutoRawTheme {
     pub fn new() -> Self
     {
         JoshutoRawTheme {
-            default_: None,
-            directory: None,
             selection: None,
+            directory: None,
             executable: None,
-            socket: None,
-            extensions: None,
+            link: None,
+            ext: None,
         }
     }
 
-    pub fn flatten(self) -> JoshutoConfig
+    pub fn flatten(self) -> JoshutoTheme
     {
-        let username : String = whoami::username();
-        let hostname : String = whoami::hostname();
-
-        let column_ratio = match self.column_ratio {
-            Some(s) => (s[0], s[1], s[2]),
-            None => (1, 3, 4),
-            };
-
-        let scroll_offset: usize = self.scroll_offset.unwrap_or(6);
-
-        let show_hidden: bool = self.show_hidden.unwrap_or(false);
-        let sort_case_sensitive: bool = self.sort_case_sensitive.unwrap_or(false);
-        let sort_reverse: bool = self.sort_reverse.unwrap_or(false);
-        let sort_directories_first: bool = self.sort_directories_first.unwrap_or(true);
-
-        let sort_struct = sort::SortStruct {
-                show_hidden,
-                sort_directories_first,
-                sort_case_sensitive,
-                sort_reverse,
-            };
-
-        let sort_type: sort::SortType = match self.sort_type {
-            Some(s) => {
-                match s.as_str() {
-                    "natural" => sort::SortType::SortNatural(sort_struct),
-                    "mtime" => sort::SortType::SortMtime(sort_struct),
-                    _ => sort::SortType::SortNatural(sort_struct),
+        let selection = self.selection.unwrap_or(
+            JoshutoColorTheme {
+                fg: ncurses::COLOR_YELLOW,
+                bg: -1,
+                bold: true,
+                underline: false,
                 }
-            }
-            _ => sort::SortType::SortNatural(sort_struct),
-            };
+            );
 
-        JoshutoConfig {
-            username,
-            hostname,
-            scroll_offset,
-            sort_type,
-            column_ratio,
+        let directory = self.directory.unwrap_or(
+            JoshutoColorTheme {
+                fg: ncurses::COLOR_BLUE,
+                bg: -1,
+                bold: true,
+                underline: false,
+                }
+            );
+
+        let executable = self.executable.unwrap_or(
+            JoshutoColorTheme {
+                fg: ncurses::COLOR_GREEN,
+                bg: -1,
+                bold: true,
+                underline: false,
+                }
+            );
+
+        let link = self.link.unwrap_or(
+            JoshutoColorTheme {
+                fg: ncurses::COLOR_CYAN,
+                bg: -1,
+                bold: true,
+                underline: false,
+                }
+            );
+
+        let ext = self.ext.unwrap_or(HashMap::new());
+
+        JoshutoTheme {
+            directory,
+            selection,
+            executable,
+            link,
+            ext,
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct JoshutoConfig {
-    pub username: String,
-    pub hostname: String,
-    pub scroll_offset: usize,
-    pub sort_type: joshuto::sort::SortType,
-    pub column_ratio: (usize, usize, usize),
+pub struct JoshutoTheme {
+    selection: JoshutoColorTheme,
+    directory: JoshutoColorTheme,
+    executable: JoshutoColorTheme,
+    link: JoshutoColorTheme,
+    ext: HashMap<String, JoshutoColorTheme>
 }
 
-impl JoshutoConfig {
-
+impl JoshutoTheme {
     pub fn new() -> Self
     {
-        let sort_struct = sort::SortStruct {
-                show_hidden: false,
-                sort_directories_first: true,
-                sort_case_sensitive: false,
-                sort_reverse: false,
+        let selection = JoshutoColorTheme {
+            fg: ncurses::COLOR_YELLOW,
+            bg: -1,
+            bold: true,
+            underline: false,
             };
-        let sort_type = sort::SortType::SortNatural(sort_struct);
 
-        let username : String = whoami::username();
-        let hostname : String = whoami::hostname();
+        let directory = JoshutoColorTheme {
+            fg: ncurses::COLOR_BLUE,
+            bg: -1,
+            bold: true,
+            underline: false,
+            };
 
-        JoshutoConfig {
-            username,
-            hostname,
-            scroll_offset: 6,
-            sort_type,
-            column_ratio: (1, 3, 4),
+        let executable = JoshutoColorTheme {
+            fg: ncurses::COLOR_GREEN,
+            bg: -1,
+            bold: true,
+            underline: false,
+            };
+
+        let link = JoshutoColorTheme {
+            fg: ncurses::COLOR_CYAN,
+            bg: -1,
+            bold: true,
+            underline: false,
+            };
+
+        JoshutoTheme {
+            directory,
+            selection,
+            executable,
+            link,
+            ext: HashMap::new(),
         }
+
     }
 
-    fn read_config() -> Option<JoshutoRawConfig>
+    fn read_config() -> Option<JoshutoRawTheme>
     {
         match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
             Ok(dirs) => {
-                let config_path = dirs.find_config_file(::CONFIG_FILE)?;
+                let config_path = dirs.find_config_file(::THEME_FILE)?;
                 match fs::read_to_string(&config_path) {
                     Ok(config_contents) => {
                         match toml::from_str(&config_contents) {
@@ -148,12 +167,12 @@ impl JoshutoConfig {
 
     pub fn get_config() -> Self
     {
-        match JoshutoConfig::read_config() {
+        match Self::read_config() {
             Some(config) => {
                 config.flatten()
             }
             None => {
-                JoshutoConfig::new()
+                Self::new()
             }
         }
     }

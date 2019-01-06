@@ -15,7 +15,8 @@ mod joshuto;
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_FILE: &str = "joshuto.toml";
 const MIMETYPE_FILE: &str = "mimetype.toml";
-const KEYMAP_FILE: &str = "keymap.conf";
+const KEYMAP_FILE: &str = "keymap.toml";
+const THEME_FILE: &str = "theme.toml";
 
 fn main()
 {
@@ -32,6 +33,9 @@ fn main()
     let keymap = joshuto::keymap::JoshutoKeymap::get_config();
 //    println!("{:#?}", keymap);
 //    println!("{:#?}", keymap.keymaps);
+
+    let theme = joshuto::theme::JoshutoTheme::get_config();
+//    println!("{:#?}", theme);
 
     joshuto::run(config, keymap, mimetype);
 }

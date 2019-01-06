@@ -78,12 +78,12 @@ impl JoshutoMimetype {
 
     pub fn get_config() -> Self
     {
-        match JoshutoMimetype::read_config() {
+        match Self::read_config() {
             Some(config) => {
                 config.flatten()
             }
             None => {
-                JoshutoMimetype::new()
+                Self::new()
             }
         }
     }

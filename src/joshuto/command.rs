@@ -106,125 +106,129 @@ pub fn split_shell_style(line: &String) -> Vec<&str>
 }
 
 
-pub fn from_args(args: &[&str]) -> Option<Box<dyn JoshutoCommand>>
+pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn JoshutoCommand>>
 {
-    let args_len = args.len();
+    match args {
+        None => {
+            match command {
+                "quit" => Some(Box::new(self::Quit::new())),
+                "open_file" => Some(Box::new(self::OpenFile::new())),
+                "open_file_with" => Some(Box::new(self::OpenFileWith::new())),
+                "parent_directory" => Some(Box::new(self::ParentDirectory::new())),
+                "cursor_move_home" => Some(Box::new(self::CursorMoveHome::new())),
+                "cursor_move_end" => Some(Box::new(self::CursorMoveEnd::new())),
+                "cursor_move_page_up" => Some(Box::new(self::CursorMovePageUp::new())),
+                "cursor_move_page_down" => Some(Box::new(self::CursorMovePageDown::new())),
 
-    if args_len == 0 {
-        return None;
-    }
+                "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
 
-    match args[0] {
-        "quit" => Some(Box::new(self::Quit::new())),
-        "parent_directory" => Some(Box::new(self::ParentDirectory::new())),
+                "cut_files" => Some(Box::new(self::CutFiles::new())),
+                "copy_files" => Some(Box::new(self::CopyFiles::new())),
+                "delete_files" => Some(Box::new(self::DeleteFiles::new())),
+                "rename_file" => Some(Box::new(self::RenameFile::new(self::RenameFileMethod::Append))),
 
-        "open_file" => Some(Box::new(self::OpenFile::new())),
-        "open_file_with" => Some(Box::new(self::OpenFileWith::new())),
-        "cd" => {
-            if args_len > 1 {
-                let path = path::PathBuf::from(args[1]);
-                Some(Box::new(self::ChangeDirectory::new(path)))
-            } else {
-                None
+                "mkdir" => Some(Box::new(self::NewDirectory::new())),
+                "search" => Some(Box::new(self::Search::new())),
+                _ => None,
             }
         },
+        Some(args) => {
+            let args_len = args.len();
 
-        "cursor_move" => {
-            if args_len > 1 {
-                match args[1].parse::<i32>() {
-                    Ok(s) => {
-                        Some(Box::new(self::CursorMove::new(s)))
-                    },
-                    Err(e) => {
-                        eprintln!("{}", e);
+            match command {
+                "cd" => {
+                    if args_len > 0 {
+                        let path = path::PathBuf::from(args[0].as_str());
+                        Some(Box::new(self::ChangeDirectory::new(path)))
+                    } else {
                         None
-                    },
+                    }
+                },
+                "cursor_move" => {
+                    if args_len > 0 {
+                        match args[0].parse::<i32>() {
+                            Ok(s) => {
+                                Some(Box::new(self::CursorMove::new(s)))
+                            },
+                            Err(e) => {
+                                eprintln!("{}", e);
+                                None
+                            },
+                        }
+                    } else {
+                        None
+                    }
+                },
+                "paste_files" => {
+                    let mut options = fs_extra::dir::CopyOptions::new();
+                    for arg in args {
+                        let splitarg: Vec<&str> = arg.split('=').collect();
+                        if splitarg.len() == 2 {
+                            match splitarg[0] {
+                                "overwrite" => {
+                                    if let Ok(s) = splitarg[1].parse::<bool>() {
+                                        options.overwrite = s;
+                                    } else {
+                                        eprintln!("Failed to parse: {}", arg);
+                                    }
+                                },
+                                "skip_exist" => {
+                                    if let Ok(s) = splitarg[1].parse::<bool>() {
+                                        options.skip_exist = s;
+                                    } else {
+                                        eprintln!("Failed to parse: {}", arg);
+                                    }
+                                },
+                                _ => {},
+                            }
+                        }
+                    }
+                    let paste = self::PasteFiles::new(options);
+                    Some(Box::new(paste))
+                },
+                "rename_file" => {
+                    let method: self::file_operation::RenameFileMethod;
+                    if args_len > 0 {
+                        method = match args[0].as_str() {
+                            "prepend" => self::RenameFileMethod::Prepend,
+                            "overwrite" => self::RenameFileMethod::Overwrite,
+                            "append" => self::RenameFileMethod::Append,
+                            _ => self::RenameFileMethod::Append,
+                        };
+                        Some(Box::new(self::RenameFile::new(method)))
+                    } else {
+                        None
+                    }
                 }
-            } else {
-                None
+                "select_files" => {
+                    let mut toggle = false;
+                    let mut all = false;
+                    for arg in args {
+                        let splitarg: Vec<&str> = arg.split('=').collect();
+                        if splitarg.len() == 2 {
+                            match splitarg[0] {
+                                "toggle" => {
+                                    if let Ok(s) = splitarg[1].parse::<bool>() {
+                                        toggle = s;
+                                    } else {
+                                        eprintln!("Failed to parse: {}", arg);
+                                    }
+                                },
+                                "all" => {
+                                    if let Ok(s) = splitarg[1].parse::<bool>() {
+                                        all = s;
+                                    } else {
+                                        eprintln!("Failed to parse: {}", arg);
+                                    }
+                                },
+                                _ => {},
+                            }
+                        }
+                    }
+                    Some(Box::new(self::SelectFiles::new(toggle, all)))
+                },
+                _ => None,
             }
         },
-        "cursor_move_home" => Some(Box::new(self::CursorMoveHome::new())),
-        "cursor_move_end" => Some(Box::new(self::CursorMoveEnd::new())),
-        "cursor_move_page_up" => Some(Box::new(self::CursorMovePageUp::new())),
-        "cursor_move_page_down" => Some(Box::new(self::CursorMovePageDown::new())),
-
-        "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
-
-        "cut_files" => Some(Box::new(self::CutFiles::new())),
-        "copy_files" => Some(Box::new(self::CopyFiles::new())),
-        "paste_files" => {
-            let mut options = fs_extra::dir::CopyOptions::new();
-            for arg in &args[1..] {
-                let splitarg: Vec<&str> = arg.split('=').collect();
-                if splitarg.len() == 2 {
-                    match splitarg[0] {
-                        "overwrite" => {
-                            if let Ok(s) = splitarg[1].parse::<bool>() {
-                                options.overwrite = s;
-                            } else {
-                                eprintln!("Failed to parse: {}", arg);
-                            }
-                        },
-                        "skip_exist" => {
-                            if let Ok(s) = splitarg[1].parse::<bool>() {
-                                options.skip_exist = s;
-                            } else {
-                                eprintln!("Failed to parse: {}", arg);
-                            }
-                        },
-                        _ => {},
-                    }
-                }
-            }
-            let paste = self::PasteFiles::new(options);
-            Some(Box::new(paste))
-        }
-        "delete_files" => Some(Box::new(self::DeleteFiles::new())),
-        "rename_file" => {
-            let method: self::file_operation::RenameFileMethod;
-            if args_len == 1 {
-                method = self::RenameFileMethod::Append;
-            } else {
-                method = match args[1] {
-                    "prepend" => self::RenameFileMethod::Prepend,
-                    "overwrite" => self::RenameFileMethod::Overwrite,
-                    "append" => self::RenameFileMethod::Append,
-                    _ => self::RenameFileMethod::Append,
-                }
-            }
-            Some(Box::new(self::RenameFile::new(method)))
-        }
-        "mkdir" => Some(Box::new(self::NewDirectory::new())),
-        "search" => Some(Box::new(self::Search::new())),
-        "select_files" => {
-            let mut toggle = false;
-            let mut all = false;
-            for arg in &args[1..] {
-                let splitarg: Vec<&str> = arg.split('=').collect();
-                if splitarg.len() == 2 {
-                    match splitarg[0] {
-                        "toggle" => {
-                            if let Ok(s) = splitarg[1].parse::<bool>() {
-                                toggle = s;
-                            } else {
-                                eprintln!("Failed to parse: {}", arg);
-                            }
-                        },
-                        "all" => {
-                            if let Ok(s) = splitarg[1].parse::<bool>() {
-                                all = s;
-                            } else {
-                                eprintln!("Failed to parse: {}", arg);
-                            }
-                        },
-                        _ => {},
-                    }
-                }
-            }
-            Some(Box::new(self::SelectFiles::new(toggle, all)))
-        }
-
-        _ => None,
     }
 }

@@ -5,6 +5,7 @@ use std::fs;
 use std::path;
 
 use joshuto::structs;
+use joshuto::theme;
 use joshuto::unix;
 use joshuto::window;
 
@@ -16,6 +17,10 @@ pub const VID_COLOR: i16 = 13;
 pub const SELECT_COLOR: i16 = 25;
 pub const ERR_COLOR: i16 = 40;
 pub const EMPTY_COLOR: i16 = 50;
+
+lazy_static! {
+    pub static ref theme_t: theme::JoshutoTheme = theme::JoshutoTheme::get_config();
+}
 
 pub fn init_ncurses()
 {
@@ -198,7 +203,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 {
     use std::os::unix::fs::PermissionsExt;
 
-    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "ExB"];
+    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "EB"];
     const CONV_RATE: f64 = 1024.0;
 
     ncurses::werase(win);
@@ -268,8 +273,7 @@ pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
 }
 
 pub fn redraw_view(win: &window::JoshutoPanel,
-        view: Option<&structs::JoshutoDirList>
-        )
+        view: Option<&structs::JoshutoDirList>)
 {
     if let Some(s) = view {
         s.display_contents(win);
@@ -404,7 +408,7 @@ fn file_ext_attr_apply(win: ncurses::WINDOW, coord: (i32, i32), ext: &str,
         attr: ncurses::attr_t)
 {
     match ext {
-        "png" | "jpg" | "jpeg" | "gif" => {
+        "png" | "jpg" | "jpeg" | "gif" | "svg" => {
             ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, IMG_COLOR);
         },
         "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" |

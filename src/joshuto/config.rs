@@ -144,7 +144,7 @@ impl JoshutoConfig {
 
     pub fn get_config() -> Self
     {
-        match JoshutoConfig::read_config() {
+        match Self::read_config() {
             Some(config) => {
                 config.flatten()
             }

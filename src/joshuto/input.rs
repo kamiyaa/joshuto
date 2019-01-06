@@ -1,8 +1,12 @@
 extern crate ncurses;
 extern crate wcwidth;
 
+use std::collections::HashMap;
+
+use joshuto::command;
 use joshuto::keymap;
 use joshuto::window;
+use joshuto::keymap::*;
 
 pub fn get_str(win: &window::JoshutoPanel,
         coord: (i32, i32)) -> Option<String>
@@ -135,5 +139,143 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
     let user_str: String = user_input.iter().map(|(_, ch)| ch).collect();
 
     return Some(user_str);
+}
 
+
+pub fn initialize_default_keymap() -> HashMap<i32, command::CommandKeybind>
+{
+    let mut keymaps: HashMap<i32, command::CommandKeybind> = HashMap::new();
+
+    // quit
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::Quit::new()));
+    keymaps.insert('q' as i32, command);
+
+    // up
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMove::new(-1)));
+    keymaps.insert(ncurses::KEY_UP, command);
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMove::new(-1)));
+    keymaps.insert('k' as i32, command);
+
+    // down
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMove::new(1)));
+    keymaps.insert(ncurses::KEY_DOWN, command);
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMove::new(1)));
+    keymaps.insert('j' as i32, command);
+
+    // left
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::ParentDirectory::new()));
+    keymaps.insert(ncurses::KEY_LEFT, command);
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::ParentDirectory::new()));
+    keymaps.insert('h' as i32, command);
+
+    // right
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::OpenFile::new()));
+    keymaps.insert(ncurses::KEY_RIGHT, command);
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::OpenFile::new()));
+    keymaps.insert('l' as i32, command);
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::OpenFile::new()));
+    keymaps.insert(ENTER, command);
+
+    let command = command::CommandKeybind::SimpleKeybind(
+        Box::new(command::OpenFileWith::new()));
+    keymaps.insert('r' as i32, command);
+
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMovePageUp::new()));
+    keymaps.insert(ncurses::KEY_PPAGE, command);
+
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMovePageDown::new()));
+    keymaps.insert(ncurses::KEY_NPAGE, command);
+
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMoveHome::new()));
+    keymaps.insert(ncurses::KEY_HOME, command);
+
+    let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CursorMoveEnd::new()));
+    keymaps.insert(ncurses::KEY_END, command);
+
+    let command = command::CommandKeybind::SimpleKeybind(
+        Box::new(command::DeleteFiles::new()));
+    keymaps.insert(ncurses::KEY_DC, command);
+
+    let command = command::CommandKeybind::SimpleKeybind(
+        Box::new(command::RenameFile::new(command::RenameFileMethod::Append)));
+    keymaps.insert('a' as i32, command);
+
+    {
+        let mut subkeymap: HashMap<i32, command::CommandKeybind> = HashMap::new();
+        let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::ToggleHiddenFiles::new()));
+        subkeymap.insert('h' as i32, command);
+
+        let command = command::CommandKeybind::CompositeKeybind(subkeymap);
+        keymaps.insert('z' as i32, command);
+    }
+
+    {
+        let mut subkeymap: HashMap<i32, command::CommandKeybind> = HashMap::new();
+        let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CutFiles::new()));
+        subkeymap.insert('d' as i32, command);
+
+        let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::DeleteFiles::new()));
+        subkeymap.insert('D' as i32, command);
+
+        let command = command::CommandKeybind::CompositeKeybind(subkeymap);
+        keymaps.insert('d' as i32, command);
+    }
+
+    {
+        let mut subkeymap: HashMap<i32, command::CommandKeybind> = HashMap::new();
+
+        let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::CopyFiles::new()));
+        subkeymap.insert('y' as i32, command);
+
+        let command = command::CommandKeybind::CompositeKeybind(subkeymap);
+        keymaps.insert('y' as i32, command);
+    }
+
+    {
+        let mut subkeymap: HashMap<i32, command::CommandKeybind> = HashMap::new();
+
+        let options = fs_extra::dir::CopyOptions::new();
+        let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::PasteFiles::new(options)));
+        subkeymap.insert('p' as i32, command);
+
+        let mut options = fs_extra::dir::CopyOptions::new();
+        options.overwrite = true;
+        let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::PasteFiles::new(options)));
+        subkeymap.insert('o' as i32, command);
+
+        let command = command::CommandKeybind::CompositeKeybind(subkeymap);
+        keymaps.insert('p' as i32, command);
+    }
+
+    {
+        let mut subkeymap: HashMap<i32, command::CommandKeybind> = HashMap::new();
+        let command = command::CommandKeybind::SimpleKeybind(
+            Box::new(command::NewDirectory::new()));
+        subkeymap.insert('k' as i32, command);
+
+        let command = command::CommandKeybind::CompositeKeybind(subkeymap);
+        keymaps.insert('m' as i32, command);
+    }
+
+    keymaps
 }

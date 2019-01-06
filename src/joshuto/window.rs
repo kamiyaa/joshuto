@@ -62,6 +62,15 @@ impl JoshutoPanel {
     }
 }
 
+/*
+impl std::ops::Drop for Joshuto {
+    fn drop(&mut self)
+    {
+        self.destroy();
+    }
+}
+*/
+
 #[derive(Debug)]
 pub struct JoshutoView {
     pub top_win: JoshutoPanel,
