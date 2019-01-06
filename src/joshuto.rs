@@ -11,9 +11,7 @@ use std::thread;
 use std::time;
 
 pub mod config;
-pub mod keymap;
-pub mod mimetype;
-pub mod theme;
+
 mod command;
 mod history;
 mod input;
@@ -37,13 +35,13 @@ pub struct JoshutoContext<'a> {
     pub preview_list: Option<structs::JoshutoDirList>,
 
     pub config_t: config::JoshutoConfig,
-    pub mimetype_t: &'a mimetype::JoshutoMimetype,
+    pub mimetype_t: &'a config::JoshutoMimetype,
 }
 
 impl<'a> JoshutoContext<'a> {
 
     pub fn new(config_t: &config::JoshutoConfig,
-        mimetype_t: &'a mimetype::JoshutoMimetype) -> Self
+        mimetype_t: &'a config::JoshutoMimetype) -> Self
     {
         let curr_path: path::PathBuf = match env::current_dir() {
             Ok(path) => { path },
@@ -199,7 +197,7 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     ncurses::update_panels();
     ncurses::doupdate();
 
-    if ch == keymap::ESCAPE {
+    if ch == config::keymap::ESCAPE {
         None
     } else {
         match keymap.get(&ch) {
@@ -232,8 +230,8 @@ pub fn resize_handler(context: &mut JoshutoContext)
 }
 
 pub fn run(config_t: config::JoshutoConfig,
-    keymap_t: keymap::JoshutoKeymap,
-    mimetype_t: mimetype::JoshutoMimetype)
+    keymap_t: config::JoshutoKeymap,
+    mimetype_t: config::JoshutoMimetype)
 {
     ui::init_ncurses();
 

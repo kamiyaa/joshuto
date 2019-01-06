@@ -10,7 +10,7 @@ use std::path;
 use joshuto;
 use joshuto::command;
 use joshuto::input;
-use joshuto::mimetype;
+use joshuto::config::mimetype;
 use joshuto::structs;
 use joshuto::ui;
 use joshuto::unix;

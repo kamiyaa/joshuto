@@ -4,9 +4,9 @@ extern crate wcwidth;
 use std::collections::HashMap;
 
 use joshuto::command;
-use joshuto::keymap;
+use joshuto::config::keymap;
 use joshuto::window;
-use joshuto::keymap::*;
+use joshuto::config::keymap::*;
 
 pub fn get_str(win: &window::JoshutoPanel,
         coord: (i32, i32)) -> Option<String>

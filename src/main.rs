@@ -29,12 +29,14 @@ fn main()
     }
 
     let config = joshuto::config::JoshutoConfig::get_config();
-    let mimetype = joshuto::mimetype::JoshutoMimetype::get_config();
-    let keymap = joshuto::keymap::JoshutoKeymap::get_config();
+//    println!("{:#?}", config);
+
+    let mimetype = joshuto::config::JoshutoMimetype::get_config();
+    let keymap = joshuto::config::JoshutoKeymap::get_config();
 //    println!("{:#?}", keymap);
 //    println!("{:#?}", keymap.keymaps);
 
-    let theme = joshuto::theme::JoshutoTheme::get_config();
+    let theme = joshuto::config::JoshutoTheme::get_config();
 //    println!("{:#?}", theme);
 
     joshuto::run(config, keymap, mimetype);

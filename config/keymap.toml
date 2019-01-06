@@ -106,6 +106,16 @@ command = "mkdir"
 
 
 [[mapcommand]]
+keys = [ "g", "d" ]
+command = "cd"
+args = [ "~/Downloads" ]
+
+[[mapcommand]]
+keys = [ "g", "h" ]
+command = "cd"
+args = [ "~/" ]
+
+[[mapcommand]]
 keys = [ "g", "r" ]
 command = "cd"
 args = [ "/" ]

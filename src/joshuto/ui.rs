@@ -5,7 +5,7 @@ use std::fs;
 use std::path;
 
 use joshuto::structs;
-use joshuto::theme;
+use joshuto::config::theme;
 use joshuto::unix;
 use joshuto::window;
 

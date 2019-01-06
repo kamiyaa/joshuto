@@ -12,7 +12,7 @@ use std::thread;
 use joshuto;
 use joshuto::command;
 use joshuto::input;
-use joshuto::keymap;
+use joshuto::config::keymap;
 use joshuto::structs;
 use joshuto::ui;
 use joshuto::window;

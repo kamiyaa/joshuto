@@ -6,9 +6,17 @@ use std::time;
 use joshuto::structs;
 
 #[derive(Debug, Clone)]
+pub struct SortOption {
+    pub show_hidden: bool,
+    pub directories_first: bool,
+    pub case_sensitive: bool,
+    pub reverse: bool,
+}
+
+#[derive(Debug, Clone)]
 pub enum SortType {
-    SortNatural(SortStruct),
-    SortMtime(SortStruct),
+    SortNatural(SortOption),
+    SortMtime(SortOption),
 }
 
 impl SortType {
@@ -16,16 +24,16 @@ impl SortType {
     {
         match *self {
             SortType::SortNatural(ref ss) => {
-                if ss.sort_directories_first && !ss.sort_case_sensitive && !ss.sort_reverse {
+                if ss.directories_first && !ss.case_sensitive && !ss.reverse {
                     SortNatural::dir_first_case_insensitive
-                } else if ss.sort_directories_first && ss.sort_case_sensitive && !ss.sort_reverse {
+                } else if ss.directories_first && ss.case_sensitive && !ss.reverse {
                     SortNatural::dir_first
                 } else {
                     SortNatural::default_sort
                 }
             }
             SortType::SortMtime(ref ss) => {
-                if ss.sort_directories_first && !ss.sort_reverse {
+                if ss.directories_first && !ss.reverse {
                     SortMtime::dir_first
                 } else {
                     SortMtime::default_sort
@@ -77,14 +85,6 @@ impl SortType {
             },
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct SortStruct {
-    pub show_hidden: bool,
-    pub sort_directories_first: bool,
-    pub sort_case_sensitive: bool,
-    pub sort_reverse: bool,
 }
 
 fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry>

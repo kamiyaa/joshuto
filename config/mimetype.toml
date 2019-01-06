@@ -47,6 +47,9 @@
     ["nano"]
 ]
 
+"audio/flac" = [
+	[ "mpv" ]
+]
 "audio/x-wav" = [
 	[ "mpv" ]
 ]
