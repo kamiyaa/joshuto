@@ -153,31 +153,24 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 
     ncurses::werase(win);
     ncurses::wmove(win, 0, 0);
-    match fs::symlink_metadata(&file.path) {
-        Ok(metadata) => {
-            let permissions: fs::Permissions = metadata.permissions();
-            let mode = permissions.mode();
 
-            ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
-            ncurses::waddstr(win, "  ");
+    let mode = file.metadata.permissions.mode();
 
-            if metadata.is_dir() {
-            } else if file.path.is_dir() {
-                if mode >> 9 & unix::S_IFLNK >> 9 == mode >> 9 {
-                    if let Ok(path) = fs::read_link(&file.path) {
-                        ncurses::waddstr(win, " -> ");
-                        ncurses::waddstr(win, path.to_str().unwrap());
-                    }
-                }
-            } else {
-                let file_size = metadata.len() as f64;
-                wprint_file_size(win, file_size);
+    ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
+    ncurses::waddstr(win, "  ");
+
+    if file.metadata.file_type.is_dir() {
+    } else if file.path.is_dir() {
+        if mode >> 9 & unix::S_IFLNK >> 9 == mode >> 9 {
+            if let Ok(path) = fs::read_link(&file.path) {
+                ncurses::waddstr(win, " -> ");
+                ncurses::waddstr(win, path.to_str().unwrap());
             }
-        },
-        Err(e) => {
-            ncurses::waddstr(win, e.to_string().as_str());
-        },
-    };
+        }
+    } else {
+        let file_size = file.metadata.len as f64;
+        wprint_file_size(win, file_size);
+    }
     ncurses::wnoutrefresh(win);
 }
 

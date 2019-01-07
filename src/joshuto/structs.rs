@@ -9,13 +9,62 @@ use joshuto::ui;
 use joshuto::window;
 
 #[derive(Debug)]
+pub struct JoshutoMetadata {
+    pub len: u64,
+    pub modified: time::SystemTime,
+    pub permissions: fs::Permissions,
+    pub file_type: fs::FileType,
+}
+
+impl JoshutoMetadata {
+    pub fn from(metadata: &fs::Metadata) -> Result<Self, std::io::Error>
+    {
+        let len = metadata.len();
+        let modified = metadata.modified()?;
+        let permissions = metadata.permissions();
+        let file_type = metadata.file_type();
+
+        Ok(JoshutoMetadata {
+            len,
+            modified,
+            permissions,
+            file_type
+        })
+    }
+}
+
+#[derive(Debug)]
 pub struct JoshutoDirEntry {
     pub file_name: ffi::OsString,
     pub file_name_as_string: String,
     pub path: path::PathBuf,
-    pub file_type: Result<fs::FileType, std::io::Error>,
+    pub metadata: JoshutoMetadata,
     pub selected: bool,
     pub marked: bool,
+}
+
+impl JoshutoDirEntry {
+
+    pub fn from(direntry: &fs::DirEntry) -> Result<Self, std::io::Error>
+    {
+        let file_name = direntry.file_name();
+        let file_name_as_string: String = file_name.clone().into_string().unwrap();
+        let path = direntry.path();
+
+        let metadata = direntry.metadata()?;
+        let metadata = JoshutoMetadata::from(&metadata)?;
+
+        let dir_entry = JoshutoDirEntry {
+            file_name,
+            file_name_as_string,
+            path,
+            metadata,
+            selected: false,
+            marked: false,
+        };
+        Ok(dir_entry)
+    }
+
 }
 
 #[derive(Debug)]
@@ -23,20 +72,17 @@ pub struct JoshutoDirList {
     pub index: i32,
     pub path: path::PathBuf,
     pub update_needed: bool,
-    pub modified: time::SystemTime,
+    pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
     pub selected: usize
 }
 
 impl JoshutoDirList {
-
-    pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<JoshutoDirList, std::io::Error>
+    pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error>
     {
         let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
 
         contents.sort_by(&sort_type.compare_func());
-
-        let modified = std::fs::metadata(&path)?.modified()?;
 
         let index = if contents.len() > 0 {
                 0
@@ -44,11 +90,14 @@ impl JoshutoDirList {
                 -1
             };
 
+        let metadata = fs::metadata(&path)?;
+        let metadata = JoshutoMetadata::from(&metadata)?;
+
         Ok(JoshutoDirList {
             index,
             path,
             update_needed: false,
-            modified,
+            metadata,
             contents,
             selected: 0,
         })
@@ -61,7 +110,7 @@ impl JoshutoDirList {
         }
         if let Ok(metadata) = std::fs::metadata(&self.path) {
             if let Ok(modified) = metadata.modified() {
-                return self.modified < modified;
+                return self.metadata.modified < modified;
             }
         }
         return true;
@@ -97,10 +146,9 @@ impl JoshutoDirList {
         }
 
         if let Ok(metadata) = std::fs::metadata(&self.path) {
-            match metadata.modified() {
-                Ok(s) => { self.modified = s; },
-                Err(e) => { eprintln!("{}", e); },
-            };
+            if let Ok(metadata) = JoshutoMetadata::from(&metadata) {
+                self.metadata = metadata;
+            }
         }
     }
 
