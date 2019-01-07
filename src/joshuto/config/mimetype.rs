@@ -33,7 +33,7 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
         }
         match self.exec_type.as_ref() {
             Some(s) => {
-                fmt_result = f.write_str(&s);
+                fmt_result = write!(f, "\t({})", s);
             },
             None => {},
         }
