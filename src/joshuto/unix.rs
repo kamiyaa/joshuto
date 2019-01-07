@@ -4,6 +4,8 @@ extern crate ncurses;
 use std::path;
 use std::process;
 
+use joshuto::config::mimetype;
+
 pub const BITMASK  : u32 = 0o170000;
 pub const S_IFSOCK : u32 = 0o140000;   /* socket */
 pub const S_IFLNK  : u32 = 0o120000;   /* symbolic link */
@@ -95,7 +97,36 @@ pub fn stringify_mode(mode: u32) -> String
     mode_str
 }
 
-pub fn open_with(path: &path::Path, args: &Vec<String>)
+pub fn open_with_entry(path: &path::Path, entry: &mimetype::JoshutoMimetypeEntry)
+{
+    let program = entry.program.clone();
+
+    let mut command = process::Command::new(program);
+    if let Some(args) = entry.args.as_ref() {
+        let args_len = args.len();
+        for i in 1..args_len {
+            command.arg(args[i].clone());
+        }
+    }
+    command.arg(path.as_os_str());
+
+    match command.spawn() {
+        Ok(mut handle) => {
+            if let Some(_) = entry.exec_type {
+            } else {
+                match handle.wait() {
+                    Ok(_) => {},
+                    Err(e) => eprintln!("{}", e),
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("{:?}", e);
+        },
+    }
+}
+
+pub fn open_with_args(path: &path::Path, args: &Vec<String>)
 {
     let program = args[0].clone();
     let args_len = args.len();

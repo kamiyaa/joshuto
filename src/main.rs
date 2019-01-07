@@ -32,9 +32,10 @@ fn main()
 //    println!("{:#?}", config);
 
     let mimetype = joshuto::config::JoshutoMimetype::get_config();
+//    println!("{:#?}", mimetype);
+
     let keymap = joshuto::config::JoshutoKeymap::get_config();
 //    println!("{:#?}", keymap);
-//    println!("{:#?}", keymap.keymaps);
 
     let theme = joshuto::config::JoshutoTheme::get_config();
 //    println!("{:#?}", theme);

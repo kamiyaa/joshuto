@@ -55,15 +55,10 @@ impl command::Runnable for OpenFile {
                 None => None,
                 };
 
-            let mimetype: Option<&str> = match file_ext {
-                Some(extstr) => mime_guess::get_mime_type_str(extstr),
-                None => None,
-                };
-
-            let empty_vec: Vec<Vec<String>> = Vec::new();
-            let mimetype_options: &Vec<Vec<String>> = match mimetype {
-                    Some(mimetype) => {
-                        match context.mimetype_t.mimetypes.get(mimetype) {
+            let empty_vec: Vec<mimetype::JoshutoMimetypeEntry> = Vec::new();
+            let mimetype_options = match file_ext {
+                    Some(file_ext) => {
+                        match context.mimetype_t.mimetypes.get(file_ext) {
                             Some(s) => s,
                             None => &empty_vec,
                         }
@@ -76,16 +71,11 @@ impl command::Runnable for OpenFile {
             if mimetype_options.len() > 0 {
                 ncurses::savetty();
                 ncurses::endwin();
-                unix::open_with(path.as_path(), &mimetype_options[0]);
+                unix::open_with_entry(path.as_path(), &mimetype_options[0]);
                 ncurses::resetty();
                 ncurses::refresh();
             } else {
-                match mimetype {
-                    Some(s) => ui::wprint_err(&context.views.bot_win,
-                                format!("Don't know how to open: {}", s).as_str()),
-                    None => ui::wprint_err(&context.views.bot_win,
-                                "Uh oh, mime_guess says unknown file type :("),
-                };
+                ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");
             }
             ncurses::doupdate();
 
@@ -169,15 +159,10 @@ impl OpenFileWith {
             None => None,
             };
 
-        let mimetype: Option<&str> = match file_ext {
-            Some(extstr) => mime_guess::get_mime_type_str(extstr),
-            None => None,
-            };
-
-        let empty_vec: Vec<Vec<String>> = Vec::new();
-        let mimetype_options: &Vec<Vec<String>> = match mimetype {
-            Some(mimetype) => {
-                match mimetype_t.mimetypes.get(mimetype) {
+        let empty_vec: Vec<mimetype::JoshutoMimetypeEntry> = Vec::new();
+        let mimetype_options = match file_ext {
+            Some(file_ext) => {
+                match mimetype_t.mimetypes.get(file_ext) {
                     Some(s) => s,
                     None => &empty_vec,
                 }
@@ -192,7 +177,7 @@ impl OpenFileWith {
 
         let mut display_vec: Vec<String> = Vec::with_capacity(option_size);
         for (i, val) in mimetype_options.iter().enumerate() {
-            display_vec.push(format!("  {}\t{}", i, val.join(" ")));
+            display_vec.push(format!("  {}\t{}", i, val));
         }
         display_vec.sort();
 
@@ -220,7 +205,7 @@ impl OpenFileWith {
                     if s < mimetype_options.len() {
                         ncurses::savetty();
                         ncurses::endwin();
-                        unix::open_with(pathbuf.as_path(), &mimetype_options[s]);
+                        unix::open_with_entry(pathbuf.as_path(), &mimetype_options[s]);
                         ncurses::resetty();
                         ncurses::refresh();
                     }
@@ -229,7 +214,7 @@ impl OpenFileWith {
                     let args: Vec<String> = user_input.split_whitespace().map(|x| String::from(x)).collect();
                     ncurses::savetty();
                     ncurses::endwin();
-                    unix::open_with(pathbuf.as_path(), &args);
+                    unix::open_with_args(pathbuf.as_path(), &args);
                     ncurses::resetty();
                     ncurses::refresh();
                 }

@@ -1,13 +1,49 @@
 extern crate toml;
 extern crate xdg;
 
+use std::fmt;
 use std::fs;
 use std::collections::HashMap;
 use std::process;
 
+#[allow(non_camel_case_types)]
+#[derive(Debug, Deserialize)]
+pub enum ExecType {
+    forking
+}
+
+#[derive(Debug, Deserialize)]
+pub struct JoshutoMimetypeEntry {
+    pub program: String,
+    pub args: Option<Vec<String>>,
+    pub exec_type: Option<String>,
+}
+
+impl std::fmt::Display for JoshutoMimetypeEntry {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        let mut fmt_result = f.write_str(self.program.as_str());
+        match self.args.as_ref() {
+            Some(s) => {
+                for arg in s {
+                    fmt_result = write!(f, "{} ", arg);
+                }
+            },
+            None => {},
+        }
+        match self.exec_type.as_ref() {
+            Some(s) => {
+                fmt_result = f.write_str(&s);
+            },
+            None => {},
+        }
+        fmt_result
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawMimetype {
-    mimetypes: Option<HashMap<String, Vec<Vec<String>>>>,
+    mimetypes: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
 }
 
 impl JoshutoRawMimetype {
@@ -34,7 +70,7 @@ impl JoshutoRawMimetype {
 
 #[derive(Debug)]
 pub struct JoshutoMimetype {
-    pub mimetypes: HashMap<String, Vec<Vec<String>>>,
+    pub mimetypes: HashMap<String, Vec<JoshutoMimetypeEntry>>,
 }
 
 impl JoshutoMimetype {

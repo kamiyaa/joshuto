@@ -1,70 +1,79 @@
 # specify which applications to use to open certain file types
 [mimetypes]
-"application/pdf" = [
-	["evince"]
-]	
 
-"application/x-7z-compressed" = [
-	["file-roller"]
-]
+[[mimetypes.pdf]]
+program = "evince"
+exec_type = "forking"
 
-"application/x-shellscript" = [
-	["nano"],
-	["gedit"]
-]
+[[mimetypes.7z]]
+program = "file-roller"
+exec_type = "forking"
 
-"audio/mpeg" = [
-	["mpv"]
-]
+[[mimetypes.jpg]]
+program = "qimgv"
+exec_type = "forking"
+[[mimetypes.jpg]]
+program = "krita"
+exec_type = "forking"
 
-"image/jpeg" = [
-	["qimgv"],
-	["feh"],
-	["krita"]
-]
-"image/png" = [
-	["qimgv"],
-	["feh", "-F"],
-	["krita"]
-]
-"text/plain" = [
-	["nano"]
-]
+[[mimetypes.png]]
+program = "qimgv"
+exec_type = "forking"
+[[mimetypes.png]]
+program = "krita"
+exec_type = "forking"
 
-"text/x-rust" = [
-	["nano"]
-]
+# Audio
+[[mimetypes.flac]]
+program = "mpv"
 
-"text/x-csrc" = [
-	["nano"]
-]
+[[mimetypes.wav]]
+program = "mpv"
 
-"text/x-markdown" = [
-    ["nano"]
-]
+# Videos
+[[mimetypes.mkv]]
+program = "mpv"
+exec_type = "forking"
 
-"text/x-toml" = [
-    ["nano"]
-]
+[[mimetypes.mp4]]
+program = "mpv"
+exec_type = "forking"
 
-"audio/flac" = [
-	[ "mpv" ]
-]
-"audio/x-wav" = [
-	[ "mpv" ]
-]
-"video/mp4" = [
-	["mpv"]
-]
-"video/webm" = [
-	["mpv"]
-]
-"video/x-matroska" = [
-	["mpv"]
-]
-"video/x-ms-wmv" = [
-	["mpv"]
-]
-"application/vnd.oasis.opendocument.text" = [
-	["libreoffice"]
-]
+[[mimetypes.webm]]
+program = "mpv"
+exec_type = "forking"
+
+[[mimetypes.wmv]]
+program = "mpv"
+exec_type = "forking"
+
+# text
+[[mimetypes.c]]
+program = "nano"
+[[mimetypes.cpp]]
+program = "nano"
+[[mimetypes.py]]
+program = "nano"
+[[mimetypes.conf]]
+program = "nano"
+[[mimetypes.java]]
+program = "nano"
+[[mimetypes.html]]
+program = "nano"
+[[mimetypes.md]]
+program = "nano"
+[[mimetypes.rs]]
+program = "nano"
+[[mimetypes.toml]]
+program = "nano"
+[[mimetypes.xml]]
+program = "nano"
+
+[[mimetypes.txt]]
+program = "nano"
+
+
+[[mimetypes.odt]]
+program = "libreoffice"
+exec_type = "forking"
+
