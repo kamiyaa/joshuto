@@ -1,8 +1,10 @@
 extern crate ncurses;
 extern crate wcwidth;
+extern crate chrono;
 
 use std::fs;
 use std::path;
+use std::time;
 
 use joshuto::structs;
 use joshuto::config::theme;
@@ -144,7 +146,14 @@ fn wprint_file_size(win: ncurses::WINDOW, mut file_size: f64)
         ncurses::waddstr(win,
             format!("{:.2}{}", file_size, FILE_UNITS[index]).as_str());
     }
-    ncurses::waddstr(win, " ");
+}
+
+pub fn wprint_file_mtime(win: ncurses::WINDOW, mtime: time::SystemTime)
+{
+    const MTIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
+
+    let datetime: chrono::DateTime<chrono::offset::Utc> = mtime.into();
+    ncurses::waddstr(win, format!("{}", datetime.format(MTIME_FORMATTING)).as_str());
 }
 
 pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
@@ -158,6 +167,10 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 
     ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
     ncurses::waddstr(win, "  ");
+
+    wprint_file_mtime(win, file.metadata.modified);
+
+    ncurses::waddstr(win, " ");
 
     if file.metadata.file_type.is_dir() {
     } else if file.path.is_dir() {
