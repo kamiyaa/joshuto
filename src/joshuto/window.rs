@@ -32,6 +32,7 @@ impl JoshutoPanel {
         ncurses::top_panel(self.panel);
     }
 
+    #[allow(dead_code)]
     pub fn move_to_bottom(&self)
     {
         ncurses::bottom_panel(self.panel);

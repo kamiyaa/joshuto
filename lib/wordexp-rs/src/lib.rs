@@ -15,6 +15,7 @@ impl <'a>ToCStr for &'a str {
     }
 }
 
+#[allow(dead_code)]
 pub struct Wordexp {
     pub we_wordc: libc::size_t,
     pub we_wordv: *const *const libc::c_char,

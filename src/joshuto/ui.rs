@@ -120,45 +120,66 @@ pub fn wprint_path(win: &window::JoshutoPanel, username: &str,
     ncurses::wnoutrefresh(win.win);
 }
 
-/*
-
-fn wprint_file_size(win: &window::JoshutoPanel, file: &fs::DirEntry,
-    coord: (i32, i32)) -> usize
+fn wprint_file_size(win: ncurses::WINDOW, mut file_size: f64)
 {
-    const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "E"];
+    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "EB"];
     const CONV_RATE: f64 = 1024.0;
 
-    match file.metadata() {
-        Ok(metadata) => {
-            let mut file_size = metadata.len() as f64;
-            let mut index = 0;
-            while file_size > CONV_RATE {
-                file_size = file_size / CONV_RATE;
-                index += 1;
-            }
+    let mut index = 0;
+    while file_size > CONV_RATE {
+        file_size = file_size / CONV_RATE;
+        index += 1;
+    }
 
-            ncurses::wmove(win.win, coord.0, win.cols - 6);
-            if file_size >= 1000.0 {
-                ncurses::waddstr(win.win,
-                    format!("{:.0} {}", file_size, FILE_UNITS[index]).as_str());
-            } else if file_size >= 100.0 {
-                ncurses::waddstr(win.win,
-                    format!(" {:.0} {}", file_size, FILE_UNITS[index]).as_str());
-            } else if file_size >= 10.0 {
-                ncurses::waddstr(win.win,
-                    format!("{:.1} {}", file_size, FILE_UNITS[index]).as_str());
+    if file_size >= 1000.0 {
+        ncurses::waddstr(win,
+            format!("{:.0}{}", file_size, FILE_UNITS[index]).as_str());
+    } else if file_size >= 100.0 {
+        ncurses::waddstr(win,
+            format!(" {:.0}{}", file_size, FILE_UNITS[index]).as_str());
+    } else if file_size >= 10.0 {
+        ncurses::waddstr(win,
+            format!("{:.1}{}", file_size, FILE_UNITS[index]).as_str());
+    } else {
+        ncurses::waddstr(win,
+            format!("{:.2}{}", file_size, FILE_UNITS[index]).as_str());
+    }
+    ncurses::waddstr(win, " ");
+}
+
+pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
+{
+    use std::os::unix::fs::PermissionsExt;
+
+    ncurses::werase(win);
+    ncurses::wmove(win, 0, 0);
+    match fs::symlink_metadata(&file.path) {
+        Ok(metadata) => {
+            let permissions: fs::Permissions = metadata.permissions();
+            let mode = permissions.mode();
+
+            ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
+            ncurses::waddstr(win, "  ");
+
+            if metadata.is_dir() {
+            } else if file.path.is_dir() {
+                if mode >> 9 & unix::S_IFLNK >> 9 == mode >> 9 {
+                    if let Ok(path) = fs::read_link(&file.path) {
+                        ncurses::waddstr(win, " -> ");
+                        ncurses::waddstr(win, path.to_str().unwrap());
+                    }
+                }
             } else {
-                ncurses::waddstr(win.win,
-                    format!("{:.2} {}", file_size, FILE_UNITS[index]).as_str());
+                let file_size = metadata.len() as f64;
+                wprint_file_size(win, file_size);
             }
         },
         Err(e) => {
-            ncurses::waddstr(win.win, format!("{:?}", e).as_str());
+            ncurses::waddstr(win, e.to_string().as_str());
         },
     };
-    6
+    ncurses::wnoutrefresh(win);
 }
-*/
 
 fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
         coord: (i32, i32))
@@ -197,57 +218,6 @@ fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
 
     ncurses::waddstr(win.win, &file_name[..trim_index]);
     ncurses::waddstr(win.win, "…");
-}
-
-pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
-{
-    use std::os::unix::fs::PermissionsExt;
-
-    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "EB"];
-    const CONV_RATE: f64 = 1024.0;
-
-    ncurses::werase(win);
-    ncurses::wmove(win, 0, 0);
-    match fs::symlink_metadata(&file.path) {
-        Ok(metadata) => {
-            let permissions: fs::Permissions = metadata.permissions();
-            let mode = permissions.mode();
-
-            let mut file_size = metadata.len() as f64;
-            let mut index = 0;
-            while file_size > CONV_RATE {
-                file_size = file_size / CONV_RATE;
-                index += 1;
-            }
-
-            ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
-            ncurses::waddstr(win, "  ");
-            if file_size >= 1000.0 {
-                ncurses::waddstr(win,
-                    format!("{:.0}{}", file_size, FILE_UNITS[index]).as_str());
-            } else if file_size >= 100.0 {
-                ncurses::waddstr(win,
-                    format!(" {:.0}{}", file_size, FILE_UNITS[index]).as_str());
-            } else if file_size >= 10.0 {
-                ncurses::waddstr(win,
-                    format!("{:.1}{}", file_size, FILE_UNITS[index]).as_str());
-            } else {
-                ncurses::waddstr(win,
-                    format!("{:.2}{}", file_size, FILE_UNITS[index]).as_str());
-            }
-            ncurses::waddstr(win, " ");
-            if mode >> 9 & unix::S_IFLNK >> 9 == mode >> 9 {
-                if let Ok(path) = fs::read_link(&file.path) {
-                    ncurses::waddstr(win, " -> ");
-                    ncurses::waddstr(win, path.to_str().unwrap());
-                }
-            }
-        },
-        Err(e) => {
-            ncurses::waddstr(win, e.to_string().as_str());
-        },
-    };
-    ncurses::wnoutrefresh(win);
 }
 
 pub fn wprint_direntry(win: &window::JoshutoPanel,

@@ -73,6 +73,7 @@ impl std::fmt::Display for CommandKeybind {
     }
 }
 
+#[allow(dead_code)]
 pub fn split_shell_style(line: &String) -> Vec<&str>
 {
     let mut args: Vec<&str> = Vec::new();
