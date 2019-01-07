@@ -29,7 +29,7 @@ Joshuto can currently be configured using the following files:
 [joshuto.toml](https://github.com/kamiyaa/joshuto/blob/master/config/joshuto.toml)
  - general configurations
 
-[keymap.conf](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.conf)
+[keymap.toml](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.toml)
  - for keybindings
    - please take a look at [keymapll.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/keymapll.rs) for keycodes
  - for commands
