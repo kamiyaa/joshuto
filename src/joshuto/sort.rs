@@ -93,14 +93,12 @@ fn filter_default(result : Result<fs::DirEntry, std::io::Error>) -> Option<struc
         Ok(direntry) => {
             match structs::JoshutoDirEntry::from(&direntry) {
                 Ok(s) => Some(s),
-                Err(e) => {
-                    eprintln!("{}", e);
+                Err(_) => {
                     None
                 },
             }
         },
-        Err(e) => {
-            eprintln!("{}", e);
+        Err(_) => {
             None
         }
     }
@@ -117,20 +115,18 @@ fn filter_hidden_files(result : Result<fs::DirEntry, std::io::Error>) -> Option<
                     } else {
                         match structs::JoshutoDirEntry::from(&direntry) {
                             Ok(s) => Some(s),
-                            Err(e) => {
-                                eprintln!("{}", e);
+                            Err(_) => {
                                 None
                             },
                         }
                     }
                 },
-                Err(_e) => {
+                Err(_) => {
                     None
                 },
             }
         },
-        Err(e) => {
-            eprintln!("{}", e);
+        Err(_) => {
             None
         }
     }

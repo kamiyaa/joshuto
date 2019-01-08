@@ -41,7 +41,7 @@ impl DirHistory {
                         }
                         self.map.insert(parent, s);
                     },
-                    Err(e) => { eprintln!("{}", e); }
+                    Err(e) => eprintln!("{}", e),
                 };
             }
             if pathbuf.pop() == false {
@@ -73,7 +73,6 @@ impl DirHistory {
             self.map.insert(s.path.clone(), s);
         }
     }
-
 
     pub fn depecrate_all_entries(&mut self)
     {
