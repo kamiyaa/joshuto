@@ -21,7 +21,7 @@ impl command::JoshutoCommand for ToggleHiddenFiles {}
 impl std::fmt::Display for ToggleHiddenFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 

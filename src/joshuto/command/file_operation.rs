@@ -71,7 +71,7 @@ impl command::JoshutoCommand for CutFiles {}
 impl std::fmt::Display for CutFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 
@@ -100,7 +100,7 @@ impl command::JoshutoCommand for CopyFiles {}
 impl std::fmt::Display for CopyFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 
@@ -320,7 +320,7 @@ impl command::JoshutoCommand for DeleteFiles {}
 impl std::fmt::Display for DeleteFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 

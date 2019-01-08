@@ -22,7 +22,7 @@ impl command::JoshutoCommand for ReloadDirList {}
 impl std::fmt::Display for ReloadDirList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 

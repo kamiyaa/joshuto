@@ -29,7 +29,7 @@ impl command::JoshutoCommand for OpenFile {}
 impl std::fmt::Display for OpenFile {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 
@@ -230,7 +230,7 @@ impl command::JoshutoCommand for OpenFileWith {}
 impl std::fmt::Display for OpenFileWith {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 

@@ -22,7 +22,7 @@ impl command::JoshutoCommand for ParentDirectory {}
 impl std::fmt::Display for ParentDirectory {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 
@@ -77,7 +77,6 @@ impl command::Runnable for ParentDirectory {
                 ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
             },
         };
-
         ncurses::doupdate();
     }
 }
