@@ -157,7 +157,6 @@ pub fn key_to_i32(keycode: &str) -> Option<i32>
         return None;
     } else {
         match keycode {
-            "Comma" => Some(',' as i32),
             "Tab" => Some(TAB),
             "Space" => Some(' ' as i32),
             "Backspace" => Some(BACKSPACE),
