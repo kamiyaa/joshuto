@@ -327,6 +327,7 @@ impl command::Runnable for DeleteFiles {
 
         ui::wprint_msg(&context.views.bot_win, "Delete selected files? (Y/n)");
         ncurses::doupdate();
+        ncurses::timeout(-1);
 
         let ch = ncurses::wgetch(context.views.bot_win.win);
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {

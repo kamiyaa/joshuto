@@ -15,22 +15,6 @@ pub fn get_str(win: &window::JoshutoPanel,
     get_str_prefill(win, coord, user_input, coord.1, 0)
 }
 
-pub fn get_str_append(win: &window::JoshutoPanel,
-        coord: (i32, i32), start_str: String) -> Option<String>
-{
-    let mut user_input: Vec<(u8, char)> = Vec::new();
-    for (_, ch) in start_str.char_indices() {
-        let char_len = wcwidth::char_width(ch).unwrap_or(1);
-        user_input.push((char_len, ch));
-    }
-    let mut curs_x = coord.1;
-    for (size, _) in &user_input {
-        curs_x = curs_x + (*size) as i32;
-    }
-    let curr_index = user_input.len();
-    get_str_prefill(win, coord, user_input, curs_x, curr_index)
-}
-
 pub fn get_str_prepend(win: &window::JoshutoPanel,
         coord: (i32, i32), start_str: String) -> Option<String>
 {
@@ -42,10 +26,37 @@ pub fn get_str_prepend(win: &window::JoshutoPanel,
     get_str_prefill(win, coord, user_input, coord.1, 0)
 }
 
+pub fn get_str_append(win: &window::JoshutoPanel,
+        coord: (i32, i32), start_str: String) -> Option<String>
+{
+    let mut user_input: Vec<(u8, char)> = Vec::new();
+
+    let mut ext_index: Option<usize> = None;
+    for (i, ch) in start_str.char_indices() {
+        if ch == '.' {
+            ext_index = Some(i);
+        }
+        let char_len = wcwidth::char_width(ch).unwrap_or(1);
+        user_input.push((char_len, ch));
+    }
+    let curr_index = match ext_index {
+        Some(s) => s,
+        None => user_input.len(),
+        };
+
+    let mut curs_x = coord.1;
+    for (size, _) in &user_input[..curr_index] {
+        curs_x = curs_x + (*size) as i32;
+    }
+    get_str_prefill(win, coord, user_input, curs_x, curr_index)
+}
+
 pub fn get_str_prefill(win: &window::JoshutoPanel,
         coord: (i32, i32), mut user_input: Vec<(u8, char)>,
         mut curs_x: i32, mut curr_index: usize) -> Option<String>
 {
+    ncurses::timeout(-1);
+
     loop {
         ncurses::wmove(win.win, coord.0, coord.1);
         for (_, ch) in &user_input {

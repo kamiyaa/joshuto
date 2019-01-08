@@ -190,6 +190,7 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     win.move_to_top();
     ui::display_options(&win, &display_vec);
     ncurses::doupdate();
+    ncurses::timeout(-1);
 
     let ch: i32 = ncurses::getch();
 
