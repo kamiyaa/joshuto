@@ -109,10 +109,14 @@ pub fn open_with_entry(path: &path::Path, entry: &mimetype::JoshutoMimetypeEntry
         }
     }
     command.arg(path.as_os_str());
+    if let Some(true) = entry.silent {
+        command.stdout(process::Stdio::null());
+        command.stderr(process::Stdio::null());
+    }
 
     match command.spawn() {
         Ok(mut handle) => {
-            if let Some(_) = entry.exec_type {
+            if let Some(true) = entry.fork {
             } else {
                 match handle.wait() {
                     Ok(_) => {},
@@ -120,9 +124,7 @@ pub fn open_with_entry(path: &path::Path, entry: &mimetype::JoshutoMimetypeEntry
                 }
             }
         },
-        Err(e) => {
-            eprintln!("{:?}", e);
-        },
+        Err(e) => eprintln!("{}", e),
     }
 }
 
@@ -144,8 +146,6 @@ pub fn open_with_args(path: &path::Path, args: &Vec<String>)
                 Err(e) => eprintln!("{}", e),
             }
         },
-        Err(e) => {
-            eprintln!("{:?}", e);
-        },
+        Err(e) => eprintln!("{}", e),
     }
 }

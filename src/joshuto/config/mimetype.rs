@@ -6,17 +6,12 @@ use std::fs;
 use std::collections::HashMap;
 use std::process;
 
-#[allow(non_camel_case_types)]
-#[derive(Debug, Deserialize)]
-pub enum ExecType {
-    forking
-}
-
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
     pub program: String,
     pub args: Option<Vec<String>>,
-    pub exec_type: Option<String>,
+    pub fork: Option<bool>,
+    pub silent: Option<bool>,
 }
 
 impl std::fmt::Display for JoshutoMimetypeEntry {
@@ -26,14 +21,8 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
         match self.args.as_ref() {
             Some(s) => {
                 for arg in s {
-                    fmt_result = write!(f, "{} ", arg);
+                    fmt_result = write!(f, " {}", arg);
                 }
-            },
-            None => {},
-        }
-        match self.exec_type.as_ref() {
-            Some(s) => {
-                fmt_result = write!(f, "\t({})", s);
             },
             None => {},
         }

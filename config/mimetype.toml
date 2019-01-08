@@ -3,25 +3,33 @@
 
 [[mimetypes.pdf]]
 program = "evince"
-exec_type = "forking"
+fork = true
+silent = true
 
 [[mimetypes.7z]]
 program = "file-roller"
-exec_type = "forking"
+fork = true
+silent = true
 
 [[mimetypes.jpg]]
 program = "qimgv"
-exec_type = "forking"
+fork = true
+silent = true
+
 [[mimetypes.jpg]]
 program = "krita"
-exec_type = "forking"
+fork = true
+silent = true
 
 [[mimetypes.png]]
 program = "qimgv"
-exec_type = "forking"
+fork = true
+silent = true
+
 [[mimetypes.png]]
 program = "krita"
-exec_type = "forking"
+fork = true
+silent = true
 
 # Audio
 [[mimetypes.flac]]
@@ -33,47 +41,100 @@ program = "mpv"
 # Videos
 [[mimetypes.mkv]]
 program = "mpv"
-exec_type = "forking"
+fork = true
+silent = true
 
 [[mimetypes.mp4]]
 program = "mpv"
-exec_type = "forking"
+fork = true
+silent = true
 
 [[mimetypes.webm]]
 program = "mpv"
-exec_type = "forking"
+fork = true
+silent = true
 
 [[mimetypes.wmv]]
 program = "mpv"
-exec_type = "forking"
+fork = true
+silent = true
 
 # text
 [[mimetypes.c]]
 program = "nano"
+[[mimetypes.c]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.cpp]]
 program = "nano"
+[[mimetypes.cpp]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.py]]
 program = "nano"
+[[mimetypes.py]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.conf]]
 program = "nano"
+
 [[mimetypes.java]]
 program = "nano"
+[[mimetypes.java]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.html]]
 program = "nano"
+[[mimetypes.html]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.md]]
 program = "nano"
+[[mimetypes.md]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.rs]]
 program = "nano"
+[[mimetypes.rs]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.toml]]
 program = "nano"
+[[mimetypes.toml]]
+program = "gedit"
+fork = true
+silent = true
+
 [[mimetypes.xml]]
 program = "nano"
+[[mimetypes.xml]]
+program = "gedit"
+fork = true
+silent = true
 
 [[mimetypes.txt]]
 program = "nano"
-
+[[mimetypes.txt]]
+program = "gedit"
+fork = true
+silent = true
 
 [[mimetypes.odt]]
 program = "libreoffice"
-exec_type = "forking"
+fork = true
+silent = true
 
