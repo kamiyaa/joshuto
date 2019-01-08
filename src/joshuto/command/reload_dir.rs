@@ -31,13 +31,15 @@ impl command::Runnable for ReloadDirList {
     {
         context.reload_dirlists();
 
-        ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+        let curr_tab = &mut context.tabs[context.tab_index];
 
-        ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
+        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
+
+        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
+                &curr_tab.curr_path,
+                &context.username, &context.hostname);
 
         ncurses::doupdate();
     }

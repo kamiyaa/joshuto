@@ -43,14 +43,12 @@ pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
     }
 }
 
-fn repopulated_selected_files(dirlist: &Option<structs::JoshutoDirList>) -> bool
+fn repopulated_selected_files(dirlist: &structs::JoshutoDirList) -> bool
 {
-    if let Some(s) = dirlist.as_ref() {
-        if let Some(contents) = collect_selected_paths(s) {
-            let mut data = selected_files.lock().unwrap();
-            *data = contents;
-            return true;
-        }
+    if let Some(contents) = collect_selected_paths(dirlist) {
+        let mut data = selected_files.lock().unwrap();
+        *data = contents;
+        return true;
     }
     return false;
 }
@@ -80,8 +78,11 @@ impl std::fmt::Display for CutFiles {
 impl command::Runnable for CutFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        if repopulated_selected_files(&context.curr_list) {
-            set_file_op(FileOp::Cut);
+        let curr_tab = &context.tabs[context.tab_index];
+        if let Some(s) = curr_tab.curr_list.as_ref() {
+            if repopulated_selected_files(s) {
+                set_file_op(FileOp::Cut);
+            }
         }
     }
 }
@@ -106,8 +107,11 @@ impl std::fmt::Display for CopyFiles {
 impl command::Runnable for CopyFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        if repopulated_selected_files(&context.curr_list) {
-            set_file_op(FileOp::Copy);
+        let curr_tab = &context.tabs[context.tab_index];
+        if let Some(s) = curr_tab.curr_list.as_ref() {
+            if repopulated_selected_files(s) {
+                set_file_op(FileOp::Copy);
+            }
         }
     }
 }
@@ -239,7 +243,7 @@ impl std::fmt::Display for PasteFiles {
 impl std::fmt::Debug for PasteFiles {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(f, "{}", Self::command())
+        f.write_str(Self::command())
     }
 }
 
@@ -248,23 +252,22 @@ impl command::Runnable for PasteFiles {
     {
         let file_operation = fileop.lock().unwrap();
 
+        let curr_tab = &context.tabs[context.tab_index];
         let cprocess = match *file_operation {
-                FileOp::Copy => self.copy(&context.curr_path),
-                FileOp::Cut => self.cut(&context.curr_path),
+                FileOp::Copy => self.copy(&curr_tab.curr_path),
+                FileOp::Cut => self.cut(&curr_tab.curr_path),
             };
         context.threads.push(cprocess);
 
-        context.reload_dirlists();
-
         ncurses::timeout(0);
 
-        ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-        ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
+        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
+                &curr_tab.curr_path,
+                &context.username, &context.hostname);
 
         ncurses::doupdate();
     }
@@ -324,14 +327,13 @@ impl std::fmt::Display for DeleteFiles {
 impl command::Runnable for DeleteFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-
         ui::wprint_msg(&context.views.bot_win, "Delete selected files? (Y/n)");
         ncurses::doupdate();
         ncurses::timeout(-1);
 
         let ch = ncurses::wgetch(context.views.bot_win.win);
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-            if let Some(s) = context.curr_list.as_mut() {
+            if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
                 if let Some(paths) = collect_selected_paths(s) {
                     Self::remove_files(paths, &context.views.bot_win);
                 }
@@ -340,13 +342,15 @@ impl command::Runnable for DeleteFiles {
 
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
 
-            ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-            ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-            ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+            let curr_tab = &context.tabs[context.tab_index];
+            ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+            ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+            ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
         } else {
-            ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                    &context.curr_path,
-                    &context.config_t.username, &context.config_t.hostname);
+            let curr_tab = &context.tabs[context.tab_index];
+            ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
+                    &curr_tab.curr_path,
+                    &context.username, &context.hostname);
         }
         ncurses::doupdate();
     }
@@ -402,13 +406,14 @@ impl RenameFile {
                 Ok(_) => {
                     context.reload_dirlists();
 
-                    ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-                    ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-                    ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                    let curr_tab = &context.tabs[context.tab_index];
+                    ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+                    ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+                    ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-                    ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                            &context.curr_path,
-                            &context.config_t.username, &context.config_t.hostname);
+                    ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
+                            &curr_tab.curr_path,
+                            &context.username, &context.hostname);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
@@ -437,7 +442,7 @@ impl command::Runnable for RenameFile {
         let mut path: Option<path::PathBuf> = None;
         let mut file_name: Option<String> = None;
 
-        if let Some(s) = context.curr_list.as_ref() {
+        if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
             if let Some(s) = s.get_curr_entry() {
                 path = Some(s.path.clone());
                 file_name = Some(s.file_name_as_string.clone());

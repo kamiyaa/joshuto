@@ -7,7 +7,6 @@ use std::path;
 use std::time;
 
 use joshuto::structs;
-use joshuto::config::theme;
 use joshuto::unix;
 use joshuto::window;
 
@@ -19,10 +18,6 @@ pub const VID_COLOR: i16 = 13;
 pub const SELECT_COLOR: i16 = 25;
 pub const ERR_COLOR: i16 = 40;
 pub const EMPTY_COLOR: i16 = 50;
-
-lazy_static! {
-    pub static ref theme_t: theme::JoshutoTheme = theme::JoshutoTheme::get_config();
-}
 
 pub fn init_ncurses()
 {

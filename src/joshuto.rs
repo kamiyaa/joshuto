@@ -24,24 +24,52 @@ mod window;
 use self::command::CommandKeybind;
 use self::command::JoshutoCommand;
 
-pub struct JoshutoContext<'a> {
-    pub curr_path: path::PathBuf,
+pub struct JoshutoTab {
     pub history: history::DirHistory,
-
-    pub threads: Vec<(sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)>,
-    pub views: window::JoshutoView,
+    pub curr_path: path::PathBuf,
     pub curr_list: Option<structs::JoshutoDirList>,
     pub parent_list: Option<structs::JoshutoDirList>,
     pub preview_list: Option<structs::JoshutoDirList>,
+}
 
-    pub config_t: config::JoshutoConfig,
+pub struct JoshutoContext<'a> {
+    pub username: String,
+    pub hostname: String,
+    pub threads: Vec<(sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)>,
+    pub views: window::JoshutoView,
+    pub tab_index: usize,
+    pub tabs: Vec<JoshutoTab>,
+
+    pub config_t: &'a mut config::JoshutoConfig,
     pub mimetype_t: &'a config::JoshutoMimetype,
+    pub theme_t: &'a config::JoshutoTheme,
 }
 
 impl<'a> JoshutoContext<'a> {
+    pub fn new(config_t: &'a mut config::JoshutoConfig,
+        mimetype_t: &'a config::JoshutoMimetype,
+        theme_t: &'a config::JoshutoTheme) -> Self
+    {
+        let username: String = whoami::username();
+        let hostname: String = whoami::hostname();
 
-    pub fn new(config_t: &config::JoshutoConfig,
-        mimetype_t: &'a config::JoshutoMimetype) -> Self
+        let views: window::JoshutoView =
+            window::JoshutoView::new(config_t.column_ratio);
+
+        JoshutoContext {
+            username,
+            hostname,
+            threads: Vec::new(),
+            views,
+            tab_index: 0,
+            tabs: Vec::new(),
+            config_t,
+            mimetype_t,
+            theme_t
+        }
+    }
+
+    pub fn new_tab(&mut self)
     {
         let curr_path: path::PathBuf = match env::current_dir() {
             Ok(path) => { path },
@@ -53,14 +81,11 @@ impl<'a> JoshutoContext<'a> {
 
         /* keep track of where we are in directories */
         let mut history = history::DirHistory::new();
-        history.populate_to_root(&curr_path, &config_t.sort_type);
-
-        let joshuto_view: window::JoshutoView =
-            window::JoshutoView::new(config_t.column_ratio);
+        history.populate_to_root(&curr_path, &self.config_t.sort_type);
 
         /* load up directories */
         let curr_view: Option<structs::JoshutoDirList> =
-            match history.pop_or_create(&curr_path, &config_t.sort_type) {
+            match history.pop_or_create(&curr_path, &self.config_t.sort_type) {
                 Ok(s) => { Some(s) },
                 Err(e) => {
                     eprintln!("{}", e);
@@ -71,7 +96,7 @@ impl<'a> JoshutoContext<'a> {
         let parent_view: Option<structs::JoshutoDirList> =
             match curr_path.parent() {
                 Some(parent) => {
-                    match history.pop_or_create(&parent, &config_t.sort_type) {
+                    match history.pop_or_create(&parent, &self.config_t.sort_type) {
                         Ok(s) => { Some(s) },
                         Err(e) => {
                             eprintln!("{}", e);
@@ -87,7 +112,7 @@ impl<'a> JoshutoContext<'a> {
             match s.get_curr_entry() {
                 Some(dirent) => {
                     if dirent.path.is_dir() {
-                        preview_view = match history.pop_or_create(&dirent.path, &config_t.sort_type) {
+                        preview_view = match history.pop_or_create(&dirent.path, &self.config_t.sort_type) {
                             Ok(s) => { Some(s) },
                             Err(e) => {
                                 eprintln!("{}", e);
@@ -106,45 +131,35 @@ impl<'a> JoshutoContext<'a> {
             preview_view = None
         }
 
-        ui::redraw_status(&joshuto_view, curr_view.as_ref(), &curr_path,
-                &config_t.username, &config_t.hostname);
+        ui::redraw_status(&self.views, curr_view.as_ref(), &curr_path,
+                &self.username, &self.hostname);
 
-        ui::redraw_view(&joshuto_view.left_win, parent_view.as_ref());
-        ui::redraw_view(&joshuto_view.mid_win, curr_view.as_ref());
-        ui::redraw_view(&joshuto_view.right_win, preview_view.as_ref());
+        ui::redraw_view(&self.views.left_win, parent_view.as_ref());
+        ui::redraw_view(&self.views.mid_win, curr_view.as_ref());
+        ui::redraw_view(&self.views.right_win, preview_view.as_ref());
 
         ncurses::doupdate();
 
-        JoshutoContext {
-            curr_path,
-            history,
-            threads: Vec::new(),
-            views: joshuto_view,
-            curr_list: curr_view,
-            parent_list: parent_view,
-            preview_list: preview_view,
+        let tab = JoshutoTab {
+                curr_path,
+                history,
+                curr_list: curr_view,
+                parent_list: parent_view,
+                preview_list: preview_view,
+            };
 
-            config_t: config_t.clone(),
-            mimetype_t,
-        }
+        self.tabs.push(tab);
+        self.tab_index = self.tabs.len() - 1;
     }
 
     pub fn reload_dirlists(&mut self)
     {
-        let mut gone = false;
-        if let Some(s) = self.curr_list.as_mut() {
-            if !s.path.exists() {
-                gone = true;
-            } else if s.need_update() {
-                s.update(&self.config_t.sort_type);
-            }
-        }
-        if gone {
-            self.curr_list = None;
+        if self.tab_index >= self.tabs.len() {
+            return;
         }
 
         let mut gone = false;
-        if let Some(s) = self.parent_list.as_mut() {
+        if let Some(s) = self.tabs[self.tab_index].curr_list.as_mut() {
             if !s.path.exists() {
                 gone = true;
             } else if s.need_update() {
@@ -152,11 +167,11 @@ impl<'a> JoshutoContext<'a> {
             }
         }
         if gone {
-            self.parent_list = None;
+            self.tabs[self.tab_index].curr_list = None;
         }
 
         let mut gone = false;
-        if let Some(s) = self.preview_list.as_mut() {
+        if let Some(s) = self.tabs[self.tab_index].parent_list.as_mut() {
             if !s.path.exists() {
                 gone = true;
             } else if s.need_update() {
@@ -164,7 +179,19 @@ impl<'a> JoshutoContext<'a> {
             }
         }
         if gone {
-            self.preview_list = None;
+            self.tabs[self.tab_index].parent_list = None;
+        }
+
+        let mut gone = false;
+        if let Some(s) = self.tabs[self.tab_index].preview_list.as_mut() {
+            if !s.path.exists() {
+                gone = true;
+            } else if s.need_update() {
+                s.update(&self.config_t.sort_type);
+            }
+        }
+        if gone {
+            self.tabs[self.tab_index].preview_list = None;
         }
     }
 }
@@ -220,83 +247,90 @@ pub fn resize_handler(context: &mut JoshutoContext)
     context.views.redraw_views();
     ncurses::refresh();
 
-    ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-    ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-    ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+    let parent_list = context.tabs[context.tab_index].parent_list.as_ref();
+    let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
+    let preview_list = context.tabs[context.tab_index].preview_list.as_ref();
+    let curr_path = &context.tabs[context.tab_index].curr_path;
 
-    ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-            &context.config_t.username, &context.config_t.hostname);
+    ui::redraw_view(&context.views.left_win, parent_list);
+    ui::redraw_view(&context.views.mid_win, curr_list);
+    ui::redraw_view(&context.views.right_win, preview_list);
+
+    ui::redraw_status(&context.views, curr_list, curr_path,
+            &context.username, &context.hostname);
 
     ncurses::doupdate();
 }
 
-pub fn run(config_t: config::JoshutoConfig,
+pub fn run(mut config_t: config::JoshutoConfig,
     keymap_t: config::JoshutoKeymap,
-    mimetype_t: config::JoshutoMimetype)
+    mimetype_t: config::JoshutoMimetype,
+    theme_t: config::JoshutoTheme)
 {
     ui::init_ncurses();
 
     ncurses::doupdate();
 
-    let mut tabs: Vec<JoshutoContext> = Vec::new();
-    {
-        let context = JoshutoContext::new(&config_t, &mimetype_t);
-        tabs.push(context);
-    }
+    let mut context = JoshutoContext::new(&mut config_t, &mimetype_t, &theme_t);
 
-    let index: usize = 0;
+    context.new_tab();
+
     let wait_duration: time::Duration = time::Duration::from_millis(100);
 
     loop {
         let ch: i32 = ncurses::getch();
 
         if ch == ncurses::KEY_RESIZE {
-            resize_handler(&mut tabs[index]);
+            resize_handler(&mut context);
             continue;
         }
 
-        if tabs[index].threads.len() > 0 {
+        if context.threads.len() > 0 {
             ncurses::timeout(0);
         } else {
             ncurses::timeout(-1);
         }
 
         {
-            let mut i = 0;
-
             let mut something_finished = false;
+            for i in 0..context.threads.len() {
+                if let Ok(progress_info) = &context.threads[i].0.recv_timeout(wait_duration) {
 
-            while i < tabs[index].threads.len() {
-                if let Ok(progress_info) = &tabs[index].threads[i].0.recv_timeout(wait_duration) {
                     if progress_info.bytes_finished == progress_info.total_bytes {
-                        let (_, chandle) = tabs[index].threads.remove(i);
+                        let (_, chandle) = context.threads.remove(i);
                         chandle.join().unwrap();
-                        ui::redraw_status(&tabs[index].views, tabs[index].curr_list.as_ref(),
-                                &tabs[index].curr_path,
-                                &tabs[index].config_t.username, &tabs[index].config_t.hostname);
+                        ncurses::werase(context.views.bot_win.win);
+                        let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
+                        let curr_path = &context.tabs[context.tab_index].curr_path;
+                        ui::redraw_status(&context.views, curr_list, curr_path,
+                                &context.username, &context.hostname);
                         ncurses::doupdate();
                         something_finished = true;
+                        break;
                     } else {
                         let percent = (progress_info.bytes_finished as f64 /
                                 progress_info.total_bytes as f64) as f32;
-                        ui::draw_loading_bar(&tabs[index].views.bot_win, percent);
-                        ncurses::wnoutrefresh(tabs[index].views.bot_win.win);
+                        ui::draw_loading_bar(&context.views.bot_win, percent);
+                        ncurses::wnoutrefresh(context.views.bot_win.win);
                         ncurses::doupdate();
                     }
                 }
-                i = i + 1;
             }
 
             if something_finished {
-                tabs[index].reload_dirlists();
+                context.reload_dirlists();
 
-                ui::redraw_view(&tabs[index].views.left_win, tabs[index].parent_list.as_ref());
-                ui::redraw_view(&tabs[index].views.mid_win, tabs[index].curr_list.as_ref());
-                ui::redraw_view(&tabs[index].views.right_win, tabs[index].preview_list.as_ref());
+                let parent_list = context.tabs[context.tab_index].parent_list.as_ref();
+                let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
+                let preview_list = context.tabs[context.tab_index].preview_list.as_ref();
+                let curr_path = &context.tabs[context.tab_index].curr_path;
 
-                ui::redraw_status(&tabs[index].views, tabs[index].curr_list.as_ref(),
-                        &tabs[index].curr_path,
-                        &tabs[index].config_t.username, &tabs[index].config_t.hostname);
+                ui::redraw_view(&context.views.left_win, parent_list);
+                ui::redraw_view(&context.views.mid_win, curr_list);
+                ui::redraw_view(&context.views.right_win, preview_list);
+
+                ui::redraw_status(&context.views, curr_list, curr_path,
+                        &context.username, &context.hostname);
 
                 ncurses::doupdate();
             }
@@ -327,6 +361,6 @@ pub fn run(config_t: config::JoshutoConfig,
                 continue;
             }
         }
-        keycommand.execute(&mut tabs[index]);
+        keycommand.execute(&mut context);
     }
 }

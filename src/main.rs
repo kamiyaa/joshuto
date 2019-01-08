@@ -40,5 +40,5 @@ fn main()
     let theme = joshuto::config::JoshutoTheme::get_config();
 //    println!("{:#?}", theme);
 
-    joshuto::run(config, keymap, mimetype);
+    joshuto::run(config, keymap, mimetype, theme);
 }

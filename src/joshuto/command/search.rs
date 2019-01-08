@@ -46,7 +46,10 @@ impl command::Runnable for Search {
 
         if let Some(user_input) = input::get_str(&win, (0, PROMPT.len() as i32)) {
             let user_input = user_input.to_lowercase();
-            if let Some(curr_list) = context.curr_list.as_ref() {
+
+            let curr_tab = &context.tabs[context.tab_index];
+
+            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
                 let offset = curr_list.index as usize;
                 let contents_len = curr_list.contents.len();
                 for i in 0..contents_len {

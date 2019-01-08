@@ -25,7 +25,9 @@ impl CursorMove {
 
     pub fn cursor_move(new_index: i32, context: &mut joshuto::JoshutoContext)
     {
-        if let Some(ref mut curr_list) = context.curr_list {
+        let curr_tab = &mut context.tabs[context.tab_index];
+
+        if let Some(ref mut curr_list) = curr_tab.curr_list {
             let curr_index = curr_list.index;
             let dir_len = curr_list.contents.len() as i32;
 
@@ -42,15 +44,15 @@ impl CursorMove {
                 }
             }
 
-            let dir_list = context.preview_list.take();
+            let dir_list = curr_tab.preview_list.take();
             if let Some(s) = dir_list {
-                context.history.insert(s);
+                curr_tab.history.insert(s);
             }
 
             curr_list.index = new_index;
         }
 
-        if let Some(ref curr_list) = context.curr_list {
+        if let Some(ref curr_list) = curr_tab.curr_list {
             let curr_index = curr_list.index as usize;
             let new_path = &curr_list.contents[curr_index].path;
 
@@ -58,11 +60,11 @@ impl CursorMove {
             ncurses::wnoutrefresh(context.views.mid_win.win);
 
             if new_path.is_dir() {
-                match context.history.pop_or_create(new_path.as_path(),
+                match curr_tab.history.pop_or_create(new_path.as_path(),
                         &context.config_t.sort_type) {
                     Ok(s) => {
-                        context.preview_list = Some(s);
-                        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                        curr_tab.preview_list = Some(s);
+                        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
                     },
                     Err(e) => ui::wprint_err(&context.views.right_win, e.to_string().as_str()),
                 }
@@ -71,8 +73,8 @@ impl CursorMove {
                 ncurses::wnoutrefresh(context.views.right_win.win);
             }
 
-            ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                    &context.config_t.username, &context.config_t.hostname);
+            ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
+                    &context.username, &context.hostname);
 
             ncurses::doupdate();
         }
@@ -93,9 +95,12 @@ impl command::Runnable for CursorMove {
     {
         let mut movement: Option<i32> = None;
 
-        if let Some(ref curr_list) = context.curr_list {
-            let curr_index = curr_list.index;
-            movement = Some(curr_index + self.movement);
+        {
+            let curr_tab = &mut context.tabs[context.tab_index];
+            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
+                let curr_index = curr_list.index;
+                movement = Some(curr_index + self.movement);
+            }
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
@@ -125,14 +130,17 @@ impl command::Runnable for CursorMovePageUp {
     {
         let mut movement: Option<i32> = None;
 
-        if let Some(ref curr_list) = context.curr_list {
-            let curr_index = curr_list.index;
-            if curr_index <= 0 {
-                return;
-            }
+        {
+            let curr_tab = &mut context.tabs[context.tab_index];
+            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
+                let curr_index = curr_list.index;
+                if curr_index <= 0 {
+                    return;
+                }
 
-            let half_page = context.views.mid_win.cols / 2;
-            movement = Some(curr_index - half_page);
+                let half_page = context.views.mid_win.cols / 2;
+                movement = Some(curr_index - half_page);
+            }
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
@@ -162,15 +170,18 @@ impl command::Runnable for CursorMovePageDown {
     {
         let mut movement: Option<i32> = None;
 
-        if let Some(ref curr_list) = context.curr_list {
-            let curr_index = curr_list.index;
-            let dir_len = curr_list.contents.len();
-            if curr_index >= dir_len as i32 - 1 {
-                return;
-            }
+        {
+            let curr_tab = &mut context.tabs[context.tab_index];
+            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
+                let curr_index = curr_list.index;
+                let dir_len = curr_list.contents.len();
+                if curr_index >= dir_len as i32 - 1 {
+                    return;
+                }
 
-            let half_page = context.views.mid_win.cols / 2;
-            movement = Some(curr_index + half_page);
+                let half_page = context.views.mid_win.cols / 2;
+                movement = Some(curr_index + half_page);
+            }
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
@@ -200,12 +211,15 @@ impl command::Runnable for CursorMoveHome {
     {
         let mut movement: Option<i32> = None;
 
-        if let Some(ref curr_list) = context.curr_list {
-            let curr_index = curr_list.index;
-            if curr_index <= 0 {
-                return;
+        {
+            let curr_tab = &mut context.tabs[context.tab_index];
+            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
+                let curr_index = curr_list.index;
+                if curr_index <= 0 {
+                    return;
+                }
+                movement = Some(0);
             }
-            movement = Some(0);
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
@@ -233,17 +247,20 @@ impl std::fmt::Display for CursorMoveEnd {
 impl command::Runnable for CursorMoveEnd {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-
         let mut movement: Option<i32> = None;
 
-        if let Some(ref curr_list) = context.curr_list {
-            let curr_index = curr_list.index;
-            let dir_len = curr_list.contents.len();
-            if curr_index >= dir_len as i32 - 1 {
-                return;
+        {
+            let curr_tab = &mut context.tabs[context.tab_index];
+            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
+                let curr_index = curr_list.index;
+                let dir_len = curr_list.contents.len();
+                if curr_index >= dir_len as i32 - 1 {
+                    return;
+                }
+                movement = Some(dir_len as i32 - 1);
             }
-            movement = Some(dir_len as i32 - 1);
         }
+
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context);
         }

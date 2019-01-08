@@ -42,11 +42,11 @@ impl command::Runnable for ChangeDirectory {
             ncurses::doupdate();
             return;
         }
-
+        let curr_tab = &mut context.tabs[context.tab_index];
 
         match std::env::set_current_dir(self.path.as_path()) {
             Ok(_) => {
-                context.curr_path = self.path.clone();
+                curr_tab.curr_path = self.path.clone();
             },
             Err(e) => {
                 ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
@@ -55,24 +55,24 @@ impl command::Runnable for ChangeDirectory {
         }
 
         {
-            context.history.populate_to_root(&context.curr_path, &context.config_t.sort_type);
+            curr_tab.history.populate_to_root(&curr_tab.curr_path, &context.config_t.sort_type);
 
-            let parent_list = context.parent_list.take();
-            context.history.put_back(parent_list);
+            let parent_list = curr_tab.parent_list.take();
+            curr_tab.history.put_back(parent_list);
 
-            let curr_list = context.curr_list.take();
-            context.history.put_back(curr_list);
+            let curr_list = curr_tab.curr_list.take();
+            curr_tab.history.put_back(curr_list);
 
-            let preview_list = context.preview_list.take();
-            context.history.put_back(preview_list);
+            let preview_list = curr_tab.preview_list.take();
+            curr_tab.history.put_back(preview_list);
         }
 
-        context.curr_list = match context.history.pop_or_create(&context.curr_path,
+        curr_tab.curr_list = match curr_tab.history.pop_or_create(&curr_tab.curr_path,
                     &context.config_t.sort_type) {
             Ok(s) => {
                 if let Some(dirent) = s.get_curr_entry() {
                     if dirent.path.is_dir() {
-                        context.preview_list = match context.history.pop_or_create(
+                        curr_tab.preview_list = match curr_tab.history.pop_or_create(
                                     &dirent.path, &context.config_t.sort_type) {
                             Ok(s) => {
                                 Some(s)
@@ -92,8 +92,8 @@ impl command::Runnable for ChangeDirectory {
             },
         };
 
-        if let Some(parent) = context.curr_path.parent() {
-            context.parent_list = match context.history.pop_or_create(&parent, &context.config_t.sort_type) {
+        if let Some(parent) = curr_tab.curr_path.parent() {
+            curr_tab.parent_list = match curr_tab.history.pop_or_create(&parent, &context.config_t.sort_type) {
                 Ok(s) => { Some(s) },
                 Err(e) => {
                     eprintln!("{}", e);
@@ -102,12 +102,12 @@ impl command::Runnable for ChangeDirectory {
             };
         }
 
-        ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-        ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
+        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
+                &context.username, &context.hostname);
 
         ncurses::doupdate();
     }

@@ -38,7 +38,8 @@ impl command::Runnable for SelectFiles {
     {
         if self.toggle && !self.all {
             let mut selected = false;
-            if let Some(s) = context.curr_list.as_mut() {
+
+            if let Some(s) = context.tabs[context.tab_index].curr_list.as_mut() {
                 s.curr_toggle_select();
                 selected = true;
             }

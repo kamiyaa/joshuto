@@ -46,17 +46,19 @@ impl command::Runnable for NewDirectory {
 
         if let Some(user_input) = input::get_str(&win, (0, PROMPT.len() as i32)) {
             let path = path::PathBuf::from(user_input);
+
             match std::fs::create_dir_all(&path) {
                 Ok(_) => {
                     context.reload_dirlists();
 
-                    ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-                    ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-                    ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                    let curr_tab = &context.tabs[context.tab_index];
+                    ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+                    ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+                    ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-                    ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                            &context.curr_path,
-                            &context.config_t.username, &context.config_t.hostname);
+                    ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
+                            &curr_tab.curr_path,
+                            &context.username, &context.hostname);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());

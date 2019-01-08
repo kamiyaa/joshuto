@@ -31,30 +31,32 @@ impl command::Runnable for ToggleHiddenFiles {
         {
             let opposite = !context.config_t.sort_type.show_hidden();
             context.config_t.sort_type.set_show_hidden(opposite);
-            context.history.depecrate_all_entries();
 
-            if let Some(s) = context.curr_list.as_mut() {
-                s.update_needed = true;
-            }
+            for tab in &mut context.tabs {
+                tab.history.depecrate_all_entries();
+                if let Some(s) = tab.curr_list.as_mut() {
+                    s.update(&context.config_t.sort_type);
+                }
 
-            if let Some(s) = context.preview_list.as_mut() {
-                s.update_needed = true;
-            }
+                if let Some(s) = tab.preview_list.as_mut() {
+                    s.update(&context.config_t.sort_type);
+                }
 
-            if let Some(s) = context.parent_list.as_mut() {
-                s.update_needed = true;
+                if let Some(s) = tab.parent_list.as_mut() {
+                    s.update(&context.config_t.sort_type);
+                }
             }
         }
 
-        context.reload_dirlists();
+        let curr_tab = &context.tabs[context.tab_index];
 
-        ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-        ui::redraw_status(&context.views, context.curr_list.as_ref(),
-                &context.curr_path,
-                &context.config_t.username, &context.config_t.hostname);
+        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
+                &curr_tab.curr_path,
+                &context.username, &context.hostname);
 
         ncurses::doupdate();
     }

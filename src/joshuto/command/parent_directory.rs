@@ -29,26 +29,28 @@ impl std::fmt::Display for ParentDirectory {
 impl command::Runnable for ParentDirectory {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        if context.curr_path.pop() == false {
+        let curr_tab = &mut context.tabs[context.tab_index];
+
+        if curr_tab.curr_path.pop() == false {
             return;
         }
 
-        match std::env::set_current_dir(context.curr_path.as_path()) {
+        match std::env::set_current_dir(&curr_tab.curr_path) {
             Ok(_) => {
                 {
-                    let dir_list = context.preview_list.take();
-                    context.history.put_back(dir_list);
+                    let dir_list = curr_tab.preview_list.take();
+                    curr_tab.history.put_back(dir_list);
 
-                    let curr_list = context.curr_list.take();
-                    context.preview_list = curr_list;
+                    let curr_list = curr_tab.curr_list.take();
+                    curr_tab.preview_list = curr_list;
 
-                    let parent_list = context.parent_list.take();
-                    context.curr_list = parent_list;
+                    let parent_list = curr_tab.parent_list.take();
+                    curr_tab.curr_list = parent_list;
                 }
 
-                match context.curr_path.parent() {
+                match curr_tab.curr_path.parent() {
                     Some(parent) => {
-                        context.parent_list = match context.history.pop_or_create(&parent, &context.config_t.sort_type) {
+                        curr_tab.parent_list = match curr_tab.history.pop_or_create(&parent, &context.config_t.sort_type) {
                             Ok(s) => {
                                 s.display_contents(&context.views.left_win);
                                 Some(s)
@@ -64,12 +66,12 @@ impl command::Runnable for ParentDirectory {
                         ncurses::wnoutrefresh(context.views.left_win.win);
                     },
                 }
-                ui::redraw_view(&context.views.left_win, context.parent_list.as_ref());
-                ui::redraw_view(&context.views.mid_win, context.curr_list.as_ref());
-                ui::redraw_view(&context.views.right_win, context.preview_list.as_ref());
+                ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+                ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+                ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-                ui::redraw_status(&context.views, context.curr_list.as_ref(), &context.curr_path,
-                        &context.config_t.username, &&context.config_t.hostname);
+                ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
+                        &context.username, &&context.hostname);
             },
             Err(e) => {
                 ui::wprint_err(&context.views.bot_win, e.to_string().as_str());

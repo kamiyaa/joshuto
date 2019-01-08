@@ -38,9 +38,6 @@ impl JoshutoRawConfig {
 
     pub fn flatten(self) -> JoshutoConfig
     {
-        let username : String = whoami::username();
-        let hostname : String = whoami::hostname();
-
         let column_ratio = match self.column_ratio {
             Some(s) => (s[0], s[1], s[2]),
             None => (1, 3, 4),
@@ -87,8 +84,6 @@ impl JoshutoRawConfig {
             };
 
         JoshutoConfig {
-            username,
-            hostname,
             scroll_offset,
             sort_type,
             column_ratio,
@@ -98,8 +93,6 @@ impl JoshutoRawConfig {
 
 #[derive(Debug, Clone)]
 pub struct JoshutoConfig {
-    pub username: String,
-    pub hostname: String,
     pub scroll_offset: usize,
     pub sort_type: joshuto::sort::SortType,
     pub column_ratio: (usize, usize, usize),
@@ -117,12 +110,7 @@ impl JoshutoConfig {
             };
         let sort_type = sort::SortType::SortNatural(sort_option);
 
-        let username : String = whoami::username();
-        let hostname : String = whoami::hostname();
-
         JoshutoConfig {
-            username,
-            hostname,
             scroll_offset: 6,
             sort_type,
             column_ratio: (1, 3, 4),
