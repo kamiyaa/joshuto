@@ -24,23 +24,19 @@ $ cargo build
 ```
 
 ## Configuration
+Place config files inside `$XDG_CONFIG_DIR/joshuto` (usually `$HOME/.config/joshuto/` for GNU/Linux)
 Joshuto can currently be configured using the following files:
 
-[joshuto.toml](https://github.com/kamiyaa/joshuto/blob/master/config/joshuto.toml)
- - general configurations
+ - [joshuto.toml](https://github.com/kamiyaa/joshuto/blob/master/config/joshuto.toml)
+   - general configurations
 
-[keymap.toml](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.toml)
- - for keybindings
-   - please take a look at [keymap.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/config/keymap.rs) for non-printable keys
- - for commands
-   - please take a look at [command.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/command.rs) for available commands
+ - [keymap.toml](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.toml)
+   - for keybindings, please take a look at [keymap.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/config/keymap.rs) for non-printable keys
+   - for commands, please take a look at [command.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/command.rs) for available commands
 
-[mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml)
+ - [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml) (**currently unstable and is subject to changes**)
+   - for opening files with applications
 
-**currently unstable and is subject to changes**
- - for opening files with applications
-
-Place these config files in your `$XDG_CONFIG_DIR/joshuto` (usually `$HOME/.config/joshuto/`)
 
 ## Contributing
 Please create a pull request :)
