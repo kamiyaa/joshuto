@@ -81,7 +81,6 @@ impl JoshutoDirList {
     pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error>
     {
         let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
-
         contents.sort_by(&sort_type.compare_func());
 
         let index = if contents.len() > 0 {
@@ -163,17 +162,11 @@ impl JoshutoDirList {
     {
         let filter_func = sort_type.filter_func();
 
-        match fs::read_dir(path) {
-            Ok(results) => {
-                let mut result_vec : Vec<JoshutoDirEntry> = results
-                        .filter_map(filter_func)
-                        .collect();
-                Ok(result_vec)
-            },
-            Err(e) => {
-                Err(e)
-            },
-        }
+        let results = fs::read_dir(path)?;
+        let result_vec : Vec<JoshutoDirEntry> = results
+                .filter_map(filter_func)
+                .collect();
+        Ok(result_vec)
     }
 
     pub fn get_curr_entry(&self) -> Option<&JoshutoDirEntry>
