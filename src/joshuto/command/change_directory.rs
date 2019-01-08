@@ -43,7 +43,16 @@ impl command::Runnable for ChangeDirectory {
             return;
         }
 
-        context.curr_path = self.path.clone();
+
+        match std::env::set_current_dir(self.path.as_path()) {
+            Ok(_) => {
+                context.curr_path = self.path.clone();
+            },
+            Err(e) => {
+                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                return;
+            }
+        }
 
         {
             context.history.populate_to_root(&context.curr_path, &context.config_t.sort_type);
