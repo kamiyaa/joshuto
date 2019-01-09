@@ -357,7 +357,7 @@ impl command::Runnable for DeleteFiles {
 
 }
 
-#[derive(Clone, Debug, Display)]
+#[derive(Clone, Debug)]
 pub enum RenameFileMethod {
     Append,
     Prepend,
