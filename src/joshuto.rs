@@ -67,10 +67,8 @@ impl JoshutoTab {
                 Some(dirent) => {
                     if dirent.path.is_dir() {
                         preview_view = match history.pop_or_create(&dirent.path, sort_type) {
-                            Ok(s) => { Some(s) },
-                            Err(e) => {
-                                None
-                            },
+                            Ok(s) => Some(s),
+                            Err(_) => None,
                         };
                     } else {
                         preview_view = None;
@@ -237,6 +235,8 @@ pub fn resize_handler(context: &mut JoshutoContext)
 
     ui::redraw_status(&context.views, curr_list, curr_path,
             &context.username, &context.hostname);
+
+    ui::redraw_tab_view(&context.views.tab_win, &context);
 
     ncurses::doupdate();
 }

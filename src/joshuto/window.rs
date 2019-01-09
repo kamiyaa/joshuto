@@ -137,9 +137,13 @@ impl JoshutoView {
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
         let term_divide: i32 = term_cols / sum_ratio as i32;
 
-        let win_xy: (i32, i32) = (1, term_cols);
+        let win_xy: (i32, i32) = (1, term_cols - 5);
         let win_coord: (usize, usize) = (0, 0);
         self.top_win.redraw(win_xy.0, win_xy.1, win_coord);
+
+        let win_xy: (i32, i32) = (1, 5);
+        let win_coord: (usize, usize) = (0, term_cols as usize - 5);
+        self.tab_win.redraw(win_xy.0, win_xy.1, win_coord);
 
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.0 as i32) - 2);
         let win_coord: (usize, usize) = (1, 0);
