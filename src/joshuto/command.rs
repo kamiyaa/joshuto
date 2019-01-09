@@ -52,6 +52,14 @@ pub use self::show_hidden::ToggleHiddenFiles;
 mod selection;
 pub use self::selection::SelectFiles;
 
+mod tab_operation;
+pub use self::tab_operation::NewTab;
+pub use self::tab_operation::CloseTab;
+
+mod tab_switch;
+pub use self::tab_switch::TabSwitch;
+
+
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(Box<dyn JoshutoCommand>),
@@ -126,6 +134,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                 None
             }
         },
+        "close_tab" => Some(Box::new(self::CloseTab::new())),
         "copy_files" => Some(Box::new(self::CopyFiles::new())),
         "cursor_move" => {
             if let Some(args) = args {
@@ -153,6 +162,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         "cut_files" => Some(Box::new(self::CutFiles::new())),
         "delete_files" => Some(Box::new(self::DeleteFiles::new())),
         "mkdir" => Some(Box::new(self::NewDirectory::new())),
+        "new_tab" => Some(Box::new(self::NewTab::new())),
         "open_file" => Some(Box::new(self::OpenFile::new())),
         "open_file_with" => Some(Box::new(self::OpenFileWith::new())),
         "parent_directory" => Some(Box::new(self::ParentDirectory::new())),
@@ -235,6 +245,25 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
             }
             Some(Box::new(self::SelectFiles::new(toggle, all)))
         },
+        "tab_switch" => {
+            if let Some(args) = args {
+                if args.len() > 0 {
+                    match args[0].parse::<i32>() {
+                        Ok(s) => {
+                            Some(Box::new(self::TabSwitch::new(s)))
+                        },
+                        Err(e) => {
+                            eprintln!("{}", e);
+                            None
+                        },
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        }
         "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
         _ => None,
     }

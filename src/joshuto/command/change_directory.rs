@@ -10,7 +10,7 @@ use joshuto;
 use joshuto::command;
 use joshuto::ui;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ChangeDirectory {
     path: path::PathBuf,
 }

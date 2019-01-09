@@ -6,6 +6,7 @@ use std::fs;
 use std::path;
 use std::time;
 
+use joshuto;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
@@ -255,7 +256,7 @@ pub fn redraw_view(win: &window::JoshutoPanel,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn redraw_status(joshuto_view : &window::JoshutoView,
+pub fn redraw_status(joshuto_view: &window::JoshutoView,
     curr_view: Option<&structs::JoshutoDirList>, curr_path: &path::PathBuf,
     username: &str, hostname: &str)
 {
@@ -267,6 +268,20 @@ pub fn redraw_status(joshuto_view : &window::JoshutoView,
             wprint_file_info(joshuto_view.bot_win.win, &dirent);
         }
     }
+}
+
+pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &joshuto::JoshutoContext)
+{
+    let tab_len = context.tabs.len();
+    if tab_len == 1 {
+        ncurses::werase(win.win);
+    } else {
+        ncurses::wmove(win.win, 0, 0);
+        ncurses::wattron(win.win, ncurses::A_BOLD());
+        ncurses::waddstr(win.win, format!("{} {}", context.tab_index + 1, tab_len).as_str());
+        ncurses::wattroff(win.win, ncurses::A_BOLD());
+    }
+    ncurses::wnoutrefresh(win.win);
 }
 
 pub fn draw_loading_bar(win: &window::JoshutoPanel, percentage: f32)

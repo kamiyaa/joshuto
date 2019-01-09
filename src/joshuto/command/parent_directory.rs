@@ -9,7 +9,7 @@ use joshuto;
 use joshuto::ui;
 use joshuto::command;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ParentDirectory;
 
 impl ParentDirectory {

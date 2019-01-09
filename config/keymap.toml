@@ -3,6 +3,11 @@ keys = [ "q" ]
 command = "quit"
 
 [[mapcommand]]
+keys = [ "R" ]
+command = "reload_dir_list"
+
+
+[[mapcommand]]
 keys = [ "Up" ]
 command = "cursor_move"
 args = [ "-1" ]
@@ -130,16 +135,25 @@ keys = [ "/" ]
 command = "search"
 
 
+[[mapcommand]]
+keys = [ "t", "t" ]
+command = "new_tab"
+
+[[mapcommand]]
+keys = [ "w", "w" ]
+command = "close_tab"
+
+[[mapcommand]]
+keys = [ "[" ]
+command = "tab_switch"
+args = [ "-1" ]
+
+[[mapcommand]]
+keys = [ "]" ]
+command = "tab_switch"
+args = [ "1" ]
 
 ## Features not yet implemented
-
-[[mapcommand]]
-keys = [ "R" ]
-command = "reload_dir_list"
-
-[[mapcommand]]
-keys = [ "Ctrl", "t" ]
-command = "new_tab"
 
 [[mapcommand]]
 keys = [ "b", "b" ]

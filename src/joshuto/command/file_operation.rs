@@ -58,7 +58,7 @@ enum FileOp {
     Copy,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CutFiles;
 
 impl CutFiles {
@@ -87,7 +87,7 @@ impl command::Runnable for CutFiles {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CopyFiles;
 
 impl CopyFiles {
@@ -116,7 +116,7 @@ impl command::Runnable for CopyFiles {
     }
 }
 
-#[derive(Debug,Clone)]
+#[derive(Clone, Debug)]
 pub struct ProgressInfo {
     pub bytes_finished: u64,
     pub total_bytes: u64,
@@ -273,7 +273,7 @@ impl command::Runnable for PasteFiles {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct DeleteFiles;
 
 impl DeleteFiles {
@@ -357,14 +357,14 @@ impl command::Runnable for DeleteFiles {
 
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Display)]
 pub enum RenameFileMethod {
     Append,
     Prepend,
     Overwrite
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct RenameFile {
     method: RenameFileMethod,
 }

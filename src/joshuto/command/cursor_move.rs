@@ -9,7 +9,7 @@ use joshuto::ui;
 
 use joshuto::command;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CursorMove {
     movement: i32,
 }
@@ -108,7 +108,7 @@ impl command::Runnable for CursorMove {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CursorMovePageUp;
 
 impl CursorMovePageUp {
@@ -148,7 +148,7 @@ impl command::Runnable for CursorMovePageUp {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CursorMovePageDown;
 
 impl CursorMovePageDown {
@@ -189,7 +189,7 @@ impl command::Runnable for CursorMovePageDown {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CursorMoveHome;
 
 impl CursorMoveHome {
@@ -227,7 +227,7 @@ impl command::Runnable for CursorMoveHome {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CursorMoveEnd;
 
 impl CursorMoveEnd {

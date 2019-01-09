@@ -6,7 +6,7 @@ use joshuto;
 use joshuto::command;
 use joshuto::ui;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Quit;
 
 impl Quit {

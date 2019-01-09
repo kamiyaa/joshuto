@@ -16,7 +16,7 @@ use joshuto::ui;
 use joshuto::unix;
 use joshuto::window;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct OpenFile;
 
 impl OpenFile {
@@ -144,7 +144,7 @@ impl command::Runnable for OpenFile {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct OpenFileWith;
 
 impl OpenFileWith {

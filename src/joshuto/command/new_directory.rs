@@ -11,7 +11,7 @@ use joshuto::window;
 
 use joshuto::command;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct NewDirectory;
 
 impl NewDirectory {

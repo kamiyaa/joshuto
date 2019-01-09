@@ -1,9 +1,7 @@
-#[allow(dead_code)]
 extern crate ncurses;
 
 use std;
 use std::collections::HashMap;
-use std::env;
 use std::path;
 use std::process;
 use std::sync;
@@ -30,6 +28,70 @@ pub struct JoshutoTab {
     pub curr_list: Option<structs::JoshutoDirList>,
     pub parent_list: Option<structs::JoshutoDirList>,
     pub preview_list: Option<structs::JoshutoDirList>,
+}
+
+impl JoshutoTab {
+    pub fn new(curr_path: path::PathBuf, sort_type: &sort::SortType) -> Self
+    {
+        /* keep track of where we are in directories */
+        let mut history = history::DirHistory::new();
+        history.populate_to_root(&curr_path, sort_type);
+
+        /* load up directories */
+        let curr_view: Option<structs::JoshutoDirList> =
+            match history.pop_or_create(&curr_path, sort_type) {
+                Ok(s) => { Some(s) },
+                Err(e) => {
+                    eprintln!("{}", e);
+                    process::exit(1);
+                },
+            };
+
+        let parent_view: Option<structs::JoshutoDirList> =
+            match curr_path.parent() {
+                Some(parent) => {
+                    match history.pop_or_create(&parent, sort_type) {
+                        Ok(s) => { Some(s) },
+                        Err(e) => {
+                            eprintln!("{}", e);
+                            process::exit(1);
+                        },
+                    }
+                },
+                None => { None },
+            };
+
+        let preview_view: Option<structs::JoshutoDirList>;
+        if let Some(s) = curr_view.as_ref() {
+            match s.get_curr_entry() {
+                Some(dirent) => {
+                    if dirent.path.is_dir() {
+                        preview_view = match history.pop_or_create(&dirent.path, sort_type) {
+                            Ok(s) => { Some(s) },
+                            Err(e) => {
+                                None
+                            },
+                        };
+                    } else {
+                        preview_view = None;
+                    }
+                },
+                None => {
+                    preview_view = None;
+                }
+            }
+        } else {
+            preview_view = None
+        }
+
+        JoshutoTab {
+                curr_path,
+                history,
+                curr_list: curr_view,
+                parent_list: parent_view,
+                preview_list: preview_view,
+            }
+    }
 }
 
 pub struct JoshutoContext<'a> {
@@ -67,89 +129,6 @@ impl<'a> JoshutoContext<'a> {
             mimetype_t,
             theme_t
         }
-    }
-
-    pub fn new_tab(&mut self)
-    {
-        let curr_path: path::PathBuf = match env::current_dir() {
-            Ok(path) => { path },
-            Err(e) => {
-                eprintln!("{}", e);
-                process::exit(1);
-            },
-        };
-
-        /* keep track of where we are in directories */
-        let mut history = history::DirHistory::new();
-        history.populate_to_root(&curr_path, &self.config_t.sort_type);
-
-        /* load up directories */
-        let curr_view: Option<structs::JoshutoDirList> =
-            match history.pop_or_create(&curr_path, &self.config_t.sort_type) {
-                Ok(s) => { Some(s) },
-                Err(e) => {
-                    eprintln!("{}", e);
-                    process::exit(1);
-                },
-            };
-
-        let parent_view: Option<structs::JoshutoDirList> =
-            match curr_path.parent() {
-                Some(parent) => {
-                    match history.pop_or_create(&parent, &self.config_t.sort_type) {
-                        Ok(s) => { Some(s) },
-                        Err(e) => {
-                            eprintln!("{}", e);
-                            process::exit(1);
-                        },
-                    }
-                },
-                None => { None },
-            };
-
-        let preview_view: Option<structs::JoshutoDirList>;
-        if let Some(s) = curr_view.as_ref() {
-            match s.get_curr_entry() {
-                Some(dirent) => {
-                    if dirent.path.is_dir() {
-                        preview_view = match history.pop_or_create(&dirent.path, &self.config_t.sort_type) {
-                            Ok(s) => { Some(s) },
-                            Err(e) => {
-                                eprintln!("{}", e);
-                                None
-                            },
-                        };
-                    } else {
-                        preview_view = None;
-                    }
-                },
-                None => {
-                    preview_view = None;
-                }
-            }
-        } else {
-            preview_view = None
-        }
-
-        ui::redraw_status(&self.views, curr_view.as_ref(), &curr_path,
-                &self.username, &self.hostname);
-
-        ui::redraw_view(&self.views.left_win, parent_view.as_ref());
-        ui::redraw_view(&self.views.mid_win, curr_view.as_ref());
-        ui::redraw_view(&self.views.right_win, preview_view.as_ref());
-
-        ncurses::doupdate();
-
-        let tab = JoshutoTab {
-                curr_path,
-                history,
-                curr_list: curr_view,
-                parent_list: parent_view,
-                preview_list: preview_view,
-            };
-
-        self.tabs.push(tab);
-        self.tab_index = self.tabs.len() - 1;
     }
 
     pub fn reload_dirlists(&mut self)
@@ -273,7 +252,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
     let mut context = JoshutoContext::new(&mut config_t, &mimetype_t, &theme_t);
 
-    context.new_tab();
+    command::NewTab::new_tab(&mut context);
 
     let wait_duration: time::Duration = time::Duration::from_millis(100);
 

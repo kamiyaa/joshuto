@@ -1,13 +1,10 @@
-extern crate fs_extra;
-extern crate ncurses;
-
 use std;
 use std::fmt;
 
 use joshuto;
 use joshuto::command;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SelectFiles {
     toggle: bool,
     all: bool,

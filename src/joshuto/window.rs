@@ -27,16 +27,9 @@ impl JoshutoPanel {
         }
     }
 
-    pub fn move_to_top(&self)
-    {
-        ncurses::top_panel(self.panel);
-    }
-
+    pub fn move_to_top(&self) { ncurses::top_panel(self.panel); }
     #[allow(dead_code)]
-    pub fn move_to_bottom(&self)
-    {
-        ncurses::bottom_panel(self.panel);
-    }
+    pub fn move_to_bottom(&self) { ncurses::bottom_panel(self.panel); }
 
     pub fn redraw(&mut self, rows: i32, cols: i32, coords: (usize, usize))
     {
@@ -75,6 +68,7 @@ impl std::ops::Drop for Joshuto {
 #[derive(Debug)]
 pub struct JoshutoView {
     pub top_win: JoshutoPanel,
+    pub tab_win: JoshutoPanel,
     pub left_win: JoshutoPanel,
     pub mid_win: JoshutoPanel,
     pub right_win: JoshutoPanel,
@@ -92,9 +86,13 @@ impl JoshutoView {
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
         let term_divide: i32 = term_cols / sum_ratio as i32;
 
-        let win_xy: (i32, i32) = (1, term_cols);
+        let win_xy: (i32, i32) = (1, term_cols - 5);
         let win_coord: (usize, usize) = (0, 0);
         let top_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+
+        let win_xy: (i32, i32) = (1, 5);
+        let win_coord: (usize, usize) = (0, term_cols as usize - 5);
+        let tab_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 2);
         let win_coord: (usize, usize) = (1, 0);
@@ -121,6 +119,7 @@ impl JoshutoView {
 
         JoshutoView {
             top_win,
+            tab_win,
             left_win,
             mid_win,
             right_win,
