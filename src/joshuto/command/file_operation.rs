@@ -28,24 +28,9 @@ fn set_file_op(operation: FileOp)
     *data = operation;
 }
 
-pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
-        -> Option<Vec<path::PathBuf>>
-{
-    let selected: Vec<path::PathBuf> = dirlist.contents.iter()
-            .filter(|entry| entry.selected)
-            .map(|entry| entry.path.clone()).collect();
-    if selected.len() > 0 {
-        Some(selected)
-    } else if dirlist.index >= 0 {
-        Some(vec![dirlist.contents[dirlist.index as usize].path.clone()])
-    } else {
-        None
-    }
-}
-
 fn repopulated_selected_files(dirlist: &structs::JoshutoDirList) -> bool
 {
-    if let Some(contents) = collect_selected_paths(dirlist) {
+    if let Some(contents) = command::collect_selected_paths(dirlist) {
         let mut data = selected_files.lock().unwrap();
         *data = contents;
         return true;
@@ -334,7 +319,7 @@ impl command::Runnable for DeleteFiles {
         let ch = ncurses::wgetch(context.views.bot_win.win);
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
-                if let Some(paths) = collect_selected_paths(s) {
+                if let Some(paths) = command::collect_selected_paths(s) {
                     Self::remove_files(paths, &context.views.bot_win);
                 }
             }

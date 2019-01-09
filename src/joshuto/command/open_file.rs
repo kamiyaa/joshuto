@@ -22,38 +22,10 @@ pub struct OpenFile;
 impl OpenFile {
     pub fn new() -> Self { OpenFile }
     pub fn command() -> &'static str { "open_file" }
-}
-
-impl command::JoshutoCommand for OpenFile {}
-
-impl std::fmt::Display for OpenFile {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    pub fn open(paths: &Vec<path::PathBuf>, context: &mut joshuto::JoshutoContext)
     {
-        f.write_str(Self::command())
-    }
-}
-
-impl command::Runnable for OpenFile {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
-    {
-        let curr_tab = &mut context.tabs[context.tab_index];
-
-        let index: usize;
-        let path: path::PathBuf;
-
-        if let Some(s) = curr_tab.curr_list.as_ref() {
-            if s.contents.len() == 0 {
-                return;
-            } else {
-                index = s.index as usize;
-                path = s.contents[index].path.clone();
-            }
-        } else {
-            return;
-        }
-
-        if path.is_file() {
-            let file_ext: Option<&str> = match path.extension() {
+        if paths[0].is_file() {
+            let file_ext: Option<&str> = match paths[0].extension() {
                 Some(s) => s.to_str(),
                 None => None,
                 };
@@ -74,7 +46,7 @@ impl command::Runnable for OpenFile {
             if mimetype_options.len() > 0 {
                 ncurses::savetty();
                 ncurses::endwin();
-                unix::open_with_entry(path.as_path(), &mimetype_options[0]);
+                unix::open_with_entry(paths, &mimetype_options[0]);
                 ncurses::resetty();
                 ncurses::refresh();
             } else {
@@ -82,64 +54,93 @@ impl command::Runnable for OpenFile {
             }
             ncurses::doupdate();
 
-        } else if path.is_dir() {
-            match env::set_current_dir(&path) {
-                Ok(_) => {},
-                Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, format!("{}: {:?}", e, path).as_str());
-                    return;
+        } else if paths[0].is_dir() {
+            Self::into_directory(&paths[0], context);
+        }
+    }
+
+    fn into_directory(path: &path::PathBuf, context: &mut joshuto::JoshutoContext)
+    {
+        let curr_tab = &mut context.tabs[context.tab_index];
+
+        match env::set_current_dir(path) {
+            Ok(_) => {},
+            Err(e) => {
+                ui::wprint_err(&context.views.bot_win, format!("{}: {:?}", e, path).as_str());
+                return;
+            }
+        }
+
+        {
+            let dir_list = curr_tab.parent_list.take();
+            curr_tab.history.put_back(dir_list);
+
+            let curr_list = curr_tab.curr_list.take();
+            curr_tab.parent_list = curr_list;
+
+            let preview_list = curr_tab.preview_list.take();
+            curr_tab.curr_list = preview_list;
+        }
+
+        /* update curr_path */
+        match path.strip_prefix(curr_tab.curr_path.as_path()) {
+            Ok(s) => curr_tab.curr_path.push(s),
+            Err(e) => {
+                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                return;
+            }
+        }
+
+        if let Some(s) = curr_tab.curr_list.as_ref() {
+            if s.contents.len() > 0 {
+                let dirent: &structs::JoshutoDirEntry = &s.contents[s.index as usize];
+                let new_path: path::PathBuf = dirent.path.clone();
+
+                if new_path.is_dir() {
+                    curr_tab.preview_list = match curr_tab.history.pop_or_create(
+                                new_path.as_path(), &context.config_t.sort_type) {
+                        Ok(s) => { Some(s) },
+                        Err(e) => {
+                            ui::wprint_err(&context.views.right_win,
+                                    e.to_string().as_str());
+                            None
+                        },
+                    };
+                } else {
+                    ncurses::werase(context.views.right_win.win);
                 }
             }
+        }
 
-            {
-                let dir_list = curr_tab.parent_list.take();
-                curr_tab.history.put_back(dir_list);
+        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
+        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
+        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-                let curr_list = curr_tab.curr_list.take();
-                curr_tab.parent_list = curr_list;
+        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
+                &context.username, &context.hostname);
 
-                let preview_list = curr_tab.preview_list.take();
-                curr_tab.curr_list = preview_list;
-            }
+        ncurses::doupdate();
+    }
+}
 
-            /* update curr_path */
-            match path.strip_prefix(curr_tab.curr_path.as_path()) {
-                Ok(s) => curr_tab.curr_path.push(s),
-                Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
-                    return;
-                }
-            }
+impl command::JoshutoCommand for OpenFile {}
 
-            if let Some(s) = curr_tab.curr_list.as_ref() {
-                if s.contents.len() > 0 {
-                    let dirent: &structs::JoshutoDirEntry = &s.contents[s.index as usize];
-                    let new_path: path::PathBuf = dirent.path.clone();
+impl std::fmt::Display for OpenFile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        f.write_str(Self::command())
+    }
+}
 
-                    if new_path.is_dir() {
-                        curr_tab.preview_list = match curr_tab.history.pop_or_create(
-                                    new_path.as_path(), &context.config_t.sort_type) {
-                            Ok(s) => { Some(s) },
-                            Err(e) => {
-                                ui::wprint_err(&context.views.right_win,
-                                        e.to_string().as_str());
-                                None
-                            },
-                        };
-                    } else {
-                        ncurses::werase(context.views.right_win.win);
-                    }
-                }
-            }
-
-            ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-            ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-            ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
-
-            ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
-                    &context.username, &context.hostname);
-
-            ncurses::doupdate();
+impl command::Runnable for OpenFile {
+    fn execute(&self, context: &mut joshuto::JoshutoContext)
+    {
+        let paths: Option<Vec<path::PathBuf>> = match context.tabs[context.tab_index].curr_list.as_ref() {
+                Some(s) => command::collect_selected_paths(s),
+                None => None,
+            };
+        if let Some(paths) = paths {
+            Self::open(&paths, context);
         }
     }
 }
@@ -151,13 +152,13 @@ impl OpenFileWith {
     pub fn new() -> Self { OpenFileWith }
     pub fn command() -> &'static str { "open_file_with" }
 
-    pub fn open_with(pathbuf: path::PathBuf, mimetype_t: &mimetype::JoshutoMimetype)
+    pub fn open_with(paths: &Vec<path::PathBuf>, mimetype_t: &mimetype::JoshutoMimetype)
     {
         let mut term_rows: i32 = 0;
         let mut term_cols: i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let file_ext: Option<&str> = match pathbuf.extension() {
+        let file_ext: Option<&str> = match paths[0].extension() {
             Some(s) => s.to_str(),
             None => None,
             };
@@ -207,7 +208,7 @@ impl OpenFileWith {
                     if s < mimetype_options.len() {
                         ncurses::savetty();
                         ncurses::endwin();
-                        unix::open_with_entry(pathbuf.as_path(), &mimetype_options[s]);
+                        unix::open_with_entry(&paths, &mimetype_options[s]);
                         ncurses::resetty();
                         ncurses::refresh();
                     }
@@ -216,7 +217,7 @@ impl OpenFileWith {
                     let args: Vec<String> = user_input.split_whitespace().map(|x| String::from(x)).collect();
                     ncurses::savetty();
                     ncurses::endwin();
-                    unix::open_with_args(pathbuf.as_path(), &args);
+                    unix::open_with_args(&paths, &args);
                     ncurses::resetty();
                     ncurses::refresh();
                 }
@@ -237,11 +238,9 @@ impl std::fmt::Display for OpenFileWith {
 impl command::Runnable for OpenFileWith {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let curr_tab = &mut context.tabs[context.tab_index];
-
-        if let Some(s) = curr_tab.curr_list.as_ref() {
-            if let Some(direntry) = s.get_curr_entry() {
-                OpenFileWith::open_with(direntry.path.clone(), &context.mimetype_t);
+        if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
+            if let Some(paths) = command::collect_selected_paths(s) {
+                Self::open_with(&paths, &context.mimetype_t);
             }
         }
     }

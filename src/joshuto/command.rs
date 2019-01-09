@@ -8,6 +8,7 @@ use std::fmt;
 use std::path;
 
 use joshuto;
+use joshuto::structs;
 
 mod quit;
 pub use self::quit::Quit;
@@ -80,43 +81,6 @@ impl std::fmt::Display for CommandKeybind {
         }
     }
 }
-
-#[allow(dead_code)]
-pub fn split_shell_style(line: &String) -> Vec<&str>
-{
-    let mut args: Vec<&str> = Vec::new();
-    let mut char_ind = line.char_indices();
-
-    while let Some((i, ch)) = char_ind.next() {
-        if ch.is_whitespace() {
-            continue;
-        }
-        if ch == '\'' {
-            while let Some((j, ch)) = char_ind.next() {
-                if ch == '\'' {
-                    args.push(&line[i+1..j]);
-                    break;
-                }
-            }
-        } else if ch == '"'{
-            while let Some((j, ch)) = char_ind.next() {
-                if ch == '"' {
-                    args.push(&line[i+1..j]);
-                    break;
-                }
-            }
-        } else {
-            while let Some((j, ch)) = char_ind.next() {
-                if ch.is_whitespace() {
-                    args.push(&line[i..j]);
-                    break;
-                }
-            }
-        }
-    }
-    args
-}
-
 
 pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn JoshutoCommand>>
 {
@@ -268,3 +232,61 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         _ => None,
     }
 }
+
+pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
+        -> Option<Vec<path::PathBuf>>
+{
+    if dirlist.index < 0 {
+        return None;
+    }
+
+    if dirlist.selected == 0 {
+        Some(vec![dirlist.contents[dirlist.index as usize].path.clone()])
+    } else {
+        let selected: Vec<path::PathBuf> = dirlist.contents.iter()
+                .filter(|entry| entry.selected)
+                .map(|entry| entry.path.clone()).collect();
+        if selected.len() > 0 {
+            Some(selected)
+        } else {
+            None
+        }
+    }
+}
+
+#[allow(dead_code)]
+pub fn split_shell_style(line: &String) -> Vec<&str>
+{
+    let mut args: Vec<&str> = Vec::new();
+    let mut char_ind = line.char_indices();
+
+    while let Some((i, ch)) = char_ind.next() {
+        if ch.is_whitespace() {
+            continue;
+        }
+        if ch == '\'' {
+            while let Some((j, ch)) = char_ind.next() {
+                if ch == '\'' {
+                    args.push(&line[i+1..j]);
+                    break;
+                }
+            }
+        } else if ch == '"'{
+            while let Some((j, ch)) = char_ind.next() {
+                if ch == '"' {
+                    args.push(&line[i+1..j]);
+                    break;
+                }
+            }
+        } else {
+            while let Some((j, ch)) = char_ind.next() {
+                if ch.is_whitespace() {
+                    args.push(&line[i..j]);
+                    break;
+                }
+            }
+        }
+    }
+    args
+}
+

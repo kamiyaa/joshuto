@@ -97,7 +97,7 @@ pub fn stringify_mode(mode: u32) -> String
     mode_str
 }
 
-pub fn open_with_entry(path: &path::Path, entry: &mimetype::JoshutoMimetypeEntry)
+pub fn open_with_entry(paths: &Vec<path::PathBuf>, entry: &mimetype::JoshutoMimetypeEntry)
 {
     let program = entry.program.clone();
 
@@ -108,7 +108,9 @@ pub fn open_with_entry(path: &path::Path, entry: &mimetype::JoshutoMimetypeEntry
             command.arg(args[i].clone());
         }
     }
-    command.arg(path.as_os_str());
+    for path in paths {
+        command.arg(path.as_os_str());
+    }
     if let Some(true) = entry.silent {
         command.stdout(process::Stdio::null());
         command.stderr(process::Stdio::null());
@@ -128,7 +130,7 @@ pub fn open_with_entry(path: &path::Path, entry: &mimetype::JoshutoMimetypeEntry
     }
 }
 
-pub fn open_with_args(path: &path::Path, args: &Vec<String>)
+pub fn open_with_args(paths: &Vec<path::PathBuf>, args: &Vec<String>)
 {
     let program = args[0].clone();
     let args_len = args.len();
@@ -137,7 +139,9 @@ pub fn open_with_args(path: &path::Path, args: &Vec<String>)
     for i in 1..args_len {
         command.arg(args[i].clone());
     }
-    command.arg(path.as_os_str());
+    for path in paths {
+        command.arg(path.as_os_str());
+    }
 
     match command.spawn() {
         Ok(mut handle) => {
