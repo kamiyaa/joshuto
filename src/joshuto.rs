@@ -67,10 +67,8 @@ impl JoshutoTab {
                 Some(dirent) => {
                     if dirent.path.is_dir() {
                         preview_view = match history.pop_or_create(&dirent.path, sort_type) {
-                            Ok(s) => { Some(s) },
-                            Err(e) => {
-                                None
-                            },
+                            Ok(s) => Some(s),
+                            Err(_) => None,
                         };
                     } else {
                         preview_view = None;
