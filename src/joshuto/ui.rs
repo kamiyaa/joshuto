@@ -58,9 +58,7 @@ pub fn end_ncurses()
 pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
 {
     ncurses::werase(win.win);
-
-    let ch = '-' as ncurses::chtype;
-    ncurses::mvwhline(win.win, 0, 0, ch, -1);
+    ncurses::mvwhline(win.win, 0, 0, 0, win.cols);
 
     for (i, val) in vals.iter().enumerate() {
         ncurses::wmove(win.win, (i+1) as i32, 0);
