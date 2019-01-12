@@ -142,7 +142,12 @@ impl PasteFiles {
                 };
 
             for path in (*paths).iter() {
-                let file_name = path.file_name().unwrap().to_str().unwrap();
+                let mut file_name = path.file_name().unwrap().to_os_string();
+
+                while path::Path::new(&file_name).exists() {
+                    file_name.push("_0");
+                }
+
                 destination.push(file_name);
                 if options.skip_exist && destination.exists() {
                     continue;
@@ -193,7 +198,7 @@ impl PasteFiles {
         let options = self.options.clone();
 
         let child = thread::spawn(move || {
-            let mut files = selected_files.lock().unwrap();
+            let files = selected_files.lock().unwrap();
 
             let handle = |process_info: fs_extra::TransitProcess| {
                 let progress_info = ProgressInfo {
@@ -208,7 +213,6 @@ impl PasteFiles {
                 Ok(_) => {},
                 Err(_) => {},
             }
-            files.clear();
             0
         });
 
@@ -363,15 +367,20 @@ impl RenameFile {
 
         if let Some(s) = user_input {
             let mut new_path = path.parent().unwrap().to_path_buf();
+
             new_path.push(s);
-            match fs::rename(&path, &new_path) {
-                Ok(_) => {
-                    context.reload_dirlists();
-                    ui::refresh(&context);
-                },
-                Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
-                },
+            if !new_path.exists() {
+                match fs::rename(&path, &new_path) {
+                    Ok(_) => {
+                        context.reload_dirlists();
+                        ui::refresh(&context);
+                    },
+                    Err(e) => {
+                        ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                    },
+                }
+            } else {
+                ui::wprint_err(&context.views.bot_win, "Error: File with name exists");
             }
         }
 
