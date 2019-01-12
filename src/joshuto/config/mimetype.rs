@@ -17,16 +17,24 @@ pub struct JoshutoMimetypeEntry {
 impl std::fmt::Display for JoshutoMimetypeEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
-        let mut fmt_result = f.write_str(self.program.as_str());
-        match self.args.as_ref() {
-            Some(s) => {
-                for arg in s {
-                    fmt_result = write!(f, " {}", arg);
-                }
-            },
-            None => {},
+        f.write_str(self.program.as_str()).unwrap();
+        if let Some(s) = self.args.as_ref() {
+            for arg in s {
+                write!(f, " {}", arg).unwrap();
+            }
         }
-        fmt_result
+        f.write_str("\t[").unwrap();
+        if let Some(s) = self.fork {
+            if s {
+                f.write_str("fork,").unwrap();
+            }
+        }
+        if let Some(s) = self.silent {
+            if s {
+                f.write_str("silent").unwrap();
+            }
+        }
+        f.write_str("]")
     }
 }
 

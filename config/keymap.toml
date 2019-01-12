@@ -111,16 +111,6 @@ command = "mkdir"
 
 
 [[mapcommand]]
-keys = [ "g", "d" ]
-command = "cd"
-args = [ "~/Downloads" ]
-
-[[mapcommand]]
-keys = [ "g", "h" ]
-command = "cd"
-args = [ "~/" ]
-
-[[mapcommand]]
 keys = [ "g", "r" ]
 command = "cd"
 args = [ "/" ]
@@ -129,6 +119,16 @@ args = [ "/" ]
 keys = [ "g", "e" ]
 command = "cd"
 args = [ "/etc" ]
+
+[[mapcommand]]
+keys = [ "g", "h" ]
+command = "cd"
+args = [ "~/" ]
+
+[[mapcommand]]
+keys = [ "g", "b" ]
+command = "cd"
+args = [ "~/builds" ]
 
 [[mapcommand]]
 keys = [ "/" ]
@@ -150,6 +150,11 @@ args = [ "-1" ]
 
 [[mapcommand]]
 keys = [ "]" ]
+command = "tab_switch"
+args = [ "1" ]
+
+[[mapcommand]]
+keys = [ "Tab" ]
 command = "tab_switch"
 args = [ "1" ]
 

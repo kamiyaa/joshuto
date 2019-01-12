@@ -246,13 +246,7 @@ impl command::Runnable for PasteFiles {
 
         ncurses::timeout(0);
 
-        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
-
-        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
-                &curr_tab.curr_path,
-                &context.username, &context.hostname);
+        ui::refresh(&context);
 
         ncurses::doupdate();
     }
@@ -265,37 +259,16 @@ impl DeleteFiles {
     pub fn new() -> Self { DeleteFiles }
     pub fn command() -> &'static str { "delete_files" }
 
-    pub fn remove_files(paths: Vec<path::PathBuf>, win: &window::JoshutoPanel)
+    pub fn remove_files(paths: Vec<path::PathBuf>)
     {
-        let (tx, rx) = sync::mpsc::channel();
-        let total = paths.len();
-
-        let _child = thread::spawn(move || {
-            let mut deleted = 0;
-            for path in &paths {
-                if let Ok(metadata) = std::fs::symlink_metadata(path) {
-                    if metadata.is_dir() {
-                        std::fs::remove_dir_all(&path).unwrap();
-                    } else {
-                        std::fs::remove_file(&path).unwrap();
-                    }
+        for path in &paths {
+            if let Ok(metadata) = std::fs::symlink_metadata(path) {
+                if metadata.is_dir() {
+                    std::fs::remove_dir_all(&path).unwrap();
+                } else {
+                    std::fs::remove_file(&path).unwrap();
                 }
-                deleted = deleted + 1;
-                tx.send(deleted).unwrap();
             }
-        });
-
-        while let Ok(deleted) = rx.recv() {
-            if deleted == total {
-                ncurses::werase(win.win);
-                ncurses::wnoutrefresh(win.win);
-                ncurses::doupdate();
-                break;
-            }
-            let percent = (deleted as f64 / total as f64) as f32;
-            ui::draw_loading_bar(win, percent);
-            ncurses::wnoutrefresh(win.win);
-            ncurses::doupdate();
         }
     }
 }
@@ -320,7 +293,7 @@ impl command::Runnable for DeleteFiles {
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
                 if let Some(paths) = command::collect_selected_paths(s) {
-                    Self::remove_files(paths, &context.views.bot_win);
+                    Self::remove_files(paths);
                 }
             }
             context.reload_dirlists();
@@ -328,12 +301,16 @@ impl command::Runnable for DeleteFiles {
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
 
             let curr_tab = &context.tabs[context.tab_index];
-            ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-            ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-            ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
+            ui::redraw_view(&context.theme_t, &context.views.left_win,
+                    curr_tab.parent_list.as_ref());
+            ui::redraw_view_detailed(&context.theme_t, &context.views.mid_win,
+                    curr_tab.curr_list.as_ref());
+            ui::redraw_view(&context.theme_t, &context.views.right_win,
+                    curr_tab.preview_list.as_ref());
         } else {
             let curr_tab = &context.tabs[context.tab_index];
-            ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
+            ui::redraw_status(&context.theme_t, &context.views,
+                    curr_tab.curr_list.as_ref(),
                     &curr_tab.curr_path,
                     &context.username, &context.hostname);
         }
@@ -390,15 +367,7 @@ impl RenameFile {
             match fs::rename(&path, &new_path) {
                 Ok(_) => {
                     context.reload_dirlists();
-
-                    let curr_tab = &context.tabs[context.tab_index];
-                    ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-                    ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-                    ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
-
-                    ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
-                            &curr_tab.curr_path,
-                            &context.username, &context.hostname);
+                    ui::refresh(&context);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());

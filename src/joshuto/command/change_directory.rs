@@ -102,11 +102,16 @@ impl command::Runnable for ChangeDirectory {
             };
         }
 
-        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
+        ui::redraw_view(&context.theme_t, &context.views.left_win,
+                curr_tab.parent_list.as_ref());
+        ui::redraw_view_detailed(&context.theme_t, &context.views.mid_win,
+                curr_tab.curr_list.as_ref());
+        ui::redraw_view(&context.theme_t, &context.views.right_win,
+                curr_tab.preview_list.as_ref());
 
-        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
+        ui::redraw_status(&context.theme_t, &context.views,
+                curr_tab.curr_list.as_ref(),
+                &curr_tab.curr_path,
                 &context.username, &context.hostname);
 
         ncurses::doupdate();

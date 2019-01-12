@@ -1,0 +1,105 @@
+# 0 -> black
+# 1 -> red
+# 2 -> green
+# 3 -> yellow
+# 4 -> blue
+# 5 -> magenta
+# 6 -> cyan
+# 7 -> white
+# -1 -> default (transparent)
+
+[[colorpair]]
+id = 2
+fg = 2
+bg = -1
+
+[[colorpair]]
+id = 3
+fg = 3
+bg = -1
+
+[[colorpair]]
+id = 4
+fg = 4
+bg = -1
+
+[[colorpair]]
+id = 5
+fg = 5
+bg = -1
+
+[[colorpair]]
+id = 6
+fg = 6
+bg = -1
+
+[executable]
+colorpair = 2
+bold = true
+underline = false
+
+[selection]
+colorpair = 3
+bold = true
+underline = false
+
+[directory]
+colorpair = 4
+bold = true
+underline = false
+
+[link]
+colorpair = 6
+bold = true
+underline = false
+
+[socket]
+colorpair = 6
+bold = true
+underline = false
+
+[ext]
+	[ext.jpg]
+	colorpair = 3
+	bold = false
+	underline = true
+
+	[ext.jpeg]
+	colorpair = 3
+	bold = false
+	underline = true
+
+	[ext.png]
+	colorpair = 3
+	bold = false
+	underline = true
+
+	[ext.wav]
+	colorpair = 5
+	bold = false
+	underline = true
+
+	[ext.flac]
+	colorpair = 5
+	bold = false
+	underline = true
+
+	[ext.mp3]
+	colorpair = 5
+	bold = false
+	underline = true
+
+	[ext.mp4]
+	colorpair = 5
+	bold = false
+	underline = true
+
+	[ext.m4a]
+	colorpair = 5
+	bold = false
+	underline = true
+
+	[ext.webm]
+	colorpair = 5
+	bold = false
+	underline = true

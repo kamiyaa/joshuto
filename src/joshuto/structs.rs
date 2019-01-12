@@ -5,8 +5,6 @@ use std::path;
 use std::time;
 
 use joshuto::sort;
-use joshuto::ui;
-use joshuto::window;
 
 #[derive(Debug)]
 pub struct JoshutoMetadata {
@@ -149,12 +147,6 @@ impl JoshutoDirList {
                 self.metadata = metadata;
             }
         }
-    }
-
-
-    pub fn display_contents(&self, win: &window::JoshutoPanel)
-    {
-        ui::display_contents(win, self);
     }
 
     fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)

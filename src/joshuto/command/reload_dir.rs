@@ -15,6 +15,13 @@ pub struct ReloadDirList;
 impl ReloadDirList {
     pub fn new() -> Self { ReloadDirList }
     pub fn command() -> &'static str { "reload_dir_list" }
+
+    pub fn reload(context: &mut joshuto::JoshutoContext)
+    {
+        context.reload_dirlists();
+        ui::refresh(&context);
+        ncurses::doupdate();
+    }
 }
 
 impl command::JoshutoCommand for ReloadDirList {}
@@ -29,18 +36,6 @@ impl std::fmt::Display for ReloadDirList {
 impl command::Runnable for ReloadDirList {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        context.reload_dirlists();
-
-        let curr_tab = &mut context.tabs[context.tab_index];
-
-        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
-
-        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
-                &curr_tab.curr_path,
-                &context.username, &context.hostname);
-
-        ncurses::doupdate();
+        Self::reload(context);
     }
 }

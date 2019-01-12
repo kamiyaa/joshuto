@@ -56,7 +56,7 @@ impl CursorMove {
             let curr_index = curr_list.index as usize;
             let new_path = &curr_list.contents[curr_index].path;
 
-            curr_list.display_contents(&context.views.mid_win);
+            ui::display_contents(&context.theme_t, &context.views.mid_win, curr_list);
             ncurses::wnoutrefresh(context.views.mid_win.win);
 
             if new_path.is_dir() {
@@ -64,7 +64,8 @@ impl CursorMove {
                         &context.config_t.sort_type) {
                     Ok(s) => {
                         curr_tab.preview_list = Some(s);
-                        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
+                        ui::redraw_view(&context.theme_t, &context.views.right_win,
+                                curr_tab.preview_list.as_ref());
                     },
                     Err(e) => ui::wprint_err(&context.views.right_win, e.to_string().as_str()),
                 }
@@ -73,7 +74,9 @@ impl CursorMove {
                 ncurses::wnoutrefresh(context.views.right_win.win);
             }
 
-            ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
+            ui::redraw_status(&context.theme_t, &context.views,
+                    curr_tab.curr_list.as_ref(),
+                    &curr_tab.curr_path,
                     &context.username, &context.hostname);
 
             ncurses::doupdate();

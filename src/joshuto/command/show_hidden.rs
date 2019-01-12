@@ -48,15 +48,7 @@ impl command::Runnable for ToggleHiddenFiles {
             }
         }
 
-        let curr_tab = &context.tabs[context.tab_index];
-
-        ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-        ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-        ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
-
-        ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(),
-                &curr_tab.curr_path,
-                &context.username, &context.hostname);
+        ui::refresh(&context);
 
         ncurses::doupdate();
     }

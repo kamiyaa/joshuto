@@ -25,8 +25,8 @@ use self::command::JoshutoCommand;
 pub struct JoshutoTab {
     pub history: history::DirHistory,
     pub curr_path: path::PathBuf,
-    pub curr_list: Option<structs::JoshutoDirList>,
     pub parent_list: Option<structs::JoshutoDirList>,
+    pub curr_list: Option<structs::JoshutoDirList>,
     pub preview_list: Option<structs::JoshutoDirList>,
 }
 
@@ -223,21 +223,8 @@ pub fn resize_handler(context: &mut JoshutoContext)
 {
     context.views.redraw_views();
     ncurses::refresh();
-
-    let parent_list = context.tabs[context.tab_index].parent_list.as_ref();
-    let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
-    let preview_list = context.tabs[context.tab_index].preview_list.as_ref();
-    let curr_path = &context.tabs[context.tab_index].curr_path;
-
-    ui::redraw_view(&context.views.left_win, parent_list);
-    ui::redraw_view(&context.views.mid_win, curr_list);
-    ui::redraw_view(&context.views.right_win, preview_list);
-
-    ui::redraw_status(&context.views, curr_list, curr_path,
-            &context.username, &context.hostname);
-
+    ui::refresh(&context);
     ui::redraw_tab_view(&context.views.tab_win, &context);
-
     ncurses::doupdate();
 }
 
@@ -246,7 +233,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
     mimetype_t: config::JoshutoMimetype,
     theme_t: config::JoshutoTheme)
 {
-    ui::init_ncurses();
+    ui::init_ncurses(&theme_t);
 
     ncurses::doupdate();
 
@@ -281,7 +268,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                         ncurses::werase(context.views.bot_win.win);
                         let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
                         let curr_path = &context.tabs[context.tab_index].curr_path;
-                        ui::redraw_status(&context.views, curr_list, curr_path,
+                        ui::redraw_status(&context.theme_t, &context.views, curr_list, curr_path,
                                 &context.username, &context.hostname);
                         ncurses::doupdate();
                         something_finished = true;
@@ -289,7 +276,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
                     } else {
                         let percent = (progress_info.bytes_finished as f64 /
                                 progress_info.total_bytes as f64) as f32;
-                        ui::draw_loading_bar(&context.views.bot_win, percent);
+                        ui::draw_loading_bar(&context.theme_t, &context.views.bot_win, percent);
                         ncurses::wnoutrefresh(context.views.bot_win.win);
                         ncurses::doupdate();
                     }
@@ -297,21 +284,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
             }
 
             if something_finished {
-                context.reload_dirlists();
-
-                let parent_list = context.tabs[context.tab_index].parent_list.as_ref();
-                let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
-                let preview_list = context.tabs[context.tab_index].preview_list.as_ref();
-                let curr_path = &context.tabs[context.tab_index].curr_path;
-
-                ui::redraw_view(&context.views.left_win, parent_list);
-                ui::redraw_view(&context.views.mid_win, curr_list);
-                ui::redraw_view(&context.views.right_win, preview_list);
-
-                ui::redraw_status(&context.views, curr_list, curr_path,
-                        &context.username, &context.hostname);
-
-                ncurses::doupdate();
+                command::ReloadDirList::reload(&mut context);
             }
         }
 

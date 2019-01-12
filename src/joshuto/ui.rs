@@ -7,25 +7,19 @@ use std::path;
 use std::time;
 
 use joshuto;
+use joshuto::config;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
 
-pub const DIR_COLOR: i16 = 1;
-pub const SOCK_COLOR: i16 = 4;
-pub const EXEC_COLOR: i16 = 11;
-pub const IMG_COLOR: i16 = 12;
-pub const VID_COLOR: i16 = 13;
-pub const SELECT_COLOR: i16 = 25;
-pub const ERR_COLOR: i16 = 40;
-pub const EMPTY_COLOR: i16 = 50;
+pub const ERR_COLOR: i16 = 7;
+pub const EMPTY_COLOR: i16 = 8;
 
-pub fn init_ncurses()
+pub fn init_ncurses(theme_t: &config::JoshutoTheme)
 {
     let locale_conf = ncurses::LcCategory::all;
 
     ncurses::setlocale(locale_conf, "");
-    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
     ncurses::initscr();
     ncurses::cbreak();
@@ -36,28 +30,24 @@ pub fn init_ncurses()
     ncurses::noecho();
     ncurses::set_escdelay(0);
 
+    process_theme(&theme_t);
+
+    ncurses::printw("Loading...");
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
-    /* directories */
-    ncurses::init_pair(DIR_COLOR, ncurses::COLOR_BLUE, -1);
-    /* Sockets */
-    ncurses::init_pair(SOCK_COLOR, ncurses::COLOR_CYAN, -1);
-    /* executables */
-    ncurses::init_pair(EXEC_COLOR, ncurses::COLOR_GREEN, -1);
-    /* image files */
-    ncurses::init_pair(IMG_COLOR, ncurses::COLOR_YELLOW, -1);
-    /* video files */
-    ncurses::init_pair(VID_COLOR, ncurses::COLOR_MAGENTA, -1);
-    /* selected files */
-    ncurses::init_pair(SELECT_COLOR, ncurses::COLOR_YELLOW, -1);
+    ncurses::refresh();
+}
+
+fn process_theme(theme_t: &config::JoshutoTheme)
+{
+    for pair in theme_t.colorpair.iter() {
+        ncurses::init_pair(pair.id, pair.fg, pair.bg);
+    }
+
     /* error message */
     ncurses::init_pair(ERR_COLOR, ncurses::COLOR_RED, -1);
     /* empty */
     ncurses::init_pair(EMPTY_COLOR, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
-
-    ncurses::printw("Loading...");
-
-    ncurses::refresh();
 }
 
 pub fn end_ncurses()
@@ -65,14 +55,28 @@ pub fn end_ncurses()
         ncurses::endwin();
 }
 
-pub fn wprint_msg(win : &window::JoshutoPanel, msg : &str)
+pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
+{
+    ncurses::werase(win.win);
+
+    let ch = '-' as ncurses::chtype;
+    ncurses::mvwhline(win.win, 0, 0, ch, -1);
+
+    for (i, val) in vals.iter().enumerate() {
+        ncurses::wmove(win.win, (i+1) as i32, 0);
+        ncurses::waddstr(win.win, val.as_str());
+    }
+    ncurses::wnoutrefresh(win.win);
+}
+
+pub fn wprint_msg(win: &window::JoshutoPanel, msg: &str)
 {
     ncurses::werase(win.win);
     ncurses::mvwaddstr(win.win, 0, 0, msg);
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_err(win: &window::JoshutoPanel, msg : &str)
+pub fn wprint_err(win: &window::JoshutoPanel, msg: &str)
 {
     ncurses::werase(win.win);
     ncurses::wattron(win.win, ncurses::A_BOLD());
@@ -92,8 +96,8 @@ pub fn wprint_empty(win: &window::JoshutoPanel, msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_path(win: &window::JoshutoPanel, username: &str,
-        hostname: &str, path: &path::PathBuf, file_name: &str)
+pub fn wprint_path(win: &window::JoshutoPanel, theme_t: &config::JoshutoTheme,
+        username: &str, hostname: &str, path: &path::PathBuf, file_name: &str)
 {
     ncurses::werase(win.win);
     let path_str: &str = match path.to_str() {
@@ -101,21 +105,18 @@ pub fn wprint_path(win: &window::JoshutoPanel, username: &str,
             None => "Error",
         };
     ncurses::wattron(win.win, ncurses::A_BOLD());
-    ncurses::wattron(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
     ncurses::mvwaddstr(win.win, 0, 0, username);
     ncurses::waddstr(win.win, "@");
     ncurses::waddstr(win.win, hostname);
-    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(EXEC_COLOR));
 
     ncurses::waddstr(win.win, " ");
 
-    ncurses::wattron(win.win, ncurses::COLOR_PAIR(DIR_COLOR));
+    ncurses::wattron(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
     ncurses::waddstr(win.win, path_str);
     ncurses::waddstr(win.win, "/");
-    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(DIR_COLOR));
+    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
     ncurses::waddstr(win.win, file_name);
     ncurses::wattroff(win.win, ncurses::A_BOLD());
-    ncurses::wnoutrefresh(win.win);
 }
 
 fn wprint_file_size(win: ncurses::WINDOW, mut file_size: f64)
@@ -152,17 +153,20 @@ pub fn wprint_file_mtime(win: ncurses::WINDOW, mtime: time::SystemTime)
     ncurses::waddstr(win, format!("{}", datetime.format(MTIME_FORMATTING)).as_str());
 }
 
-pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
+fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 {
     use std::os::unix::fs::PermissionsExt;
-
-    ncurses::werase(win);
-    ncurses::wmove(win, 0, 0);
 
     let mode = file.metadata.permissions.mode();
 
     ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
-    ncurses::waddstr(win, "  ");
+}
+
+pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
+{
+    use std::os::unix::fs::PermissionsExt;
+
+    let mode = file.metadata.permissions.mode();
 
     wprint_file_mtime(win, file.metadata.modified);
 
@@ -180,7 +184,6 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
         let file_size = file.metadata.len as f64;
         wprint_file_size(win, file_size);
     }
-    ncurses::wnoutrefresh(win);
 }
 
 fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
@@ -217,9 +220,15 @@ fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
         }
         total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
     }
-
     ncurses::waddstr(win.win, &file_name[..trim_index]);
     ncurses::waddstr(win.win, "…");
+}
+
+pub fn wprint_directory_len(win: ncurses::WINDOW, curr_list: &structs::JoshutoDirList)
+{
+    if curr_list.index >= 0 {
+        ncurses::waddstr(win, format!("{}/{}", curr_list.index + 1, curr_list.contents.len()).as_str());
+    }
 }
 
 pub fn wprint_direntry(win: &window::JoshutoPanel,
@@ -230,25 +239,32 @@ pub fn wprint_direntry(win: &window::JoshutoPanel,
     wprint_file_name(win, file, coord);
 }
 
-pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
+pub fn refresh(context: &joshuto::JoshutoContext)
 {
-    ncurses::werase(win.win);
-
-    let ch = '-' as ncurses::chtype;
-    ncurses::mvwhline(win.win, 0, 0, ch, 10000);
-
-    for (i, val) in vals.iter().enumerate() {
-        ncurses::wmove(win.win, (i+1) as i32, 0);
-        ncurses::waddstr(win.win, val.as_str());
+    if context.tabs.len() == 0 {
+        return;
     }
-    ncurses::wnoutrefresh(win.win);
+
+    let curr_tab = &context.tabs[context.tab_index];
+
+    redraw_view(&context.theme_t, &context.views.left_win,
+            curr_tab.parent_list.as_ref());
+    redraw_view_detailed(&context.theme_t, &context.views.mid_win,
+            curr_tab.curr_list.as_ref());
+    redraw_view(&context.theme_t, &context.views.right_win,
+            curr_tab.preview_list.as_ref());
+
+    redraw_status(&context.theme_t, &context.views,
+            curr_tab.curr_list.as_ref(),
+            &curr_tab.curr_path,
+            &context.username, &context.hostname);
 }
 
-pub fn redraw_view(win: &window::JoshutoPanel,
+pub fn redraw_view(theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
         view: Option<&structs::JoshutoDirList>)
 {
     if let Some(s) = view {
-        s.display_contents(win);
+        display_contents(theme_t, win, s);
         ncurses::wnoutrefresh(win.win);
     } else {
         ncurses::werase(win.win);
@@ -256,16 +272,43 @@ pub fn redraw_view(win: &window::JoshutoPanel,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn redraw_status(joshuto_view: &window::JoshutoView,
-    curr_view: Option<&structs::JoshutoDirList>, curr_path: &path::PathBuf,
+pub fn redraw_view_detailed(theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
+        view: Option<&structs::JoshutoDirList>)
+{
+    if let Some(s) = view {
+        display_contents(theme_t, win, s);
+        ncurses::wnoutrefresh(win.win);
+    } else {
+        ncurses::werase(win.win);
+    }
+    ncurses::wnoutrefresh(win.win);
+}
+
+pub fn redraw_status(
+    theme_t: &config::JoshutoTheme,
+    joshuto_view: &window::JoshutoView,
+    curr_view: Option<&structs::JoshutoDirList>,
+    curr_path: &path::PathBuf,
     username: &str, hostname: &str)
 {
     if let Some(s) = curr_view.as_ref() {
         let dirent = s.get_curr_entry();
         if let Some(dirent) = dirent {
-            wprint_path(&joshuto_view.top_win, username, hostname,
+            wprint_path(&joshuto_view.top_win,
+                    theme_t, username, hostname,
                     curr_path, dirent.file_name_as_string.as_str());
+            ncurses::wnoutrefresh(joshuto_view.top_win.win);
+
+            ncurses::werase(joshuto_view.bot_win.win);
+            ncurses::wmove(joshuto_view.bot_win.win, 0, 0);
+            wprint_file_mode(joshuto_view.bot_win.win, &dirent);
+            ncurses::waddstr(joshuto_view.bot_win.win, "  ");
+
+            wprint_directory_len(joshuto_view.bot_win.win, s);
+            ncurses::waddstr(joshuto_view.bot_win.win, "  ");
+
             wprint_file_info(joshuto_view.bot_win.win, &dirent);
+            ncurses::wnoutrefresh(joshuto_view.bot_win.win);
         }
     }
 }
@@ -284,13 +327,16 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &joshuto::JoshutoCon
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn draw_loading_bar(win: &window::JoshutoPanel, percentage: f32)
+pub fn draw_loading_bar(theme_t: &config::JoshutoTheme,
+        win: &window::JoshutoPanel, percentage: f32)
 {
     let cols: i32 = (win.cols as f32 * percentage) as i32;
-    ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(), SELECT_COLOR);
+    ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(),
+            theme_t.selection.colorpair);
 }
 
-pub fn display_contents(win: &window::JoshutoPanel,
+pub fn display_contents(theme_t: &config::JoshutoTheme,
+        win: &window::JoshutoPanel,
         entry: &structs::JoshutoDirList) {
     use std::os::unix::fs::PermissionsExt;
 
@@ -298,8 +344,6 @@ pub fn display_contents(win: &window::JoshutoPanel,
     if win.cols <= 6 {
         return;
     }
-
-    let mut mode: u32 = 0;
 
     let index = entry.index as usize;
     let dir_contents = &entry.contents;
@@ -333,16 +377,15 @@ pub fn display_contents(win: &window::JoshutoPanel,
         let coord: (i32, i32) = (i as i32 - start as i32, 0);
         wprint_direntry(win, &dir_contents[i], coord);
 
-        if let Ok(metadata) = fs::symlink_metadata(&dir_contents[i].path) {
-            mode = metadata.permissions().mode();
+        let mode = dir_contents[i].metadata.permissions.mode();
+
+        let mut attr: ncurses::attr_t = 0;
+        if index == i {
+            attr = attr | ncurses::A_STANDOUT();
         }
 
         if dir_contents[i].selected {
-            if index == i {
-                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | ncurses::A_STANDOUT(), SELECT_COLOR);
-            } else {
-                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD(), SELECT_COLOR);
-            }
+            ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.selection.colorpair);
         } else if mode != 0 {
             let file_name = &dir_contents[i].file_name_as_string;
             let mut extension: &str = "";
@@ -350,59 +393,37 @@ pub fn display_contents(win: &window::JoshutoPanel,
                 extension = &file_name[ext+1..];
             }
 
-            if index == i {
-                file_attr_apply(win.win, coord, mode,
-                    extension, ncurses::A_STANDOUT());
-            } else {
-                file_attr_apply(win.win, coord, mode,
-                    extension, ncurses::A_NORMAL());
-            }
+            file_attr_apply(theme_t, win.win, coord, mode, extension, attr);
         }
 
     }
     ncurses::wnoutrefresh(win.win);
 }
 
-fn file_attr_apply(win: ncurses::WINDOW, coord: (i32, i32), mode: u32,
+fn file_attr_apply(theme_t: &config::JoshutoTheme,
+        win: ncurses::WINDOW, coord: (i32, i32), mode: u32,
         extension: &str, attr: ncurses::attr_t)
 {
     match mode & unix::BITMASK {
         unix::S_IFLNK | unix::S_IFCHR | unix::S_IFBLK => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, SOCK_COLOR);
+            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.socket.colorpair);
         },
         unix::S_IFSOCK | unix::S_IFIFO => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, SOCK_COLOR);
+            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.socket.colorpair);
         },
         unix::S_IFDIR => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, DIR_COLOR);
+            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.directory.colorpair);
         },
         unix::S_IFREG => {
             if unix::is_executable(mode) == true {
-                ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, EXEC_COLOR);
+                ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.executable.colorpair);
             }
-            else if extension.len() > 0 {
-                file_ext_attr_apply(win, coord, extension, attr);
+            else if let Some(s) = theme_t.ext.get(extension) {
+                ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, s.colorpair);
             } else {
-                    ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, 0);
+                ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, 0);
             }
         },
         _ => {},
     };
-}
-
-fn file_ext_attr_apply(win: ncurses::WINDOW, coord: (i32, i32), ext: &str,
-        attr: ncurses::attr_t)
-{
-    match ext {
-        "png" | "jpg" | "jpeg" | "gif" | "svg" => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, IMG_COLOR);
-        },
-        "mkv" | "mp4" | "mp3" | "flac" | "ogg" | "avi" | "wmv" | "wav" |
-        "m4a" => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, VID_COLOR);
-        },
-        _ => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, 0);
-        },
-    }
 }

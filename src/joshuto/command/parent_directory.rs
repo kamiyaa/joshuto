@@ -29,6 +29,7 @@ impl std::fmt::Display for ParentDirectory {
 impl command::Runnable for ParentDirectory {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
+
         let curr_tab = &mut context.tabs[context.tab_index];
 
         if curr_tab.curr_path.pop() == false {
@@ -51,10 +52,7 @@ impl command::Runnable for ParentDirectory {
                 match curr_tab.curr_path.parent() {
                     Some(parent) => {
                         curr_tab.parent_list = match curr_tab.history.pop_or_create(&parent, &context.config_t.sort_type) {
-                            Ok(s) => {
-                                s.display_contents(&context.views.left_win);
-                                Some(s)
-                            },
+                            Ok(s) => Some(s),
                             Err(e) => {
                                 ui::wprint_err(&context.views.left_win, e.to_string().as_str());
                                 None
@@ -66,12 +64,18 @@ impl command::Runnable for ParentDirectory {
                         ncurses::wnoutrefresh(context.views.left_win.win);
                     },
                 }
-                ui::redraw_view(&context.views.left_win, curr_tab.parent_list.as_ref());
-                ui::redraw_view(&context.views.mid_win, curr_tab.curr_list.as_ref());
-                ui::redraw_view(&context.views.right_win, curr_tab.preview_list.as_ref());
 
-                ui::redraw_status(&context.views, curr_tab.curr_list.as_ref(), &curr_tab.curr_path,
-                        &context.username, &&context.hostname);
+                ui::redraw_view(&context.theme_t, &context.views.left_win,
+                        curr_tab.parent_list.as_ref());
+                ui::redraw_view_detailed(&context.theme_t, &context.views.mid_win,
+                        curr_tab.curr_list.as_ref());
+                ui::redraw_view(&context.theme_t, &context.views.right_win,
+                        curr_tab.preview_list.as_ref());
+
+                ui::redraw_status(&context.theme_t, &context.views,
+                        curr_tab.curr_list.as_ref(),
+                        &curr_tab.curr_path,
+                        &context.username, &context.hostname);
             },
             Err(e) => {
                 ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
