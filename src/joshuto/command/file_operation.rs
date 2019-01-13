@@ -13,6 +13,7 @@ use joshuto;
 use joshuto::command;
 use joshuto::input;
 use joshuto::config::keymap;
+use joshuto::preview;
 use joshuto::structs;
 use joshuto::ui;
 use joshuto::window;
@@ -305,11 +306,15 @@ impl command::Runnable for DeleteFiles {
 
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
 
-            let curr_tab = &mut context.tabs[context.tab_index];
-            ui::redraw_view(&context.config_t, &context.theme_t,
-                    &context.views.left_win, curr_tab.parent_list.as_mut());
-            ui::redraw_view_detailed(&context.config_t, &context.theme_t,
-                    &context.views.mid_win, curr_tab.curr_list.as_mut());
+            {
+                let curr_tab = &mut context.tabs[context.tab_index];
+                ui::redraw_view(&context.config_t, &context.theme_t,
+                        &context.views.left_win, curr_tab.parent_list.as_mut());
+                ui::redraw_view_detailed(&context.config_t, &context.theme_t,
+                        &context.views.mid_win, curr_tab.curr_list.as_mut());
+            }
+
+            preview::preview_file(context);
         } else {
             let curr_tab = &context.tabs[context.tab_index];
             ui::redraw_status(&context.theme_t, &context.views,
