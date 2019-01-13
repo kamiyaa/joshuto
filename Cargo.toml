@@ -1,6 +1,6 @@
 [package]
 name = "joshuto"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Jiayi Zhao <jeff.no.zhao@gmail.com>"]
 description = "Terminal file manager inspired by ranger"
 homepage = "https://github.com/kamiyaa/joshuto"
@@ -18,7 +18,7 @@ serde = "1.0.84"
 serde_derive = "1.0.84"
 toml = "0.4.10"
 wcwidth = "1.0.1"
-whoami = "0.3.0"
+whoami = "0.4.1"
 xdg = "2.2.0"
 
 # clap = "*"
