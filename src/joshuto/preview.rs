@@ -75,7 +75,11 @@ pub fn text_preview(win: &window::JoshutoPanel, path: &path::PathBuf)
         Ok(s) => {
             match std::str::from_utf8(&s.stdout) {
                 Ok(s) => {
-                    ncurses::waddstr(win.win, s);
+                    let lines = s.split('\n');
+                    for (i, line) in lines.enumerate() {
+                        ncurses::wmove(win.win, i as i32, 0);
+                        ncurses::waddnstr(win.win, line, win.cols);
+                    }
                 },
                 Err(e) => {
                     ncurses::waddstr(win.win, e.to_string().as_str());
