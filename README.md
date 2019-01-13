@@ -37,6 +37,9 @@ Joshuto can currently be configured using the following files:
  - [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml) (**currently unstable and is subject to changes**)
    - for opening files with applications
 
+ - [theme.toml](https://github.com/kamiyaa/joshuto/blob/master/config/theme.toml)
+   - color customizations
+
 
 ## Contributing
 Please create a pull request :)
