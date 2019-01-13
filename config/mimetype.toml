@@ -1,139 +1,47 @@
 # specify which applications to use to open certain file types
 [mimetypes]
 
-[[mimetypes.pdf]]
+[[mimetypes.text]]
+program = "nano"
+
+[[mimetypes.text]]
+program = "gedit"
+
+[[mimetypes.text]]
+program = "bat"
+
+[[mimetypes.audio]]
+program = "mpv"
+
+[[mimetypes.video]]
+program = "mpv"
+fork = true
+silent = true
+
+[[mimetypes.image]]
+program = "qimgv"
+fork = true
+silent = true
+
+[[mimetypes.image]]
+program = "krita"
+fork = true
+silent = true
+
+
+[extensions]
+
+[[extensions.pdf]]
 program = "evince"
 fork = true
 silent = true
 
-[[mimetypes.7z]]
+[[extensions.7z]]
 program = "file-roller"
 fork = true
 silent = true
 
-[[mimetypes.jpg]]
-program = "qimgv"
-fork = true
-silent = true
-
-[[mimetypes.jpg]]
-program = "krita"
-fork = true
-silent = true
-
-[[mimetypes.png]]
-program = "qimgv"
-fork = true
-silent = true
-
-[[mimetypes.png]]
-program = "krita"
-fork = true
-silent = true
-
-# Audio
-[[mimetypes.flac]]
-program = "mpv"
-
-[[mimetypes.wav]]
-program = "mpv"
-
-# Videos
-[[mimetypes.mkv]]
-program = "mpv"
-fork = true
-silent = true
-
-[[mimetypes.mp4]]
-program = "mpv"
-fork = true
-silent = true
-
-[[mimetypes.webm]]
-program = "mpv"
-fork = true
-silent = true
-
-[[mimetypes.wmv]]
-program = "mpv"
-fork = true
-silent = true
-
-# text
-[[mimetypes.c]]
-program = "nano"
-[[mimetypes.c]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.cpp]]
-program = "nano"
-[[mimetypes.cpp]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.py]]
-program = "nano"
-[[mimetypes.py]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.conf]]
-program = "nano"
-
-[[mimetypes.java]]
-program = "nano"
-[[mimetypes.java]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.html]]
-program = "nano"
-[[mimetypes.html]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.md]]
-program = "nano"
-[[mimetypes.md]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.rs]]
-program = "nano"
-[[mimetypes.rs]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.toml]]
-program = "nano"
-[[mimetypes.toml]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.xml]]
-program = "nano"
-[[mimetypes.xml]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.txt]]
-program = "nano"
-[[mimetypes.txt]]
-program = "gedit"
-fork = true
-silent = true
-
-[[mimetypes.odt]]
+[[extensions.odt]]
 program = "libreoffice"
 fork = true
 silent = true

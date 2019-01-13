@@ -41,6 +41,7 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawMimetype {
     mimetypes: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
+    extensions: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
 }
 
 impl JoshutoRawMimetype {
@@ -49,18 +50,18 @@ impl JoshutoRawMimetype {
     {
         JoshutoRawMimetype {
             mimetypes: None,
+            extensions: None,
         }
     }
 
     pub fn flatten(self) -> JoshutoMimetype
     {
-        let mimetypes = match self.mimetypes {
-            Some(s) => s,
-            None => HashMap::new(),
-            };
+        let mimetypes = self.mimetypes.unwrap_or(HashMap::new());
+        let extensions = self.extensions.unwrap_or(HashMap::new());
 
         JoshutoMimetype {
             mimetypes,
+            extensions
         }
     }
 }
@@ -68,6 +69,7 @@ impl JoshutoRawMimetype {
 #[derive(Debug)]
 pub struct JoshutoMimetype {
     pub mimetypes: HashMap<String, Vec<JoshutoMimetypeEntry>>,
+    pub extensions: HashMap<String, Vec<JoshutoMimetypeEntry>>,
 }
 
 impl JoshutoMimetype {
@@ -76,6 +78,7 @@ impl JoshutoMimetype {
     {
         JoshutoMimetype {
             mimetypes: HashMap::new(),
+            extensions: HashMap::new(),
         }
     }
 

@@ -21,38 +21,51 @@ pub struct OpenFile;
 impl OpenFile {
     pub fn new() -> Self { OpenFile }
     pub fn command() -> &'static str { "open_file" }
+    pub fn get_options<'a>(path: &path::PathBuf, mimetype_t: &'a mimetype::JoshutoMimetype)
+            -> Vec<&'a mimetype::JoshutoMimetypeEntry>
+    {
+        let mut mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = Vec::new();
+
+        match path.extension() {
+            Some(file_ext) => {
+                if let Some(file_ext) = file_ext.to_str() {
+                    match mimetype_t.mimetypes.get(file_ext) {
+                        Some(s) => {
+                            for option in s {
+                                mimetype_options.push(&option);
+                            }
+                        }
+                        None => {},
+                    }
+                }
+            },
+            None => {},
+        }
+        let detective = mime_detective::MimeDetective::new().unwrap();
+        match detective.detect_filepath(path) {
+            Ok(mime_type) => {
+                match mimetype_t.mimetypes.get(mime_type.type_().as_str()) {
+                    Some(s) => {
+                        for option in s {
+                            mimetype_options.push(&option);
+                        }
+                    }
+                    None => {},
+                }
+            }
+            Err(_) => {},
+        }
+        mimetype_options
+    }
+
     pub fn open(paths: &Vec<path::PathBuf>, context: &mut joshuto::JoshutoContext)
     {
+        if paths.len() == 0 {
+            return;
+        }
+
         if paths[0].is_file() {
-            let file_ext: Option<&str> = match paths[0].extension() {
-                Some(s) => s.to_str(),
-                None => None,
-                };
-
-            let empty_vec: Vec<mimetype::JoshutoMimetypeEntry> = Vec::new();
-            let mimetype_options = match file_ext {
-                    Some(file_ext) => {
-                        match context.mimetype_t.mimetypes.get(file_ext) {
-                            Some(s) => s,
-                            None => &empty_vec,
-                        }
-                    },
-                    None => {
-                        &empty_vec
-                    }
-                };
-
-            if mimetype_options.len() > 0 {
-                ncurses::savetty();
-                ncurses::endwin();
-                unix::open_with_entry(paths, &mimetype_options[0]);
-                ncurses::resetty();
-                ncurses::refresh();
-            } else {
-                ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");
-            }
-            ncurses::doupdate();
-
+            Self::into_file(paths, context);
         } else if paths[0].is_dir() {
             Self::into_directory(&paths[0], context);
             preview::preview_file(context);
@@ -107,6 +120,22 @@ impl OpenFile {
                 &curr_tab.curr_path,
                 &context.username, &context.hostname);
     }
+
+    fn into_file(paths: &Vec<path::PathBuf>, context: &joshuto::JoshutoContext)
+    {
+        let mimetype_options = Self::get_options(&paths[0], &context.mimetype_t);
+
+        if mimetype_options.len() > 0 {
+            ncurses::savetty();
+            ncurses::endwin();
+            unix::open_with_entry(paths, &mimetype_options[0]);
+            ncurses::resetty();
+            ncurses::refresh();
+        } else {
+            ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");
+        }
+        ncurses::doupdate();
+    }
 }
 
 impl command::JoshutoCommand for OpenFile {}
@@ -144,21 +173,7 @@ impl OpenFileWith {
         let mut term_cols: i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let file_ext: Option<&str> = match paths[0].extension() {
-            Some(s) => s.to_str(),
-            None => None,
-            };
-
-        let empty_vec: Vec<mimetype::JoshutoMimetypeEntry> = Vec::new();
-        let mimetype_options = match file_ext {
-            Some(file_ext) => {
-                match mimetype_t.mimetypes.get(file_ext) {
-                    Some(s) => s,
-                    None => &empty_vec,
-                }
-            },
-            None => &empty_vec,
-            };
+        let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0], mimetype_t);
 
         let option_size = mimetype_options.len();
         let win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
