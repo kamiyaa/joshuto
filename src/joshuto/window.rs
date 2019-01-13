@@ -94,17 +94,19 @@ impl JoshutoView {
         let win_coord: (usize, usize) = (0, term_cols as usize - 5);
         let tab_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 2);
+
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 1);
         let win_coord: (usize, usize) = (1, 0);
         let left_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.1 as i32) - 2);
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.1 as i32) - 1);
         let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.0);
         let mid_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.2 as i32) - 2);
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.2 as i32) - 1);
         let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.2);
         let right_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+
 
         let win_xy: (i32, i32) = (1, term_cols);
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
@@ -145,15 +147,15 @@ impl JoshutoView {
         let win_coord: (usize, usize) = (0, term_cols as usize - 5);
         self.tab_win.redraw(win_xy.0, win_xy.1, win_coord);
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.0 as i32) - 2);
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.0 as i32) - 1);
         let win_coord: (usize, usize) = (1, 0);
         self.left_win.redraw(win_xy.0, win_xy.1, win_coord);
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.1 as i32) - 2);
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.1 as i32) - 1);
         let win_coord: (usize, usize) = (1, term_divide as usize * self.win_ratio.0);
         self.mid_win.redraw(win_xy.0, win_xy.1, win_coord);
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.2 as i32) - 2);
+        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.2 as i32) - 1);
         let win_coord: (usize, usize) = (1, term_divide as usize * self.win_ratio.2);
         self.right_win.redraw(win_xy.0, win_xy.1, win_coord);
 
