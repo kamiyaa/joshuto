@@ -193,7 +193,7 @@ fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
 
     let file_name = &file.file_name_as_string;
     let name_visual_space = wcwidth::str_width(file_name).unwrap_or(win.cols as usize);
-    if name_visual_space + 1 < win.cols as usize {
+    if name_visual_space < win.cols as usize {
         ncurses::waddstr(win.win, &file_name);
         return;
     }
