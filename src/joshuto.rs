@@ -190,6 +190,7 @@ pub fn resize_handler(context: &mut JoshutoContext)
     context.views.redraw_views();
     ncurses::refresh();
     ui::refresh(context);
+    preview::preview_file(context);
     ui::redraw_tab_view(&context.views.tab_win, &context);
     ncurses::doupdate();
 }

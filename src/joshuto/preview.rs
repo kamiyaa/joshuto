@@ -73,8 +73,14 @@ pub fn text_preview(win: &window::JoshutoPanel, path: &path::PathBuf)
 
     match command.output() {
         Ok(s) => {
-            let output = String::from_utf8_lossy(&s.stdout);
-            ncurses::waddstr(win.win, &output);
+            match std::str::from_utf8(&s.stdout) {
+                Ok(s) => {
+                    ncurses::waddstr(win.win, s);
+                },
+                Err(e) => {
+                    ncurses::waddstr(win.win, e.to_string().as_str());
+                },
+            }
         },
         Err(e) => {
             ncurses::waddstr(win.win, e.to_string().as_str());
