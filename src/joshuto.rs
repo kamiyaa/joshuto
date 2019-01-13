@@ -13,6 +13,7 @@ pub mod config;
 mod command;
 mod history;
 mod input;
+mod preview;
 mod sort;
 mod structs;
 mod ui;
@@ -27,7 +28,6 @@ pub struct JoshutoTab {
     pub curr_path: path::PathBuf,
     pub parent_list: Option<structs::JoshutoDirList>,
     pub curr_list: Option<structs::JoshutoDirList>,
-    pub preview_list: Option<structs::JoshutoDirList>,
 }
 
 impl JoshutoTab {
@@ -38,7 +38,7 @@ impl JoshutoTab {
         history.populate_to_root(&curr_path, sort_type);
 
         /* load up directories */
-        let curr_view: Option<structs::JoshutoDirList> =
+        let curr_list: Option<structs::JoshutoDirList> =
             match history.pop_or_create(&curr_path, sort_type) {
                 Ok(s) => { Some(s) },
                 Err(e) => {
@@ -47,7 +47,7 @@ impl JoshutoTab {
                 },
             };
 
-        let parent_view: Option<structs::JoshutoDirList> =
+        let parent_list: Option<structs::JoshutoDirList> =
             match curr_path.parent() {
                 Some(parent) => {
                     match history.pop_or_create(&parent, sort_type) {
@@ -61,33 +61,11 @@ impl JoshutoTab {
                 None => { None },
             };
 
-        let preview_view: Option<structs::JoshutoDirList>;
-        if let Some(s) = curr_view.as_ref() {
-            match s.get_curr_entry() {
-                Some(dirent) => {
-                    if dirent.path.is_dir() {
-                        preview_view = match history.pop_or_create(&dirent.path, sort_type) {
-                            Ok(s) => Some(s),
-                            Err(_) => None,
-                        };
-                    } else {
-                        preview_view = None;
-                    }
-                },
-                None => {
-                    preview_view = None;
-                }
-            }
-        } else {
-            preview_view = None
-        }
-
         JoshutoTab {
                 curr_path,
                 history,
-                curr_list: curr_view,
-                parent_list: parent_view,
-                preview_list: preview_view,
+                curr_list,
+                parent_list,
             }
     }
 }
@@ -158,18 +136,6 @@ impl<'a> JoshutoContext<'a> {
         if gone {
             self.tabs[self.tab_index].parent_list = None;
         }
-
-        let mut gone = false;
-        if let Some(s) = self.tabs[self.tab_index].preview_list.as_mut() {
-            if !s.path.exists() {
-                gone = true;
-            } else if s.need_update() {
-                s.update(&self.config_t.sort_type);
-            }
-        }
-        if gone {
-            self.tabs[self.tab_index].preview_list = None;
-        }
     }
 }
 
@@ -223,7 +189,7 @@ pub fn resize_handler(context: &mut JoshutoContext)
 {
     context.views.redraw_views();
     ncurses::refresh();
-    ui::refresh(&context);
+    ui::refresh(context);
     ui::redraw_tab_view(&context.views.tab_win, &context);
     ncurses::doupdate();
 }
@@ -234,12 +200,13 @@ pub fn run(mut config_t: config::JoshutoConfig,
     theme_t: config::JoshutoTheme)
 {
     ui::init_ncurses(&theme_t);
-
     ncurses::doupdate();
 
     let mut context = JoshutoContext::new(&mut config_t, &mimetype_t, &theme_t);
-
     command::NewTab::new_tab(&mut context);
+    preview::preview_file(&mut context);
+    ui::refresh(&mut context);
+    ncurses::doupdate();
 
     let wait_duration: time::Duration = time::Duration::from_millis(100);
 

@@ -4,6 +4,7 @@ use std::path;
 
 use joshuto::structs;
 use joshuto::sort;
+use std::collections::hash_map::Entry;
 
 pub struct DirHistory {
     map: HashMap<path::PathBuf, structs::JoshutoDirList>,
@@ -65,6 +66,34 @@ impl DirHistory {
                 structs::JoshutoDirList::new(path.clone().to_path_buf(), &sort_type)
             }
         }
+    }
+
+    pub fn get_mut_or_create(&mut self, path: &path::Path,
+       sort_type: &sort::SortType)
+            -> Option<&mut structs::JoshutoDirList>
+    {
+        let pathbuf = path.to_path_buf();
+
+        {
+            let entry = self.map.entry(pathbuf.clone());
+            match entry {
+                Entry::Occupied(mut entry) => {
+                    {
+                        let dir_entry = entry.get_mut();
+                        if dir_entry.need_update() {
+                            dir_entry.update(sort_type);
+                        }
+                    }
+                },
+                Entry::Vacant(entry) => {
+                    if let Ok(s) = structs::JoshutoDirList::new(path.clone().to_path_buf(), &sort_type) {
+                        entry.insert(s);
+                    }
+                },
+            };
+        }
+
+        self.map.get_mut(&pathbuf)
     }
 
     pub fn put_back(&mut self, dirlist: Option<structs::JoshutoDirList>)

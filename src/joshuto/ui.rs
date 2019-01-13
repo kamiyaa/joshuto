@@ -157,7 +157,9 @@ fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 
     let mode = file.metadata.permissions.mode();
 
+    ncurses::wattron(win, ncurses::COLOR_PAIR(6));
     ncurses::waddstr(win, unix::stringify_mode(mode).as_str());
+    ncurses::wattroff(win, ncurses::COLOR_PAIR(6));
 }
 
 pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
@@ -237,20 +239,18 @@ pub fn wprint_direntry(win: &window::JoshutoPanel,
     wprint_file_name(win, file, coord);
 }
 
-pub fn refresh(context: &joshuto::JoshutoContext)
+pub fn refresh(context: &mut joshuto::JoshutoContext)
 {
     if context.tabs.len() == 0 {
         return;
     }
 
-    let curr_tab = &context.tabs[context.tab_index];
+    let curr_tab = &mut context.tabs[context.tab_index];
 
-    redraw_view(&context.theme_t, &context.views.left_win,
-            curr_tab.parent_list.as_ref());
-    redraw_view_detailed(&context.theme_t, &context.views.mid_win,
-            curr_tab.curr_list.as_ref());
-    redraw_view(&context.theme_t, &context.views.right_win,
-            curr_tab.preview_list.as_ref());
+    redraw_view(&context.config_t, &context.theme_t,
+            &context.views.left_win, curr_tab.parent_list.as_mut());
+    redraw_view_detailed(&context.config_t, &context.theme_t,
+            &context.views.mid_win, curr_tab.curr_list.as_mut());
 
     redraw_status(&context.theme_t, &context.views,
             curr_tab.curr_list.as_ref(),
@@ -258,11 +258,11 @@ pub fn refresh(context: &joshuto::JoshutoContext)
             &context.username, &context.hostname);
 }
 
-pub fn redraw_view(theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
-        view: Option<&structs::JoshutoDirList>)
+pub fn redraw_view(config_t: &config::JoshutoConfig, theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
+        mut view: Option<&mut structs::JoshutoDirList>)
 {
-    if let Some(s) = view {
-        display_contents(theme_t, win, s);
+    if let Some(s) = view.as_mut() {
+        display_contents(config_t, theme_t, win, s);
         ncurses::wnoutrefresh(win.win);
     } else {
         ncurses::werase(win.win);
@@ -270,11 +270,11 @@ pub fn redraw_view(theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn redraw_view_detailed(theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
-        view: Option<&structs::JoshutoDirList>)
+pub fn redraw_view_detailed(config_t: &config::JoshutoConfig, theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
+        mut view: Option<&mut structs::JoshutoDirList>)
 {
-    if let Some(s) = view {
-        display_contents(theme_t, win, s);
+    if let Some(ref mut s) = view {
+        display_contents(config_t, theme_t, win, s);
         ncurses::wnoutrefresh(win.win);
     } else {
         ncurses::werase(win.win);
@@ -333,43 +333,31 @@ pub fn draw_loading_bar(theme_t: &config::JoshutoTheme,
             theme_t.selection.colorpair);
 }
 
-pub fn display_contents(theme_t: &config::JoshutoTheme,
-        win: &window::JoshutoPanel,
-        entry: &structs::JoshutoDirList) {
-    use std::os::unix::fs::PermissionsExt;
-
-    ncurses::werase(win.win);
-    if win.cols <= 6 {
-        return;
-    }
-
-    let index = entry.index as usize;
-    let dir_contents = &entry.contents;
-    let vec_len = dir_contents.len();
+pub fn display_contents(config_t: &config::JoshutoConfig,
+        theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
+        dirlist: &mut structs::JoshutoDirList)
+{
+    let index = dirlist.index;
+    let vec_len = dirlist.contents.len();
     if vec_len == 0 {
         wprint_empty(win, "empty");
         return;
     }
+    dirlist.pagestate.update(index, win.rows, vec_len, config_t.scroll_offset);
+    draw_contents(theme_t, win, dirlist);
+}
 
-    let offset : usize = 8;
-    let start : usize;
-    let end : usize;
+pub fn draw_contents(theme_t: &config::JoshutoTheme,
+        win: &window::JoshutoPanel, dirlist: &structs::JoshutoDirList)
+{
+    use std::os::unix::fs::PermissionsExt;
 
-    if win.rows as usize >= vec_len {
-        start = 0;
-        end = vec_len;
-    } else if index <= offset {
-        start = 0;
-        end = win.rows as usize;
-    } else if index + win.rows as usize >= vec_len + offset  {
-        start = vec_len - win.rows as usize;
-        end = vec_len;
-    } else {
-        start = index - offset;
-        end = start + win.rows as usize;
-    }
-
+    ncurses::werase(win.win);
     ncurses::wmove(win.win, 0, 0);
+
+    let dir_contents = &dirlist.contents;
+
+    let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
 
     for i in start..end {
         let coord: (i32, i32) = (i as i32 - start as i32, 0);
@@ -378,7 +366,7 @@ pub fn display_contents(theme_t: &config::JoshutoTheme,
         let mode = dir_contents[i].metadata.permissions.mode();
 
         let mut attr: ncurses::attr_t = 0;
-        if index == i {
+        if dirlist.index as usize == i {
             attr = attr | ncurses::A_STANDOUT();
         }
 

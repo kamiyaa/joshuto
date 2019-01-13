@@ -62,28 +62,11 @@ impl command::Runnable for ChangeDirectory {
 
             let curr_list = curr_tab.curr_list.take();
             curr_tab.history.put_back(curr_list);
-
-            let preview_list = curr_tab.preview_list.take();
-            curr_tab.history.put_back(preview_list);
         }
 
         curr_tab.curr_list = match curr_tab.history.pop_or_create(&curr_tab.curr_path,
                     &context.config_t.sort_type) {
             Ok(s) => {
-                if let Some(dirent) = s.get_curr_entry() {
-                    if dirent.path.is_dir() {
-                        curr_tab.preview_list = match curr_tab.history.pop_or_create(
-                                    &dirent.path, &context.config_t.sort_type) {
-                            Ok(s) => {
-                                Some(s)
-                            },
-                            Err(e) => {
-                                eprintln!("{}", e);
-                                None
-                            },
-                        };
-                    }
-                }
                 Some(s)
             },
             Err(e) => {
@@ -102,12 +85,10 @@ impl command::Runnable for ChangeDirectory {
             };
         }
 
-        ui::redraw_view(&context.theme_t, &context.views.left_win,
-                curr_tab.parent_list.as_ref());
-        ui::redraw_view_detailed(&context.theme_t, &context.views.mid_win,
-                curr_tab.curr_list.as_ref());
-        ui::redraw_view(&context.theme_t, &context.views.right_win,
-                curr_tab.preview_list.as_ref());
+        ui::redraw_view(&context.config_t, &context.theme_t,
+                &context.views.left_win, curr_tab.parent_list.as_mut());
+        ui::redraw_view_detailed(&context.config_t, &context.theme_t,
+                &context.views.mid_win, curr_tab.curr_list.as_mut());
 
         ui::redraw_status(&context.theme_t, &context.views,
                 curr_tab.curr_list.as_ref(),

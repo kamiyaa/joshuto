@@ -215,7 +215,6 @@ impl PasteFiles {
             }
             0
         });
-
         (rx, child)
     }
 }
@@ -239,18 +238,20 @@ impl std::fmt::Debug for PasteFiles {
 impl command::Runnable for PasteFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let file_operation = fileop.lock().unwrap();
+        {
+            let file_operation = fileop.lock().unwrap();
 
-        let curr_tab = &context.tabs[context.tab_index];
-        let cprocess = match *file_operation {
-                FileOp::Copy => self.copy(&curr_tab.curr_path),
-                FileOp::Cut => self.cut(&curr_tab.curr_path),
-            };
-        context.threads.push(cprocess);
+            let curr_tab = &context.tabs[context.tab_index];
+            let cprocess = match *file_operation {
+                    FileOp::Copy => self.copy(&curr_tab.curr_path),
+                    FileOp::Cut => self.cut(&curr_tab.curr_path),
+                };
+            context.threads.push(cprocess);
+        }
 
         ncurses::timeout(0);
 
-        ui::refresh(&context);
+        ui::refresh(context);
 
         ncurses::doupdate();
     }
@@ -304,13 +305,11 @@ impl command::Runnable for DeleteFiles {
 
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
 
-            let curr_tab = &context.tabs[context.tab_index];
-            ui::redraw_view(&context.theme_t, &context.views.left_win,
-                    curr_tab.parent_list.as_ref());
-            ui::redraw_view_detailed(&context.theme_t, &context.views.mid_win,
-                    curr_tab.curr_list.as_ref());
-            ui::redraw_view(&context.theme_t, &context.views.right_win,
-                    curr_tab.preview_list.as_ref());
+            let curr_tab = &mut context.tabs[context.tab_index];
+            ui::redraw_view(&context.config_t, &context.theme_t,
+                    &context.views.left_win, curr_tab.parent_list.as_mut());
+            ui::redraw_view_detailed(&context.config_t, &context.theme_t,
+                    &context.views.mid_win, curr_tab.curr_list.as_mut());
         } else {
             let curr_tab = &context.tabs[context.tab_index];
             ui::redraw_status(&context.theme_t, &context.views,
@@ -373,7 +372,7 @@ impl RenameFile {
                 match fs::rename(&path, &new_path) {
                     Ok(_) => {
                         context.reload_dirlists();
-                        ui::refresh(&context);
+                        ui::refresh(context);
                     },
                     Err(e) => {
                         ui::wprint_err(&context.views.bot_win, e.to_string().as_str());

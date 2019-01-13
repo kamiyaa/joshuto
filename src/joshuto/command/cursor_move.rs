@@ -6,8 +6,8 @@ use std::fmt;
 
 use joshuto;
 use joshuto::ui;
-
 use joshuto::command;
+use joshuto::preview;
 
 #[derive(Clone, Debug)]
 pub struct CursorMove {
@@ -25,62 +25,42 @@ impl CursorMove {
 
     pub fn cursor_move(new_index: i32, context: &mut joshuto::JoshutoContext)
     {
-        let curr_tab = &mut context.tabs[context.tab_index];
+        {
+            let curr_tab = &mut context.tabs[context.tab_index];
 
-        if let Some(ref mut curr_list) = curr_tab.curr_list {
-            let curr_index = curr_list.index;
-            let dir_len = curr_list.contents.len() as i32;
+            if let Some(ref mut curr_list) = curr_tab.curr_list {
+                let curr_index = curr_list.index;
+                let dir_len = curr_list.contents.len() as i32;
 
-            let mut new_index = new_index;
-            if new_index <= 0 {
-                new_index = 0;
-                if curr_index <= 0 {
-                    return;
+                let mut new_index = new_index;
+                if new_index <= 0 {
+                    new_index = 0;
+                    if curr_index <= 0 {
+                        return;
+                    }
+                } else if new_index >= dir_len {
+                    new_index = dir_len - 1;
+                    if curr_index == dir_len - 1 {
+                        return;
+                    }
                 }
-            } else if new_index >= dir_len {
-                new_index = dir_len - 1;
-                if curr_index == dir_len - 1 {
-                    return;
-                }
+
+                curr_list.index = new_index;
             }
 
-            let dir_list = curr_tab.preview_list.take();
-            if let Some(s) = dir_list {
-                curr_tab.history.insert(s);
+            if let Some(ref mut curr_list) = curr_tab.curr_list {
+                ui::display_contents(&context.config_t, &context.theme_t, &context.views.mid_win, curr_list);
             }
-
-            curr_list.index = new_index;
-        }
-
-        if let Some(ref curr_list) = curr_tab.curr_list {
-            let curr_index = curr_list.index as usize;
-            let new_path = &curr_list.contents[curr_index].path;
-
-            ui::display_contents(&context.theme_t, &context.views.mid_win, curr_list);
-            ncurses::wnoutrefresh(context.views.mid_win.win);
-
-            if new_path.is_dir() {
-                match curr_tab.history.pop_or_create(new_path.as_path(),
-                        &context.config_t.sort_type) {
-                    Ok(s) => {
-                        curr_tab.preview_list = Some(s);
-                        ui::redraw_view(&context.theme_t, &context.views.right_win,
-                                curr_tab.preview_list.as_ref());
-                    },
-                    Err(e) => ui::wprint_err(&context.views.right_win, e.to_string().as_str()),
-                }
-            } else {
-                ncurses::werase(context.views.right_win.win);
-                ncurses::wnoutrefresh(context.views.right_win.win);
-            }
-
             ui::redraw_status(&context.theme_t, &context.views,
                     curr_tab.curr_list.as_ref(),
                     &curr_tab.curr_path,
                     &context.username, &context.hostname);
 
-            ncurses::doupdate();
+            ncurses::wnoutrefresh(context.views.mid_win.win);
         }
+
+        preview::preview_file(context);
+        ncurses::doupdate();
     }
 }
 

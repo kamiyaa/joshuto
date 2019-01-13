@@ -6,7 +6,7 @@ use std::time;
 
 use joshuto::sort;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
     pub len: u64,
     pub modified: time::SystemTime,
@@ -31,7 +31,7 @@ impl JoshutoMetadata {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
     pub file_name: ffi::OsString,
     pub file_name_as_string: String,
@@ -65,6 +65,57 @@ impl JoshutoDirEntry {
 
 }
 
+#[derive(Clone, Debug)]
+pub struct JoshutoPageState {
+    pub start: usize,
+    pub end: usize,
+}
+
+impl JoshutoPageState {
+    pub fn new() -> Self
+    {
+        JoshutoPageState {
+            start: 0,
+            end: 0,
+        }
+    }
+
+    pub fn update(&mut self, index: i32, win_rows: i32, vec_len: usize, offset: usize)
+    {
+        if self.start + offset < index as usize && self.end > index as usize + offset {
+            return;
+        }
+        self.end = self.start + win_rows as usize;
+
+        if win_rows as usize >= vec_len {
+            self.start = 0;
+            self.end = vec_len;
+        } else if index as i32 - self.start as i32 <= offset as i32 {
+            self.start = if index as usize <= offset {
+                    0
+                } else {
+                    index as usize - offset
+                };
+            self.end = if self.start + win_rows as usize >= vec_len {
+                    vec_len
+                } else {
+                    self.start + win_rows as usize
+                };
+        } else if self.end as i32 <= offset as i32 + index {
+            self.end = if index as usize + offset >= vec_len {
+                    vec_len
+                } else {
+                    index as usize + offset
+                };
+            self.start = if self.end < win_rows as usize {
+                    0
+                } else {
+                    self.end - win_rows as usize
+                };
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct JoshutoDirList {
     pub index: i32,
@@ -72,7 +123,8 @@ pub struct JoshutoDirList {
     pub update_needed: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
-    pub selected: usize
+    pub selected: usize,
+    pub pagestate: JoshutoPageState,
 }
 
 impl JoshutoDirList {
@@ -89,6 +141,7 @@ impl JoshutoDirList {
 
         let metadata = fs::metadata(&path)?;
         let metadata = JoshutoMetadata::from(&metadata)?;
+        let pagestate = JoshutoPageState::new();
 
         Ok(JoshutoDirList {
             index,
@@ -97,6 +150,7 @@ impl JoshutoDirList {
             metadata,
             contents,
             selected: 0,
+            pagestate,
         })
     }
 

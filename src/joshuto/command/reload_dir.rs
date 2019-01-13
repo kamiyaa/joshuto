@@ -19,8 +19,7 @@ impl ReloadDirList {
     pub fn reload(context: &mut joshuto::JoshutoContext)
     {
         context.reload_dirlists();
-        ui::refresh(&context);
-        ncurses::doupdate();
+        ui::refresh(context);
     }
 }
 
@@ -37,5 +36,6 @@ impl command::Runnable for ReloadDirList {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         Self::reload(context);
+        ncurses::doupdate();
     }
 }

@@ -38,17 +38,13 @@ impl command::Runnable for ToggleHiddenFiles {
                     s.update(&context.config_t.sort_type);
                 }
 
-                if let Some(s) = tab.preview_list.as_mut() {
-                    s.update(&context.config_t.sort_type);
-                }
-
                 if let Some(s) = tab.parent_list.as_mut() {
                     s.update(&context.config_t.sort_type);
                 }
             }
         }
 
-        ui::refresh(&context);
+        ui::refresh(context);
 
         ncurses::doupdate();
     }

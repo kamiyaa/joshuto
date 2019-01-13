@@ -49,8 +49,7 @@ impl command::Runnable for NewDirectory {
 
             match std::fs::create_dir_all(&path) {
                 Ok(_) => {
-                    context.reload_dirlists();
-                    ui::refresh(&context);
+                    command::ReloadDirList::reload(context);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());

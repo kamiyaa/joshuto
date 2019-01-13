@@ -11,7 +11,7 @@ use joshuto;
 use joshuto::command;
 use joshuto::input;
 use joshuto::config::mimetype;
-use joshuto::structs;
+use joshuto::preview;
 use joshuto::ui;
 use joshuto::unix;
 use joshuto::window;
@@ -56,6 +56,8 @@ impl OpenFile {
 
         } else if paths[0].is_dir() {
             Self::into_directory(&paths[0], context);
+            preview::preview_file(context);
+            ncurses::doupdate();
         }
     }
 
@@ -72,15 +74,20 @@ impl OpenFile {
         }
 
         {
-            let dir_list = curr_tab.parent_list.take();
-            curr_tab.history.put_back(dir_list);
+            let parent_list = curr_tab.parent_list.take();
+            curr_tab.history.put_back(parent_list);
 
             let curr_list = curr_tab.curr_list.take();
             curr_tab.parent_list = curr_list;
-
-            let preview_list = curr_tab.preview_list.take();
-            curr_tab.curr_list = preview_list;
         }
+
+        curr_tab.curr_list = match curr_tab.history.pop_or_create(&path, &context.config_t.sort_type) {
+                Ok(s) => Some(s),
+                Err(e) => {
+                    ui::wprint_err(&context.views.left_win, e.to_string().as_str());
+                    None
+                },
+            };
 
         /* update curr_path */
         match path.strip_prefix(curr_tab.curr_path.as_path()) {
@@ -91,40 +98,15 @@ impl OpenFile {
             }
         }
 
-        if let Some(s) = curr_tab.curr_list.as_ref() {
-            if s.contents.len() > 0 {
-                let dirent: &structs::JoshutoDirEntry = &s.contents[s.index as usize];
-                let new_path: path::PathBuf = dirent.path.clone();
-
-                if new_path.is_dir() {
-                    curr_tab.preview_list = match curr_tab.history.pop_or_create(
-                                new_path.as_path(), &context.config_t.sort_type) {
-                        Ok(s) => { Some(s) },
-                        Err(e) => {
-                            ui::wprint_err(&context.views.right_win,
-                                    e.to_string().as_str());
-                            None
-                        },
-                    };
-                } else {
-                    ncurses::werase(context.views.right_win.win);
-                }
-            }
-        }
-
-        ui::redraw_view(&context.theme_t, &context.views.left_win,
-                curr_tab.parent_list.as_ref());
-        ui::redraw_view_detailed(&context.theme_t, &context.views.mid_win,
-                curr_tab.curr_list.as_ref());
-        ui::redraw_view(&context.theme_t, &context.views.right_win,
-                curr_tab.preview_list.as_ref());
+        ui::redraw_view(&context.config_t, &context.theme_t,
+                &context.views.left_win, curr_tab.parent_list.as_mut());
+        ui::redraw_view_detailed(&context.config_t, &context.theme_t,
+                &context.views.mid_win, curr_tab.curr_list.as_mut());
 
         ui::redraw_status(&context.theme_t, &context.views,
                 curr_tab.curr_list.as_ref(),
                 &curr_tab.curr_path,
                 &context.username, &context.hostname);
-
-        ncurses::doupdate();
     }
 }
 
