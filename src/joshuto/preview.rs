@@ -1,7 +1,13 @@
 extern crate ncurses;
+extern crate mime_detective;
+extern crate mime;
+
+use std::path;
+use std::process;
 
 use joshuto;
 use joshuto::ui;
+use joshuto::window;
 
 pub fn preview_file(context: &mut joshuto::JoshutoContext)
 {
@@ -19,9 +25,60 @@ pub fn preview_file(context: &mut joshuto::JoshutoContext)
                 }
             } else {
                 ncurses::werase(context.views.right_win.win);
-                ncurses::waddstr(context.views.right_win.win, "Not a directory");
+
+                let detective = mime_detective::MimeDetective::new().unwrap();
+                match detective.detect_filepath(&entry.path) {
+                    Ok(mime_type) => {
+                        match mime_type.type_() {
+                            mime::TEXT => {
+                                text_preview(&context.views.right_win, &entry.path);
+                            },
+                            _ => {},
+                        }
+                    },
+                    Err(e) => {
+                        ncurses::waddstr(context.views.right_win.win, e.to_string().as_str());
+                    },
+                }
                 ncurses::wnoutrefresh(context.views.right_win.win);
             }
         }
     }
+}
+
+pub fn text_preview(win: &window::JoshutoPanel, path: &path::PathBuf)
+{
+/*
+    let mut command = process::Command::new("bat");
+    command.arg("--terminal-width");
+    command.arg(win.cols.to_string());
+//    command.arg("--wrap=never");
+    command.arg("line-range");
+    command.arg(format!("{}:{}", 0, win.rows));
+    command.arg("--style=numbers");
+    command.arg("--tabs");
+    command.arg("4");
+//    command.arg("--color");
+//    command.arg("always");
+    command.arg(path.as_os_str());
+    command.stdout(process::Stdio::piped());
+    // eprintln!("{:?}", command);
+
+*/
+    let mut command = process::Command::new("head");
+    command.arg("-n");
+    command.arg(win.cols.to_string());
+    command.arg(path.as_os_str());
+    command.stdout(process::Stdio::piped());
+
+    match command.output() {
+        Ok(s) => {
+            let output = String::from_utf8_lossy(&s.stdout);
+            ncurses::waddstr(win.win, &output);
+        },
+        Err(e) => {
+            ncurses::waddstr(win.win, e.to_string().as_str());
+        }
+    }
+    // bat joshuto.rs --terminal-width 20 --wrap=never --line-range 0:26 --style='numbers'
 }

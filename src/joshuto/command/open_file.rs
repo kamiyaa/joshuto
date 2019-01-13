@@ -1,6 +1,5 @@
 extern crate fs_extra;
 extern crate ncurses;
-extern crate mime_guess;
 
 use std;
 use std::env;
