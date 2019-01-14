@@ -19,11 +19,6 @@ impl DirHistory {
         }
     }
 
-    pub fn insert(&mut self, dirlist: structs::JoshutoDirList)
-    {
-        self.map.insert(dirlist.path.clone(), dirlist);
-    }
-
     pub fn populate_to_root(&mut self, pathbuf: &path::PathBuf,
        sort_type: &sort::SortType)
     {
@@ -51,8 +46,7 @@ impl DirHistory {
         }
     }
 
-    pub fn pop_or_create(&mut self, path : &path::Path,
-       sort_type: &sort::SortType)
+    pub fn pop_or_create(&mut self, path: &path::Path, sort_type: &sort::SortType)
             -> Result<structs::JoshutoDirList, std::io::Error>
     {
         match self.map.remove(&path.to_path_buf()) {
@@ -78,15 +72,14 @@ impl DirHistory {
             let entry = self.map.entry(pathbuf.clone());
             match entry {
                 Entry::Occupied(mut entry) => {
-                    {
-                        let dir_entry = entry.get_mut();
-                        if dir_entry.need_update() {
-                            dir_entry.update(sort_type);
-                        }
+                    let dir_entry = entry.get_mut();
+                    if dir_entry.need_update() {
+                        dir_entry.update(sort_type);
                     }
                 },
                 Entry::Vacant(entry) => {
-                    if let Ok(s) = structs::JoshutoDirList::new(path.clone().to_path_buf(), &sort_type) {
+                    if let Ok(s) = structs::JoshutoDirList::new(
+                                path.clone().to_path_buf(), &sort_type) {
                         entry.insert(s);
                     }
                 },
