@@ -44,6 +44,18 @@ enum FileOp {
 }
 
 #[derive(Clone, Debug)]
+pub struct CopyOptions {
+    pub overwrite: bool,
+    pub skip_exist: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct ProgressInfo {
+    pub bytes_finished: u64,
+    pub total_bytes: u64,
+}
+
+#[derive(Clone, Debug)]
 pub struct CutFiles;
 
 impl CutFiles {
@@ -101,12 +113,6 @@ impl command::Runnable for CopyFiles {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct ProgressInfo {
-    pub bytes_finished: u64,
-    pub total_bytes: u64,
-}
-
 pub struct PasteFiles {
     options: fs_extra::dir::CopyOptions,
 }
@@ -127,11 +133,6 @@ impl PasteFiles {
 
         let mut destination = destination.clone();
         let options = self.options.clone();
-
-        let mut move_options = fs_extra::file::CopyOptions::new();
-        move_options.overwrite = options.overwrite;
-        move_options.skip_exist = options.skip_exist;
-        move_options.buffer_size = options.buffer_size;
 
         let child = thread::spawn(move || {
             let mut paths = selected_files.lock().unwrap();
@@ -166,9 +167,8 @@ impl PasteFiles {
                                     Err(e) => eprintln!("dir: {}", e),
                                 }
                             } else {
-                                match fs_extra::file::move_file(&path, &destination, &move_options) {
-                                    Ok(_) => {},
-                                    Err(e) => eprintln!("file: {}", e),
+                                if let Ok(_) = std::fs::copy(&path, &destination) {
+                                    std::fs::remove_file(&path).unwrap();
                                 }
                                 destination.pop();
                             }
@@ -306,6 +306,8 @@ impl command::Runnable for DeleteFiles {
 
             ui::refresh(context);
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
+            let curr_tab = &mut context.tabs[context.tab_index];
+            curr_tab.curr_list.as_mut().unwrap().selected = 0;
         } else {
             let curr_tab = &context.tabs[context.tab_index];
             ui::redraw_status(&context.theme_t, &context.views,
@@ -315,7 +317,6 @@ impl command::Runnable for DeleteFiles {
         }
         ncurses::doupdate();
     }
-
 }
 
 #[derive(Clone, Debug)]
