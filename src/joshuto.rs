@@ -244,7 +244,6 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
     loop {
         let ch: i32 = ncurses::getch();
-        eprintln!("{}", ch);
 
         if ch == ncurses::KEY_RESIZE {
             resize_handler(&mut context);
