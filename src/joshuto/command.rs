@@ -88,12 +88,11 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         "cd" => {
             if let Some(args) = args {
                 let exp_strs = wordexp::wordexp(args[0].as_str(), 0);
-                if exp_strs.len() > 0 {
-                    let path = path::PathBuf::from(exp_strs[0].as_str());
-                    Some(Box::new(self::ChangeDirectory::new(path)))
-                } else {
-                    None
+                for exp_str in exp_strs {
+                    let path = path::PathBuf::from(exp_str);
+                    return Some(Box::new(self::ChangeDirectory::new(path)));
                 }
+                return None;
             } else {
                 None
             }
