@@ -28,7 +28,7 @@ impl OpenFile {
         match path.extension() {
             Some(file_ext) => {
                 if let Some(file_ext) = file_ext.to_str() {
-                    match mimetype_t.mimetypes.get(file_ext) {
+                    match mimetype_t.extensions.get(file_ext) {
                         Some(s) => {
                             for option in s {
                                 mimetype_options.push(&option);
@@ -59,16 +59,14 @@ impl OpenFile {
 
     pub fn open(paths: &Vec<path::PathBuf>, context: &mut joshuto::JoshutoContext)
     {
-        if paths.len() == 0 {
-            return;
-        }
-
         if paths[0].is_file() {
             Self::into_file(paths, context);
         } else if paths[0].is_dir() {
             Self::into_directory(&paths[0], context);
             ui::refresh(context);
             ncurses::doupdate();
+        } else {
+            ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");
         }
     }
 
@@ -144,8 +142,15 @@ impl command::Runnable for OpenFile {
                 None => None,
             };
         if let Some(paths) = paths {
-            Self::open(&paths, context);
+            if paths.len() > 0 {
+                Self::open(&paths, context);
+            } else {
+                ui::wprint_msg(&context.views.bot_win, "No files selected: 0");
+            }
+        } else {
+            ui::wprint_msg(&context.views.bot_win, "No files selected: None");
         }
+        ncurses::doupdate();
     }
 }
 
