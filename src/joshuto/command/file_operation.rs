@@ -13,7 +13,6 @@ use joshuto;
 use joshuto::command;
 use joshuto::input;
 use joshuto::config::keymap;
-use joshuto::preview;
 use joshuto::structs;
 use joshuto::ui;
 use joshuto::window;
@@ -242,7 +241,8 @@ impl command::Runnable for PasteFiles {
         {
             let file_operation = fileop.lock().unwrap();
 
-            let curr_tab = &context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.tab_index];
+            curr_tab.curr_list.as_mut().unwrap().selected = 0;
             let cprocess = match *file_operation {
                     FileOp::Copy => self.copy(&curr_tab.curr_path),
                     FileOp::Cut => self.cut(&curr_tab.curr_path),
@@ -292,10 +292,10 @@ impl command::Runnable for DeleteFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         ui::wprint_msg(&context.views.bot_win, "Delete selected files? (Y/n)");
-        ncurses::doupdate();
         ncurses::timeout(-1);
+        ncurses::doupdate();
 
-        let ch = ncurses::wgetch(context.views.bot_win.win);
+        let ch: i32 = ncurses::getch();
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
                 if let Some(paths) = command::collect_selected_paths(s) {
@@ -304,17 +304,8 @@ impl command::Runnable for DeleteFiles {
             }
             context.reload_dirlists();
 
+            ui::refresh(context);
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
-
-            {
-                let curr_tab = &mut context.tabs[context.tab_index];
-                ui::redraw_view(&context.config_t, &context.theme_t,
-                        &context.views.left_win, curr_tab.parent_list.as_mut());
-                ui::redraw_view_detailed(&context.config_t, &context.theme_t,
-                        &context.views.mid_win, curr_tab.curr_list.as_mut());
-            }
-
-            preview::preview_file(context);
         } else {
             let curr_tab = &context.tabs[context.tab_index];
             ui::redraw_status(&context.theme_t, &context.views,

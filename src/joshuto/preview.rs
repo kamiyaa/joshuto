@@ -26,22 +26,40 @@ pub fn preview_file(context: &mut joshuto::JoshutoContext)
             } else {
                 ncurses::werase(context.views.right_win.win);
 
-                let detective = mime_detective::MimeDetective::new().unwrap();
-                match detective.detect_filepath(&entry.path) {
-                    Ok(mime_type) => {
-                        match mime_type.type_() {
-                            mime::TEXT => {
-                                text_preview(&context.views.right_win, &entry.path);
+                if let Some(file_ext) = entry.path.extension() {
+                    if let Some(file_ext) = file_ext.to_str() {
+                        match file_ext {
+                            "o" | "a" | "avi" | "mp3" | "mp4" | "wmv" | "wma" |
+                            "mkv" | "flv" | "vob" | "wav" | "mpc" | "flac" |
+                            "divx" | "xcf" | "pdf" | "torrent" | "class" | "so" |
+                            "img" | "pyc" | "dmg" | "png" | "jpg" | "jpeg" | "out" | "svg" => {
+                                ui::wprint_err(&context.views.right_win, "Binary File");
                             },
-                            _ => {},
+                            _ => {
+                                let detective = mime_detective::MimeDetective::new().unwrap();
+                                match detective.detect_filepath(&entry.path) {
+                                    Ok(mime_type) => {
+                                        match mime_type.type_() {
+                                            mime::TEXT => {
+                                                text_preview(&context.views.right_win, &entry.path);
+                                            },
+                                            _ => {},
+                                        }
+                                    },
+                                    Err(e) => {
+                                        ncurses::waddstr(context.views.right_win.win, e.to_string().as_str());
+                                    },
+                                }
+                            }
                         }
-                    },
-                    Err(e) => {
-                        ncurses::waddstr(context.views.right_win.win, e.to_string().as_str());
-                    },
+                    }
                 }
+
                 ncurses::wnoutrefresh(context.views.right_win.win);
             }
+        } else {
+            ncurses::werase(context.views.right_win.win);
+            ncurses::wnoutrefresh(context.views.right_win.win);
         }
     }
 }

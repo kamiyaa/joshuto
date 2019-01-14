@@ -196,11 +196,13 @@ fn process_threads(context: &mut JoshutoContext)
                 let (_, chandle) = context.threads.remove(i);
                 chandle.join().unwrap();
                 ncurses::werase(context.views.bot_win.win);
+
                 let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
                 let curr_path = &context.tabs[context.tab_index].curr_path;
                 ui::redraw_status(&context.theme_t, &context.views, curr_list, curr_path,
                         &context.username, &context.hostname);
                 ncurses::doupdate();
+
                 something_finished = true;
                 break;
             } else {
