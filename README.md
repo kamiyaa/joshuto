@@ -34,7 +34,7 @@ Joshuto can currently be configured using the following files:
    - for keybindings, please take a look at [keymap.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/config/keymap.rs) for non-printable keys
    - for commands, please take a look at [command.rs](https://github.com/kamiyaa/joshuto/blob/master/src/joshuto/command.rs) for available commands
 
- - [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml) (**currently unstable and is subject to changes**)
+ - [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml)
    - for opening files with applications
 
  - [theme.toml](https://github.com/kamiyaa/joshuto/blob/master/config/theme.toml)
