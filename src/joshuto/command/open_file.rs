@@ -10,7 +10,6 @@ use joshuto;
 use joshuto::command;
 use joshuto::input;
 use joshuto::config::mimetype;
-use joshuto::preview;
 use joshuto::ui;
 use joshuto::unix;
 use joshuto::window;
@@ -68,7 +67,7 @@ impl OpenFile {
             Self::into_file(paths, context);
         } else if paths[0].is_dir() {
             Self::into_directory(&paths[0], context);
-            preview::preview_file(context);
+            ui::refresh(context);
             ncurses::doupdate();
         }
     }
@@ -109,16 +108,6 @@ impl OpenFile {
                 return;
             }
         }
-
-        ui::redraw_view(&context.config_t, &context.theme_t,
-                &context.views.left_win, curr_tab.parent_list.as_mut());
-        ui::redraw_view_detailed(&context.config_t, &context.theme_t,
-                &context.views.mid_win, curr_tab.curr_list.as_mut());
-
-        ui::redraw_status(&context.theme_t, &context.views,
-                curr_tab.curr_list.as_ref(),
-                &curr_tab.curr_path,
-                &context.username, &context.hostname);
     }
 
     fn into_file(paths: &Vec<path::PathBuf>, context: &joshuto::JoshutoContext)

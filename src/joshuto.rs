@@ -185,12 +185,45 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     }
 }
 
-pub fn resize_handler(context: &mut JoshutoContext)
+fn process_threads(context: &mut JoshutoContext)
+{
+    let wait_duration: time::Duration = time::Duration::from_millis(100);
+    let mut something_finished = false;
+    for i in 0..context.threads.len() {
+        if let Ok(progress_info) = &context.threads[i].0.recv_timeout(wait_duration) {
+
+            if progress_info.bytes_finished == progress_info.total_bytes {
+                let (_, chandle) = context.threads.remove(i);
+                chandle.join().unwrap();
+                ncurses::werase(context.views.bot_win.win);
+                let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
+                let curr_path = &context.tabs[context.tab_index].curr_path;
+                ui::redraw_status(&context.theme_t, &context.views, curr_list, curr_path,
+                        &context.username, &context.hostname);
+                ncurses::doupdate();
+                something_finished = true;
+                break;
+            } else {
+                let percent = (progress_info.bytes_finished as f64 /
+                        progress_info.total_bytes as f64) as f32;
+                ui::draw_loading_bar(&context.theme_t, &context.views.bot_win, percent);
+                ncurses::wnoutrefresh(context.views.bot_win.win);
+                ncurses::doupdate();
+            }
+        }
+    }
+
+    if something_finished {
+        command::ReloadDirList::reload(context);
+    }
+}
+
+fn resize_handler(context: &mut JoshutoContext)
 {
     context.views.redraw_views();
     ncurses::refresh();
     ui::refresh(context);
-    preview::preview_file(context);
+
     ui::redraw_tab_view(&context.views.tab_win, &context);
     ncurses::doupdate();
 }
@@ -209,10 +242,9 @@ pub fn run(mut config_t: config::JoshutoConfig,
     ui::refresh(&mut context);
     ncurses::doupdate();
 
-    let wait_duration: time::Duration = time::Duration::from_millis(100);
-
     loop {
         let ch: i32 = ncurses::getch();
+        eprintln!("{}", ch);
 
         if ch == ncurses::KEY_RESIZE {
             resize_handler(&mut context);
@@ -225,36 +257,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
             ncurses::timeout(-1);
         }
 
-        {
-            let mut something_finished = false;
-            for i in 0..context.threads.len() {
-                if let Ok(progress_info) = &context.threads[i].0.recv_timeout(wait_duration) {
-
-                    if progress_info.bytes_finished == progress_info.total_bytes {
-                        let (_, chandle) = context.threads.remove(i);
-                        chandle.join().unwrap();
-                        ncurses::werase(context.views.bot_win.win);
-                        let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
-                        let curr_path = &context.tabs[context.tab_index].curr_path;
-                        ui::redraw_status(&context.theme_t, &context.views, curr_list, curr_path,
-                                &context.username, &context.hostname);
-                        ncurses::doupdate();
-                        something_finished = true;
-                        break;
-                    } else {
-                        let percent = (progress_info.bytes_finished as f64 /
-                                progress_info.total_bytes as f64) as f32;
-                        ui::draw_loading_bar(&context.theme_t, &context.views.bot_win, percent);
-                        ncurses::wnoutrefresh(context.views.bot_win.win);
-                        ncurses::doupdate();
-                    }
-                }
-            }
-
-            if something_finished {
-                command::ReloadDirList::reload(&mut context);
-            }
-        }
+        process_threads(&mut context);
 
         let keycommand: &std::boxed::Box<dyn JoshutoCommand>;
 

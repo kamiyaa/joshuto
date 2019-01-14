@@ -8,6 +8,7 @@ use std::time;
 
 use joshuto;
 use joshuto::config;
+use joshuto::preview;
 use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
@@ -245,17 +246,21 @@ pub fn refresh(context: &mut joshuto::JoshutoContext)
         return;
     }
 
-    let curr_tab = &mut context.tabs[context.tab_index];
+    {
+        let curr_tab = &mut context.tabs[context.tab_index];
 
-    redraw_view(&context.config_t, &context.theme_t,
-            &context.views.left_win, curr_tab.parent_list.as_mut());
-    redraw_view_detailed(&context.config_t, &context.theme_t,
-            &context.views.mid_win, curr_tab.curr_list.as_mut());
+        redraw_view(&context.config_t, &context.theme_t,
+                &context.views.left_win, curr_tab.parent_list.as_mut());
+        redraw_view_detailed(&context.config_t, &context.theme_t,
+                &context.views.mid_win, curr_tab.curr_list.as_mut());
 
-    redraw_status(&context.theme_t, &context.views,
-            curr_tab.curr_list.as_ref(),
-            &curr_tab.curr_path,
-            &context.username, &context.hostname);
+        redraw_status(&context.theme_t, &context.views,
+                curr_tab.curr_list.as_ref(),
+                &curr_tab.curr_path,
+                &context.username, &context.hostname);
+    }
+
+    preview::preview_file(context);
 }
 
 pub fn redraw_view(config_t: &config::JoshutoConfig, theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,

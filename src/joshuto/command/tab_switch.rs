@@ -41,10 +41,12 @@ impl command::Runnable for TabSwitch {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         let mut new_index = context.tab_index as i32 + self.movement;
-        if new_index < 0 {
-            new_index = 0;
-        } else if new_index >= context.tabs.len() as i32 {
-            new_index = context.tabs.len() as i32 - 1;
+        let tab_len = context.tabs.len() as i32;
+        while new_index < 0 {
+            new_index = new_index + tab_len;
+        }
+        while new_index >= tab_len {
+            new_index = new_index - tab_len;
         }
         Self::tab_switch(new_index, context);
     }
