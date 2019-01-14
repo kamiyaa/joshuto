@@ -196,13 +196,6 @@ fn process_threads(context: &mut JoshutoContext)
                 let (_, chandle) = context.threads.remove(i);
                 chandle.join().unwrap();
                 ncurses::werase(context.views.bot_win.win);
-
-                let curr_list = context.tabs[context.tab_index].curr_list.as_ref();
-                let curr_path = &context.tabs[context.tab_index].curr_path;
-                ui::redraw_status(&context.theme_t, &context.views, curr_list, curr_path,
-                        &context.username, &context.hostname);
-                ncurses::doupdate();
-
                 something_finished = true;
                 break;
             } else {
@@ -217,6 +210,7 @@ fn process_threads(context: &mut JoshutoContext)
 
     if something_finished {
         command::ReloadDirList::reload(context);
+        ncurses::doupdate();
     }
 }
 
@@ -254,11 +248,10 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
         if context.threads.len() > 0 {
             ncurses::timeout(0);
+            process_threads(&mut context);
         } else {
             ncurses::timeout(-1);
         }
-
-        process_threads(&mut context);
 
         let keycommand: &std::boxed::Box<dyn JoshutoCommand>;
 
@@ -266,13 +259,9 @@ pub fn run(mut config_t: config::JoshutoConfig,
             Some(CommandKeybind::CompositeKeybind(m)) => {
                 match recurse_get_keycommand(&m) {
                     Some(s) => {
-                        ncurses::update_panels();
-                        ncurses::doupdate();
                         keycommand = s;
                     }
                     None => {
-                        ncurses::update_panels();
-                        ncurses::doupdate();
                         continue
                     },
                 }
