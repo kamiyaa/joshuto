@@ -43,11 +43,13 @@ pub fn preview_file(context: &mut joshuto::JoshutoContext)
                                             mime::TEXT => {
                                                 text_preview(&context.views.right_win, &entry.path);
                                             },
-                                            _ => {},
+                                            _ => {
+                                                ui::wprint_err(&context.views.right_win, mime_type.type_().as_str());
+                                            },
                                         }
                                     },
                                     Err(e) => {
-                                        ncurses::waddstr(context.views.right_win.win, e.to_string().as_str());
+                                        ui::wprint_err(&context.views.right_win, e.to_string().as_str());
                                     },
                                 }
                             }
