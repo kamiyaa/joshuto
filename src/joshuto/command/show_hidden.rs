@@ -21,13 +21,7 @@ impl ToggleHiddenFiles {
 
         for tab in &mut context.tabs {
             tab.history.depecrate_all_entries();
-            if let Some(s) = tab.curr_list.as_mut() {
-                s.update(&context.config_t.sort_type);
-            }
-
-            if let Some(s) = tab.parent_list.as_mut() {
-                s.update(&context.config_t.sort_type);
-            }
+            tab.reload_contents(&context.config_t.sort_type);
         }
     }
 }

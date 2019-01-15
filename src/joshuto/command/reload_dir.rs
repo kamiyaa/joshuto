@@ -18,7 +18,7 @@ impl ReloadDirList {
 
     pub fn reload(context: &mut joshuto::JoshutoContext)
     {
-        context.reload_dirlists();
+        context.tabs[context.tab_index].reload_contents(&context.config_t.sort_type);
         ui::refresh(context);
     }
 }

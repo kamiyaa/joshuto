@@ -302,7 +302,7 @@ impl command::Runnable for DeleteFiles {
                     Self::remove_files(paths);
                 }
             }
-            context.reload_dirlists();
+            context.tabs[context.tab_index].reload_contents(&context.config_t.sort_type);
             ui::refresh(context);
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
             let curr_tab = &mut context.tabs[context.tab_index];
@@ -341,9 +341,7 @@ impl RenameFile {
 
     pub fn rename_file(&self, path: &path::PathBuf, context: &mut joshuto::JoshutoContext, start_str: String)
     {
-        let mut term_rows: i32 = 0;
-        let mut term_cols: i32 = 0;
-        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+        let (term_rows, term_cols) = ui::get_term_row_col();
 
         let win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
         ncurses::keypad(win.win, true);
@@ -367,7 +365,7 @@ impl RenameFile {
             if !new_path.exists() {
                 match fs::rename(&path, &new_path) {
                     Ok(_) => {
-                        context.reload_dirlists();
+                        context.tabs[context.tab_index].reload_contents(&context.config_t.sort_type);
                         ui::refresh(context);
                     },
                     Err(e) => {

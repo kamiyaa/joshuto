@@ -135,6 +135,18 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
+    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
+            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
+    {
+        let filter_func = sort_type.filter_func();
+
+        let results = fs::read_dir(path)?;
+        let result_vec : Vec<JoshutoDirEntry> = results
+                .filter_map(filter_func)
+                .collect();
+        Ok(result_vec)
+    }
+
     pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error>
     {
         let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
@@ -174,55 +186,40 @@ impl JoshutoDirList {
         return true;
     }
 
-    pub fn update(&mut self, sort_type: &sort::SortType)
+    pub fn update_contents(&mut self, sort_type: &sort::SortType) -> Result<(), std::io::Error>
     {
         let sort_func = sort_type.compare_func();
-
         self.update_needed = false;
 
-        if let Ok(mut dir_contents) = Self::read_dir_list(&self.path, sort_type) {
-            dir_contents.sort_by(&sort_func);
+        let mut contents = Self::read_dir_list(&self.path, sort_type)?;
+        contents.sort_by(&sort_func);
 
-            let contents_len = dir_contents.len() as i32;
+        let contents_len = contents.len() as i32;
 
-            if contents_len == 0 {
-                self.index = -1;
-            } else if self.index >= contents_len {
-                self.index = contents_len - 1;
-            } else if self.index >= 0 && self.index < contents_len {
-                let index = self.index;
-                self.index = 0;
-                let curr_file_name = &self.contents[index as usize].file_name;
+        if contents_len == 0 {
+            self.index = -1;
+        } else if self.index >= contents_len {
+            self.index = contents_len - 1;
+        } else if self.index >= 0 && self.index < contents_len {
+            let index = self.index;
+            self.index = 0;
+            let curr_file_name = &self.contents[index as usize].file_name;
 
-                for (i, entry) in dir_contents.iter().enumerate() {
-                    if *curr_file_name == entry.file_name {
-                        self.index = i as i32;
-                        break;
-                    }
+            for (i, entry) in contents.iter().enumerate() {
+                if *curr_file_name == entry.file_name {
+                    self.index = i as i32;
+                    break;
                 }
-            } else {
-                self.index = 0;
             }
-            self.contents = dir_contents;
+        } else {
+            self.index = 0;
         }
+        self.contents = contents;
 
-        if let Ok(metadata) = std::fs::metadata(&self.path) {
-            if let Ok(metadata) = JoshutoMetadata::from(&metadata) {
-                self.metadata = metadata;
-            }
-        }
-    }
-
-    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
-            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
-    {
-        let filter_func = sort_type.filter_func();
-
-        let results = fs::read_dir(path)?;
-        let result_vec : Vec<JoshutoDirEntry> = results
-                .filter_map(filter_func)
-                .collect();
-        Ok(result_vec)
+        let metadata = std::fs::metadata(&self.path)?;
+        let metadata = JoshutoMetadata::from(&metadata)?;
+        self.metadata = metadata;
+        Ok(())
     }
 
     pub fn get_curr_entry(&self) -> Option<&JoshutoDirEntry>

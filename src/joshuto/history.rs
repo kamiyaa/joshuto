@@ -11,7 +11,6 @@ pub struct DirHistory {
 }
 
 impl DirHistory {
-
     pub fn new() -> Self
     {
         DirHistory {
@@ -52,7 +51,7 @@ impl DirHistory {
         match self.map.remove(&path.to_path_buf()) {
             Some(mut dir_entry) => {
                 if dir_entry.need_update() {
-                    dir_entry.update(&sort_type);
+                    dir_entry.update_contents(&sort_type)?
                 }
                 Ok(dir_entry)
             },
@@ -67,25 +66,20 @@ impl DirHistory {
             -> Option<&mut structs::JoshutoDirList>
     {
         let pathbuf = path.to_path_buf();
-
-        {
-            let entry = self.map.entry(pathbuf.clone());
-            match entry {
-                Entry::Occupied(mut entry) => {
-                    let dir_entry = entry.get_mut();
-                    if dir_entry.need_update() {
-                        dir_entry.update(sort_type);
-                    }
-                },
-                Entry::Vacant(entry) => {
-                    if let Ok(s) = structs::JoshutoDirList::new(
-                                path.clone().to_path_buf(), &sort_type) {
-                        entry.insert(s);
-                    }
-                },
-            };
-        }
-
+        match self.map.entry(pathbuf.clone()) {
+            Entry::Occupied(mut entry) => {
+                let dir_entry = entry.get_mut();
+                if dir_entry.need_update() {
+                    dir_entry.update_contents(&sort_type).unwrap();
+                }
+            },
+            Entry::Vacant(entry) => {
+                if let Ok(s) = structs::JoshutoDirList::new(
+                            path.clone().to_path_buf(), &sort_type) {
+                    entry.insert(s);
+                }
+            },
+        };
         self.map.get_mut(&pathbuf)
     }
 

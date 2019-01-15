@@ -68,6 +68,33 @@ impl JoshutoTab {
                 parent_list,
             }
     }
+
+    pub fn reload_contents(&mut self, sort_type: &sort::SortType)
+    {
+        let mut gone = false;
+        if let Some(s) = self.curr_list.as_mut() {
+            if !s.path.exists() {
+                gone = true;
+            } else {
+                s.update_contents(sort_type).unwrap();
+            }
+        }
+        if gone {
+            self.curr_list = None;
+        }
+
+        let mut gone = false;
+        if let Some(s) = self.parent_list.as_mut() {
+            if !s.path.exists() {
+                gone = true;
+            } else {
+                s.update_contents(sort_type).unwrap();
+            }
+        }
+        if gone {
+            self.parent_list = None;
+        }
+    }
 }
 
 pub struct JoshutoContext<'a> {
@@ -104,37 +131,6 @@ impl<'a> JoshutoContext<'a> {
             config_t,
             mimetype_t,
             theme_t
-        }
-    }
-
-    pub fn reload_dirlists(&mut self)
-    {
-        if self.tab_index >= self.tabs.len() {
-            return;
-        }
-
-        let mut gone = false;
-        if let Some(s) = self.tabs[self.tab_index].curr_list.as_mut() {
-            if !s.path.exists() {
-                gone = true;
-            } else if s.need_update() {
-                s.update(&self.config_t.sort_type);
-            }
-        }
-        if gone {
-            self.tabs[self.tab_index].curr_list = None;
-        }
-
-        let mut gone = false;
-        if let Some(s) = self.tabs[self.tab_index].parent_list.as_mut() {
-            if !s.path.exists() {
-                gone = true;
-            } else if s.need_update() {
-                s.update(&self.config_t.sort_type);
-            }
-        }
-        if gone {
-            self.tabs[self.tab_index].parent_list = None;
         }
     }
 }

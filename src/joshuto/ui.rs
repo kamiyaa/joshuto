@@ -56,6 +56,14 @@ pub fn end_ncurses()
         ncurses::endwin();
 }
 
+pub fn get_term_row_col() -> (i32, i32)
+{
+    let mut term_rows: i32 = 0;
+    let mut term_cols: i32 = 0;
+    ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+    (term_rows, term_cols)
+}
+
 pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
 {
     ncurses::werase(win.win);
