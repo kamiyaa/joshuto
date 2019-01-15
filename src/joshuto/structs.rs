@@ -82,6 +82,10 @@ impl JoshutoPageState {
 
     pub fn update_page_state(&mut self, index: usize, win_rows: i32, vec_len: usize, offset: usize)
     {
+        if self.end > vec_len {
+            self.end = vec_len
+        }
+
         if self.start + offset >= index {
             self.start = if index as usize <= offset {
                     0
@@ -98,7 +102,8 @@ impl JoshutoPageState {
                 } else {
                     self.end - win_rows as usize
                 };
-        } else if self.end <= index + offset {
+        }
+        if self.end <= index + offset {
             self.end = if index as usize + offset >= vec_len {
                     vec_len
                 } else {
@@ -185,6 +190,16 @@ impl JoshutoDirList {
             } else if self.index >= contents_len {
                 self.index = contents_len - 1;
             } else if self.index >= 0 && self.index < contents_len {
+                let index = self.index;
+                self.index = 0;
+                let curr_file_name = &self.contents[index as usize].file_name;
+
+                for (i, entry) in dir_contents.iter().enumerate() {
+                    if *curr_file_name == entry.file_name {
+                        self.index = i as i32;
+                        break;
+                    }
+                }
             } else {
                 self.index = 0;
             }
