@@ -10,6 +10,7 @@ use joshuto;
 use joshuto::command;
 use joshuto::input;
 use joshuto::config::mimetype;
+use joshuto::preview;
 use joshuto::ui;
 use joshuto::unix;
 use joshuto::window;
@@ -63,9 +64,12 @@ impl OpenFile {
             Self::into_file(paths, context);
         } else if paths[0].is_dir() {
             Self::into_directory(&paths[0], context);
-            let curr_tab = &mut context.tabs[context.tab_index];
-            curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
-                &context.username, &context.hostname);
+            {
+                let curr_tab = &mut context.tabs[context.tab_index];
+                curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+                    &context.username, &context.hostname);
+            }
+            preview::preview_file(context);
             ncurses::doupdate();
         } else {
             ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");
