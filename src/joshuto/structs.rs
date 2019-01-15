@@ -2,12 +2,14 @@ use std;
 use std::fs;
 use std::ffi;
 use std::path;
+use std::process;
 use std::time;
 
+use joshuto::config;
+use joshuto::history;
 use joshuto::sort;
-
-#[cfg(test)]
-mod test;
+use joshuto::ui;
+use joshuto::window;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
@@ -68,67 +70,6 @@ impl JoshutoDirEntry {
 
 }
 
-#[derive(Clone, Debug)]
-pub struct JoshutoPageState {
-    pub start: usize,
-    pub end: usize,
-}
-
-impl JoshutoPageState {
-    pub fn new() -> Self
-    {
-        JoshutoPageState {
-            start: 0,
-            end: 0,
-        }
-    }
-
-    pub fn update_page_state(&mut self, index: usize, win_rows: i32, vec_len: usize, offset: usize)
-    {
-        if self.end > vec_len {
-            self.end = vec_len
-        }
-        if self.end != win_rows as usize + self.start {
-            self.end = self.start + win_rows as usize;
-        }
-
-        if self.start + offset >= index {
-            self.start = if index as usize <= offset {
-                    0
-                } else {
-                    index as usize - offset
-                };
-            self.end = if self.start + win_rows as usize >= vec_len {
-                    vec_len
-                } else {
-                    self.start + win_rows as usize
-                };
-            self.start = if self.end <= win_rows as usize {
-                    0
-                } else {
-                    self.end - win_rows as usize
-                };
-        }
-        if self.end <= index + offset {
-            self.end = if index as usize + offset >= vec_len {
-                    vec_len
-                } else {
-                    index as usize + offset
-                };
-            self.start = if self.end <= win_rows as usize {
-                    0
-                } else {
-                    self.end - win_rows as usize
-                };
-            self.end = if self.start + win_rows as usize >= vec_len {
-                    vec_len
-                } else {
-                    self.start + win_rows as usize
-                };
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct JoshutoDirList {
     pub index: i32,
@@ -137,7 +78,7 @@ pub struct JoshutoDirList {
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
     pub selected: usize,
-    pub pagestate: JoshutoPageState,
+    pub pagestate: window::JoshutoPageState,
 }
 
 impl JoshutoDirList {
@@ -166,7 +107,7 @@ impl JoshutoDirList {
 
         let metadata = fs::metadata(&path)?;
         let metadata = JoshutoMetadata::from(&metadata)?;
-        let pagestate = JoshutoPageState::new();
+        let pagestate = window::JoshutoPageState::new();
 
         Ok(JoshutoDirList {
             index,
@@ -258,5 +199,158 @@ impl JoshutoDirList {
                 self.selected = self.selected - 1;
             }
         }
+    }
+}
+
+pub struct JoshutoTab {
+    pub history: history::DirHistory,
+    pub curr_path: path::PathBuf,
+    pub parent_list: Option<JoshutoDirList>,
+    pub curr_list: Option<JoshutoDirList>,
+}
+
+impl JoshutoTab {
+    pub fn new(curr_path: path::PathBuf, sort_type: &sort::SortType) -> Self
+    {
+        /* keep track of where we are in directories */
+        let mut history = history::DirHistory::new();
+        history.populate_to_root(&curr_path, sort_type);
+
+        /* load up directories */
+        let curr_list: Option<JoshutoDirList> =
+            match history.pop_or_create(&curr_path, sort_type) {
+                Ok(s) => { Some(s) },
+                Err(e) => {
+                    eprintln!("{}", e);
+                    process::exit(1);
+                },
+            };
+
+        let parent_list: Option<JoshutoDirList> =
+            match curr_path.parent() {
+                Some(parent) => {
+                    match history.pop_or_create(&parent, sort_type) {
+                        Ok(s) => { Some(s) },
+                        Err(e) => {
+                            eprintln!("{}", e);
+                            process::exit(1);
+                        },
+                    }
+                },
+                None => { None },
+            };
+
+        JoshutoTab {
+                curr_path,
+                history,
+                curr_list,
+                parent_list,
+            }
+    }
+
+    pub fn reload_contents(&mut self, sort_type: &sort::SortType)
+    {
+        let mut gone = false;
+        if let Some(s) = self.curr_list.as_mut() {
+            if s.path.exists() {
+                s.update_contents(sort_type).unwrap();
+            } else {
+                gone = true;
+            }
+        }
+        if gone {
+            self.curr_list = None;
+        }
+
+        let mut gone = false;
+        if let Some(s) = self.parent_list.as_mut() {
+            if s.path.exists() {
+                s.update_contents(sort_type).unwrap();
+            } else {
+                gone = true;
+            }
+        }
+        if gone {
+            self.parent_list = None;
+        }
+    }
+
+    pub fn refresh(&mut self, views: &window::JoshutoView,
+            theme_t: &config::JoshutoTheme, config_t: &config::JoshutoConfig,
+            username: &str, hostname: &str)
+    {
+        self.refresh_(views, theme_t, config_t.scroll_offset,
+                username, hostname);
+    }
+
+    pub fn refresh_(&mut self, views: &window::JoshutoView,
+            theme_t: &config::JoshutoTheme, scroll_offset: usize,
+            username: &str, hostname: &str)
+    {
+        self.refresh_curr(&views.mid_win, theme_t, scroll_offset);
+        self.refresh_parent(&views.left_win, theme_t, scroll_offset);
+        self.refresh_file_status(&views.bot_win);
+        self.refresh_path_status(&views.top_win, theme_t, username, hostname);
+    }
+
+    pub fn refresh_curr(&mut self, win: &window::JoshutoPanel,
+            theme_t: &config::JoshutoTheme, scroll_offset: usize)
+    {
+        if let Some(ref mut s) = self.curr_list {
+            win.display_contents_detailed(theme_t, s, scroll_offset);
+            ncurses::wnoutrefresh(win.win);
+        }
+    }
+
+    pub fn refresh_parent(&mut self, win: &window::JoshutoPanel,
+            theme_t: &config::JoshutoTheme, scroll_offset: usize)
+    {
+        if let Some(ref mut s) = self.parent_list {
+            win.display_contents(theme_t, s, scroll_offset);
+            ncurses::wnoutrefresh(win.win);
+        }
+    }
+
+    pub fn refresh_file_status(&self, win: &window::JoshutoPanel)
+    {
+        if let Some(ref dirlist) = self.curr_list {
+            ncurses::werase(win.win);
+            ncurses::wmove(win.win, 0, 0);
+            if let Some(entry) = dirlist.get_curr_entry() {
+                ui::wprint_file_mode(win.win, entry);
+                ncurses::waddstr(win.win, "  ");
+                ui::wprint_file_info(win.win, entry);
+            }
+            ncurses::waddstr(win.win, format!("{}/{} ", dirlist.index + 1, dirlist.contents.len()).as_str());
+            ncurses::wnoutrefresh(win.win);
+        }
+    }
+
+    pub fn refresh_path_status(&self, win: &window::JoshutoPanel,
+            theme_t: &config::JoshutoTheme, username: &str, hostname: &str)
+    {
+        let path_str: &str = match self.curr_path.to_str() {
+                Some(s) => s,
+                None => "Error",
+            };
+        ncurses::werase(win.win);
+        ncurses::wattron(win.win, ncurses::A_BOLD());
+        ncurses::mvwaddstr(win.win, 0, 0, username);
+        ncurses::waddstr(win.win, "@");
+        ncurses::waddstr(win.win, hostname);
+
+        ncurses::waddstr(win.win, " ");
+
+        ncurses::wattron(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
+        ncurses::waddstr(win.win, path_str);
+        ncurses::waddstr(win.win, "/");
+        ncurses::wattroff(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
+        if let Some(ref dirlist) = self.curr_list {
+            if let Some(entry) = dirlist.get_curr_entry() {
+                ncurses::waddstr(win.win, &entry.file_name_as_string);
+            }
+        }
+        ncurses::wattroff(win.win, ncurses::A_BOLD());
+        ncurses::wnoutrefresh(win.win);
     }
 }

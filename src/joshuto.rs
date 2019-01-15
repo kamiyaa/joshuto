@@ -2,8 +2,6 @@ extern crate ncurses;
 
 use std;
 use std::collections::HashMap;
-use std::path;
-use std::process;
 use std::sync;
 use std::thread;
 use std::time;
@@ -23,87 +21,13 @@ mod window;
 use self::command::CommandKeybind;
 use self::command::JoshutoCommand;
 
-pub struct JoshutoTab {
-    pub history: history::DirHistory,
-    pub curr_path: path::PathBuf,
-    pub parent_list: Option<structs::JoshutoDirList>,
-    pub curr_list: Option<structs::JoshutoDirList>,
-}
-
-impl JoshutoTab {
-    pub fn new(curr_path: path::PathBuf, sort_type: &sort::SortType) -> Self
-    {
-        /* keep track of where we are in directories */
-        let mut history = history::DirHistory::new();
-        history.populate_to_root(&curr_path, sort_type);
-
-        /* load up directories */
-        let curr_list: Option<structs::JoshutoDirList> =
-            match history.pop_or_create(&curr_path, sort_type) {
-                Ok(s) => { Some(s) },
-                Err(e) => {
-                    eprintln!("{}", e);
-                    process::exit(1);
-                },
-            };
-
-        let parent_list: Option<structs::JoshutoDirList> =
-            match curr_path.parent() {
-                Some(parent) => {
-                    match history.pop_or_create(&parent, sort_type) {
-                        Ok(s) => { Some(s) },
-                        Err(e) => {
-                            eprintln!("{}", e);
-                            process::exit(1);
-                        },
-                    }
-                },
-                None => { None },
-            };
-
-        JoshutoTab {
-                curr_path,
-                history,
-                curr_list,
-                parent_list,
-            }
-    }
-
-    pub fn reload_contents(&mut self, sort_type: &sort::SortType)
-    {
-        let mut gone = false;
-        if let Some(s) = self.curr_list.as_mut() {
-            if !s.path.exists() {
-                gone = true;
-            } else {
-                s.update_contents(sort_type).unwrap();
-            }
-        }
-        if gone {
-            self.curr_list = None;
-        }
-
-        let mut gone = false;
-        if let Some(s) = self.parent_list.as_mut() {
-            if !s.path.exists() {
-                gone = true;
-            } else {
-                s.update_contents(sort_type).unwrap();
-            }
-        }
-        if gone {
-            self.parent_list = None;
-        }
-    }
-}
-
 pub struct JoshutoContext<'a> {
     pub username: String,
     pub hostname: String,
     pub threads: Vec<(sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)>,
     pub views: window::JoshutoView,
     pub tab_index: usize,
-    pub tabs: Vec<JoshutoTab>,
+    pub tabs: Vec<structs::JoshutoTab>,
 
     pub config_t: &'a mut config::JoshutoConfig,
     pub mimetype_t: &'a config::JoshutoMimetype,
@@ -211,8 +135,15 @@ fn resize_handler(context: &mut JoshutoContext)
 {
     context.views.resize_views();
     ncurses::refresh();
-    ui::refresh(context);
+
+    {
+        let curr_tab = &mut context.tabs[context.tab_index];
+        curr_tab.reload_contents(&context.config_t.sort_type);
+        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+            &context.username, &context.hostname);
+    }
     ui::redraw_tab_view(&context.views.tab_win, &context);
+    preview::preview_file(context);
     ncurses::doupdate();
 }
 
@@ -227,8 +158,12 @@ pub fn run(mut config_t: config::JoshutoConfig,
     let mut context = JoshutoContext::new(&mut config_t, &mimetype_t, &theme_t);
     ncurses::refresh();
     command::NewTab::new_tab(&mut context);
+    {
+        let curr_tab = &mut context.tabs[context.tab_index];
+        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+            &context.username, &context.hostname);
+    }
     preview::preview_file(&mut context);
-    ui::refresh(&mut context);
     ncurses::doupdate();
 
     loop {
