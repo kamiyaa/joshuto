@@ -5,6 +5,7 @@ use std::env;
 
 use joshuto;
 use joshuto::command;
+use joshuto::structs::JoshutoTab;
 
 #[derive(Clone, Debug)]
 pub struct NewTab;
@@ -23,7 +24,7 @@ impl NewTab {
             },
         };
 
-        let tab = joshuto::JoshutoTab::new(curr_path, &context.config_t.sort_type);
+        let tab = JoshutoTab::new(curr_path, &context.config_t.sort_type);
 
         context.tabs.push(tab);
         context.tab_index = context.tabs.len() - 1;

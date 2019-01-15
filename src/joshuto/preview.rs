@@ -17,11 +17,12 @@ pub fn preview_file(context: &mut joshuto::JoshutoContext)
         if let Some(entry) = curr_list.get_curr_entry() {
             if entry.path.is_dir() {
                 if let Some(dirlist) = curr_tab.history.get_mut_or_create(&entry.path, &context.config_t.sort_type) {
-                    ui::display_contents(&context.config_t, &context.theme_t, &context.views.right_win, dirlist);
+                    context.views.right_win.display_contents(&context.theme_t, dirlist, context.config_t.scroll_offset);
+                    context.views.right_win.queue_for_refresh();
                 } else {
                     ncurses::werase(context.views.right_win.win);
                     ncurses::waddstr(context.views.right_win.win, "Can't find direntry");
-                    ncurses::wnoutrefresh(context.views.right_win.win);
+                    context.views.right_win.queue_for_refresh();
                 }
             } else {
                 ncurses::werase(context.views.right_win.win);

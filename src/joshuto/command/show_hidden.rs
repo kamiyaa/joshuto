@@ -6,7 +6,6 @@ use std::fmt;
 
 use joshuto;
 use joshuto::command;
-use joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct ToggleHiddenFiles;
@@ -39,7 +38,11 @@ impl command::Runnable for ToggleHiddenFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         Self::toggle_hidden(context);
-        ui::refresh(context);
+        let curr_tab = &mut context.tabs[context.tab_index];
+        curr_tab.reload_contents(&context.config_t.sort_type);
+        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+            &context.username, &context.hostname);
+
         ncurses::doupdate();
     }
 }

@@ -63,7 +63,9 @@ impl OpenFile {
             Self::into_file(paths, context);
         } else if paths[0].is_dir() {
             Self::into_directory(&paths[0], context);
-            ui::refresh(context);
+            let curr_tab = &mut context.tabs[context.tab_index];
+            curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+                &context.username, &context.hostname);
             ncurses::doupdate();
         } else {
             ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");

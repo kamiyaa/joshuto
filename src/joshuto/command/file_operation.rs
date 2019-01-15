@@ -238,22 +238,20 @@ impl std::fmt::Debug for PasteFiles {
 impl command::Runnable for PasteFiles {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        {
-            let file_operation = fileop.lock().unwrap();
+        let file_operation = fileop.lock().unwrap();
 
-            let curr_tab = &mut context.tabs[context.tab_index];
-            curr_tab.curr_list.as_mut().unwrap().selected = 0;
-            let cprocess = match *file_operation {
-                    FileOp::Copy => self.copy(&curr_tab.curr_path),
-                    FileOp::Cut => self.cut(&curr_tab.curr_path),
-                };
-            context.threads.push(cprocess);
-        }
+        let curr_tab = &mut context.tabs[context.tab_index];
+        curr_tab.curr_list.as_mut().unwrap().selected = 0;
+        let cprocess = match *file_operation {
+                FileOp::Copy => self.copy(&curr_tab.curr_path),
+                FileOp::Cut => self.cut(&curr_tab.curr_path),
+            };
+        context.threads.push(cprocess);
 
+        curr_tab.reload_contents(&context.config_t.sort_type);
+        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+            &context.username, &context.hostname);
         ncurses::timeout(0);
-
-        ui::refresh(context);
-
         ncurses::doupdate();
     }
 }
@@ -302,17 +300,18 @@ impl command::Runnable for DeleteFiles {
                     Self::remove_files(paths);
                 }
             }
-            context.tabs[context.tab_index].reload_contents(&context.config_t.sort_type);
-            ui::refresh(context);
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
+
             let curr_tab = &mut context.tabs[context.tab_index];
             curr_tab.curr_list.as_mut().unwrap().selected = 0;
+            curr_tab.reload_contents(&context.config_t.sort_type);
+            curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+                &context.username, &context.hostname);
         } else {
             let curr_tab = &context.tabs[context.tab_index];
-            ui::redraw_status(&context.theme_t, &context.views,
-                    curr_tab.curr_list.as_ref(),
-                    &curr_tab.curr_path,
-                    &context.username, &context.hostname);
+            curr_tab.refresh_file_status(&context.views.bot_win);
+            curr_tab.refresh_path_status(&context.views.top_win,
+                    &context.theme_t, &context.username, &context.hostname);
         }
         ncurses::doupdate();
     }
@@ -365,8 +364,10 @@ impl RenameFile {
             if !new_path.exists() {
                 match fs::rename(&path, &new_path) {
                     Ok(_) => {
-                        context.tabs[context.tab_index].reload_contents(&context.config_t.sort_type);
-                        ui::refresh(context);
+                        let curr_tab = &mut context.tabs[context.tab_index];
+                        curr_tab.reload_contents(&context.config_t.sort_type);
+                        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+                            &context.username, &context.hostname);
                     },
                     Err(e) => {
                         ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
