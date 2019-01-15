@@ -7,9 +7,6 @@ extern crate serde_derive;
 extern crate toml;
 extern crate xdg;
 
-// use std::collections::BTreeMap;
-use std::env;
-
 mod joshuto;
 
 const PROGRAM_NAME: &str = "joshuto";
@@ -20,7 +17,7 @@ const THEME_FILE: &str = "theme.toml";
 
 fn main()
 {
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = std::env::args().collect();
     for arg in &args {
         if arg.as_str() == "-v" {
             println!("{}", crate_version!());
