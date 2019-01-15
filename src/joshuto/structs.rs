@@ -6,6 +6,9 @@ use std::time;
 
 use joshuto::sort;
 
+#[cfg(test)]
+mod test;
+
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
     pub len: u64,
@@ -84,6 +87,9 @@ impl JoshutoPageState {
     {
         if self.end > vec_len {
             self.end = vec_len
+        }
+        if self.end != win_rows as usize + self.start {
+            self.end = self.start + win_rows as usize;
         }
 
         if self.start + offset >= index {

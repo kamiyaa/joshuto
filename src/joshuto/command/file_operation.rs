@@ -341,7 +341,7 @@ impl RenameFile {
 
     pub fn rename_file(&self, path: &path::PathBuf, context: &mut joshuto::JoshutoContext, start_str: String)
     {
-        let (term_rows, term_cols) = ui::get_term_row_col();
+        let (term_rows, term_cols) = ui::getmaxyx();
 
         let win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
         ncurses::keypad(win.win, true);

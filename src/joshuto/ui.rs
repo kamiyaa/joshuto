@@ -56,7 +56,7 @@ pub fn end_ncurses()
         ncurses::endwin();
 }
 
-pub fn get_term_row_col() -> (i32, i32)
+pub fn getmaxyx() -> (i32, i32)
 {
     let mut term_rows: i32 = 0;
     let mut term_cols: i32 = 0;

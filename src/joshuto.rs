@@ -138,10 +138,7 @@ impl<'a> JoshutoContext<'a> {
 fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     -> Option<&Box<dyn command::JoshutoCommand>>
 {
-    let mut term_rows: i32 = 0;
-    let mut term_cols: i32 = 0;
-    ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-
+    let (term_rows, term_cols) = ui::getmaxyx();
     let keymap_len = keymap.len();
 
     let win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
@@ -165,18 +162,18 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     ncurses::doupdate();
 
     if ch == config::keymap::ESCAPE {
-        None
-    } else {
-        match keymap.get(&ch) {
-            Some(CommandKeybind::CompositeKeybind(m)) => {
-                recurse_get_keycommand(&m)
-            },
-            Some(CommandKeybind::SimpleKeybind(s)) => {
-                Some(s)
-            },
-            _ => {
-                None
-            }
+        return None;
+    }
+
+    match keymap.get(&ch) {
+        Some(CommandKeybind::CompositeKeybind(m)) => {
+            recurse_get_keycommand(&m)
+        },
+        Some(CommandKeybind::SimpleKeybind(s)) => {
+            Some(s)
+        },
+        _ => {
+            None
         }
     }
 }
@@ -212,10 +209,9 @@ fn process_threads(context: &mut JoshutoContext)
 
 fn resize_handler(context: &mut JoshutoContext)
 {
-    context.views.redraw_views();
+    context.views.resize_views();
     ncurses::refresh();
     ui::refresh(context);
-
     ui::redraw_tab_view(&context.views.tab_win, &context);
     ncurses::doupdate();
 }
@@ -229,6 +225,7 @@ pub fn run(mut config_t: config::JoshutoConfig,
     ncurses::doupdate();
 
     let mut context = JoshutoContext::new(&mut config_t, &mimetype_t, &theme_t);
+    ncurses::refresh();
     command::NewTab::new_tab(&mut context);
     preview::preview_file(&mut context);
     ui::refresh(&mut context);
