@@ -328,7 +328,7 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &joshuto::JoshutoCon
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn draw_loading_bar(theme_t: &config::JoshutoTheme,
+pub fn draw_progress_bar(theme_t: &config::JoshutoTheme,
         win: &window::JoshutoPanel, percentage: f32)
 {
     let cols: i32 = (win.cols as f32 * percentage) as i32;
