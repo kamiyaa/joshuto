@@ -1,15 +1,11 @@
 extern crate ncurses;
-extern crate wcwidth;
-extern crate chrono;
 
 use std::fs;
-use std::path;
 use std::time;
 
 use joshuto;
-use joshuto::config;
-use joshuto::preview;
 use joshuto::structs;
+use joshuto::config;
 use joshuto::unix;
 use joshuto::window;
 
@@ -103,64 +99,65 @@ pub fn wprint_empty(win: &window::JoshutoPanel, msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_path(win: &window::JoshutoPanel, theme_t: &config::JoshutoTheme,
-        username: &str, hostname: &str, path: &path::PathBuf, file_name: &str)
+fn wprint_file_name(win: ncurses::WINDOW, file_name: &String,
+        coord: (i32, i32), mut space_avail: usize)
 {
-    ncurses::werase(win.win);
-    let path_str: &str = match path.to_str() {
-            Some(s) => s,
-            None => "Error",
-        };
-    ncurses::wattron(win.win, ncurses::A_BOLD());
-    ncurses::mvwaddstr(win.win, 0, 0, username);
-    ncurses::waddstr(win.win, "@");
-    ncurses::waddstr(win.win, hostname);
-
-    ncurses::waddstr(win.win, " ");
-
-    ncurses::wattron(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
-    ncurses::waddstr(win.win, path_str);
-    ncurses::waddstr(win.win, "/");
-    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
-    ncurses::waddstr(win.win, file_name);
-    ncurses::wattroff(win.win, ncurses::A_BOLD());
-}
-
-fn wprint_file_size(win: ncurses::WINDOW, mut file_size: f64)
-{
-    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "EB"];
-    const CONV_RATE: f64 = 1024.0;
-
-    let mut index = 0;
-    while file_size > CONV_RATE {
-        file_size = file_size / CONV_RATE;
-        index += 1;
+    let name_visual_space = wcwidth::str_width(file_name).unwrap_or(space_avail as usize);
+    if name_visual_space < space_avail {
+        ncurses::waddstr(win, &file_name);
+        return;
     }
 
-    if file_size >= 1000.0 {
-        ncurses::waddstr(win,
-            format!("{:.0}{}", file_size, FILE_UNITS[index]).as_str());
-    } else if file_size >= 100.0 {
-        ncurses::waddstr(win,
-            format!(" {:.0}{}", file_size, FILE_UNITS[index]).as_str());
-    } else if file_size >= 10.0 {
-        ncurses::waddstr(win,
-            format!("{:.1}{}", file_size, FILE_UNITS[index]).as_str());
+    if let Some(ext) = file_name.rfind('.') {
+        let extension: &str = &file_name[ext..];
+        let ext_len = wcwidth::str_width(extension).unwrap_or(extension.len());
+        space_avail = space_avail - ext_len;
+        ncurses::mvwaddstr(win, coord.0, space_avail as i32, &extension);
+    }
+    space_avail = space_avail - 2;
+
+    ncurses::wmove(win, coord.0, coord.1);
+
+    let mut trim_index: usize = file_name.len();
+
+    let mut total: usize = 0;
+    for (index, ch) in file_name.char_indices() {
+        if total >= space_avail {
+            trim_index = index;
+            break;
+        }
+        total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
+    }
+    ncurses::waddstr(win, &file_name[..trim_index]);
+    ncurses::waddstr(win, "…");
+}
+
+pub fn wprint_entry(win: &window::JoshutoPanel,
+        file: &structs::JoshutoDirEntry, coord: (i32, i32))
+{
+    let space_avail: usize = win.cols as usize - 1;
+    ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
+    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + 1), space_avail);
+}
+
+pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
+        file: &structs::JoshutoDirEntry, coord: (i32, i32))
+{
+    let mut space_avail: usize = win.cols as usize - 1;
+    ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
+    if file.path.is_dir() {
+
     } else {
-        ncurses::waddstr(win,
-            format!("{:.2}{}", file_size, FILE_UNITS[index]).as_str());
+        let file_size_string = file_size_to_string(file.metadata.len as f64);
+        space_avail = space_avail - file_size_string.len();
+        ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
+        ncurses::wmove(win.win, coord.0, coord.1 + 1);
+        space_avail = space_avail - 1;
     }
+    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + 1), space_avail);
 }
 
-pub fn wprint_file_mtime(win: ncurses::WINDOW, mtime: time::SystemTime)
-{
-    const MTIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
-
-    let datetime: chrono::DateTime<chrono::offset::Utc> = mtime.into();
-    ncurses::waddstr(win, format!("{}", datetime.format(MTIME_FORMATTING)).as_str());
-}
-
-fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
+pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 {
     use std::os::unix::fs::PermissionsExt;
 
@@ -177,9 +174,9 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 
     let mode = file.metadata.permissions.mode();
 
-    wprint_file_mtime(win, file.metadata.modified);
-
-    ncurses::waddstr(win, " ");
+    let mtime_string = file_mtime_to_string(file.metadata.modified);
+    ncurses::waddstr(win, &mtime_string);
+    ncurses::waddch(win, ' ' as ncurses::chtype);
 
     if file.path.is_dir() {
         if mode >> 9 & unix::S_IFLNK >> 9 == mode >> 9 {
@@ -189,136 +186,8 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
             }
         }
     } else {
-        let file_size = file.metadata.len as f64;
-        wprint_file_size(win, file_size);
-    }
-}
-
-fn wprint_file_name(win: &window::JoshutoPanel, file: &structs::JoshutoDirEntry,
-        coord: (i32, i32))
-{
-    ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
-
-    let file_name = &file.file_name_as_string;
-    let name_visual_space = wcwidth::str_width(file_name).unwrap_or(win.cols as usize);
-    if name_visual_space < win.cols as usize {
-        ncurses::waddstr(win.win, &file_name);
-        return;
-    }
-
-    let mut win_cols = win.cols;
-
-    if let Some(ext) = file_name.rfind('.') {
-        let extension: &str = &file_name[ext..];
-        let ext_len = wcwidth::str_width(extension).unwrap_or(extension.len());
-        win_cols = win_cols - ext_len as i32;
-        ncurses::mvwaddstr(win.win, coord.0, win_cols, &extension);
-    }
-    win_cols = win_cols - 2;
-
-    ncurses::wmove(win.win, coord.0, coord.1 + 1);
-
-    let mut trim_index: usize = file_name.len();
-
-    let mut total: usize = 0;
-    for (index, ch) in file_name.char_indices() {
-        if total >= win_cols as usize {
-            trim_index = index;
-            break;
-        }
-        total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
-    }
-    ncurses::waddstr(win.win, &file_name[..trim_index]);
-    ncurses::waddstr(win.win, "…");
-}
-
-pub fn wprint_directory_len(win: ncurses::WINDOW, curr_list: &structs::JoshutoDirList)
-{
-    if curr_list.index >= 0 {
-        ncurses::waddstr(win, format!("{}/{}", curr_list.index + 1, curr_list.contents.len()).as_str());
-    }
-}
-
-pub fn wprint_direntry(win: &window::JoshutoPanel,
-        file: &structs::JoshutoDirEntry, coord: (i32, i32))
-{
-//    let offset = wprint_file_size(win, file, coord);
-//    let offset = 3;
-    wprint_file_name(win, file, coord);
-}
-
-pub fn refresh(context: &mut joshuto::JoshutoContext)
-{
-    if context.tabs.len() == 0 {
-        return;
-    }
-
-    {
-        let curr_tab = &mut context.tabs[context.tab_index];
-
-        redraw_view(&context.config_t, &context.theme_t,
-                &context.views.left_win, curr_tab.parent_list.as_mut());
-        redraw_view_detailed(&context.config_t, &context.theme_t,
-                &context.views.mid_win, curr_tab.curr_list.as_mut());
-        redraw_status(&context.theme_t, &context.views,
-                curr_tab.curr_list.as_ref(),
-                &curr_tab.curr_path,
-                &context.username, &context.hostname);
-    }
-
-    preview::preview_file(context);
-}
-
-pub fn redraw_view(config_t: &config::JoshutoConfig, theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
-        mut view: Option<&mut structs::JoshutoDirList>)
-{
-    if let Some(s) = view.as_mut() {
-        display_contents(config_t, theme_t, win, s);
-        ncurses::wnoutrefresh(win.win);
-    } else {
-        ncurses::werase(win.win);
-    }
-    ncurses::wnoutrefresh(win.win);
-}
-
-pub fn redraw_view_detailed(config_t: &config::JoshutoConfig, theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
-        mut view: Option<&mut structs::JoshutoDirList>)
-{
-    if let Some(ref mut s) = view {
-        display_contents(config_t, theme_t, win, s);
-        ncurses::wnoutrefresh(win.win);
-    } else {
-        ncurses::werase(win.win);
-    }
-    ncurses::wnoutrefresh(win.win);
-}
-
-pub fn redraw_status(
-    theme_t: &config::JoshutoTheme,
-    joshuto_view: &window::JoshutoView,
-    curr_view: Option<&structs::JoshutoDirList>,
-    curr_path: &path::PathBuf,
-    username: &str, hostname: &str)
-{
-    if let Some(s) = curr_view.as_ref() {
-        let dirent = s.get_curr_entry();
-        if let Some(dirent) = dirent {
-            wprint_path(&joshuto_view.top_win,
-                    theme_t, username, hostname,
-                    curr_path, dirent.file_name_as_string.as_str());
-            ncurses::wnoutrefresh(joshuto_view.top_win.win);
-
-            ncurses::werase(joshuto_view.bot_win.win);
-            ncurses::wmove(joshuto_view.bot_win.win, 0, 0);
-            wprint_file_mode(joshuto_view.bot_win.win, &dirent);
-            ncurses::waddstr(joshuto_view.bot_win.win, "  ");
-
-            wprint_directory_len(joshuto_view.bot_win.win, s);
-            ncurses::waddstr(joshuto_view.bot_win.win, "  ");
-
-            wprint_file_info(joshuto_view.bot_win.win, &dirent);
-            ncurses::wnoutrefresh(joshuto_view.bot_win.win);
-        }
+        let file_size_string = file_size_to_string_detailed(file.metadata.len as f64);
+        ncurses::waddstr(win, &file_size_string);
     }
 }
 
@@ -344,62 +213,7 @@ pub fn draw_progress_bar(theme_t: &config::JoshutoTheme,
             theme_t.selection.colorpair);
 }
 
-pub fn display_contents(config_t: &config::JoshutoConfig,
-        theme_t: &config::JoshutoTheme, win: &window::JoshutoPanel,
-        dirlist: &mut structs::JoshutoDirList)
-{
-    let index = dirlist.index;
-    let vec_len = dirlist.contents.len();
-    if vec_len == 0 {
-        wprint_empty(win, "empty");
-        return;
-    }
-    if index >= 0 {
-        dirlist.pagestate.update_page_state(index as usize, win.rows, vec_len, config_t.scroll_offset);
-    }
-    draw_contents(theme_t, win, dirlist);
-}
-
-pub fn draw_contents(theme_t: &config::JoshutoTheme,
-        win: &window::JoshutoPanel, dirlist: &structs::JoshutoDirList)
-{
-    use std::os::unix::fs::PermissionsExt;
-
-    ncurses::werase(win.win);
-    ncurses::wmove(win.win, 0, 0);
-
-    let dir_contents = &dirlist.contents;
-
-    let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
-
-    for i in start..end {
-        let coord: (i32, i32) = (i as i32 - start as i32, 0);
-        wprint_direntry(win, &dir_contents[i], coord);
-
-        let mode = dir_contents[i].metadata.permissions.mode();
-
-        let mut attr: ncurses::attr_t = 0;
-        if dirlist.index as usize == i {
-            attr = attr | ncurses::A_STANDOUT();
-        }
-
-        if dir_contents[i].selected {
-            ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.selection.colorpair);
-        } else if mode != 0 {
-            let file_name = &dir_contents[i].file_name_as_string;
-            let mut extension: &str = "";
-            if let Some(ext) = file_name.rfind('.') {
-                extension = &file_name[ext+1..];
-            }
-
-            file_attr_apply(theme_t, win.win, coord, mode, extension, attr);
-        }
-
-    }
-    ncurses::wnoutrefresh(win.win);
-}
-
-fn file_attr_apply(theme_t: &config::JoshutoTheme,
+pub fn file_attr_apply(theme_t: &config::JoshutoTheme,
         win: ncurses::WINDOW, coord: (i32, i32), mode: u32,
         extension: &str, attr: ncurses::attr_t)
 {
@@ -425,4 +239,57 @@ fn file_attr_apply(theme_t: &config::JoshutoTheme,
         },
         _ => {},
     };
+}
+
+fn file_size_to_string_detailed(mut file_size: f64) -> String
+{
+    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "EB"];
+    const CONV_RATE: f64 = 1024.0;
+
+    let mut index = 0;
+    while file_size > CONV_RATE {
+        file_size = file_size / CONV_RATE;
+        index += 1;
+    }
+
+    if file_size >= 1000.0 {
+        format!("{:.0}{}", file_size, FILE_UNITS[index])
+    } else if file_size >= 100.0 {
+        format!(" {:.0}{}", file_size, FILE_UNITS[index])
+    } else if file_size >= 10.0 {
+        format!("{:.1}{}", file_size, FILE_UNITS[index])
+    } else {
+        format!("{:.2}{}", file_size, FILE_UNITS[index])
+    }
+}
+
+fn file_mtime_to_string(mtime: time::SystemTime) -> String
+{
+    const MTIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
+
+    let datetime: chrono::DateTime<chrono::offset::Utc> = mtime.into();
+    datetime.format(MTIME_FORMATTING).to_string()
+}
+
+
+fn file_size_to_string(mut file_size: f64) -> String
+{
+    const FILE_UNITS: [&str ; 6] = ["B", "K", "M", "G", "T", "E"];
+    const CONV_RATE: f64 = 1024.0;
+
+    let mut index = 0;
+    while file_size > CONV_RATE {
+        file_size = file_size / CONV_RATE;
+        index += 1;
+    }
+
+    if file_size >= 1000.0 {
+        format!("{:.0} {}", file_size, FILE_UNITS[index])
+    } else if file_size >= 100.0 {
+        format!(" {:.0} {}", file_size, FILE_UNITS[index])
+    } else if file_size >= 10.0 {
+        format!("{:.1} {}", file_size, FILE_UNITS[index])
+    } else {
+        format!("{:.2} {}", file_size, FILE_UNITS[index])
+    }
 }

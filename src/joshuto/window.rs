@@ -1,5 +1,73 @@
 extern crate ncurses;
 
+use joshuto::config;
+use joshuto::structs;
+use joshuto::ui;
+
+#[cfg(test)]
+mod test;
+
+#[derive(Clone, Debug)]
+pub struct JoshutoPageState {
+    pub start: usize,
+    pub end: usize,
+}
+
+impl JoshutoPageState {
+    pub fn new() -> Self
+    {
+        JoshutoPageState {
+            start: 0,
+            end: 0,
+        }
+    }
+
+    pub fn update_page_state(&mut self, index: usize, win_rows: i32, vec_len: usize, offset: usize)
+    {
+        if self.end != win_rows as usize + self.start {
+            self.end = self.start + win_rows as usize;
+        }
+        if self.end > vec_len {
+            self.end = vec_len
+        }
+
+        if self.start + offset >= index {
+            self.start = if index as usize <= offset {
+                    0
+                } else {
+                    index as usize - offset
+                };
+            self.end = if self.start + win_rows as usize >= vec_len {
+                    vec_len
+                } else {
+                    self.start + win_rows as usize
+                };
+            self.start = if self.end <= win_rows as usize {
+                    0
+                } else {
+                    self.end - win_rows as usize
+                };
+        }
+        if self.end <= index + offset {
+            self.end = if index as usize + offset >= vec_len {
+                    vec_len
+                } else {
+                    index as usize + offset
+                };
+            self.start = if self.end <= win_rows as usize {
+                    0
+                } else {
+                    self.end - win_rows as usize
+                };
+            self.end = if self.start + win_rows as usize >= vec_len {
+                    vec_len
+                } else {
+                    self.start + win_rows as usize
+                };
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct JoshutoPanel {
     pub win: ncurses::WINDOW,
@@ -11,7 +79,7 @@ pub struct JoshutoPanel {
 }
 
 impl JoshutoPanel {
-    pub fn new(rows : i32, cols : i32, coords : (usize, usize)) -> Self
+    pub fn new(rows: i32, cols: i32, coords: (usize, usize)) -> Self
     {
         let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
         let panel = ncurses::new_panel(win);
@@ -30,22 +98,81 @@ impl JoshutoPanel {
     pub fn move_to_top(&self) { ncurses::top_panel(self.panel); }
     #[allow(dead_code)]
     pub fn move_to_bottom(&self) { ncurses::bottom_panel(self.panel); }
+    pub fn queue_for_refresh(&self) { ncurses::wnoutrefresh(self.win); }
 
     pub fn destroy(&self)
     {
         ncurses::del_panel(self.panel);
         ncurses::delwin(self.win);
     }
-}
 
-/*
-impl std::ops::Drop for Joshuto {
-    fn drop(&mut self)
+    fn non_empty_dir_checks(&self, dirlist: &mut structs::JoshutoDirList, scroll_offset: usize) -> bool
     {
-        self.destroy();
+        let index = dirlist.index;
+        let vec_len = dirlist.contents.len();
+        if vec_len == 0 {
+            ui::wprint_empty(self, "empty");
+            return false;
+        } else {
+            ncurses::werase(self.win);
+        }
+        if index >= 0 {
+            dirlist.pagestate.update_page_state(index as usize, self.rows, vec_len, scroll_offset);
+        }
+        ncurses::wmove(self.win, 0, 0);
+        return true;
     }
+
+    pub fn display_contents(&self, theme_t: &config::JoshutoTheme,
+        dirlist: &mut structs::JoshutoDirList, scroll_offset: usize)
+    {
+        if self.non_empty_dir_checks(dirlist, scroll_offset) {
+            Self::draw_dir_list(self, theme_t, dirlist, ui::wprint_entry);
+        }
+    }
+
+    pub fn display_contents_detailed(&self, theme_t: &config::JoshutoTheme,
+        dirlist: &mut structs::JoshutoDirList, scroll_offset: usize)
+    {
+        if self.non_empty_dir_checks(dirlist, scroll_offset) {
+            Self::draw_dir_list(self, theme_t, dirlist, ui::wprint_entry_detailed);
+        }
+    }
+
+    pub fn draw_dir_list(win: &JoshutoPanel,
+            theme_t: &config::JoshutoTheme, dirlist: &structs::JoshutoDirList,
+            draw_func: fn (&JoshutoPanel, &structs::JoshutoDirEntry, (i32, i32)))
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir_contents = &dirlist.contents;
+        let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
+
+        for i in start..end {
+            let coord: (i32, i32) = (i as i32 - start as i32, 0);
+            draw_func(win, &dir_contents[i], coord);
+
+            let mut attr: ncurses::attr_t = 0;
+            if dirlist.index as usize == i {
+                attr = attr | ncurses::A_STANDOUT();
+            }
+
+            let mode = dir_contents[i].metadata.permissions.mode();
+            if dir_contents[i].selected {
+                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.selection.colorpair);
+            } else if mode != 0 {
+                let file_name = &dir_contents[i].file_name_as_string;
+                let mut extension: &str = "";
+                if let Some(ext) = file_name.rfind('.') {
+                    extension = &file_name[ext+1..];
+                }
+
+                ui::file_attr_apply(theme_t, win.win, coord, mode, extension, attr);
+            }
+        }
+    }
+
 }
-*/
 
 #[derive(Debug)]
 pub struct JoshutoView {
