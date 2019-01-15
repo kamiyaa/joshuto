@@ -302,8 +302,10 @@ impl command::Runnable for DeleteFiles {
                     Self::remove_files(paths);
                 }
             }
+            eprintln!("reloading...");
             context.reload_dirlists();
 
+            eprintln!("refreshing...");
             ui::refresh(context);
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
             let curr_tab = &mut context.tabs[context.tab_index];

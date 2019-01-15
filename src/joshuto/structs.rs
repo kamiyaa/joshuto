@@ -80,17 +80,9 @@ impl JoshutoPageState {
         }
     }
 
-    pub fn update(&mut self, index: i32, win_rows: i32, vec_len: usize, offset: usize)
+    pub fn update_page_state(&mut self, index: usize, win_rows: i32, vec_len: usize, offset: usize)
     {
-        if self.start + offset < index as usize && self.end > index as usize + offset {
-            return;
-        }
-        self.end = self.start + win_rows as usize;
-
-        if win_rows as usize >= vec_len {
-            self.start = 0;
-            self.end = vec_len;
-        } else if index as i32 - self.start as i32 <= offset as i32 {
+        if self.start + offset >= index {
             self.start = if index as usize <= offset {
                     0
                 } else {
@@ -101,16 +93,26 @@ impl JoshutoPageState {
                 } else {
                     self.start + win_rows as usize
                 };
-        } else if self.end as i32 <= offset as i32 + index {
+            self.start = if self.end <= win_rows as usize {
+                    0
+                } else {
+                    self.end - win_rows as usize
+                };
+        } else if self.end <= index + offset {
             self.end = if index as usize + offset >= vec_len {
                     vec_len
                 } else {
                     index as usize + offset
                 };
-            self.start = if self.end < win_rows as usize {
+            self.start = if self.end <= win_rows as usize {
                     0
                 } else {
                     self.end - win_rows as usize
+                };
+            self.end = if self.start + win_rows as usize >= vec_len {
+                    vec_len
+                } else {
+                    self.start + win_rows as usize
                 };
         }
     }
@@ -176,20 +178,12 @@ impl JoshutoDirList {
         if let Ok(mut dir_contents) = Self::read_dir_list(&self.path, sort_type) {
             dir_contents.sort_by(&sort_func);
 
-            if dir_contents.len() == 0 {
-                self.index = -1;
-            } else if self.index >= dir_contents.len() as i32 {
-                self.index = dir_contents.len() as i32 - 1;
-            } else if self.index >= 0 && (self.index as usize) < self.contents.len() {
-                let index = self.index;
-                let curr_file_name = &self.contents[index as usize].file_name;
+            let contents_len = dir_contents.len() as i32;
 
-                for (i, entry) in dir_contents.iter().enumerate() {
-                    if *curr_file_name == entry.file_name {
-                        self.index = i as i32;
-                        break;
-                    }
-                }
+            if contents_len == 0 {
+                self.index = -1;
+            } else if self.index >= contents_len {
+                self.index = contents_len - 1;
             } else {
                 self.index = 0;
             }

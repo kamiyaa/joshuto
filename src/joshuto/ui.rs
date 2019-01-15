@@ -13,8 +13,8 @@ use joshuto::structs;
 use joshuto::unix;
 use joshuto::window;
 
-pub const ERR_COLOR: i16 = 7;
-pub const EMPTY_COLOR: i16 = 8;
+pub const ERR_COLOR: i16 = 240;
+pub const EMPTY_COLOR: i16 = 241;
 
 pub fn init_ncurses(theme_t: &config::JoshutoTheme)
 {
@@ -173,8 +173,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
 
     ncurses::waddstr(win, " ");
 
-    if file.metadata.file_type.is_dir() {
-    } else if file.path.is_dir() {
+    if file.path.is_dir() {
         if mode >> 9 & unix::S_IFLNK >> 9 == mode >> 9 {
             if let Ok(path) = fs::read_link(&file.path) {
                 ncurses::waddstr(win, " -> ");
@@ -253,7 +252,6 @@ pub fn refresh(context: &mut joshuto::JoshutoContext)
                 &context.views.left_win, curr_tab.parent_list.as_mut());
         redraw_view_detailed(&context.config_t, &context.theme_t,
                 &context.views.mid_win, curr_tab.curr_list.as_mut());
-
         redraw_status(&context.theme_t, &context.views,
                 curr_tab.curr_list.as_ref(),
                 &curr_tab.curr_path,
@@ -348,7 +346,9 @@ pub fn display_contents(config_t: &config::JoshutoConfig,
         wprint_empty(win, "empty");
         return;
     }
-    dirlist.pagestate.update(index, win.rows, vec_len, config_t.scroll_offset);
+    if index >= 0 {
+        dirlist.pagestate.update_page_state(index as usize, win.rows, vec_len, config_t.scroll_offset);
+    }
     draw_contents(theme_t, win, dirlist);
 }
 

@@ -92,10 +92,8 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                     let path = path::PathBuf::from(exp_str);
                     return Some(Box::new(self::ChangeDirectory::new(path)));
                 }
-                return None;
-            } else {
-                None
             }
+            return None;
         },
         "close_tab" => Some(Box::new(self::CloseTab::new())),
         "copy_files" => Some(Box::new(self::CopyFiles::new())),
@@ -104,19 +102,15 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                 if args.len() > 0 {
                     match args[0].parse::<i32>() {
                         Ok(s) => {
-                            Some(Box::new(self::CursorMove::new(s)))
+                            return Some(Box::new(self::CursorMove::new(s)));
                         },
                         Err(e) => {
                             eprintln!("{}", e);
-                            None
                         },
                     }
-                } else {
-                    None
                 }
-            } else {
-                None
             }
+            return None;
         },
         "cursor_move_home" => Some(Box::new(self::CursorMoveHome::new())),
         "cursor_move_end" => Some(Box::new(self::CursorMoveEnd::new())),
@@ -177,7 +171,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                 method = self::RenameFileMethod::Append;
             }
             Some(Box::new(self::RenameFile::new(method)))
-        }
+        },
         "search" => Some(Box::new(self::Search::new())),
         "select_files" => {
             let mut toggle = false;
@@ -213,20 +207,16 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                 if args.len() > 0 {
                     match args[0].parse::<i32>() {
                         Ok(s) => {
-                            Some(Box::new(self::TabSwitch::new(s)))
+                            return Some(Box::new(self::TabSwitch::new(s)));
                         },
                         Err(e) => {
                             eprintln!("{}", e);
-                            None
                         },
                     }
-                } else {
-                    None
                 }
-            } else {
-                None
             }
-        }
+            return None;
+        },
         "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
         _ => None,
     }
