@@ -184,6 +184,7 @@ impl JoshutoDirList {
                 self.index = -1;
             } else if self.index >= contents_len {
                 self.index = contents_len - 1;
+            } else if self.index >= 0 && self.index < contents_len {
             } else {
                 self.index = 0;
             }
