@@ -108,6 +108,9 @@ impl JoshutoPanel {
 
     fn non_empty_dir_checks(&self, dirlist: &mut structs::JoshutoDirList, scroll_offset: usize) -> bool
     {
+        if self.cols < 8 {
+            return false;
+        }
         let index = dirlist.index;
         let vec_len = dirlist.contents.len();
         if vec_len == 0 {

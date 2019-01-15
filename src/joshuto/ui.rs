@@ -111,10 +111,14 @@ fn wprint_file_name(win: ncurses::WINDOW, file_name: &String,
     if let Some(ext) = file_name.rfind('.') {
         let extension: &str = &file_name[ext..];
         let ext_len = wcwidth::str_width(extension).unwrap_or(extension.len());
-        space_avail = space_avail - ext_len;
-        ncurses::mvwaddstr(win, coord.0, space_avail as i32, &extension);
+        if space_avail > ext_len {
+            space_avail = space_avail - ext_len;
+            ncurses::mvwaddstr(win, coord.0, space_avail as i32, &extension);
+        }
     }
-    space_avail = space_avail - 2;
+    if space_avail > 2 {
+        space_avail = space_avail - 2;
+    }
 
     ncurses::wmove(win, coord.0, coord.1);
 
@@ -135,7 +139,13 @@ fn wprint_file_name(win: ncurses::WINDOW, file_name: &String,
 pub fn wprint_entry(win: &window::JoshutoPanel,
         file: &structs::JoshutoDirEntry, coord: (i32, i32))
 {
-    let space_avail: usize = win.cols as usize - 1;
+    let space_avail: usize;
+    if win.cols >= 1 {
+        space_avail = win.cols as usize - 1;
+    } else {
+        space_avail = 0;
+    }
+
     ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
     wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + 1), space_avail);
 }
@@ -149,10 +159,14 @@ pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
 
     } else {
         let file_size_string = file_size_to_string(file.metadata.len as f64);
-        space_avail = space_avail - file_size_string.len();
-        ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
+        if space_avail > file_size_string.len() {
+            space_avail = space_avail - file_size_string.len();
+            ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
+        }
         ncurses::wmove(win.win, coord.0, coord.1 + 1);
-        space_avail = space_avail - 1;
+        if space_avail > 1 {
+            space_avail = space_avail - 1;
+        }
     }
     wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + 1), space_avail);
 }

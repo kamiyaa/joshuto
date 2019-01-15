@@ -316,12 +316,14 @@ impl JoshutoTab {
         if let Some(ref dirlist) = self.curr_list {
             ncurses::werase(win.win);
             ncurses::wmove(win.win, 0, 0);
+
             if let Some(entry) = dirlist.get_curr_entry() {
                 ui::wprint_file_mode(win.win, entry);
+                ncurses::waddstr(win.win, " ");
+                ncurses::waddstr(win.win, format!("{}/{} ", dirlist.index + 1, dirlist.contents.len()).as_str());
                 ncurses::waddstr(win.win, "  ");
                 ui::wprint_file_info(win.win, entry);
             }
-            ncurses::waddstr(win.win, format!("{}/{} ", dirlist.index + 1, dirlist.contents.len()).as_str());
             ncurses::wnoutrefresh(win.win);
         }
     }
