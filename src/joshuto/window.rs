@@ -31,28 +31,10 @@ impl JoshutoPanel {
     #[allow(dead_code)]
     pub fn move_to_bottom(&self) { ncurses::bottom_panel(self.panel); }
 
-    pub fn redraw(&mut self, rows: i32, cols: i32, coords: (usize, usize))
-    {
-        self.destroy();
-        self.create(rows, cols, coords);
-    }
-
     pub fn destroy(&self)
     {
         ncurses::del_panel(self.panel);
         ncurses::delwin(self.win);
-    }
-
-    fn create(&mut self, rows: i32, cols: i32, coords: (usize, usize))
-    {
-        self.rows = rows;
-        self.cols = cols;
-        self.coords = coords;
-        self.win = ncurses::newwin(self.rows, self.cols, self.coords.0 as i32,
-                self.coords.1 as i32);
-        self.panel = ncurses::new_panel(self.win);
-        ncurses::leaveok(self.win, true);
-        ncurses::wnoutrefresh(self.win);
     }
 }
 
@@ -112,13 +94,6 @@ impl JoshutoView {
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
         let bot_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
-/*
-        let load_bar = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
-        load_bar.move_to_bottom();
-*/
-
-        ncurses::refresh();
-
         JoshutoView {
             top_win,
             tab_win,
@@ -130,42 +105,26 @@ impl JoshutoView {
         }
     }
 
-    pub fn redraw_views(&mut self) {
-        let sum_ratio: usize = self.win_ratio.0 + self.win_ratio.1 + self.win_ratio.2;
+    fn destroy(&self)
+    {
+        self.top_win.destroy();
+        self.bot_win.destroy();
+        self.tab_win.destroy();
+        self.left_win.destroy();
+        self.mid_win.destroy();
+        self.right_win.destroy();
+    }
 
-        let mut term_rows : i32 = 0;
-        let mut term_cols : i32 = 0;
-        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-        let term_divide: i32 = term_cols / sum_ratio as i32;
+    pub fn resize_views(&mut self)
+    {
+        self.destroy();
+        let new_view = Self::new(self.win_ratio);
 
-        let win_xy: (i32, i32) = (1, term_cols - 5);
-        let win_coord: (usize, usize) = (0, 0);
-        self.top_win.redraw(win_xy.0, win_xy.1, win_coord);
-
-        let win_xy: (i32, i32) = (1, 5);
-        let win_coord: (usize, usize) = (0, term_cols as usize - 5);
-        self.tab_win.redraw(win_xy.0, win_xy.1, win_coord);
-
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.0 as i32) - 1);
-        let win_coord: (usize, usize) = (1, 0);
-        self.left_win.redraw(win_xy.0, win_xy.1, win_coord);
-
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.1 as i32) - 1);
-        let win_coord: (usize, usize) = (1, term_divide as usize * self.win_ratio.0);
-        self.mid_win.redraw(win_xy.0, win_xy.1, win_coord);
-
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * self.win_ratio.2 as i32) - 1);
-        let win_coord: (usize, usize) = (1, term_divide as usize * self.win_ratio.2);
-        self.right_win.redraw(win_xy.0, win_xy.1, win_coord);
-
-        let win_xy: (i32, i32) = (1, term_cols);
-        let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
-        self.bot_win.redraw(win_xy.0, win_xy.1, win_coord);
-
-/*
-        self.load_bar.redraw(win_xy.0, win_xy.1, win_coord);
-        self.load_bar.move_to_bottom();
-*/
+        self.top_win = new_view.top_win;
+        self.bot_win = new_view.bot_win;
+        self.tab_win = new_view.tab_win;
+        self.left_win = new_view.left_win;
+        self.mid_win = new_view.mid_win;
+        self.right_win = new_view.right_win;
     }
 }
