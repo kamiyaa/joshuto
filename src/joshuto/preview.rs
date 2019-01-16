@@ -14,7 +14,7 @@ pub fn preview_file(context: &mut joshuto::JoshutoContext)
     let curr_tab = &mut context.tabs[context.tab_index];
 
     if let Some(ref curr_list) = curr_tab.curr_list {
-        if let Some(entry) = curr_list.get_curr_entry() {
+        if let Some(entry) = curr_list.get_curr_ref() {
             if entry.path.is_dir() {
                 if let Some(dirlist) = curr_tab.history.get_mut_or_create(&entry.path, &context.config_t.sort_type) {
                     context.views.right_win.display_contents(&context.theme_t, dirlist, context.config_t.scroll_offset);

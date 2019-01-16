@@ -52,11 +52,11 @@ pub fn is_executable(mode : u32) -> bool
     return false;
 }
 
-pub fn stringify_mode(mode: u32) -> String
+pub fn stringify_mode(mode: libc::mode_t) -> String
 {
     let mut mode_str: String = String::with_capacity(10);
 
-    const LIBC_FILE_VALS: [(u32, char) ; 7] = [
+    const LIBC_FILE_VALS: [(libc::mode_t, char) ; 7] = [
         (S_IFREG, '-'),
         (S_IFDIR, 'd'),
         (S_IFLNK, 'l'),
@@ -66,7 +66,7 @@ pub fn stringify_mode(mode: u32) -> String
         (S_IFIFO, 'f'),
     ];
 
-    const LIBC_PERMISSION_VALS : [(u32, char) ; 9] = [
+    const LIBC_PERMISSION_VALS : [(libc::mode_t, char) ; 9] = [
             (libc::S_IRUSR, 'r'),
             (libc::S_IWUSR, 'w'),
             (libc::S_IXUSR, 'x'),
@@ -95,6 +95,17 @@ pub fn stringify_mode(mode: u32) -> String
         }
     }
     mode_str
+}
+
+pub fn set_mode(path: &path::Path, mode: libc::mode_t) {
+
+    let os_path = path.as_os_str();
+    if let Some(s) = os_path.to_str() {
+        let svec: Vec<i8> = s.bytes().map(|ch| ch as i8).collect();
+        unsafe {
+            libc::chmod(svec.as_ptr(), mode);
+        }
+    }
 }
 
 pub fn open_with_entry(paths: &Vec<path::PathBuf>, entry: &mimetype::JoshutoMimetypeEntry)

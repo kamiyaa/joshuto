@@ -357,30 +357,29 @@ impl RenameFile {
             RenameFileMethod::Overwrite => input::get_str(&win, (0, PROMPT.len() as i32)),
             };
 
+        win.destroy();
+        ncurses::update_panels();
+
         if let Some(s) = user_input {
             let mut new_path = path.parent().unwrap().to_path_buf();
 
             new_path.push(s);
-            if !new_path.exists() {
-                match fs::rename(&path, &new_path) {
-                    Ok(_) => {
-                        let curr_tab = &mut context.tabs[context.tab_index];
-                        curr_tab.reload_contents(&context.config_t.sort_type);
-                        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
-                            &context.username, &context.hostname);
-                    },
-                    Err(e) => {
-                        ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
-                    },
-                }
-            } else {
+            if new_path.exists() {
                 ui::wprint_err(&context.views.bot_win, "Error: File with name exists");
+                return;
             }
+            match fs::rename(&path, &new_path) {
+                Ok(_) => {
+                    command::ReloadDirList::reload(context);
+                },
+                Err(e) => {
+                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                },
+            }
+        } else {
+            let curr_tab = &context.tabs[context.tab_index];
+            curr_tab.refresh_file_status(&context.views.bot_win);
         }
-
-        win.destroy();
-        ncurses::update_panels();
-        ncurses::doupdate();
     }
 }
 
@@ -400,7 +399,7 @@ impl command::Runnable for RenameFile {
         let mut file_name: Option<String> = None;
 
         if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
-            if let Some(s) = s.get_curr_entry() {
+            if let Some(s) = s.get_curr_ref() {
                 path = Some(s.path.clone());
                 file_name = Some(s.file_name_as_string.clone());
             }
@@ -409,6 +408,7 @@ impl command::Runnable for RenameFile {
         if let Some(file_name) = file_name {
             if let Some(path) = path {
                 self.rename_file(&path, context, file_name);
+                ncurses::doupdate();
             }
         }
     }

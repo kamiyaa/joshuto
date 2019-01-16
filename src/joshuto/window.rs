@@ -116,9 +116,9 @@ impl JoshutoPanel {
         if vec_len == 0 {
             ui::wprint_empty(self, "empty");
             return false;
-        } else {
-            ncurses::werase(self.win);
         }
+        ncurses::werase(self.win);
+
         if index >= 0 {
             dirlist.pagestate.update_page_state(index as usize, self.rows, vec_len, scroll_offset);
         }
@@ -174,7 +174,6 @@ impl JoshutoPanel {
             }
         }
     }
-
 }
 
 #[derive(Debug)]

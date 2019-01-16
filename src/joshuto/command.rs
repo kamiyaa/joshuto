@@ -60,6 +60,9 @@ pub use self::tab_operation::CloseTab;
 mod tab_switch;
 pub use self::tab_switch::TabSwitch;
 
+mod set_mode;
+pub use self::set_mode::SetMode;
+
 
 #[derive(Debug)]
 pub enum CommandKeybind {
@@ -202,6 +205,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
             }
             Some(Box::new(self::SelectFiles::new(toggle, all)))
         },
+        "set_mode" => Some(Box::new(self::SetMode::new())),
         "tab_switch" => {
             if let Some(args) = args {
                 if args.len() > 0 {

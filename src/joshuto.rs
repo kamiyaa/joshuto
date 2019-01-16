@@ -133,7 +133,6 @@ fn process_threads(context: &mut JoshutoContext)
 
 fn resize_handler(context: &mut JoshutoContext)
 {
-    context.views.resize_views();
     ncurses::refresh();
 
     {
@@ -158,18 +157,14 @@ pub fn run(mut config_t: config::JoshutoConfig,
     let mut context = JoshutoContext::new(&mut config_t, &mimetype_t, &theme_t);
     ncurses::refresh();
     command::NewTab::new_tab(&mut context);
-    {
-        let curr_tab = &mut context.tabs[context.tab_index];
-        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
-            &context.username, &context.hostname);
-    }
-    preview::preview_file(&mut context);
-    ncurses::doupdate();
+
+    resize_handler(&mut context);
 
     loop {
         let ch: i32 = ncurses::getch();
 
         if ch == ncurses::KEY_RESIZE {
+            context.views.resize_views();
             resize_handler(&mut context);
             continue;
         }

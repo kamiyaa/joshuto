@@ -169,12 +169,27 @@ impl JoshutoDirList {
         Ok(())
     }
 
-    pub fn get_curr_entry(&self) -> Option<&JoshutoDirEntry>
+    pub fn get_curr_ref(&self) -> Option<&JoshutoDirEntry>
     {
-        self.get_dir_entry(self.index)
+        self.get_curr_ref_(self.index)
     }
 
-    fn get_dir_entry(&self, index: i32) -> Option<&JoshutoDirEntry>
+    pub fn get_curr_mut(&mut self) -> Option<&mut JoshutoDirEntry>
+    {
+        let index = self.index;
+        self.get_curr_mut_(index)
+    }
+
+    fn get_curr_mut_(&mut self, index: i32) -> Option<&mut JoshutoDirEntry>
+    {
+        if index >= 0 && (index as usize) < self.contents.len() {
+            Some(&mut self.contents[index as usize])
+        } else {
+            None
+        }
+    }
+
+    fn get_curr_ref_(&self, index: i32) -> Option<&JoshutoDirEntry>
     {
         if index >= 0 && (index as usize) < self.contents.len() {
             Some(&self.contents[index as usize])
@@ -317,7 +332,7 @@ impl JoshutoTab {
             ncurses::werase(win.win);
             ncurses::wmove(win.win, 0, 0);
 
-            if let Some(entry) = dirlist.get_curr_entry() {
+            if let Some(entry) = dirlist.get_curr_ref() {
                 ui::wprint_file_mode(win.win, entry);
                 ncurses::waddstr(win.win, " ");
                 ncurses::waddstr(win.win, format!("{}/{} ", dirlist.index + 1, dirlist.contents.len()).as_str());
@@ -348,7 +363,7 @@ impl JoshutoTab {
         ncurses::waddstr(win.win, "/");
         ncurses::wattroff(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
         if let Some(ref dirlist) = self.curr_list {
-            if let Some(entry) = dirlist.get_curr_entry() {
+            if let Some(entry) = dirlist.get_curr_ref() {
                 ncurses::waddstr(win.win, &entry.file_name_as_string);
             }
         }
