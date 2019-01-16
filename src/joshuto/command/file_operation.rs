@@ -138,8 +138,8 @@ impl PasteFiles {
             let mut paths = selected_files.lock().unwrap();
 
             let mut progress_info = ProgressInfo {
-                    bytes_finished: 0,
-                    total_bytes: paths.len() as u64,
+                    bytes_finished: 1,
+                    total_bytes: paths.len() as u64 + 1,
                 };
 
             for path in (*paths).iter() {
@@ -241,7 +241,6 @@ impl command::Runnable for PasteFiles {
         let file_operation = fileop.lock().unwrap();
 
         let curr_tab = &mut context.tabs[context.tab_index];
-        curr_tab.curr_list.as_mut().unwrap().selected = 0;
         let cprocess = match *file_operation {
                 FileOp::Copy => self.copy(&curr_tab.curr_path),
                 FileOp::Cut => self.cut(&curr_tab.curr_path),
@@ -303,7 +302,6 @@ impl command::Runnable for DeleteFiles {
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
 
             let curr_tab = &mut context.tabs[context.tab_index];
-            curr_tab.curr_list.as_mut().unwrap().selected = 0;
             curr_tab.reload_contents(&context.config_t.sort_type);
             curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
                 &context.username, &context.hostname);

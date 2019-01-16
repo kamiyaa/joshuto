@@ -8,6 +8,7 @@ use std::process;
 
 use joshuto;
 use joshuto::command;
+use joshuto::preview;
 use joshuto::ui;
 
 #[derive(Clone, Debug)]
@@ -23,21 +24,10 @@ impl ChangeDirectory {
         }
     }
     pub const fn command() -> &'static str { "cd" }
-}
 
-impl command::JoshutoCommand for ChangeDirectory {}
-
-impl std::fmt::Display for ChangeDirectory {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    pub fn change_directory(path: &path::PathBuf, context: &mut joshuto::JoshutoContext)
     {
-        write!(f, "{} {}", Self::command(), self.path.to_str().unwrap())
-    }
-}
-
-impl command::Runnable for ChangeDirectory {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
-    {
-        if !self.path.exists() {
+        if !path.exists() {
             ui::wprint_err(&context.views.bot_win, "Error: No such file or directory");
             ncurses::doupdate();
             return;
@@ -49,9 +39,9 @@ impl command::Runnable for ChangeDirectory {
         let curr_list = curr_tab.curr_list.take();
         curr_tab.history.put_back(curr_list);
 
-        match std::env::set_current_dir(self.path.as_path()) {
+        match std::env::set_current_dir(path.as_path()) {
             Ok(_) => {
-                curr_tab.curr_path = self.path.clone();
+                curr_tab.curr_path = path.clone();
             },
             Err(e) => {
                 ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
@@ -83,7 +73,23 @@ impl command::Runnable for ChangeDirectory {
 
         curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
             &context.username, &context.hostname);
+    }
+}
 
+impl command::JoshutoCommand for ChangeDirectory {}
+
+impl std::fmt::Display for ChangeDirectory {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        write!(f, "{} {}", Self::command(), self.path.to_str().unwrap())
+    }
+}
+
+impl command::Runnable for ChangeDirectory {
+    fn execute(&self, context: &mut joshuto::JoshutoContext)
+    {
+        Self::change_directory(&self.path, context);
+        preview::preview_file(context);
         ncurses::doupdate();
     }
 }

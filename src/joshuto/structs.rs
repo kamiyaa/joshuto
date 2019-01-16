@@ -77,7 +77,6 @@ pub struct JoshutoDirList {
     pub update_needed: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
-    pub selected: usize,
     pub pagestate: window::JoshutoPageState,
 }
 
@@ -115,7 +114,6 @@ impl JoshutoDirList {
             update_needed: false,
             metadata,
             contents,
-            selected: 0,
             pagestate,
         })
     }
@@ -208,11 +206,6 @@ impl JoshutoDirList {
         if index >= 0 && (index as usize) < self.contents.len() {
             let tmp_bool = !self.contents[index as usize].selected;
             self.contents[index as usize].selected = tmp_bool;
-            if tmp_bool {
-                self.selected = self.selected + 1;
-            } else {
-                self.selected = self.selected - 1;
-            }
         }
     }
 }

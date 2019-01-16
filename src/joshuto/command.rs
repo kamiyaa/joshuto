@@ -233,17 +233,13 @@ pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
         return None;
     }
 
-    if dirlist.selected == 0 {
-        Some(vec![dirlist.contents[dirlist.index as usize].path.clone()])
+    let selected: Vec<path::PathBuf> = dirlist.contents.iter()
+            .filter(|entry| entry.selected)
+            .map(|entry| entry.path.clone()).collect();
+    if selected.len() > 0 {
+        Some(selected)
     } else {
-        let selected: Vec<path::PathBuf> = dirlist.contents.iter()
-                .filter(|entry| entry.selected)
-                .map(|entry| entry.path.clone()).collect();
-        if selected.len() > 0 {
-            Some(selected)
-        } else {
-            None
-        }
+        Some(vec![dirlist.contents[dirlist.index as usize].path.clone()])
     }
 }
 
