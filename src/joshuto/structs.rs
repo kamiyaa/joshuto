@@ -147,7 +147,6 @@ impl JoshutoDirList {
             self.index = contents_len - 1;
         } else if self.index >= 0 && self.index < contents_len {
             let index = self.index;
-            self.index = 0;
             let curr_file_name = &self.contents[index as usize].file_name;
 
             for (i, entry) in contents.iter().enumerate() {

@@ -13,6 +13,7 @@ use joshuto;
 use joshuto::command;
 use joshuto::input;
 use joshuto::config::keymap;
+use joshuto::preview;
 use joshuto::structs;
 use joshuto::ui;
 use joshuto::window;
@@ -368,7 +369,11 @@ impl RenameFile {
             }
             match fs::rename(&path, &new_path) {
                 Ok(_) => {
-                    command::ReloadDirList::reload(context);
+                    let curr_tab = &mut context.tabs[context.tab_index];
+                    if let Some(s) = curr_tab.curr_list.as_mut() {
+                        s.update_contents(&context.config_t.sort_type).unwrap();
+                    }
+                    curr_tab.refresh_curr(&context.views.mid_win, &context.theme_t, context.config_t.scroll_offset);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
@@ -406,6 +411,7 @@ impl command::Runnable for RenameFile {
         if let Some(file_name) = file_name {
             if let Some(path) = path {
                 self.rename_file(&path, context, file_name);
+                preview::preview_file(context);
                 ncurses::doupdate();
             }
         }

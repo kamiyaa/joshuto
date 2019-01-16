@@ -7,6 +7,7 @@ use std::fmt;
 
 use joshuto;
 use joshuto::command;
+use joshuto::preview;
 
 #[derive(Clone, Debug)]
 pub struct ReloadDirList;
@@ -37,6 +38,7 @@ impl command::Runnable for ReloadDirList {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
         Self::reload(context);
+        preview::preview_file(context);
         ncurses::doupdate();
     }
 }
