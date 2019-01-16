@@ -114,9 +114,8 @@ pub fn open_with_entry(paths: &Vec<path::PathBuf>, entry: &mimetype::JoshutoMime
 
     let mut command = process::Command::new(program);
     if let Some(args) = entry.args.as_ref() {
-        let args_len = args.len();
-        for i in 1..args_len {
-            command.arg(args[i].clone());
+        for arg in args {
+            command.arg(arg.clone());
         }
     }
     for path in paths {
