@@ -126,9 +126,9 @@ command = "cd"
 args = [ "~/" ]
 
 [[mapcommand]]
-keys = [ "g", "b" ]
+keys = [ "g", "d" ]
 command = "cd"
-args = [ "~/builds" ]
+args = [ "~/Downloads" ]
 
 [[mapcommand]]
 keys = [ "/" ]
@@ -136,11 +136,11 @@ command = "search"
 
 
 [[mapcommand]]
-keys = [ "t", "t" ]
+keys = [ "T" ]
 command = "new_tab"
 
 [[mapcommand]]
-keys = [ "w", "w" ]
+keys = [ "W" ]
 command = "close_tab"
 
 [[mapcommand]]
@@ -149,14 +149,13 @@ command = "tab_switch"
 args = [ "-1" ]
 
 [[mapcommand]]
-keys = [ "]" ]
+keys = [ "Tab" ]
 command = "tab_switch"
 args = [ "1" ]
 
 [[mapcommand]]
-keys = [ "Tab" ]
-command = "tab_switch"
-args = [ "1" ]
+keys = [ "=" ]
+command = "set_mode"
 
 ## Features not yet implemented
 
