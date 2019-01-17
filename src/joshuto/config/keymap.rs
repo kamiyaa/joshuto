@@ -78,7 +78,7 @@ impl JoshutoKeymap {
                                 Some(config)
                             },
                             Err(e) => {
-                                eprintln!("{}", e);
+                                eprintln!("Error parsing keymap file: {}", e);
                                 process::exit(1);
                             },
                         }

@@ -94,7 +94,7 @@ impl JoshutoMimetype {
                                 Some(config)
                             },
                             Err(e) => {
-                                eprintln!("{}", e);
+                                eprintln!("Error parsing mimetype file: {}", e);
                                 process::exit(1);
                             },
                         }

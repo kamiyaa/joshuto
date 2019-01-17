@@ -135,13 +135,13 @@ fn resize_handler(context: &mut JoshutoContext)
 {
     ncurses::refresh();
 
+    ui::redraw_tab_view(&context.views.tab_win, &context);
     {
         let curr_tab = &mut context.tabs[context.tab_index];
         curr_tab.reload_contents(&context.config_t.sort_type);
         curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
             &context.username, &context.hostname);
     }
-    ui::redraw_tab_view(&context.views.tab_win, &context);
     preview::preview_file(context);
     ncurses::doupdate();
 }
