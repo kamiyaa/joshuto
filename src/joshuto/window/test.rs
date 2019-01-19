@@ -11,6 +11,13 @@ mod tests {
         page_state.update_page_state(index, win_rows, vec_len, offset);
         assert_eq!(0, page_state.start);
         assert_eq!(12, page_state.end);
+        let index = 30;
+        let win_rows = 37;
+        let vec_len = 12;
+        let offset = 6;
+        page_state.update_page_state(index, win_rows, vec_len, offset);
+        assert_eq!(0, page_state.start);
+        assert_eq!(12, page_state.end);
     }
     #[test]
     fn test_01() {
@@ -62,6 +69,20 @@ mod tests {
     fn test_small_size() {
         let mut page_state = JoshutoPageState::new();
         let index = 3;
+        let win_rows = 6;
+        let vec_len = 6;
+        let offset = 6;
+        page_state.update_page_state(index, win_rows, vec_len, offset);
+        assert_eq!(0, page_state.start);
+        assert_eq!(6, page_state.end);
+        let index = 0;
+        let win_rows = 6;
+        let vec_len = 6;
+        let offset = 6;
+        page_state.update_page_state(index, win_rows, vec_len, offset);
+        assert_eq!(0, page_state.start);
+        assert_eq!(6, page_state.end);
+        let index = 6;
         let win_rows = 6;
         let vec_len = 6;
         let offset = 6;

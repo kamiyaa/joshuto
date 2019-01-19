@@ -296,8 +296,8 @@ impl JoshutoTab {
     {
         self.refresh_curr(&views.mid_win, theme_t, scroll_offset);
         self.refresh_parent(&views.left_win, theme_t, scroll_offset);
-        self.refresh_file_status(&views.bot_win);
         self.refresh_path_status(&views.top_win, theme_t, username, hostname);
+        self.refresh_file_status(&views.bot_win);
     }
 
     pub fn refresh_curr(&mut self, win: &window::JoshutoPanel,
