@@ -21,26 +21,22 @@ impl DirHistory {
     pub fn populate_to_root(&mut self, pathbuf: &path::PathBuf,
        sort_type: &sort::SortType)
     {
-        let mut pathbuf = pathbuf.clone();
-
-        while pathbuf.parent() != None {
-            {
-                let parent = pathbuf.parent().unwrap().to_path_buf();
-                match structs::JoshutoDirList::new(parent.clone(), sort_type) {
+        let mut ancestors = pathbuf.ancestors();
+        if let Some(mut ancestor) = ancestors.next() {
+            while let Some(curr) = ancestors.next() {
+                match structs::JoshutoDirList::new(curr.to_path_buf().clone(), sort_type) {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.iter().enumerate() {
-                            if dirent.path == pathbuf {
+                            if dirent.path == ancestor {
                                 s.index = i as i32;
                                 break;
                             }
                         }
-                        self.map.insert(parent, s);
+                        self.map.insert(curr.to_path_buf(), s);
                     },
                     Err(e) => eprintln!("{}", e),
                 };
-            }
-            if pathbuf.pop() == false {
-                break;
+                ancestor = curr;
             }
         }
     }
@@ -74,8 +70,7 @@ impl DirHistory {
                 }
             },
             Entry::Vacant(entry) => {
-                if let Ok(s) = structs::JoshutoDirList::new(
-                            path.clone().to_path_buf(), &sort_type) {
+                if let Ok(s) = structs::JoshutoDirList::new(path.clone().to_path_buf(), &sort_type) {
                     entry.insert(s);
                 }
             },
