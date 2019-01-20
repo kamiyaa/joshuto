@@ -160,8 +160,12 @@ pub fn run(mut config_t: config::JoshutoConfig,
 
     resize_handler(&mut context);
 
-    loop {
-        let ch: i32 = ncurses::getch();
+    while let Some(ch) = ncurses::get_wch() {
+        let ch = match ch {
+                ncurses::WchResult::Char(s) => s as i32,
+                ncurses::WchResult::KeyCode(s) => s,
+            };
+
 
         if ch == ncurses::KEY_RESIZE {
             context.views.resize_views();
