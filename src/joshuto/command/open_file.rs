@@ -1,5 +1,6 @@
 extern crate fs_extra;
 extern crate ncurses;
+extern crate open;
 
 use std;
 use std::env;
@@ -118,15 +119,15 @@ impl OpenFile {
     {
         let mimetype_options = Self::get_options(&paths[0], &context.mimetype_t);
 
+        ncurses::savetty();
+        ncurses::endwin();
         if mimetype_options.len() > 0 {
-            ncurses::savetty();
-            ncurses::endwin();
             unix::open_with_entry(paths, &mimetype_options[0]);
-            ncurses::resetty();
-            ncurses::refresh();
         } else {
-            ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");
+            open::that(&paths[0]).unwrap();
         }
+        ncurses::resetty();
+        ncurses::refresh();
         ncurses::doupdate();
     }
 }
