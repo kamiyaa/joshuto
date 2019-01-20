@@ -22,6 +22,7 @@ pub struct OpenFile;
 impl OpenFile {
     pub fn new() -> Self { OpenFile }
     pub fn command() -> &'static str { "open_file" }
+
     pub fn get_options<'a>(path: &path::PathBuf, mimetype_t: &'a mimetype::JoshutoMimetype)
             -> Vec<&'a mimetype::JoshutoMimetypeEntry>
     {
@@ -57,24 +58,6 @@ impl OpenFile {
             Err(_) => {},
         }
         mimetype_options
-    }
-
-    pub fn open(paths: &Vec<path::PathBuf>, context: &mut joshuto::JoshutoContext)
-    {
-        if paths[0].is_file() {
-            Self::into_file(paths, context);
-        } else if paths[0].is_dir() {
-            Self::into_directory(&paths[0], context);
-            {
-                let curr_tab = &mut context.tabs[context.tab_index];
-                curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
-                    &context.username, &context.hostname);
-            }
-            preview::preview_file(context);
-            ncurses::doupdate();
-        } else {
-            ui::wprint_err(&context.views.bot_win, "Don't know how to open file :(");
-        }
     }
 
     fn into_directory(path: &path::PathBuf, context: &mut joshuto::JoshutoContext)
@@ -144,20 +127,39 @@ impl std::fmt::Display for OpenFile {
 impl command::Runnable for OpenFile {
     fn execute(&self, context: &mut joshuto::JoshutoContext)
     {
-        let paths: Option<Vec<path::PathBuf>> = match context.tabs[context.tab_index].curr_list.as_ref() {
-                Some(s) => command::collect_selected_paths(s),
-                None => None,
-            };
-        if let Some(paths) = paths {
-            if paths.len() > 0 {
-                Self::open(&paths, context);
-            } else {
-                ui::wprint_msg(&context.views.bot_win, "No files selected: 0");
+        let mut path: Option<path::PathBuf> = None;
+        if let Some(curr_list) = context.tabs[context.tab_index].curr_list.as_ref() {
+            if let Some(entry) = curr_list.get_curr_ref() {
+                if entry.path.is_dir() {
+                    path = Some(entry.path.clone());
+                }
             }
-        } else {
-            ui::wprint_msg(&context.views.bot_win, "No files selected: None");
         }
-        ncurses::doupdate();
+        if let Some(path) = path {
+            Self::into_directory(&path, context);
+            {
+                let curr_tab = &mut context.tabs[context.tab_index];
+                curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+                    &context.username, &context.hostname);
+            }
+            preview::preview_file(context);
+            ncurses::doupdate();
+        } else {
+            let paths: Option<Vec<path::PathBuf>> = match context.tabs[context.tab_index].curr_list.as_ref() {
+                    Some(s) => command::collect_selected_paths(s),
+                    None => None,
+                };
+            if let Some(paths) = paths {
+                if paths.len() > 0 {
+                    Self::into_file(&paths, context);
+                } else {
+                    ui::wprint_msg(&context.views.bot_win, "No files selected: 0");
+                }
+            } else {
+                ui::wprint_msg(&context.views.bot_win, "No files selected: None");
+            }
+            ncurses::doupdate();
+        }
     }
 }
 
