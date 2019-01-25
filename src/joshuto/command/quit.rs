@@ -1,9 +1,9 @@
 use std;
-use std::fmt;
 use std::process;
 
-use joshuto;
-use joshuto::command;
+use joshuto::context::JoshutoContext;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
 use joshuto::ui;
 
 #[derive(Clone, Debug)]
@@ -14,17 +14,17 @@ impl Quit {
     pub fn command() -> &'static str { "quit" }
 }
 
-impl command::JoshutoCommand for Quit {}
+impl JoshutoCommand for Quit {}
 
 impl std::fmt::Display for Quit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for Quit {
-    fn execute(&self, _: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for Quit {
+    fn execute(&self, _: &mut JoshutoContext)
     {
         ui::end_ncurses();
         process::exit(0);

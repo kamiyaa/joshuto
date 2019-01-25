@@ -1,13 +1,12 @@
-extern crate fs_extra;
 extern crate ncurses;
 
 use std;
-use std::fmt;
 use std::path;
 use std::process;
 
-use joshuto;
-use joshuto::command;
+use joshuto::context::JoshutoContext;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
 use joshuto::preview;
 use joshuto::ui;
 
@@ -25,14 +24,14 @@ impl ChangeDirectory {
     }
     pub const fn command() -> &'static str { "cd" }
 
-    pub fn change_directory(path: &path::PathBuf, context: &mut joshuto::JoshutoContext)
+    pub fn change_directory(path: &path::PathBuf, context: &mut JoshutoContext)
     {
         if !path.exists() {
             ui::wprint_err(&context.views.bot_win, "Error: No such file or directory");
             ncurses::doupdate();
             return;
         }
-        let curr_tab = &mut context.tabs[context.tab_index];
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
 
         let parent_list = curr_tab.parent_list.take();
         curr_tab.history.put_back(parent_list);
@@ -76,17 +75,17 @@ impl ChangeDirectory {
     }
 }
 
-impl command::JoshutoCommand for ChangeDirectory {}
+impl JoshutoCommand for ChangeDirectory {}
 
 impl std::fmt::Display for ChangeDirectory {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{} {}", Self::command(), self.path.to_str().unwrap())
     }
 }
 
-impl command::Runnable for ChangeDirectory {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for ChangeDirectory {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         Self::change_directory(&self.path, context);
         preview::preview_file(context);

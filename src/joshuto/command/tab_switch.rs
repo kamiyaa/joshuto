@@ -1,8 +1,8 @@
 use std;
-use std::fmt;
 
-use joshuto;
-use joshuto::command;
+use joshuto::context::JoshutoContext;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
 use joshuto::ui;
 
 #[derive(Clone, Debug)]
@@ -18,11 +18,11 @@ impl TabSwitch {
     }
     pub const fn command() -> &'static str { "tab_switch" }
 
-    pub fn tab_switch(new_index: i32, context: &mut joshuto::JoshutoContext)
+    pub fn tab_switch(new_index: i32, context: &mut JoshutoContext)
     {
-        context.tab_index = new_index as usize;
+        context.curr_tab_index = new_index as usize;
         {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             curr_tab.reload_contents(&context.config_t.sort_type);
             curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
                 &context.username, &context.hostname);
@@ -34,19 +34,19 @@ impl TabSwitch {
     }
 }
 
-impl command::JoshutoCommand for TabSwitch {}
+impl JoshutoCommand for TabSwitch {}
 
 impl std::fmt::Display for TabSwitch {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{} {}", Self::command(), self.movement)
     }
 }
 
-impl command::Runnable for TabSwitch {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for TabSwitch {
+    fn execute(&self, context: &mut JoshutoContext)
     {
-        let mut new_index = context.tab_index as i32 + self.movement;
+        let mut new_index = context.curr_tab_index as i32 + self.movement;
         let tab_len = context.tabs.len() as i32;
         while new_index < 0 {
             new_index = new_index + tab_len;

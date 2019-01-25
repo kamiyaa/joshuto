@@ -28,6 +28,7 @@ pub struct JoshutoColorTheme {
     pub colorpair: i16,
     pub bold: bool,
     pub underline: bool,
+    pub prefix: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
@@ -61,30 +62,35 @@ impl JoshutoRawTheme {
             colorpair: 2,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let selection = JoshutoColorTheme {
             colorpair: 3,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let directory = JoshutoColorTheme {
             colorpair: 4,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let link = JoshutoColorTheme {
             colorpair: 6,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let socket = JoshutoColorTheme {
             colorpair: 6,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let ext = self.ext.unwrap_or(HashMap::new());
@@ -126,30 +132,35 @@ impl JoshutoTheme {
             colorpair: 2,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let selection = JoshutoColorTheme {
             colorpair: 3,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let directory = JoshutoColorTheme {
             colorpair: 4,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let link = JoshutoColorTheme {
             colorpair: 6,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         let socket = JoshutoColorTheme {
             colorpair: 6,
             bold: true,
             underline: false,
+            prefix: None,
             };
 
         JoshutoTheme {

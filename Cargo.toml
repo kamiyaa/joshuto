@@ -18,7 +18,7 @@ open = "1.2.2"
 serde = "1.0.84"
 serde_derive = "1.0.84"
 toml = "0.4.10"
-wcwidth = "1.0.1"
+unicode-width = "0.1.5"
 whoami = "0.4.1"
 xdg = "2.2.0"
 

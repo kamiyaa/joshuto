@@ -2,88 +2,50 @@ extern crate ncurses;
 
 use std;
 use std::collections::HashMap;
-use std::sync;
-use std::thread;
 use std::time;
 
 pub mod config;
 
 mod command;
+mod context;
 mod history;
 mod input;
 mod preview;
 mod sort;
 mod structs;
+mod textfield;
 mod ui;
 mod unix;
 mod window;
 
+use self::context::JoshutoContext;
 use self::command::CommandKeybind;
 use self::command::JoshutoCommand;
 
-pub struct JoshutoContext<'a> {
-    pub username: String,
-    pub hostname: String,
-    pub threads: Vec<(sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)>,
-    pub views: window::JoshutoView,
-    pub tab_index: usize,
-    pub tabs: Vec<structs::JoshutoTab>,
-
-    pub config_t: &'a mut config::JoshutoConfig,
-    pub mimetype_t: &'a config::JoshutoMimetype,
-    pub theme_t: &'a config::JoshutoTheme,
-}
-
-impl<'a> JoshutoContext<'a> {
-    pub fn new(config_t: &'a mut config::JoshutoConfig,
-        mimetype_t: &'a config::JoshutoMimetype,
-        theme_t: &'a config::JoshutoTheme) -> Self
-    {
-        let username: String = whoami::username();
-        let hostname: String = whoami::hostname();
-
-        let views: window::JoshutoView =
-            window::JoshutoView::new(config_t.column_ratio);
-
-        JoshutoContext {
-            username,
-            hostname,
-            threads: Vec::new(),
-            views,
-            tab_index: 0,
-            tabs: Vec::new(),
-            config_t,
-            mimetype_t,
-            theme_t
-        }
-    }
-}
-
 fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
-    -> Option<&Box<dyn command::JoshutoCommand>>
+    -> Option<&Box<dyn JoshutoCommand>>
 {
     let (term_rows, term_cols) = ui::getmaxyx();
     let keymap_len = keymap.len();
 
-    let win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
-            ((term_rows - keymap_len as i32 - 2) as usize, 0));
+    let ch: i32;
+    {
+        let win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
+                ((term_rows - keymap_len as i32 - 2) as usize, 0));
 
-    let mut display_vec: Vec<String> = Vec::with_capacity(keymap_len);
-    for (key, val) in keymap {
-        display_vec.push(format!("  {}\t{}", *key as u8 as char, val));
+        let mut display_vec: Vec<String> = Vec::with_capacity(keymap_len);
+        for (key, val) in keymap {
+            display_vec.push(format!("  {}\t{}", *key as u8 as char, val));
+        }
+        display_vec.sort();
+
+        win.move_to_top();
+        ui::display_options(&win, &display_vec);
+        ncurses::doupdate();
+        ncurses::timeout(-1);
+
+        ch = ncurses::wgetch(win.win);
     }
-    display_vec.sort();
-
-    win.move_to_top();
-    ui::display_options(&win, &display_vec);
-    ncurses::doupdate();
-    ncurses::timeout(-1);
-
-    let ch: i32 = ncurses::getch();
-
-    win.destroy();
-    ncurses::update_panels();
-    ncurses::doupdate();
 
     if ch == config::keymap::ESCAPE {
         return None;
@@ -108,7 +70,6 @@ fn process_threads(context: &mut JoshutoContext)
     let mut something_finished = false;
     for i in 0..context.threads.len() {
         if let Ok(progress_info) = &context.threads[i].0.recv_timeout(wait_duration) {
-
             if progress_info.bytes_finished == progress_info.total_bytes {
                 let (_, chandle) = context.threads.remove(i);
                 chandle.join().unwrap();
@@ -124,9 +85,8 @@ fn process_threads(context: &mut JoshutoContext)
             }
         }
     }
-
     if something_finished {
-        command::ReloadDirList::reload(context);
+        // command::ReloadDirList::reload(context);
         ncurses::doupdate();
     }
 }
@@ -137,7 +97,7 @@ fn resize_handler(context: &mut JoshutoContext)
 
     ui::redraw_tab_view(&context.views.tab_win, &context);
     {
-        let curr_tab = &mut context.tabs[context.tab_index];
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab.reload_contents(&context.config_t.sort_type);
         curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
             &context.username, &context.hostname);
@@ -146,17 +106,14 @@ fn resize_handler(context: &mut JoshutoContext)
     ncurses::doupdate();
 }
 
-pub fn run(mut config_t: config::JoshutoConfig,
-    keymap_t: config::JoshutoKeymap,
-    mimetype_t: config::JoshutoMimetype,
-    theme_t: config::JoshutoTheme)
+pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap,
+        mimetype_t: config::JoshutoMimetype, theme_t: config::JoshutoTheme)
 {
     ui::init_ncurses(&theme_t);
     ncurses::doupdate();
 
-    let mut context = JoshutoContext::new(&mut config_t, &mimetype_t, &theme_t);
+    let mut context = context::JoshutoContext::new(config_t, mimetype_t, theme_t);
     ncurses::refresh();
-    command::NewTab::new_tab(&mut context);
 
     resize_handler(&mut context);
 

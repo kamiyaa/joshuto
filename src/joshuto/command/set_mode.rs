@@ -1,15 +1,14 @@
 extern crate ncurses;
 
 use std;
-use std::fmt;
 
-use joshuto;
-use joshuto::command;
-use joshuto::input;
-use joshuto::structs;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
+use joshuto::context::JoshutoContext;
+use joshuto::structs::JoshutoDirEntry;
+use joshuto::textfield::JoshutoTextField;
 use joshuto::ui;
 use joshuto::unix;
-use joshuto::window;
 
 #[derive(Clone, Debug)]
 pub struct SetMode;
@@ -18,26 +17,21 @@ impl SetMode {
     pub fn new() -> Self { SetMode }
     pub fn command() -> &'static str { "set_mode" }
 
-    pub fn set_mode(&self, entry: &mut structs::JoshutoDirEntry, start_str: String)
+    pub fn set_mode(&self, entry: &mut JoshutoDirEntry, start_str: String)
             -> bool
     {
         use std::os::unix::fs::PermissionsExt;
 
-        let (term_rows, term_cols) = ui::getmaxyx();
-
-        let win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
-        ncurses::keypad(win.win, true);
-
         const PROMPT: &str = ":set_mode ";
-        ncurses::waddstr(win.win, PROMPT);
 
-        win.move_to_top();
-        ncurses::doupdate();
+        let (term_rows, term_cols) = ui::getmaxyx();
+        let user_input: Option<String>;
+        {
+            let textfield = JoshutoTextField::new(1,
+                term_cols, (term_rows as usize - 1, 0), PROMPT.to_string());
 
-        let user_input = input::get_str_prepend(&win, (0, PROMPT.len() as i32), start_str);
-
-        win.destroy();
-        ncurses::update_panels();
+            user_input = textfield.readline_with_initial(&start_str, "");
+        }
         ncurses::doupdate();
 
         const LIBC_PERMISSION_VALS : [(u32, char) ; 9] = [
@@ -67,22 +61,22 @@ impl SetMode {
     }
 }
 
-impl command::JoshutoCommand for SetMode {}
+impl JoshutoCommand for SetMode {}
 
 impl std::fmt::Display for SetMode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for SetMode {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for SetMode {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut ok = false;
         {
             use std::os::unix::fs::PermissionsExt;
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             if let Some(s) = curr_tab.curr_list.as_mut() {
                 if let Some(file) = s.get_curr_mut() {
                     let mode = file.metadata.permissions.mode();
@@ -94,7 +88,7 @@ impl command::Runnable for SetMode {
             }
         }
         if ok {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             curr_tab.refresh_curr(&context.views.mid_win, &context.theme_t, context.config_t.scroll_offset);
             curr_tab.refresh_file_status(&context.views.bot_win);
         }

@@ -1,5 +1,5 @@
 extern crate ncurses;
-extern crate wcwidth;
+extern crate unicode_width;
 
 use std::collections::HashMap;
 
@@ -11,16 +11,16 @@ use joshuto::config::keymap::*;
 pub fn get_str(win: &window::JoshutoPanel,
         coord: (i32, i32)) -> Option<String>
 {
-    let user_input: Vec<(u8, char)> = Vec::new();
+    let user_input: Vec<(usize, char)> = Vec::new();
     get_str_prefill(win, coord, user_input, coord.1, 0)
 }
 
 pub fn get_str_prepend(win: &window::JoshutoPanel,
         coord: (i32, i32), start_str: String) -> Option<String>
 {
-    let mut user_input: Vec<(u8, char)> = Vec::new();
+    let mut user_input: Vec<(usize, char)> = Vec::new();
     for (_, ch) in start_str.char_indices() {
-        let char_len = wcwidth::char_width(ch).unwrap_or(1);
+        let char_len = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
         user_input.push((char_len, ch));
     }
     get_str_prefill(win, coord, user_input, coord.1, 0)
@@ -29,14 +29,14 @@ pub fn get_str_prepend(win: &window::JoshutoPanel,
 pub fn get_str_append(win: &window::JoshutoPanel,
         coord: (i32, i32), start_str: String) -> Option<String>
 {
-    let mut user_input: Vec<(u8, char)> = Vec::new();
+    let mut user_input: Vec<(usize, char)> = Vec::new();
 
     let mut ext_index: Option<usize> = None;
     for (i, ch) in start_str.char_indices() {
         if ch == '.' {
             ext_index = Some(i);
         }
-        let char_len = wcwidth::char_width(ch).unwrap_or(1);
+        let char_len = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
         user_input.push((char_len, ch));
     }
     let curr_index = match ext_index {
@@ -52,7 +52,7 @@ pub fn get_str_append(win: &window::JoshutoPanel,
 }
 
 pub fn get_str_prefill(win: &window::JoshutoPanel,
-        coord: (i32, i32), mut user_input: Vec<(u8, char)>,
+        coord: (i32, i32), mut user_input: Vec<(usize, char)>,
         mut curs_x: i32, mut curr_index: usize) -> Option<String>
 {
     ncurses::timeout(-1);
@@ -68,7 +68,11 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
                 ncurses::A_STANDOUT(), 0);
         ncurses::wrefresh(win.win);
 
-        let ch: i32 = ncurses::wgetch(win.win);
+        let ch = ncurses::wget_wch(win.win).unwrap();
+        let ch = match ch {
+                ncurses::WchResult::Char(s) => s as i32,
+                ncurses::WchResult::KeyCode(s) => s,
+            };
 
         if ch == keymap::ESCAPE {
             return None;
@@ -134,8 +138,8 @@ pub fn get_str_prefill(win: &window::JoshutoPanel,
         } else {
             let user_input_len = user_input.len();
 
-            let ch = ch as u8 as char;
-            let char_len = wcwidth::char_width(ch).unwrap_or(1);
+            let ch = std::char::from_u32(ch as u32).unwrap();
+            let char_len = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
             let size_ch = (char_len, ch);
 
             if curr_index == user_input_len {
@@ -287,6 +291,5 @@ pub fn initialize_default_keymap() -> HashMap<i32, command::CommandKeybind>
         let command = command::CommandKeybind::CompositeKeybind(subkeymap);
         keymaps.insert('m' as i32, command);
     }
-
     keymaps
 }

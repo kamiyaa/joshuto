@@ -1,15 +1,16 @@
 extern crate ncurses;
 
 use std;
-use std::fmt;
 use std::path;
 
-use joshuto;
-use joshuto::input;
+use joshuto::context::JoshutoContext;
+use joshuto::textfield::JoshutoTextField;
 use joshuto::ui;
-use joshuto::window;
 
-use joshuto::command;
+
+use joshuto::command::ReloadDirList;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
 
 #[derive(Clone, Debug)]
 pub struct NewDirectory;
@@ -19,46 +20,36 @@ impl NewDirectory {
     pub fn command() -> &'static str { "mkdir" }
 }
 
-impl command::JoshutoCommand for NewDirectory {}
+impl JoshutoCommand for NewDirectory {}
 
 impl std::fmt::Display for NewDirectory {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for NewDirectory {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for NewDirectory {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut term_rows: i32 = 0;
         let mut term_cols: i32 = 0;
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
-        ncurses::keypad(win.win, true);
+        let textfield = JoshutoTextField::new(1, term_cols, (term_rows as usize - 1, 0), ":mkdir ".to_string());
 
-        const PROMPT: &str = ":mkdir ";
-        ncurses::waddstr(win.win, PROMPT);
-
-        win.move_to_top();
-        ncurses::doupdate();
-
-        if let Some(user_input) = input::get_str(&win, (0, PROMPT.len() as i32)) {
+        if let Some(user_input) = textfield.readline_with_initial("", "") {
             let path = path::PathBuf::from(user_input);
 
             match std::fs::create_dir_all(&path) {
                 Ok(_) => {
-                    command::ReloadDirList::reload(context);
+                    ReloadDirList::reload(context);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
                 },
             }
         }
-
-        win.destroy();
-        ncurses::update_panels();
         ncurses::doupdate();
     }
 }

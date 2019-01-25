@@ -1,22 +1,22 @@
 extern crate fs_extra;
 extern crate ncurses;
-extern crate wcwidth;
 
 use std;
-use std::fmt;
 use std::fs;
 use std::path;
 use std::sync;
 use std::thread;
 
-use joshuto;
+use joshuto::context::JoshutoContext;
 use joshuto::command;
-use joshuto::input;
+use joshuto::command::ProgressInfo;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
 use joshuto::config::keymap;
 use joshuto::preview;
-use joshuto::structs;
+use joshuto::structs::JoshutoDirList;
+use joshuto::textfield;
 use joshuto::ui;
-use joshuto::window;
 
 lazy_static! {
     static ref selected_files: sync::Mutex<Vec<path::PathBuf>> = sync::Mutex::new(vec![]);
@@ -29,7 +29,7 @@ fn set_file_op(operation: FileOp)
     *data = operation;
 }
 
-fn repopulated_selected_files(dirlist: &structs::JoshutoDirList) -> bool
+fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool
 {
     if let Some(contents) = command::collect_selected_paths(dirlist) {
         let mut data = selected_files.lock().unwrap();
@@ -51,12 +51,6 @@ pub struct CopyOptions {
 }
 
 #[derive(Clone, Debug)]
-pub struct ProgressInfo {
-    pub bytes_finished: u64,
-    pub total_bytes: u64,
-}
-
-#[derive(Clone, Debug)]
 pub struct CutFiles;
 
 impl CutFiles {
@@ -64,19 +58,19 @@ impl CutFiles {
     pub fn command() -> &'static str { "cut_files" }
 }
 
-impl command::JoshutoCommand for CutFiles {}
+impl JoshutoCommand for CutFiles {}
 
 impl std::fmt::Display for CutFiles {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for CutFiles {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for CutFiles {
+    fn execute(&self, context: &mut JoshutoContext)
     {
-        let curr_tab = &context.tabs[context.tab_index];
+        let curr_tab = &context.tabs[context.curr_tab_index];
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
                 set_file_op(FileOp::Cut);
@@ -93,19 +87,19 @@ impl CopyFiles {
     pub fn command() -> &'static str { "copy_files" }
 }
 
-impl command::JoshutoCommand for CopyFiles {}
+impl JoshutoCommand for CopyFiles {}
 
 impl std::fmt::Display for CopyFiles {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for CopyFiles {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for CopyFiles {
+    fn execute(&self, context: &mut JoshutoContext)
     {
-        let curr_tab = &context.tabs[context.tab_index];
+        let curr_tab = &context.tabs[context.curr_tab_index];
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
                 set_file_op(FileOp::Copy);
@@ -220,28 +214,28 @@ impl PasteFiles {
     }
 }
 
-impl command::JoshutoCommand for PasteFiles {}
+impl JoshutoCommand for PasteFiles {}
 
 impl std::fmt::Display for PasteFiles {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{} overwrite={}", Self::command(), self.options.overwrite)
     }
 }
 
 impl std::fmt::Debug for PasteFiles {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for PasteFiles {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for PasteFiles {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let file_operation = fileop.lock().unwrap();
 
-        let curr_tab = &mut context.tabs[context.tab_index];
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
         let cprocess = match *file_operation {
                 FileOp::Copy => self.copy(&curr_tab.curr_path),
                 FileOp::Cut => self.cut(&curr_tab.curr_path),
@@ -277,17 +271,17 @@ impl DeleteFiles {
     }
 }
 
-impl command::JoshutoCommand for DeleteFiles {}
+impl JoshutoCommand for DeleteFiles {}
 
 impl std::fmt::Display for DeleteFiles {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for DeleteFiles {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for DeleteFiles {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         ui::wprint_msg(&context.views.bot_win, "Delete selected files? (Y/n)");
         ncurses::timeout(-1);
@@ -295,19 +289,19 @@ impl command::Runnable for DeleteFiles {
 
         let ch: i32 = ncurses::getch();
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-            if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
+            if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
                 if let Some(paths) = command::collect_selected_paths(s) {
                     Self::remove_files(paths);
                 }
             }
             ui::wprint_msg(&context.views.bot_win, "Deleted files");
 
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             curr_tab.reload_contents(&context.config_t.sort_type);
             curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
                 &context.username, &context.hostname);
         } else {
-            let curr_tab = &context.tabs[context.tab_index];
+            let curr_tab = &context.tabs[context.curr_tab_index];
             curr_tab.refresh_file_status(&context.views.bot_win);
             curr_tab.refresh_path_status(&context.views.top_win,
                     &context.theme_t, &context.username, &context.hostname);
@@ -337,27 +331,31 @@ impl RenameFile {
     }
     pub fn command() -> &'static str { "rename_file" }
 
-    pub fn rename_file(&self, path: &path::PathBuf, context: &mut joshuto::JoshutoContext, start_str: String)
+    pub fn rename_file(&self, path: &path::PathBuf, context: &mut JoshutoContext, start_str: String)
     {
-        let (term_rows, term_cols) = ui::getmaxyx();
-
-        let win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
-        ncurses::keypad(win.win, true);
-
         const PROMPT: &str = ":rename_file ";
-        ncurses::waddstr(win.win, PROMPT);
+        let (term_rows, term_cols) = ui::getmaxyx();
+        let user_input: Option<String>;
+        {
+            let textfield = textfield::JoshutoTextField::new(1,
+                term_cols, (term_rows as usize - 1, 0), PROMPT.to_string());
 
-        win.move_to_top();
-        ncurses::doupdate();
-
-        let user_input: Option<String> = match self.method {
-            RenameFileMethod::Append => input::get_str_append(&win, (0, PROMPT.len() as i32), start_str),
-            RenameFileMethod::Prepend => input::get_str_prepend(&win, (0, PROMPT.len() as i32), start_str),
-            RenameFileMethod::Overwrite => input::get_str(&win, (0, PROMPT.len() as i32)),
+            user_input = match self.method {
+                RenameFileMethod::Append => {
+                    if let Some(ext) = start_str.rfind('.') {
+                        textfield.readline_with_initial(&start_str[0..ext], &start_str[ext..])
+                    } else {
+                        textfield.readline_with_initial(&start_str, "")
+                    }
+                },
+                RenameFileMethod::Prepend => {
+                    textfield.readline_with_initial("", &start_str)
+                },
+                RenameFileMethod::Overwrite => {
+                    textfield.readline_with_initial("", "")
+                }
             };
-
-        win.destroy();
-        ncurses::update_panels();
+        }
 
         if let Some(s) = user_input {
             let mut new_path = path.parent().unwrap().to_path_buf();
@@ -369,39 +367,40 @@ impl RenameFile {
             }
             match fs::rename(&path, &new_path) {
                 Ok(_) => {
-                    let curr_tab = &mut context.tabs[context.tab_index];
-                    if let Some(s) = curr_tab.curr_list.as_mut() {
-                        s.update_contents(&context.config_t.sort_type).unwrap();
+                    let curr_tab = &mut context.tabs[context.curr_tab_index];
+                    let path_clone = curr_tab.curr_list.as_ref().unwrap().path.clone();
+                    if let Ok(s) = JoshutoDirList::new(path_clone, &context.config_t.sort_type) {
+                        curr_tab.curr_list = Some(s);
+                        curr_tab.refresh_curr(&context.views.mid_win, &context.theme_t, context.config_t.scroll_offset);
                     }
-                    curr_tab.refresh_curr(&context.views.mid_win, &context.theme_t, context.config_t.scroll_offset);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
                 },
             }
         } else {
-            let curr_tab = &context.tabs[context.tab_index];
+            let curr_tab = &context.tabs[context.curr_tab_index];
             curr_tab.refresh_file_status(&context.views.bot_win);
         }
     }
 }
 
-impl command::JoshutoCommand for RenameFile {}
+impl JoshutoCommand for RenameFile {}
 
 impl std::fmt::Display for RenameFile {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for RenameFile {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for RenameFile {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut path: Option<path::PathBuf> = None;
         let mut file_name: Option<String> = None;
 
-        if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
+        if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(s) = s.get_curr_ref() {
                 path = Some(s.path.clone());
                 file_name = Some(s.file_name_as_string.clone());

@@ -1,11 +1,10 @@
-extern crate fs_extra;
 extern crate ncurses;
 
 use std;
-use std::fmt;
 
-use joshuto;
-use joshuto::command;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
+use joshuto::context::JoshutoContext;
 use joshuto::preview;
 
 #[derive(Clone, Debug)]
@@ -22,10 +21,10 @@ impl CursorMove {
     }
     pub fn command() -> &'static str { "cursor_move" }
 
-    pub fn cursor_move(new_index: i32, context: &mut joshuto::JoshutoContext)
+    pub fn cursor_move(new_index: i32, context: &mut JoshutoContext)
     {
         {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
 
             if let Some(ref mut curr_list) = curr_tab.curr_list {
                 let curr_index = curr_list.index;
@@ -55,22 +54,22 @@ impl CursorMove {
     }
 }
 
-impl command::JoshutoCommand for CursorMove {}
+impl JoshutoCommand for CursorMove {}
 
 impl std::fmt::Display for CursorMove {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{} {}", Self::command(), self.movement)
     }
 }
 
-impl command::Runnable for CursorMove {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for CursorMove {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut movement: Option<i32> = None;
 
         {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
                 let curr_index = curr_list.index;
                 movement = Some(curr_index + self.movement);
@@ -90,22 +89,22 @@ impl CursorMovePageUp {
     pub fn command() -> &'static str { "cursor_move_page_up" }
 }
 
-impl command::JoshutoCommand for CursorMovePageUp {}
+impl JoshutoCommand for CursorMovePageUp {}
 
 impl std::fmt::Display for CursorMovePageUp {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for CursorMovePageUp {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for CursorMovePageUp {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut movement: Option<i32> = None;
 
         {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
                 let curr_index = curr_list.index;
                 if curr_index <= 0 {
@@ -130,22 +129,22 @@ impl CursorMovePageDown {
     pub fn command() -> &'static str { "cursor_move_page_down" }
 }
 
-impl command::JoshutoCommand for CursorMovePageDown {}
+impl JoshutoCommand for CursorMovePageDown {}
 
 impl std::fmt::Display for CursorMovePageDown {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for CursorMovePageDown {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for CursorMovePageDown {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut movement: Option<i32> = None;
 
         {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
                 let curr_index = curr_list.index;
                 let dir_len = curr_list.contents.len();
@@ -171,22 +170,22 @@ impl CursorMoveHome {
     pub fn command() -> &'static str { "cursor_move_home" }
 }
 
-impl command::JoshutoCommand for CursorMoveHome {}
+impl JoshutoCommand for CursorMoveHome {}
 
 impl std::fmt::Display for CursorMoveHome {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for CursorMoveHome {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for CursorMoveHome {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut movement: Option<i32> = None;
 
         {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
                 let curr_index = curr_list.index;
                 if curr_index <= 0 {
@@ -209,22 +208,22 @@ impl CursorMoveEnd {
     pub fn command() -> &'static str { "cursor_move_end" }
 }
 
-impl command::JoshutoCommand for CursorMoveEnd {}
+impl JoshutoCommand for CursorMoveEnd {}
 
 impl std::fmt::Display for CursorMoveEnd {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(f, "{}", Self::command())
     }
 }
 
-impl command::Runnable for CursorMoveEnd {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for CursorMoveEnd {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut movement: Option<i32> = None;
 
         {
-            let curr_tab = &mut context.tabs[context.tab_index];
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
                 let curr_index = curr_list.index;
                 let dir_len = curr_list.contents.len();

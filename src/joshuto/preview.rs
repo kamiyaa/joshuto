@@ -5,12 +5,13 @@ extern crate mime;
 use std::path;
 use std::process;
 
-use joshuto;
+use joshuto::context::JoshutoContext;
 use joshuto::ui;
 use joshuto::window;
 
-pub fn preview_file(context: &mut joshuto::JoshutoContext)
+pub fn preview_file(context: &mut JoshutoContext)
 {
+/*
     let curr_tab = &mut context.tabs[context.tab_index];
 
     if let Some(ref curr_list) = curr_tab.curr_list {
@@ -65,6 +66,7 @@ pub fn preview_file(context: &mut joshuto::JoshutoContext)
             ncurses::wnoutrefresh(context.views.right_win.win);
         }
     }
+*/
 }
 
 pub fn text_preview(win: &window::JoshutoPanel, path: &path::PathBuf)

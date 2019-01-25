@@ -4,11 +4,12 @@ extern crate open;
 
 use std;
 use std::env;
-use std::fmt;
 use std::path;
 
-use joshuto;
+use joshuto::context::JoshutoContext;
 use joshuto::command;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
 use joshuto::input;
 use joshuto::config::mimetype;
 use joshuto::preview;
@@ -60,9 +61,9 @@ impl OpenFile {
         mimetype_options
     }
 
-    fn into_directory(path: &path::PathBuf, context: &mut joshuto::JoshutoContext)
+    fn into_directory(path: &path::PathBuf, context: &mut JoshutoContext)
     {
-        let curr_tab = &mut context.tabs[context.tab_index];
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
 
         match env::set_current_dir(path) {
             Ok(_) => {},
@@ -98,7 +99,7 @@ impl OpenFile {
         }
     }
 
-    fn into_file(paths: &Vec<path::PathBuf>, context: &joshuto::JoshutoContext)
+    fn into_file(paths: &Vec<path::PathBuf>, context: &JoshutoContext)
     {
         let mimetype_options = Self::get_options(&paths[0], &context.mimetype_t);
 
@@ -115,20 +116,20 @@ impl OpenFile {
     }
 }
 
-impl command::JoshutoCommand for OpenFile {}
+impl JoshutoCommand for OpenFile {}
 
 impl std::fmt::Display for OpenFile {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for OpenFile {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for OpenFile {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         let mut path: Option<path::PathBuf> = None;
-        if let Some(curr_list) = context.tabs[context.tab_index].curr_list.as_ref() {
+        if let Some(curr_list) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(entry) = curr_list.get_curr_ref() {
                 if entry.path.is_dir() {
                     path = Some(entry.path.clone());
@@ -138,14 +139,14 @@ impl command::Runnable for OpenFile {
         if let Some(path) = path {
             Self::into_directory(&path, context);
             {
-                let curr_tab = &mut context.tabs[context.tab_index];
+                let curr_tab = &mut context.tabs[context.curr_tab_index];
                 curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
                     &context.username, &context.hostname);
             }
             preview::preview_file(context);
             ncurses::doupdate();
         } else {
-            let paths: Option<Vec<path::PathBuf>> = match context.tabs[context.tab_index].curr_list.as_ref() {
+            let paths: Option<Vec<path::PathBuf>> = match context.tabs[context.curr_tab_index].curr_list.as_ref() {
                     Some(s) => command::collect_selected_paths(s),
                     None => None,
                 };
@@ -172,35 +173,34 @@ impl OpenFileWith {
 
     pub fn open_with(paths: &Vec<path::PathBuf>, mimetype_t: &mimetype::JoshutoMimetype)
     {
-        let mut term_rows: i32 = 0;
-        let mut term_cols: i32 = 0;
-        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-
         let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0], mimetype_t);
+        let user_input: Option<String>;
+        {
+            let mut term_rows: i32 = 0;
+            let mut term_cols: i32 = 0;
+            ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
 
-        let option_size = mimetype_options.len();
-        let win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
-                (term_rows as usize - option_size - 2, 0));
-        ncurses::keypad(win.win, true);
+            let option_size = mimetype_options.len();
+            let win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
+                    (term_rows as usize - option_size - 2, 0));
+            ncurses::keypad(win.win, true);
 
-        let mut display_vec: Vec<String> = Vec::with_capacity(option_size);
-        for (i, val) in mimetype_options.iter().enumerate() {
-            display_vec.push(format!("  {}\t{}", i, val));
+            let mut display_vec: Vec<String> = Vec::with_capacity(option_size);
+            for (i, val) in mimetype_options.iter().enumerate() {
+                display_vec.push(format!("  {}\t{}", i, val));
+            }
+            display_vec.sort();
+
+            win.move_to_top();
+            ui::display_options(&win, &display_vec);
+            ncurses::doupdate();
+
+            ncurses::wmove(win.win, option_size as i32 + 1, 0);
+            const PROMPT: &str = ":open_with ";
+            ncurses::waddstr(win.win, PROMPT);
+
+            user_input = input::get_str(&win, (option_size as i32 + 1, PROMPT.len() as i32));
         }
-        display_vec.sort();
-
-        win.move_to_top();
-        ui::display_options(&win, &display_vec);
-        ncurses::doupdate();
-
-        ncurses::wmove(win.win, option_size as i32 + 1, 0);
-        const PROMPT: &str = ":open_with ";
-        ncurses::waddstr(win.win, PROMPT);
-
-        let user_input = input::get_str(&win, (option_size as i32 + 1, PROMPT.len() as i32));
-
-        win.destroy();
-        ncurses::update_panels();
         ncurses::doupdate();
 
         if let Some(user_input) = user_input {
@@ -230,19 +230,19 @@ impl OpenFileWith {
     }
 }
 
-impl command::JoshutoCommand for OpenFileWith {}
+impl JoshutoCommand for OpenFileWith {}
 
 impl std::fmt::Display for OpenFileWith {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for OpenFileWith {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for OpenFileWith {
+    fn execute(&self, context: &mut JoshutoContext)
     {
-        if let Some(s) = context.tabs[context.tab_index].curr_list.as_ref() {
+        if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(paths) = command::collect_selected_paths(s) {
                 Self::open_with(&paths, &context.mimetype_t);
             }

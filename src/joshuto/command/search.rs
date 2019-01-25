@@ -1,13 +1,13 @@
 extern crate ncurses;
 
 use std;
-use std::fmt;
 
-use joshuto;
-use joshuto::input;
-use joshuto::window;
-
-use joshuto::command;
+use joshuto::command::CursorMove;
+use joshuto::command::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
+use joshuto::context::JoshutoContext;
+use joshuto::textfield::JoshutoTextField;
+use joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct Search;
@@ -17,37 +17,35 @@ impl Search {
     pub fn command() -> &'static str { "search" }
 }
 
-impl command::JoshutoCommand for Search {}
+impl JoshutoCommand for Search {}
 
 impl std::fmt::Display for Search {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for Search {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for Search {
+    fn execute(&self, context: &mut JoshutoContext)
     {
-        let mut term_rows: i32 = 0;
-        let mut term_cols: i32 = 0;
-        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
-
-        let win = window::JoshutoPanel::new(1, term_cols, (term_rows as usize - 1, 0));
-        ncurses::keypad(win.win, true);
-
         const PROMPT: &str = ":search ";
-        ncurses::waddstr(win.win, PROMPT);
+        let (term_rows, term_cols) = ui::getmaxyx();
+        let user_input: Option<String>;
+        {
+            let textfield = JoshutoTextField::new(1,
+                term_cols, (term_rows as usize - 1, 0), PROMPT.to_string());
 
-        win.move_to_top();
+            user_input = textfield.readline_with_initial("", "");
+        }
         ncurses::doupdate();
 
         let mut index: Option<i32> = None;
 
-        if let Some(user_input) = input::get_str(&win, (0, PROMPT.len() as i32)) {
+        if let Some(user_input) = user_input {
             let user_input = user_input.to_lowercase();
 
-            let curr_tab = &context.tabs[context.tab_index];
+            let curr_tab = &context.tabs[context.curr_tab_index];
 
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
                 let offset = curr_list.index as usize;
@@ -63,11 +61,8 @@ impl command::Runnable for Search {
         }
 
         if let Some(index) = index {
-            command::CursorMove::cursor_move(index, context);
+            CursorMove::cursor_move(index, context);
         }
-
-        win.destroy();
-        ncurses::update_panels();
         ncurses::doupdate();
     }
 }

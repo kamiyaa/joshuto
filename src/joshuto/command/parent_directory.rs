@@ -1,10 +1,10 @@
 extern crate ncurses;
 
 use std;
-use std::fmt;
 
-use joshuto;
-use joshuto::command;
+use joshuto::context::JoshutoContext;
+use joshuto::JoshutoCommand;
+use joshuto::command::JoshutoRunnable;
 use joshuto::preview;
 use joshuto::ui;
 
@@ -15,16 +15,16 @@ impl ParentDirectory {
     pub fn new() -> Self { ParentDirectory }
     pub fn command() -> &'static str { "parent_directory" }
 
-    pub fn parent_directory(context: &mut joshuto::JoshutoContext)
+    pub fn parent_directory(context: &mut JoshutoContext)
     {
-        if context.tabs[context.tab_index].curr_path.pop() == false {
+        if context.curr_tab_mut().curr_path.pop() == false {
             return;
         }
 
-        match std::env::set_current_dir(&context.tabs[context.tab_index].curr_path) {
+        match std::env::set_current_dir(&context.curr_tab_ref().curr_path) {
             Ok(_) => {
                 {
-                    let curr_tab = &mut context.tabs[context.tab_index];
+                    let curr_tab = &mut context.tabs[context.curr_tab_index];
 
                     let curr_list = curr_tab.curr_list.take();
                     curr_tab.history.put_back(curr_list);
@@ -59,17 +59,17 @@ impl ParentDirectory {
     }
 }
 
-impl command::JoshutoCommand for ParentDirectory {}
+impl JoshutoCommand for ParentDirectory {}
 
 impl std::fmt::Display for ParentDirectory {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl command::Runnable for ParentDirectory {
-    fn execute(&self, context: &mut joshuto::JoshutoContext)
+impl JoshutoRunnable for ParentDirectory {
+    fn execute(&self, context: &mut JoshutoContext)
     {
         Self::parent_directory(context);
     }

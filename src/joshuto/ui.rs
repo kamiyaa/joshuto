@@ -1,9 +1,10 @@
 extern crate ncurses;
+extern crate unicode_width;
 
 use std::fs;
 use std::time;
 
-use joshuto;
+use joshuto::context::JoshutoContext;
 use joshuto::structs;
 use joshuto::config;
 use joshuto::unix;
@@ -99,18 +100,17 @@ pub fn wprint_empty(win: &window::JoshutoPanel, msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-fn wprint_file_name(win: ncurses::WINDOW, file_name: &String,
+fn wprint_file_name(win: ncurses::WINDOW, file_name: &str,
         coord: (i32, i32), mut space_avail: usize)
 {
-    let name_visual_space = wcwidth::str_width(file_name).unwrap_or(space_avail as usize);
+    let name_visual_space = unicode_width::UnicodeWidthStr::width(file_name);
     if name_visual_space < space_avail {
         ncurses::waddstr(win, &file_name);
         return;
     }
-
     if let Some(ext) = file_name.rfind('.') {
         let extension: &str = &file_name[ext..];
-        let ext_len = wcwidth::str_width(extension).unwrap_or(extension.len());
+        let ext_len = unicode_width::UnicodeWidthStr::width(extension);
         if space_avail > ext_len {
             space_avail = space_avail - ext_len;
             ncurses::mvwaddstr(win, coord.0, space_avail as i32, &extension);
@@ -130,7 +130,7 @@ fn wprint_file_name(win: ncurses::WINDOW, file_name: &String,
             trim_index = index;
             break;
         }
-        total = total + wcwidth::char_width(ch).unwrap_or(2) as usize;
+        total = total + unicode_width::UnicodeWidthChar::width(ch).unwrap_or(2);
     }
     ncurses::waddstr(win, &file_name[..trim_index]);
     ncurses::waddstr(win, "…");
@@ -155,9 +155,7 @@ pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
 {
     let mut space_avail: usize = win.cols as usize - 1;
     ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
-    if file.path.is_dir() {
-
-    } else {
+    if !file.path.is_dir() {
         let file_size_string = file_size_to_string(file.metadata.len as f64);
         if space_avail > file_size_string.len() {
             space_avail = space_avail - file_size_string.len();
@@ -205,7 +203,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
     }
 }
 
-pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &joshuto::JoshutoContext)
+pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext)
 {
     let tab_len = context.tabs.len();
     if tab_len == 1 {
@@ -213,7 +211,7 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &joshuto::JoshutoCon
     } else {
         ncurses::wmove(win.win, 0, 0);
         ncurses::wattron(win.win, ncurses::A_BOLD());
-        ncurses::waddstr(win.win, format!("{} {}", context.tab_index + 1, tab_len).as_str());
+        ncurses::waddstr(win.win, format!("{} {}", context.curr_tab_index + 1, tab_len).as_str());
         ncurses::wattroff(win.win, ncurses::A_BOLD());
     }
     ncurses::wnoutrefresh(win.win);

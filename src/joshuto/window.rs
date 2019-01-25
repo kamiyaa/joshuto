@@ -7,6 +7,12 @@ use joshuto::ui;
 #[cfg(test)]
 mod test;
 
+/*
+lazy_static! {
+    static ref 
+}
+*/
+
 #[derive(Clone, Debug)]
 pub struct JoshutoPageState {
     pub start: usize,
@@ -78,6 +84,15 @@ pub struct JoshutoPanel {
     pub coords: (usize, usize)
 }
 
+impl std::ops::Drop for JoshutoPanel {
+    fn drop(&mut self)
+    {
+        ncurses::del_panel(self.panel);
+        ncurses::delwin(self.win);
+        ncurses::update_panels();
+    }
+}
+
 impl JoshutoPanel {
     pub fn new(rows: i32, cols: i32, coords: (usize, usize)) -> Self
     {
@@ -99,12 +114,6 @@ impl JoshutoPanel {
     #[allow(dead_code)]
     pub fn move_to_bottom(&self) { ncurses::bottom_panel(self.panel); }
     pub fn queue_for_refresh(&self) { ncurses::wnoutrefresh(self.win); }
-
-    pub fn destroy(&self)
-    {
-        ncurses::del_panel(self.panel);
-        ncurses::delwin(self.win);
-    }
 
     fn non_empty_dir_checks(&self, dirlist: &mut structs::JoshutoDirList, scroll_offset: usize) -> bool
     {
@@ -234,19 +243,8 @@ impl JoshutoView {
         }
     }
 
-    fn destroy(&self)
-    {
-        self.top_win.destroy();
-        self.bot_win.destroy();
-        self.tab_win.destroy();
-        self.left_win.destroy();
-        self.mid_win.destroy();
-        self.right_win.destroy();
-    }
-
     pub fn resize_views(&mut self)
     {
-        self.destroy();
         let new_view = Self::new(self.win_ratio);
 
         self.top_win = new_view.top_win;

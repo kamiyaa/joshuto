@@ -7,8 +7,9 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path;
 
-use joshuto;
+use joshuto::context::JoshutoContext;
 use joshuto::structs;
+
 
 mod quit;
 pub use self::quit::Quit;
@@ -33,7 +34,6 @@ pub use self::cursor_move::CursorMoveHome;
 pub use self::cursor_move::CursorMoveEnd;
 
 mod file_operation;
-pub use self::file_operation::ProgressInfo;
 pub use self::file_operation::CutFiles;
 pub use self::file_operation::CopyFiles;
 pub use self::file_operation::PasteFiles;
@@ -70,11 +70,11 @@ pub enum CommandKeybind {
     CompositeKeybind(HashMap<i32, CommandKeybind>),
 }
 
-pub trait Runnable {
-    fn execute(&self, context: &mut joshuto::JoshutoContext);
+pub trait JoshutoRunnable {
+    fn execute(&self, context: &mut JoshutoContext);
 }
 
-pub trait JoshutoCommand: Runnable + std::fmt::Display + std::fmt::Debug {}
+pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
 
 impl std::fmt::Display for CommandKeybind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -83,6 +83,12 @@ impl std::fmt::Display for CommandKeybind {
             CommandKeybind::CompositeKeybind(_) => write!(f, "..."),
         }
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct ProgressInfo {
+    pub bytes_finished: u64,
+    pub total_bytes: u64,
 }
 
 pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn JoshutoCommand>>
