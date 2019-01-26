@@ -5,6 +5,13 @@ use std::ffi::CStr;
 
 mod ll;
 
+pub const WRDE_DOOFFS: i32 = (1 << 0);
+pub const WRDE_APPEND: i32 = (1 << 1);
+pub const WRDE_NOCMD: i32 =  (1 << 2);
+pub const WRDE_REUSE: i32 = (1 << 3);
+pub const WRDE_SHOWERR: i32 = (1 << 4);
+pub const WRDE_UNDEF: i32 = (1 << 5);
+
 trait ToCStr {
     fn to_c_str(&self) -> CString;
 }
@@ -23,7 +30,6 @@ pub struct Wordexp<'a> {
 }
 
 impl<'a> Wordexp<'a> {
-
     pub fn new(wordexp_ref: ll::wordexp_t) -> Self
     {
         let we_wordc: usize = wordexp_ref.we_wordc as usize;
@@ -69,7 +75,28 @@ impl<'a> std::iter::Iterator for Wordexp<'a> {
     }
 }
 
-pub fn wordexp<'a>(s: &str, flags: i32) -> Wordexp
+#[derive(Clone, Debug)]
+pub struct WordexpError {
+    pub error_type: i32,
+}
+
+impl WordexpError {
+    pub fn new(error_type: i32) -> Self
+    {
+        WordexpError { error_type }
+    }
+}
+
+impl std::fmt::Display for WordexpError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
+    {
+        write!(f, "{}", self.error_type)
+    }
+}
+
+impl std::error::Error for WordexpError {}
+
+pub fn wordexp<'a>(s: &str, flags: i32) -> Result<Wordexp, WordexpError>
 {
     let mut wordexp = ll::wordexp_t {
         we_wordc: 0,
@@ -77,9 +104,12 @@ pub fn wordexp<'a>(s: &str, flags: i32) -> Wordexp
         we_offs: 0,
         };
 
+    let result: i32;
     unsafe {
-        ll::wordexp(s.to_c_str().as_ptr(), &mut wordexp, flags);
+        result = ll::wordexp(s.to_c_str().as_ptr(), &mut wordexp, flags);
+        match result {
+            0 => Ok(Wordexp::new(wordexp)),
+            _ => Err(WordexpError::new(result)),
+        }
     }
-
-    Wordexp::new(wordexp)
 }

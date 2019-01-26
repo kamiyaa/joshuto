@@ -96,10 +96,16 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
     match command {
         "cd" => {
             if let Some(args) = args {
-                let exp_strs = wordexp::wordexp(args[0].as_str(), 0);
-                for exp_str in exp_strs {
-                    let path = path::PathBuf::from(exp_str);
-                    return Some(Box::new(self::ChangeDirectory::new(path)));
+                match wordexp::wordexp(args[0].as_str(), 0) {
+                    Ok(exp_strs) => {
+                        for exp_str in exp_strs {
+                            let path = path::PathBuf::from(exp_str);
+                            return Some(Box::new(self::ChangeDirectory::new(path)));
+                        }
+                    },
+                    Err(e) => {
+                        eprintln!("Error: Failed to parse {:?}", args);
+                    }
                 }
             }
             return None;
