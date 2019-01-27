@@ -28,15 +28,17 @@ pub struct JoshutoColorTheme {
     pub colorpair: i16,
     pub bold: bool,
     pub underline: bool,
-    pub prefix: Option<String>
+    pub prefix: Option<String>,
+    pub prefixsize: Option<usize>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawTheme {
     colorpair: Option<Vec<JoshutoColorPair>>,
     selection: Option<JoshutoColorTheme>,
-    directory: Option<JoshutoColorTheme>,
     executable: Option<JoshutoColorTheme>,
+    regular: Option<JoshutoColorTheme>,
+    directory: Option<JoshutoColorTheme>,
     link: Option<JoshutoColorTheme>,
     socket: Option<JoshutoColorTheme>,
     ext: Option<HashMap<String, JoshutoColorTheme>>,
@@ -58,45 +60,59 @@ impl JoshutoRawTheme {
                 }
             };
 
-        let executable = JoshutoColorTheme {
-            colorpair: 2,
-            bold: true,
-            underline: false,
-            prefix: None,
-            };
-
-        let selection = JoshutoColorTheme {
+        let selection = self.selection.unwrap_or(JoshutoColorTheme {
             colorpair: 3,
             bold: true,
             underline: false,
             prefix: None,
-            };
+            prefixsize: None,
+            });
 
-        let directory = JoshutoColorTheme {
+        let executable = self.executable.unwrap_or(JoshutoColorTheme {
+            colorpair: 2,
+            bold: true,
+            underline: false,
+            prefix: None,
+            prefixsize: None,
+            });
+
+        let regular = self.regular.unwrap_or(JoshutoColorTheme {
+            colorpair: 0,
+            bold: false,
+            underline: false,
+            prefix: None,
+            prefixsize: None,
+            });
+
+        let directory = self.directory.unwrap_or(JoshutoColorTheme {
             colorpair: 4,
             bold: true,
             underline: false,
             prefix: None,
-            };
+            prefixsize: None,
+            });
 
-        let link = JoshutoColorTheme {
+        let link = self.link.unwrap_or(JoshutoColorTheme {
             colorpair: 6,
             bold: true,
             underline: false,
             prefix: None,
-            };
+            prefixsize: None,
+            });
 
-        let socket = JoshutoColorTheme {
+        let socket = self.socket.unwrap_or(JoshutoColorTheme {
             colorpair: 6,
             bold: true,
             underline: false,
             prefix: None,
-            };
+            prefixsize: None,
+            });
 
         let ext = self.ext.unwrap_or(HashMap::new());
 
         JoshutoTheme {
             colorpair,
+            regular,
             directory,
             selection,
             executable,
@@ -110,6 +126,7 @@ impl JoshutoRawTheme {
 #[derive(Debug, Clone)]
 pub struct JoshutoTheme {
     pub colorpair: Vec<JoshutoColorPair>,
+    pub regular: JoshutoColorTheme,
     pub selection: JoshutoColorTheme,
     pub directory: JoshutoColorTheme,
     pub executable: JoshutoColorTheme,
@@ -128,18 +145,28 @@ impl JoshutoTheme {
         colorpair.push(JoshutoColorPair::new(5, 5, -1));
         colorpair.push(JoshutoColorPair::new(6, 6, -1));
 
-        let executable = JoshutoColorTheme {
-            colorpair: 2,
-            bold: true,
-            underline: false,
-            prefix: None,
-            };
-
         let selection = JoshutoColorTheme {
             colorpair: 3,
             bold: true,
             underline: false,
             prefix: None,
+            prefixsize: None,
+            };
+
+        let executable = JoshutoColorTheme {
+            colorpair: 2,
+            bold: true,
+            underline: false,
+            prefix: None,
+            prefixsize: None,
+            };
+
+        let regular = JoshutoColorTheme {
+            colorpair: 0,
+            bold: false,
+            underline: false,
+            prefix: None,
+            prefixsize: None,
             };
 
         let directory = JoshutoColorTheme {
@@ -147,6 +174,7 @@ impl JoshutoTheme {
             bold: true,
             underline: false,
             prefix: None,
+            prefixsize: None,
             };
 
         let link = JoshutoColorTheme {
@@ -154,6 +182,7 @@ impl JoshutoTheme {
             bold: true,
             underline: false,
             prefix: None,
+            prefixsize: None,
             };
 
         let socket = JoshutoColorTheme {
@@ -161,13 +190,15 @@ impl JoshutoTheme {
             bold: true,
             underline: false,
             prefix: None,
+            prefixsize: None,
             };
 
         JoshutoTheme {
             colorpair,
-            directory,
             selection,
             executable,
+            regular,
+            directory,
             link,
             socket,
             ext: HashMap::new(),
@@ -187,7 +218,7 @@ impl JoshutoTheme {
                                 Some(config)
                             },
                             Err(e) => {
-                                eprintln!("Error parsing keymap file: {}", e);
+                                eprintln!("Error parsing theme file: {}", e);
                                 process::exit(1);
                             },
                         }

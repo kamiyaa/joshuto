@@ -7,3 +7,4 @@ pub use self::config::JoshutoConfig;
 pub use self::keymap::JoshutoKeymap;
 pub use self::mimetype::JoshutoMimetype;
 pub use self::theme::JoshutoTheme;
+pub use self::theme::JoshutoColorTheme;

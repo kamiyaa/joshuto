@@ -4,6 +4,7 @@ extern crate unicode_width;
 use std::fs;
 use std::time;
 
+use joshuto::config::JoshutoColorTheme;
 use joshuto::context::JoshutoContext;
 use joshuto::structs;
 use joshuto::unix;
@@ -31,7 +32,7 @@ pub fn init_ncurses()
 
     process_theme();
 
-    ncurses::printw("Loading...");
+    ncurses::addstr("Loading...");
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
     ncurses::refresh();
@@ -138,24 +139,30 @@ fn wprint_file_name(win: ncurses::WINDOW, file_name: &str,
 }
 
 pub fn wprint_entry(win: &window::JoshutoPanel,
-        file: &structs::JoshutoDirEntry, coord: (i32, i32))
+        file: &structs::JoshutoDirEntry, prefix: (usize, &str), coord: (i32, i32))
 {
+    ncurses::waddstr(win.win, prefix.1);
     let space_avail: usize;
-    if win.cols >= 1 {
-        space_avail = win.cols as usize - 1;
+    if win.cols >= prefix.0 as i32 {
+        space_avail = win.cols as usize - prefix.0;
     } else {
         space_avail = 0;
     }
-
-    ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
-    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + 1), space_avail);
+    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1), space_avail);
 }
 
 pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
-        file: &structs::JoshutoDirEntry, coord: (i32, i32))
+        file: &structs::JoshutoDirEntry, prefix: (usize, &str), coord: (i32, i32))
 {
+    ncurses::waddstr(win.win, prefix.1);
+    let space_avail: usize;
+    if win.cols >= prefix.0 as i32 {
+        space_avail = win.cols as usize - prefix.0;
+    } else {
+        space_avail = 0;
+    }
+/*
     let mut space_avail: usize = win.cols as usize - 1;
-    ncurses::mvwaddstr(win.win, coord.0, coord.1, " ");
     if !file.path.is_dir() {
         let file_size_string = file_size_to_string(file.metadata.len as f64);
         if space_avail > file_size_string.len() {
@@ -167,7 +174,8 @@ pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
             space_avail = space_avail - 1;
         }
     }
-    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + 1), space_avail);
+*/
+    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1), space_avail);
 }
 
 pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
@@ -225,31 +233,73 @@ pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32)
             theme_t.selection.colorpair);
 }
 
-pub fn file_attr_apply(win: ncurses::WINDOW, coord: (i32, i32), mode: u32,
-        extension: &str, attr: ncurses::attr_t)
+pub fn get_theme_attr(mut attr: ncurses::attr_t, entry: &structs::JoshutoDirEntry) -> ((usize, &str), ncurses::attr_t, i16)
 {
-    match mode & unix::BITMASK {
-        unix::S_IFLNK | unix::S_IFCHR | unix::S_IFBLK => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.socket.colorpair);
-        },
-        unix::S_IFSOCK | unix::S_IFIFO => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.socket.colorpair);
-        },
-        unix::S_IFDIR => {
-            ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.directory.colorpair);
-        },
-        unix::S_IFREG => {
-            if unix::is_executable(mode) == true {
-                ncurses::mvwchgat(win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.executable.colorpair);
-            }
-            else if let Some(s) = theme_t.ext.get(extension) {
-                ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, s.colorpair);
+    use std::os::unix::fs::FileTypeExt;
+    use std::os::unix::fs::PermissionsExt;
+
+    let theme: &JoshutoColorTheme;
+    let colorpair: i16;
+
+    let file_type = &entry.metadata.file_type;
+    if entry.selected {
+        theme = &theme_t.selection;
+        colorpair = theme_t.selection.colorpair;
+    } else if file_type.is_dir() {
+        theme = &theme_t.directory;
+        colorpair = theme_t.directory.colorpair;
+    } else if file_type.is_symlink() {
+        theme = &theme_t.link;
+        colorpair = theme_t.link.colorpair;
+    } else if file_type.is_block_device() {
+        theme = &theme_t.socket;
+        colorpair = theme_t.link.colorpair;
+    } else if file_type.is_char_device() {
+        theme = &theme_t.socket;
+        colorpair = theme_t.link.colorpair;
+    } else if file_type.is_fifo() {
+        theme = &theme_t.socket;
+        colorpair = theme_t.link.colorpair;
+    } else if file_type.is_socket() {
+        theme = &theme_t.socket;
+        colorpair = theme_t.link.colorpair;
+    } else {
+        let mode = entry.metadata.permissions.mode();
+        if unix::is_executable(mode) {
+            theme = &theme_t.executable;
+            colorpair = theme_t.executable.colorpair;
+        } else {
+            if let Some(ext) = entry.file_name_as_string.rfind('.') {
+                let extension: &str = &entry.file_name_as_string[ext..];
+                if let Some(s) = theme_t.ext.get(extension) {
+                    theme = &s;
+                    colorpair = theme.colorpair;
+                } else {
+                    theme = &theme_t.regular;
+                    colorpair = 0;
+                }
             } else {
-                ncurses::mvwchgat(win, coord.0, coord.1, -1, attr, 0);
+                theme = &theme_t.regular;
+                colorpair = 0;
             }
-        },
-        _ => {},
-    };
+        }
+    }
+
+    if theme.bold {
+        attr = attr | ncurses::A_BOLD();
+    }
+    if theme.underline {
+        attr = attr | ncurses::A_UNDERLINE();
+    }
+
+    let mut prefix: (usize, &str) = (1, " ");
+    if let Some(ref p1) = theme.prefix {
+        if let Some(p2) = theme.prefixsize {
+            prefix = (p2, &p1);
+        }
+    }
+
+    (prefix, attr, colorpair)
 }
 
 fn file_size_to_string_detailed(mut file_size: f64) -> String

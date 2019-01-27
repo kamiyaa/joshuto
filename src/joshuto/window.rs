@@ -136,34 +136,28 @@ impl JoshutoPanel {
     }
 
     pub fn draw_dir_list(win: &JoshutoPanel, dirlist: &structs::JoshutoDirList,
-            draw_func: fn (&JoshutoPanel, &structs::JoshutoDirEntry, (i32, i32)))
+            draw_func: fn (&JoshutoPanel, &structs::JoshutoDirEntry, (usize, &str), (i32, i32)))
     {
-        use std::os::unix::fs::PermissionsExt;
-
         let dir_contents = &dirlist.contents;
         let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
 
+        let curr_index = dirlist.index as usize;
+
         for i in start..end {
             let coord: (i32, i32) = (i as i32 - start as i32, 0);
-            draw_func(win, &dir_contents[i], coord);
+
+            ncurses::wmove(win.win, coord.0, coord.1);
+            let entry = &dir_contents[i];
 
             let mut attr: ncurses::attr_t = 0;
-            if dirlist.index as usize == i {
+            if i == curr_index {
                 attr = attr | ncurses::A_STANDOUT();
             }
+            let attrs = ui::get_theme_attr(attr, entry);
 
-            let mode = dir_contents[i].metadata.permissions.mode();
-            if dir_contents[i].selected {
-                ncurses::mvwchgat(win.win, coord.0, coord.1, -1, ncurses::A_BOLD() | attr, theme_t.selection.colorpair);
-            } else if mode != 0 {
-                let file_name = &dir_contents[i].file_name_as_string;
-                let mut extension: &str = "";
-                if let Some(ext) = file_name.rfind('.') {
-                    extension = &file_name[ext+1..];
-                }
+            draw_func(win, entry, attrs.0, coord);
 
-                ui::file_attr_apply(win.win, coord, mode, extension, attr);
-            }
+            ncurses::mvwchgat(win.win, coord.0, coord.1, -1, attrs.1, attrs.2);
         }
     }
 
