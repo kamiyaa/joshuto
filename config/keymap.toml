@@ -109,6 +109,10 @@ args = [ "toggle=true" ]
 keys = [ "m", "k" ]
 command = "mkdir"
 
+[[mapcommand]]
+keys = [ ";", "m", "k" ]
+command = "mkdir"
+
 
 [[mapcommand]]
 keys = [ "g", "r" ]

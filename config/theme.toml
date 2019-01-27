@@ -9,6 +9,11 @@
 # -1 -> default (transparent)
 
 [[colorpair]]
+id = 1
+fg = 1
+bg = -1
+
+[[colorpair]]
 id = 2
 fg = 2
 bg = -1
@@ -33,14 +38,22 @@ id = 6
 fg = 6
 bg = -1
 
+
+[selection]
+colorpair = 3
+bold = true
+underline = false
+prefix = "  "
+prefixsize = 2
+
 [executable]
 colorpair = 2
 bold = true
 underline = false
 
-[selection]
-colorpair = 3
-bold = true
+[regular]
+colorpair = 0
+bold = false
 underline = false
 
 [directory]
@@ -62,44 +75,84 @@ underline = false
 	[ext.jpg]
 	colorpair = 3
 	bold = false
-	underline = true
+	underline = false
 
 	[ext.jpeg]
 	colorpair = 3
 	bold = false
-	underline = true
+	underline = false
 
 	[ext.png]
 	colorpair = 3
 	bold = false
-	underline = true
+	underline = false
+
+	[ext.svg]
+	colorpair = 6
+	bold = false
+	underline = false
+
+	[ext.gif]
+	colorpair = 6
+	bold = false
+	underline = false
 
 	[ext.wav]
 	colorpair = 5
 	bold = false
-	underline = true
+	underline = false
 
 	[ext.flac]
 	colorpair = 5
 	bold = false
-	underline = true
+	underline = false
 
 	[ext.mp3]
 	colorpair = 5
 	bold = false
-	underline = true
+	underline = false
 
 	[ext.mp4]
 	colorpair = 5
 	bold = false
-	underline = true
+	underline = false
+
+	[ext.mkv]
+	colorpair = 5
+	bold = false
+	underline = false
 
 	[ext.m4a]
 	colorpair = 5
 	bold = false
-	underline = true
+	underline = false
 
 	[ext.webm]
 	colorpair = 5
 	bold = false
-	underline = true
+	underline = false
+
+	[ext.wmv]
+	colorpair = 5
+	bold = false
+	underline = false
+
+	[ext.7z]
+	colorpair = 1
+	bold = false
+	underline = false
+
+	[ext.zip]
+	colorpair = 1
+	bold = false
+	underline = false
+
+	[ext."tar.gz"]
+	colorpair = 1
+	bold = false
+	underline = false
+
+	[ext.rar]
+	colorpair = 1
+	bold = false
+	underline = false
