@@ -37,7 +37,6 @@ impl JoshutoRunnable for NewDirectory {
 
         {
             let textfield = JoshutoTextField::new(1, term_cols, (term_rows as usize - 1, 0), PROMPT.to_string());
-
             user_input = textfield.readline_with_initial("", "");
         }
 

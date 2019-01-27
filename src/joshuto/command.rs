@@ -1,5 +1,3 @@
-extern crate fs_extra;
-extern crate ncurses;
 extern crate wordexp;
 
 use std;
@@ -9,7 +7,6 @@ use std::path;
 
 use joshuto::context::JoshutoContext;
 use joshuto::structs;
-
 
 mod quit;
 pub use self::quit::Quit;
@@ -37,9 +34,13 @@ mod file_operation;
 pub use self::file_operation::CutFiles;
 pub use self::file_operation::CopyFiles;
 pub use self::file_operation::PasteFiles;
-pub use self::file_operation::DeleteFiles;
-pub use self::file_operation::RenameFile;
-pub use self::file_operation::RenameFileMethod;
+
+mod delete_file;
+pub use self::delete_file::DeleteFiles;
+
+mod rename_file;
+pub use self::rename_file::RenameFile;
+pub use self::rename_file::RenameFileMethod;
 
 mod new_directory;
 pub use self::new_directory::NewDirectory;
@@ -104,7 +105,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                         }
                     },
                     Err(e) => {
-                        eprintln!("Error: Failed to parse {:?}", args);
+                        eprintln!("{} {:?}", e.to_string().as_str(), args);
                     }
                 }
             }
@@ -170,7 +171,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         "quit" => Some(Box::new(self::Quit::new())),
         "reload_dir_list" => Some(Box::new(self::ReloadDirList::new())),
         "rename_file" => {
-            let method: self::file_operation::RenameFileMethod;
+            let method: RenameFileMethod;
             if let Some(args) = args {
                 if args.len() > 0 {
                     method = match args[0].as_str() {

@@ -2,21 +2,17 @@ extern crate fs_extra;
 extern crate ncurses;
 
 use std;
-use std::fs;
 use std::path;
 use std::sync;
 use std::thread;
 
-use joshuto::context::JoshutoContext;
 use joshuto::command;
 use joshuto::command::ProgressInfo;
 use joshuto::command::JoshutoCommand;
 use joshuto::command::JoshutoRunnable;
-use joshuto::config::keymap;
+use joshuto::context::JoshutoContext;
 use joshuto::preview;
 use joshuto::structs::JoshutoDirList;
-use joshuto::textfield;
-use joshuto::ui;
 
 lazy_static! {
     static ref selected_files: sync::Mutex<Vec<path::PathBuf>> = sync::Mutex::new(vec![]);
@@ -247,172 +243,5 @@ impl JoshutoRunnable for PasteFiles {
             &context.username, &context.hostname);
         ncurses::timeout(0);
         ncurses::doupdate();
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct DeleteFiles;
-
-impl DeleteFiles {
-    pub fn new() -> Self { DeleteFiles }
-    pub const fn command() -> &'static str { "delete_files" }
-
-    pub fn remove_files(paths: Vec<path::PathBuf>)
-    {
-        for path in &paths {
-            if let Ok(metadata) = std::fs::symlink_metadata(path) {
-                if metadata.is_dir() {
-                    std::fs::remove_dir_all(&path).unwrap();
-                } else {
-                    std::fs::remove_file(&path).unwrap();
-                }
-            }
-        }
-    }
-}
-
-impl JoshutoCommand for DeleteFiles {}
-
-impl std::fmt::Display for DeleteFiles {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
-        f.write_str(Self::command())
-    }
-}
-
-impl JoshutoRunnable for DeleteFiles {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
-        ui::wprint_msg(&context.views.bot_win, "Delete selected files? (Y/n)");
-        ncurses::timeout(-1);
-        ncurses::doupdate();
-
-        let ch: i32 = ncurses::getch();
-        if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-            if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-                if let Some(paths) = command::collect_selected_paths(s) {
-                    Self::remove_files(paths);
-                }
-            }
-            ui::wprint_msg(&context.views.bot_win, "Deleted files");
-
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            curr_tab.reload_contents(&context.config_t.sort_type);
-            curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
-                &context.username, &context.hostname);
-        } else {
-            let curr_tab = &context.tabs[context.curr_tab_index];
-            curr_tab.refresh_file_status(&context.views.bot_win);
-            curr_tab.refresh_path_status(&context.views.top_win,
-                    &context.theme_t, &context.username, &context.hostname);
-        }
-        ncurses::doupdate();
-    }
-}
-
-#[derive(Clone, Debug)]
-pub enum RenameFileMethod {
-    Append,
-    Prepend,
-    Overwrite
-}
-
-#[derive(Clone, Debug)]
-pub struct RenameFile {
-    method: RenameFileMethod,
-}
-
-impl RenameFile {
-    pub fn new(method: RenameFileMethod) -> Self
-    {
-        RenameFile {
-            method,
-        }
-    }
-    pub const fn command() -> &'static str { "rename_file" }
-
-    pub fn rename_file(&self, path: &path::PathBuf, context: &mut JoshutoContext, start_str: String)
-    {
-        const PROMPT: &str = ":rename_file ";
-        let (term_rows, term_cols) = ui::getmaxyx();
-        let user_input: Option<String>;
-        {
-            let textfield = textfield::JoshutoTextField::new(1,
-                term_cols, (term_rows as usize - 1, 0), PROMPT.to_string());
-
-            user_input = match self.method {
-                RenameFileMethod::Append => {
-                    if let Some(ext) = start_str.rfind('.') {
-                        textfield.readline_with_initial(&start_str[0..ext], &start_str[ext..])
-                    } else {
-                        textfield.readline_with_initial(&start_str, "")
-                    }
-                },
-                RenameFileMethod::Prepend => {
-                    textfield.readline_with_initial("", &start_str)
-                },
-                RenameFileMethod::Overwrite => {
-                    textfield.readline_with_initial("", "")
-                }
-            };
-        }
-
-        if let Some(s) = user_input {
-            let mut new_path = path.parent().unwrap().to_path_buf();
-
-            new_path.push(s);
-            if new_path.exists() {
-                ui::wprint_err(&context.views.bot_win, "Error: File with name exists");
-                return;
-            }
-            match fs::rename(&path, &new_path) {
-                Ok(_) => {
-                    let curr_tab = &mut context.tabs[context.curr_tab_index];
-                    let path_clone = curr_tab.curr_list.as_ref().unwrap().path.clone();
-                    if let Ok(s) = JoshutoDirList::new(path_clone, &context.config_t.sort_type) {
-                        curr_tab.curr_list = Some(s);
-                        curr_tab.refresh_curr(&context.views.mid_win, &context.theme_t, context.config_t.scroll_offset);
-                    }
-                },
-                Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
-                },
-            }
-        } else {
-            let curr_tab = &context.tabs[context.curr_tab_index];
-            curr_tab.refresh_file_status(&context.views.bot_win);
-        }
-    }
-}
-
-impl JoshutoCommand for RenameFile {}
-
-impl std::fmt::Display for RenameFile {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
-        write!(f, "{}", Self::command())
-    }
-}
-
-impl JoshutoRunnable for RenameFile {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
-        let mut path: Option<path::PathBuf> = None;
-        let mut file_name: Option<String> = None;
-
-        if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-            if let Some(s) = s.get_curr_ref() {
-                path = Some(s.path.clone());
-                file_name = Some(s.file_name_as_string.clone());
-            }
-        }
-
-        if let Some(file_name) = file_name {
-            if let Some(path) = path {
-                self.rename_file(&path, context, file_name);
-                preview::preview_file(context);
-                ncurses::doupdate();
-            }
-        }
     }
 }
