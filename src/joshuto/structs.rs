@@ -125,11 +125,6 @@ impl JoshutoDirList {
         Ok(result_vec)
     }
 
-    pub fn update_page_state(&mut self, win: &JoshutoPanel)
-    {
-        self.pagestate.update_page_state(self.index as usize, win.rows, self.contents.len(), 6)
-    }
-
     pub fn need_update(&self) -> bool
     {
         if self.update_needed {

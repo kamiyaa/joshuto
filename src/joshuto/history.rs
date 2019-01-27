@@ -52,14 +52,14 @@ impl DirHistory {
                 Ok(dir_entry)
             },
             None => {
-                structs::JoshutoDirList::new(path.clone().to_path_buf(), &sort_type)
+                let path_clone = path.clone().to_path_buf();
+                structs::JoshutoDirList::new(path_clone, &sort_type)
             }
         }
     }
 
     pub fn get_mut_or_create(&mut self, path: &path::Path,
-       sort_type: &sort::SortType)
-            -> Option<&mut structs::JoshutoDirList>
+            sort_type: &sort::SortType) -> Option<&mut structs::JoshutoDirList>
     {
         let pathbuf = path.to_path_buf();
         match self.map.entry(pathbuf.clone()) {

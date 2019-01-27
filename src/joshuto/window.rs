@@ -110,29 +110,17 @@ impl JoshutoPanel {
         }
     }
 
-    pub fn move_to_top(&self) { ncurses::top_panel(self.panel); }
-    #[allow(dead_code)]
-    pub fn move_to_bottom(&self) { ncurses::bottom_panel(self.panel); }
-    pub fn queue_for_refresh(&self) { ncurses::wnoutrefresh(self.win); }
-
-    fn non_empty_dir_checks(&self, dirlist: &mut structs::JoshutoDirList, scroll_offset: usize) -> bool
+    pub fn move_to_top(&self)
     {
-        if self.cols < 8 {
-            return false;
-        }
-        let index = dirlist.index;
-        let vec_len = dirlist.contents.len();
-        if vec_len == 0 {
-            ui::wprint_empty(self, "empty");
-            return false;
-        }
-        ncurses::werase(self.win);
-
-        if index >= 0 {
-            dirlist.pagestate.update_page_state(index as usize, self.rows, vec_len, scroll_offset);
-        }
-        ncurses::wmove(self.win, 0, 0);
-        return true;
+        ncurses::top_panel(self.panel);
+    }
+    pub fn move_to_bottom(&self)
+    {
+        ncurses::bottom_panel(self.panel);
+    }
+    pub fn queue_for_refresh(&self)
+    {
+        ncurses::wnoutrefresh(self.win);
     }
 
     pub fn display_contents(&self, theme_t: &config::JoshutoTheme,
@@ -182,6 +170,26 @@ impl JoshutoPanel {
                 ui::file_attr_apply(theme_t, win.win, coord, mode, extension, attr);
             }
         }
+    }
+
+    fn non_empty_dir_checks(&self, dirlist: &mut structs::JoshutoDirList, scroll_offset: usize) -> bool
+    {
+        if self.cols < 8 {
+            return false;
+        }
+        let index = dirlist.index;
+        let vec_len = dirlist.contents.len();
+        if vec_len == 0 {
+            ui::wprint_empty(self, "empty");
+            return false;
+        }
+        ncurses::werase(self.win);
+
+        if index >= 0 {
+            dirlist.pagestate.update_page_state(index as usize, self.rows, vec_len, scroll_offset);
+        }
+        ncurses::wmove(self.win, 0, 0);
+        return true;
     }
 }
 
