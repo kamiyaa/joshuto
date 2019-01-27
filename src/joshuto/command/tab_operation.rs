@@ -3,10 +3,11 @@ use std::path;
 use std::env;
 
 use joshuto::context::JoshutoContext;
+use joshuto::context::JoshutoTab;
 use joshuto::command::JoshutoCommand;
 use joshuto::command::JoshutoRunnable;
 use joshuto::command::TabSwitch;
-use joshuto::context::JoshutoTab;
+use joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct NewTab;
@@ -20,17 +21,22 @@ impl NewTab {
         let curr_path: path::PathBuf = match env::current_dir() {
             Ok(path) => { path },
             Err(e) => {
-                eprintln!("{}", e);
+                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
                 return;
             },
         };
 
-        let tab = JoshutoTab::new(curr_path, &context.config_t.sort_type);
+        match JoshutoTab::new(curr_path, &context.config_t.sort_type) {
+            Ok(tab) => {
+                context.tabs.push(tab);
+                context.curr_tab_index = context.tabs.len() - 1;
 
-        context.tabs.push(tab);
-        context.curr_tab_index = context.tabs.len() - 1;
-
-        TabSwitch::tab_switch(context.tabs.len() as i32 - 1, context);
+                TabSwitch::tab_switch(context.tabs.len() as i32 - 1, context);
+            },
+            Err(e) => {
+                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+            }
+        };
     }
 }
 

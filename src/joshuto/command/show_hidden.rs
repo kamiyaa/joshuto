@@ -11,7 +11,7 @@ pub struct ToggleHiddenFiles;
 
 impl ToggleHiddenFiles {
     pub fn new() -> Self { ToggleHiddenFiles }
-    pub fn command() -> &'static str { "toggle_hidden" }
+    pub const fn command() -> &'static str { "toggle_hidden" }
     pub fn toggle_hidden(context: &mut JoshutoContext)
     {
         let opposite = !context.config_t.sort_type.show_hidden();

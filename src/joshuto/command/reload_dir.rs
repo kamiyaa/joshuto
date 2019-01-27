@@ -12,7 +12,7 @@ pub struct ReloadDirList;
 
 impl ReloadDirList {
     pub fn new() -> Self { ReloadDirList }
-    pub fn command() -> &'static str { "reload_dir_list" }
+    pub const fn command() -> &'static str { "reload_dir_list" }
 
     pub fn reload(context: &mut JoshutoContext)
     {

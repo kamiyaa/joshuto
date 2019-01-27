@@ -19,7 +19,7 @@ impl CursorMove {
             movement,
         }
     }
-    pub fn command() -> &'static str { "cursor_move" }
+    pub const fn command() -> &'static str { "cursor_move" }
 
     pub fn cursor_move(new_index: i32, context: &mut JoshutoContext)
     {
@@ -86,7 +86,7 @@ pub struct CursorMovePageUp;
 
 impl CursorMovePageUp {
     pub fn new() -> Self { CursorMovePageUp }
-    pub fn command() -> &'static str { "cursor_move_page_up" }
+    pub const fn command() -> &'static str { "cursor_move_page_up" }
 }
 
 impl JoshutoCommand for CursorMovePageUp {}
@@ -126,7 +126,7 @@ pub struct CursorMovePageDown;
 
 impl CursorMovePageDown {
     pub fn new() -> Self { CursorMovePageDown }
-    pub fn command() -> &'static str { "cursor_move_page_down" }
+    pub const fn command() -> &'static str { "cursor_move_page_down" }
 }
 
 impl JoshutoCommand for CursorMovePageDown {}
@@ -167,7 +167,7 @@ pub struct CursorMoveHome;
 
 impl CursorMoveHome {
     pub fn new() -> Self { CursorMoveHome }
-    pub fn command() -> &'static str { "cursor_move_home" }
+    pub const fn command() -> &'static str { "cursor_move_home" }
 }
 
 impl JoshutoCommand for CursorMoveHome {}
@@ -205,7 +205,7 @@ pub struct CursorMoveEnd;
 
 impl CursorMoveEnd {
     pub fn new() -> Self { CursorMoveEnd }
-    pub fn command() -> &'static str { "cursor_move_end" }
+    pub const fn command() -> &'static str { "cursor_move_end" }
 }
 
 impl JoshutoCommand for CursorMoveEnd {}

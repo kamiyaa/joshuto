@@ -15,7 +15,7 @@ pub struct SetMode;
 
 impl SetMode {
     pub fn new() -> Self { SetMode }
-    pub fn command() -> &'static str { "set_mode" }
+    pub const fn command() -> &'static str { "set_mode" }
 
     pub fn set_mode(&self, entry: &mut JoshutoDirEntry, start_str: String)
             -> bool

@@ -11,7 +11,7 @@ pub struct Quit;
 
 impl Quit {
     pub fn new() -> Self { Quit }
-    pub fn command() -> &'static str { "quit" }
+    pub const fn command() -> &'static str { "quit" }
 }
 
 impl JoshutoCommand for Quit {}

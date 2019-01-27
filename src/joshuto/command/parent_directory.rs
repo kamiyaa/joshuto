@@ -13,7 +13,7 @@ pub struct ParentDirectory;
 
 impl ParentDirectory {
     pub fn new() -> Self { ParentDirectory }
-    pub fn command() -> &'static str { "parent_directory" }
+    pub const fn command() -> &'static str { "parent_directory" }
 
     pub fn parent_directory(context: &mut JoshutoContext)
     {

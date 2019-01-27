@@ -14,7 +14,7 @@ pub struct Search;
 
 impl Search {
     pub fn new() -> Self { Search }
-    pub fn command() -> &'static str { "search" }
+    pub const fn command() -> &'static str { "search" }
 }
 
 impl JoshutoCommand for Search {}

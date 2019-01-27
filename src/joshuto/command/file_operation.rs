@@ -55,7 +55,7 @@ pub struct CutFiles;
 
 impl CutFiles {
     pub fn new() -> Self { CutFiles }
-    pub fn command() -> &'static str { "cut_files" }
+    pub const fn command() -> &'static str { "cut_files" }
 }
 
 impl JoshutoCommand for CutFiles {}
@@ -84,7 +84,7 @@ pub struct CopyFiles;
 
 impl CopyFiles {
     pub fn new() -> Self { CopyFiles }
-    pub fn command() -> &'static str { "copy_files" }
+    pub const fn command() -> &'static str { "copy_files" }
 }
 
 impl JoshutoCommand for CopyFiles {}
@@ -119,7 +119,7 @@ impl PasteFiles {
             options,
         }
     }
-    pub fn command() -> &'static str { "paste_files" }
+    pub const fn command() -> &'static str { "paste_files" }
 
     fn cut(&self, destination: &path::PathBuf)
             -> (sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>)
@@ -255,7 +255,7 @@ pub struct DeleteFiles;
 
 impl DeleteFiles {
     pub fn new() -> Self { DeleteFiles }
-    pub fn command() -> &'static str { "delete_files" }
+    pub const fn command() -> &'static str { "delete_files" }
 
     pub fn remove_files(paths: Vec<path::PathBuf>)
     {
@@ -329,7 +329,7 @@ impl RenameFile {
             method,
         }
     }
-    pub fn command() -> &'static str { "rename_file" }
+    pub const fn command() -> &'static str { "rename_file" }
 
     pub fn rename_file(&self, path: &path::PathBuf, context: &mut JoshutoContext, start_str: String)
     {

@@ -22,7 +22,7 @@ pub struct OpenFile;
 
 impl OpenFile {
     pub fn new() -> Self { OpenFile }
-    pub fn command() -> &'static str { "open_file" }
+    pub const fn command() -> &'static str { "open_file" }
 
     pub fn get_options<'a>(path: &path::PathBuf, mimetype_t: &'a mimetype::JoshutoMimetype)
             -> Vec<&'a mimetype::JoshutoMimetypeEntry>
@@ -169,7 +169,7 @@ pub struct OpenFileWith;
 
 impl OpenFileWith {
     pub fn new() -> Self { OpenFileWith }
-    pub fn command() -> &'static str { "open_file_with" }
+    pub const fn command() -> &'static str { "open_file_with" }
 
     pub fn open_with(paths: &Vec<path::PathBuf>, mimetype_t: &mimetype::JoshutoMimetype)
     {
