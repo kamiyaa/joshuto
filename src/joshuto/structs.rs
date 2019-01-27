@@ -152,6 +152,7 @@ impl JoshutoDirList {
         } else if self.index >= contents_len {
             self.index = contents_len - 1;
         } else if self.index >= 0 && self.index < contents_len {
+    /*
             let index = self.index;
             let curr_file_name = &self.contents[index as usize].file_name;
 
@@ -161,6 +162,7 @@ impl JoshutoDirList {
                     break;
                 }
             }
+    */
         } else {
             self.index = 0;
         }

@@ -70,11 +70,11 @@ impl RenameFile {
             match fs::rename(&path, &new_path) {
                 Ok(_) => {
                     let curr_tab = &mut context.tabs[context.curr_tab_index];
-                    let path_clone = curr_tab.curr_list.as_ref().unwrap().path.clone();
-                    if let Ok(s) = JoshutoDirList::new(path_clone, &context.config_t.sort_type) {
-                        curr_tab.curr_list = Some(s);
-                        curr_tab.refresh_curr(&context.views.mid_win, &context.theme_t, context.config_t.scroll_offset);
+                    if let Some(ref mut s) = curr_tab.curr_list {
+                        s.update_contents(&context.config_t.sort_type).unwrap();
                     }
+                    curr_tab.refresh_curr(&context.views.mid_win,
+                            &context.theme_t, context.config_t.scroll_offset);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
