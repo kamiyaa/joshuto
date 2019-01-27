@@ -113,6 +113,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap,
     ncurses::doupdate();
 
     let mut context = context::JoshutoContext::new(config_t, mimetype_t, theme_t);
+    command::NewTab::new_tab(&mut context);
     ncurses::refresh();
 
     resize_handler(&mut context);
@@ -122,7 +123,6 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap,
                 ncurses::WchResult::Char(s) => s as i32,
                 ncurses::WchResult::KeyCode(s) => s,
             };
-
 
         if ch == ncurses::KEY_RESIZE {
             context.views.resize_views();
