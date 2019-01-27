@@ -14,6 +14,8 @@ use joshuto::ui;
 use joshuto::window::JoshutoView;
 use joshuto::window::JoshutoPanel;
 
+use joshuto::theme_t;
+
 pub struct JoshutoContext {
     pub username: String,
     pub hostname: String,
@@ -23,14 +25,10 @@ pub struct JoshutoContext {
     pub tabs: Vec<JoshutoTab>,
 
     pub config_t: config::JoshutoConfig,
-    pub mimetype_t: config::JoshutoMimetype,
-    pub theme_t: config::JoshutoTheme,
 }
 
 impl<'a> JoshutoContext {
-    pub fn new(config_t: config::JoshutoConfig,
-        mimetype_t: config::JoshutoMimetype,
-        theme_t: config::JoshutoTheme) -> Self
+    pub fn new(config_t: config::JoshutoConfig) -> Self
     {
         let username: String = whoami::username();
         let hostname: String = whoami::hostname();
@@ -46,8 +44,6 @@ impl<'a> JoshutoContext {
             curr_tab_index: 0,
             tabs: Vec::new(),
             config_t,
-            mimetype_t,
-            theme_t
         }
     }
     pub fn curr_tab_ref(&'a self) -> &'a JoshutoTab
@@ -118,37 +114,33 @@ impl JoshutoTab {
         self.parent_list = list;
     }
 
-    pub fn refresh(&mut self, views: &JoshutoView,
-            theme_t: &config::JoshutoTheme, config_t: &config::JoshutoConfig,
+    pub fn refresh(&mut self, views: &JoshutoView, config_t: &config::JoshutoConfig,
             username: &str, hostname: &str)
     {
-        self.refresh_(views, theme_t, config_t.scroll_offset, username, hostname);
+        self.refresh_(views, config_t.scroll_offset, username, hostname);
     }
 
-    pub fn refresh_(&mut self, views: &JoshutoView,
-            theme_t: &config::JoshutoTheme, scroll_offset: usize,
+    pub fn refresh_(&mut self, views: &JoshutoView, scroll_offset: usize,
             username: &str, hostname: &str)
     {
-        self.refresh_curr(&views.mid_win, theme_t, scroll_offset);
-        self.refresh_parent(&views.left_win, theme_t, scroll_offset);
-        self.refresh_path_status(&views.top_win, theme_t, username, hostname);
+        self.refresh_curr(&views.mid_win, scroll_offset);
+        self.refresh_parent(&views.left_win, scroll_offset);
+        self.refresh_path_status(&views.top_win, username, hostname);
         self.refresh_file_status(&views.bot_win);
     }
 
-    pub fn refresh_curr(&mut self, win: &JoshutoPanel,
-            theme_t: &config::JoshutoTheme, scroll_offset: usize)
+    pub fn refresh_curr(&mut self, win: &JoshutoPanel, scroll_offset: usize)
     {
         if let Some(ref mut s) = self.curr_list {
-            win.display_contents_detailed(theme_t, s, scroll_offset);
+            win.display_contents_detailed(s, scroll_offset);
             win.queue_for_refresh();
         }
     }
 
-    pub fn refresh_parent(&mut self, win: &JoshutoPanel,
-            theme_t: &config::JoshutoTheme, scroll_offset: usize)
+    pub fn refresh_parent(&mut self, win: &JoshutoPanel, scroll_offset: usize)
     {
         if let Some(ref mut s) = self.parent_list {
-            win.display_contents(theme_t, s, scroll_offset);
+            win.display_contents(s, scroll_offset);
             win.queue_for_refresh();
         }
     }
@@ -170,8 +162,7 @@ impl JoshutoTab {
         }
     }
 
-    pub fn refresh_path_status(&self, win: &JoshutoPanel,
-            theme_t: &config::JoshutoTheme, username: &str, hostname: &str)
+    pub fn refresh_path_status(&self, win: &JoshutoPanel, username: &str, hostname: &str)
     {
         let path_str: &str = self.curr_path.to_str().unwrap();
 

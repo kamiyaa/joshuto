@@ -59,13 +59,13 @@ impl JoshutoRunnable for DeleteFiles {
 
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             curr_tab.reload_contents(&context.config_t.sort_type);
-            curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+            curr_tab.refresh(&context.views, &context.config_t,
                 &context.username, &context.hostname);
         } else {
             let curr_tab = &context.tabs[context.curr_tab_index];
             curr_tab.refresh_file_status(&context.views.bot_win);
             curr_tab.refresh_path_status(&context.views.top_win,
-                    &context.theme_t, &context.username, &context.hostname);
+                    &context.username, &context.hostname);
         }
         ncurses::doupdate();
     }

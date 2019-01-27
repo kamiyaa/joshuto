@@ -89,7 +89,7 @@ impl JoshutoRunnable for SetMode {
         }
         if ok {
             let curr_tab = &mut context.tabs[context.curr_tab_index];
-            curr_tab.refresh_curr(&context.views.mid_win, &context.theme_t, context.config_t.scroll_offset);
+            curr_tab.refresh_curr(&context.views.mid_win, context.config_t.scroll_offset);
             curr_tab.refresh_file_status(&context.views.bot_win);
         }
     }

@@ -6,7 +6,6 @@ use std::time;
 
 use joshuto::sort;
 use joshuto::window::JoshutoPageState;
-use joshuto::window::JoshutoPanel;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
@@ -49,7 +48,9 @@ impl JoshutoDirEntry {
         let file_name = direntry.file_name();
         let file_name_as_string: String = match file_name.clone().into_string() {
                 Ok(s) => s,
-                Err(_) => return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Failed to get file_name")),
+                Err(_) => return Err(std::io::Error::new(
+                            std::io::ErrorKind::NotFound,
+                            "Failed to get file_name")),
             };
         let path = direntry.path();
 
@@ -112,14 +113,12 @@ impl JoshutoDirList {
         })
     }
 
-    fn read_dir_list(path : &path::Path, sort_type: &sort::SortType)
+    fn read_dir_list(path: &path::Path, sort_type: &sort::SortType)
             -> Result<Vec<JoshutoDirEntry>, std::io::Error>
     {
         let filter_func = sort_type.filter_func();
-
         let results: fs::ReadDir = fs::read_dir(path)?;
-
-        let result_vec : Vec<JoshutoDirEntry> = results
+        let result_vec: Vec<JoshutoDirEntry> = results
                 .filter_map(filter_func)
                 .collect();
         Ok(result_vec)

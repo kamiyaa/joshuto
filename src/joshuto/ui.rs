@@ -6,14 +6,15 @@ use std::time;
 
 use joshuto::context::JoshutoContext;
 use joshuto::structs;
-use joshuto::config;
 use joshuto::unix;
 use joshuto::window;
+
+use joshuto::theme_t;
 
 pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;
 
-pub fn init_ncurses(theme_t: &config::JoshutoTheme)
+pub fn init_ncurses()
 {
     let locale_conf = ncurses::LcCategory::all;
 
@@ -28,7 +29,7 @@ pub fn init_ncurses(theme_t: &config::JoshutoTheme)
     ncurses::noecho();
     ncurses::set_escdelay(0);
 
-    process_theme(&theme_t);
+    process_theme();
 
     ncurses::printw("Loading...");
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
@@ -36,7 +37,7 @@ pub fn init_ncurses(theme_t: &config::JoshutoTheme)
     ncurses::refresh();
 }
 
-fn process_theme(theme_t: &config::JoshutoTheme)
+fn process_theme()
 {
     for pair in theme_t.colorpair.iter() {
         ncurses::init_pair(pair.id, pair.fg, pair.bg);
@@ -217,16 +218,14 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn draw_progress_bar(theme_t: &config::JoshutoTheme,
-        win: &window::JoshutoPanel, percentage: f32)
+pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32)
 {
     let cols: i32 = (win.cols as f32 * percentage) as i32;
     ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(),
             theme_t.selection.colorpair);
 }
 
-pub fn file_attr_apply(theme_t: &config::JoshutoTheme,
-        win: ncurses::WINDOW, coord: (i32, i32), mode: u32,
+pub fn file_attr_apply(win: ncurses::WINDOW, coord: (i32, i32), mode: u32,
         extension: &str, attr: ncurses::attr_t)
 {
     match mode & unix::BITMASK {

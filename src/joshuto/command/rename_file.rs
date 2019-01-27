@@ -7,10 +7,8 @@ use joshuto::command::JoshutoCommand;
 use joshuto::command::JoshutoRunnable;
 use joshuto::context::JoshutoContext;
 use joshuto::preview;
-use joshuto::structs::JoshutoDirList;
 use joshuto::textfield::JoshutoTextField;
 use joshuto::ui;
-
 
 #[derive(Clone, Debug)]
 pub enum RenameFileMethod {
@@ -73,8 +71,7 @@ impl RenameFile {
                     if let Some(ref mut s) = curr_tab.curr_list {
                         s.update_contents(&context.config_t.sort_type).unwrap();
                     }
-                    curr_tab.refresh_curr(&context.views.mid_win,
-                            &context.theme_t, context.config_t.scroll_offset);
+                    curr_tab.refresh_curr(&context.views.mid_win, context.config_t.scroll_offset);
                 },
                 Err(e) => {
                     ui::wprint_err(&context.views.bot_win, e.to_string().as_str());

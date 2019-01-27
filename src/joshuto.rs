@@ -18,9 +18,16 @@ mod ui;
 mod unix;
 mod window;
 
+use self::config::JoshutoTheme;
+use self::config::JoshutoMimetype;
 use self::context::JoshutoContext;
 use self::command::CommandKeybind;
 use self::command::JoshutoCommand;
+
+lazy_static! {
+    static ref theme_t: JoshutoTheme = JoshutoTheme::get_config();
+    static ref mimetype_t: JoshutoMimetype = JoshutoMimetype::get_config();
+}
 
 fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     -> Option<&Box<dyn JoshutoCommand>>
@@ -79,7 +86,7 @@ fn process_threads(context: &mut JoshutoContext)
             } else {
                 let percent = (progress_info.bytes_finished as f64 /
                         progress_info.total_bytes as f64) as f32;
-                ui::draw_progress_bar(&context.theme_t, &context.views.bot_win, percent);
+                ui::draw_progress_bar(&context.views.bot_win, percent);
                 ncurses::wnoutrefresh(context.views.bot_win.win);
                 ncurses::doupdate();
             }
@@ -99,24 +106,21 @@ fn resize_handler(context: &mut JoshutoContext)
     {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab.reload_contents(&context.config_t.sort_type);
-        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+        curr_tab.refresh(&context.views, &context.config_t,
             &context.username, &context.hostname);
     }
     preview::preview_file(context);
     ncurses::doupdate();
 }
 
-pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap,
-        mimetype_t: config::JoshutoMimetype, theme_t: config::JoshutoTheme)
+pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap)
 {
-    ui::init_ncurses(&theme_t);
+    ui::init_ncurses();
     ncurses::doupdate();
 
-    let mut context = context::JoshutoContext::new(config_t, mimetype_t, theme_t);
+    let mut context = context::JoshutoContext::new(config_t);
     command::NewTab::new_tab(&mut context);
-    ncurses::refresh();
-
-    resize_handler(&mut context);
+    ncurses::doupdate();
 
     while let Some(ch) = ncurses::get_wch() {
         let ch = match ch {

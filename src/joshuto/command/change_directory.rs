@@ -70,7 +70,7 @@ impl ChangeDirectory {
             };
         }
 
-        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+        curr_tab.refresh(&context.views, &context.config_t,
             &context.username, &context.hostname);
     }
 }

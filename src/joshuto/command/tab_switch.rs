@@ -24,7 +24,7 @@ impl TabSwitch {
         {
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             curr_tab.reload_contents(&context.config_t.sort_type);
-            curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+            curr_tab.refresh(&context.views, &context.config_t,
                 &context.username, &context.hostname);
         }
 

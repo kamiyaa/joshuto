@@ -17,6 +17,8 @@ use joshuto::ui;
 use joshuto::unix;
 use joshuto::window;
 
+use joshuto::mimetype_t;
+
 #[derive(Clone, Debug)]
 pub struct OpenFile;
 
@@ -24,7 +26,7 @@ impl OpenFile {
     pub fn new() -> Self { OpenFile }
     pub const fn command() -> &'static str { "open_file" }
 
-    pub fn get_options<'a>(path: &path::PathBuf, mimetype_t: &'a mimetype::JoshutoMimetype)
+    pub fn get_options<'a>(path: &path::PathBuf)
             -> Vec<&'a mimetype::JoshutoMimetypeEntry>
     {
         let mut mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = Vec::new();
@@ -99,9 +101,9 @@ impl OpenFile {
         }
     }
 
-    fn into_file(paths: &Vec<path::PathBuf>, context: &JoshutoContext)
+    fn into_file(paths: &Vec<path::PathBuf>)
     {
-        let mimetype_options = Self::get_options(&paths[0], &context.mimetype_t);
+        let mimetype_options = Self::get_options(&paths[0]);
 
         ncurses::savetty();
         ncurses::endwin();
@@ -140,7 +142,7 @@ impl JoshutoRunnable for OpenFile {
             Self::into_directory(&path, context);
             {
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
-                curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+                curr_tab.refresh(&context.views, &context.config_t,
                     &context.username, &context.hostname);
             }
             preview::preview_file(context);
@@ -152,7 +154,7 @@ impl JoshutoRunnable for OpenFile {
                 };
             if let Some(paths) = paths {
                 if paths.len() > 0 {
-                    Self::into_file(&paths, context);
+                    Self::into_file(&paths);
                 } else {
                     ui::wprint_msg(&context.views.bot_win, "No files selected: 0");
                 }
@@ -171,9 +173,9 @@ impl OpenFileWith {
     pub fn new() -> Self { OpenFileWith }
     pub const fn command() -> &'static str { "open_file_with" }
 
-    pub fn open_with(paths: &Vec<path::PathBuf>, mimetype_t: &mimetype::JoshutoMimetype)
+    pub fn open_with(paths: &Vec<path::PathBuf>)
     {
-        let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0], mimetype_t);
+        let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
         let user_input: Option<String>;
         {
             let mut term_rows: i32 = 0;
@@ -244,7 +246,7 @@ impl JoshutoRunnable for OpenFileWith {
     {
         if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(paths) = command::collect_selected_paths(s) {
-                Self::open_with(&paths, &context.mimetype_t);
+                Self::open_with(&paths);
             }
         }
     }

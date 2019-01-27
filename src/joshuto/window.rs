@@ -1,17 +1,13 @@
 extern crate ncurses;
 
-use joshuto::config;
 use joshuto::structs;
 use joshuto::ui;
+
+use joshuto::theme_t;
 
 #[cfg(test)]
 mod test;
 
-/*
-lazy_static! {
-    static ref 
-}
-*/
 
 #[derive(Clone, Debug)]
 pub struct JoshutoPageState {
@@ -123,24 +119,23 @@ impl JoshutoPanel {
         ncurses::wnoutrefresh(self.win);
     }
 
-    pub fn display_contents(&self, theme_t: &config::JoshutoTheme,
-        dirlist: &mut structs::JoshutoDirList, scroll_offset: usize)
+    pub fn display_contents(&self, dirlist: &mut structs::JoshutoDirList,
+            scroll_offset: usize)
     {
         if self.non_empty_dir_checks(dirlist, scroll_offset) {
-            Self::draw_dir_list(self, theme_t, dirlist, ui::wprint_entry);
+            Self::draw_dir_list(self, dirlist, ui::wprint_entry);
         }
     }
 
-    pub fn display_contents_detailed(&self, theme_t: &config::JoshutoTheme,
-        dirlist: &mut structs::JoshutoDirList, scroll_offset: usize)
+    pub fn display_contents_detailed(&self, dirlist: &mut structs::JoshutoDirList,
+            scroll_offset: usize)
     {
         if self.non_empty_dir_checks(dirlist, scroll_offset) {
-            Self::draw_dir_list(self, theme_t, dirlist, ui::wprint_entry_detailed);
+            Self::draw_dir_list(self, dirlist, ui::wprint_entry_detailed);
         }
     }
 
-    pub fn draw_dir_list(win: &JoshutoPanel,
-            theme_t: &config::JoshutoTheme, dirlist: &structs::JoshutoDirList,
+    pub fn draw_dir_list(win: &JoshutoPanel, dirlist: &structs::JoshutoDirList,
             draw_func: fn (&JoshutoPanel, &structs::JoshutoDirEntry, (i32, i32)))
     {
         use std::os::unix::fs::PermissionsExt;
@@ -167,7 +162,7 @@ impl JoshutoPanel {
                     extension = &file_name[ext+1..];
                 }
 
-                ui::file_attr_apply(theme_t, win.win, coord, mode, extension, attr);
+                ui::file_attr_apply(win.win, coord, mode, extension, attr);
             }
         }
     }

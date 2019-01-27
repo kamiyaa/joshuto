@@ -239,7 +239,7 @@ impl JoshutoRunnable for PasteFiles {
         context.threads.push(cprocess);
 
         curr_tab.reload_contents(&context.config_t.sort_type);
-        curr_tab.refresh(&context.views, &context.theme_t, &context.config_t,
+        curr_tab.refresh(&context.views, &context.config_t,
             &context.username, &context.hostname);
         ncurses::timeout(0);
         ncurses::doupdate();
