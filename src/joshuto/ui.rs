@@ -268,20 +268,18 @@ pub fn get_theme_attr(mut attr: ncurses::attr_t, entry: &structs::JoshutoDirEntr
         if unix::is_executable(mode) {
             theme = &theme_t.executable;
             colorpair = theme_t.executable.colorpair;
-        } else {
-            if let Some(ext) = entry.file_name_as_string.rfind('.') {
-                let extension: &str = &entry.file_name_as_string[ext..];
-                if let Some(s) = theme_t.ext.get(extension) {
-                    theme = &s;
-                    colorpair = theme.colorpair;
-                } else {
-                    theme = &theme_t.regular;
-                    colorpair = 0;
-                }
+        } else if let Some(ext) = entry.file_name_as_string.rfind('.') {
+            let extension: &str = &entry.file_name_as_string[ext+1..];
+            if let Some(s) = theme_t.ext.get(extension) {
+                theme = &s;
+                colorpair = theme.colorpair;
             } else {
                 theme = &theme_t.regular;
-                colorpair = 0;
+                colorpair = theme.colorpair;
             }
+        } else {
+            theme = &theme_t.regular;
+            colorpair = theme.colorpair;
         }
     }
 
