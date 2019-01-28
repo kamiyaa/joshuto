@@ -48,7 +48,7 @@ impl JoshutoTextField {
 
         let prompt_len = self.prompt.len();
         let win = self.win.win;
-        ncurses::wmove(win, 0, 0);
+        ncurses::wmove(win, self.win.rows - 1, 0);
         ncurses::waddstr(win, &self.prompt);
 
         ncurses::doupdate();

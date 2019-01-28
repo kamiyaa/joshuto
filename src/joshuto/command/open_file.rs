@@ -10,9 +10,9 @@ use joshuto::context::JoshutoContext;
 use joshuto::command;
 use joshuto::command::JoshutoCommand;
 use joshuto::command::JoshutoRunnable;
-use joshuto::input;
 use joshuto::config::mimetype;
 use joshuto::preview;
+use joshuto::textfield::JoshutoTextField;
 use joshuto::ui;
 use joshuto::unix;
 use joshuto::window;
@@ -175,17 +175,16 @@ impl OpenFileWith {
 
     pub fn open_with(paths: &Vec<path::PathBuf>)
     {
+        const PROMPT: &str = ":open_with ";
+
         let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
         let user_input: Option<String>;
         {
-            let mut term_rows: i32 = 0;
-            let mut term_cols: i32 = 0;
-            ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+            let (term_rows, term_cols) = ui::getmaxyx();
 
             let option_size = mimetype_options.len();
-            let win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
+            let display_win = window::JoshutoPanel::new(option_size as i32 + 2, term_cols,
                     (term_rows as usize - option_size - 2, 0));
-            ncurses::keypad(win.win, true);
 
             let mut display_vec: Vec<String> = Vec::with_capacity(option_size);
             for (i, val) in mimetype_options.iter().enumerate() {
@@ -193,15 +192,13 @@ impl OpenFileWith {
             }
             display_vec.sort();
 
-            win.move_to_top();
-            ui::display_options(&win, &display_vec);
+            display_win.move_to_top();
+            ui::display_options(&display_win, &display_vec);
             ncurses::doupdate();
 
-            ncurses::wmove(win.win, option_size as i32 + 1, 0);
-            const PROMPT: &str = ":open_with ";
-            ncurses::waddstr(win.win, PROMPT);
 
-            user_input = input::get_str(&win, (option_size as i32 + 1, PROMPT.len() as i32));
+            let textfield = JoshutoTextField::new(1, term_cols, (term_rows as usize - 1, 0), PROMPT.to_string());
+            user_input = textfield.readline_with_initial("", "");
         }
         ncurses::doupdate();
 

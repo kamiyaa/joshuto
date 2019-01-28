@@ -7,7 +7,6 @@ use std::fs;
 use std::process;
 
 use joshuto::command;
-use joshuto::input;
 
 pub const BACKSPACE: i32 = 0x7F;
 pub const TAB: i32 = 0x9;
@@ -60,7 +59,7 @@ pub struct JoshutoKeymap {
 impl JoshutoKeymap {
     pub fn new() -> Self
     {
-        let keymaps = input::initialize_default_keymap();
+        let keymaps = HashMap::new();
         JoshutoKeymap {
             keymaps,
         }

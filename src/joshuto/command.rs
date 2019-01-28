@@ -104,8 +104,8 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                             return Some(Box::new(self::ChangeDirectory::new(path)));
                         }
                     },
-                    Err(e) => {
-                        eprintln!("{} {:?}", e.to_string().as_str(), args);
+                    Err(_) => {
+                        eprintln!("Failed to parse: {:?}", args[0]);
                     }
                 }
             }

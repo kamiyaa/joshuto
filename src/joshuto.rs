@@ -9,7 +9,6 @@ pub mod config;
 mod command;
 mod context;
 mod history;
-mod input;
 mod preview;
 mod sort;
 mod structs;

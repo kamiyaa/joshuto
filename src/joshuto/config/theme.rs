@@ -24,24 +24,37 @@ impl JoshutoColorPair {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct JoshutoColorTheme {
+pub struct JoshutoRawColorTheme {
     pub colorpair: i16,
-    pub bold: bool,
-    pub underline: bool,
+    pub bold: Option<bool>,
+    pub underline: Option<bool>,
     pub prefix: Option<String>,
     pub prefixsize: Option<usize>,
+}
+
+impl JoshutoRawColorTheme {
+    pub fn flatten(self) -> JoshutoColorTheme
+    {
+        JoshutoColorTheme {
+            colorpair: self.colorpair,
+            bold: self.bold.unwrap_or(false),
+            underline: self.underline.unwrap_or(false),
+            prefix: self.prefix,
+            prefixsize: self.prefixsize,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawTheme {
     colorpair: Option<Vec<JoshutoColorPair>>,
-    selection: Option<JoshutoColorTheme>,
-    executable: Option<JoshutoColorTheme>,
-    regular: Option<JoshutoColorTheme>,
-    directory: Option<JoshutoColorTheme>,
-    link: Option<JoshutoColorTheme>,
-    socket: Option<JoshutoColorTheme>,
-    ext: Option<HashMap<String, JoshutoColorTheme>>,
+    selection: Option<JoshutoRawColorTheme>,
+    executable: Option<JoshutoRawColorTheme>,
+    regular: Option<JoshutoRawColorTheme>,
+    directory: Option<JoshutoRawColorTheme>,
+    link: Option<JoshutoRawColorTheme>,
+    socket: Option<JoshutoRawColorTheme>,
+    ext: Option<HashMap<String, JoshutoRawColorTheme>>,
 }
 
 impl JoshutoRawTheme {
@@ -60,67 +73,80 @@ impl JoshutoRawTheme {
                 }
             };
 
-        let selection = self.selection.unwrap_or(JoshutoColorTheme {
+        let selection = self.selection.unwrap_or(JoshutoRawColorTheme {
             colorpair: 3,
-            bold: true,
-            underline: false,
+            bold: Some(true),
+            underline: None,
             prefix: None,
             prefixsize: None,
             });
 
-        let executable = self.executable.unwrap_or(JoshutoColorTheme {
+        let executable = self.executable.unwrap_or(JoshutoRawColorTheme {
             colorpair: 2,
-            bold: true,
-            underline: false,
+            bold: Some(true),
+            underline: None,
             prefix: None,
             prefixsize: None,
             });
 
-        let regular = self.regular.unwrap_or(JoshutoColorTheme {
+        let regular = self.regular.unwrap_or(JoshutoRawColorTheme {
             colorpair: 0,
-            bold: false,
-            underline: false,
+            bold: None,
+            underline: None,
             prefix: None,
             prefixsize: None,
             });
 
-        let directory = self.directory.unwrap_or(JoshutoColorTheme {
+        let directory = self.directory.unwrap_or(JoshutoRawColorTheme {
             colorpair: 4,
-            bold: true,
-            underline: false,
+            bold: Some(true),
+            underline: None,
             prefix: None,
             prefixsize: None,
             });
 
-        let link = self.link.unwrap_or(JoshutoColorTheme {
+        let link = self.link.unwrap_or(JoshutoRawColorTheme {
             colorpair: 6,
-            bold: true,
-            underline: false,
+            bold: Some(true),
+            underline: None,
             prefix: None,
             prefixsize: None,
             });
 
-        let socket = self.socket.unwrap_or(JoshutoColorTheme {
+        let socket = self.socket.unwrap_or(JoshutoRawColorTheme {
             colorpair: 6,
-            bold: true,
-            underline: false,
+            bold: Some(true),
+            underline: None,
             prefix: None,
             prefixsize: None,
             });
 
-        let ext = self.ext.unwrap_or(HashMap::new());
+        let mut extraw = self.ext.unwrap_or(HashMap::new());
+        let mut ext: HashMap<String, JoshutoColorTheme> = HashMap::new();
+        for (k, v) in extraw.drain() {
+            ext.insert(k, v.flatten());
+        }
 
         JoshutoTheme {
             colorpair,
-            regular,
-            directory,
-            selection,
-            executable,
-            link,
-            socket,
+            regular: regular.flatten(),
+            directory: directory.flatten(),
+            selection: selection.flatten(),
+            executable: executable.flatten(),
+            link: link.flatten(),
+            socket: socket.flatten(),
             ext,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct JoshutoColorTheme {
+    pub colorpair: i16,
+    pub bold: bool,
+    pub underline: bool,
+    pub prefix: Option<String>,
+    pub prefixsize: Option<usize>,
 }
 
 #[derive(Debug, Clone)]
