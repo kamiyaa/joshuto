@@ -32,10 +32,11 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
     -> Option<&Box<dyn JoshutoCommand>>
 {
     let (term_rows, term_cols) = ui::getmaxyx();
-    let keymap_len = keymap.len();
+    ncurses::timeout(-1);
 
     let ch: i32;
     {
+        let keymap_len = keymap.len();
         let win = window::JoshutoPanel::new(keymap_len as i32 + 1, term_cols,
                 ((term_rows - keymap_len as i32 - 2) as usize, 0));
 
@@ -48,10 +49,10 @@ fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
         win.move_to_top();
         ui::display_options(&win, &display_vec);
         ncurses::doupdate();
-        ncurses::timeout(-1);
 
         ch = ncurses::wgetch(win.win);
     }
+    ncurses::doupdate();
 
     if ch == config::keymap::ESCAPE {
         return None;
