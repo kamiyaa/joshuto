@@ -6,7 +6,7 @@ use std::process;
 
 use joshuto::config::mimetype;
 
-pub const BITMASK  : u32 = 0o170000;
+// pub const BITMASK  : u32 = 0o170000;
 pub const S_IFSOCK : u32 = 0o140000;   /* socket */
 pub const S_IFLNK  : u32 = 0o120000;   /* symbolic link */
 pub const S_IFREG  : u32 = 0o100000;   /* regular file */

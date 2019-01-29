@@ -107,7 +107,7 @@ fn wprint_file_name(win: ncurses::WINDOW, file_name: &str,
 {
     let name_visual_space = unicode_width::UnicodeWidthStr::width(file_name);
     if name_visual_space < space_avail {
-        ncurses::waddstr(win, &file_name);
+        ncurses::mvwaddstr(win, coord.0, coord.1, &file_name);
         return;
     }
     if let Some(ext) = file_name.rfind('.') {
@@ -148,34 +148,31 @@ pub fn wprint_entry(win: &window::JoshutoPanel,
     } else {
         space_avail = 0;
     }
-    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1), space_avail);
+    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + prefix.0 as i32), space_avail);
 }
 
 pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
         file: &structs::JoshutoDirEntry, prefix: (usize, &str), coord: (i32, i32))
 {
     ncurses::waddstr(win.win, prefix.1);
-    let space_avail: usize;
+    let coord = (coord.0, coord.1 + prefix.0 as i32);
+    let mut space_avail: usize;
     if win.cols >= prefix.0 as i32 {
         space_avail = win.cols as usize - prefix.0;
     } else {
         space_avail = 0;
     }
-/*
-    let mut space_avail: usize = win.cols as usize - 1;
-    if !file.path.is_dir() {
+
+    if file.path.is_dir() {
+    } else {
         let file_size_string = file_size_to_string(file.metadata.len as f64);
         if space_avail > file_size_string.len() {
             space_avail = space_avail - file_size_string.len();
             ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
         }
-        ncurses::wmove(win.win, coord.0, coord.1 + 1);
-        if space_avail > 1 {
-            space_avail = space_avail - 1;
-        }
     }
-*/
-    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1), space_avail);
+
+    wprint_file_name(win.win, &file.file_name_as_string, coord, space_avail);
 }
 
 pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
@@ -343,12 +340,12 @@ fn file_size_to_string(mut file_size: f64) -> String
     }
 
     if file_size >= 1000.0 {
-        format!("{:.0} {}", file_size, FILE_UNITS[index])
+        format!(" {:.0} {}", file_size, FILE_UNITS[index])
     } else if file_size >= 100.0 {
         format!(" {:.0} {}", file_size, FILE_UNITS[index])
     } else if file_size >= 10.0 {
-        format!("{:.1} {}", file_size, FILE_UNITS[index])
+        format!(" {:.1} {}", file_size, FILE_UNITS[index])
     } else {
-        format!("{:.2} {}", file_size, FILE_UNITS[index])
+        format!(" {:.2} {}", file_size, FILE_UNITS[index])
     }
 }

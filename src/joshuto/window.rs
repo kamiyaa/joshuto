@@ -3,8 +3,6 @@ extern crate ncurses;
 use joshuto::structs;
 use joshuto::ui;
 
-use joshuto::theme_t;
-
 #[cfg(test)]
 mod test;
 
