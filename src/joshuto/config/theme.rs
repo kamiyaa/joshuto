@@ -232,9 +232,9 @@ impl JoshutoTheme {
 
     fn read_config() -> Option<JoshutoRawTheme>
     {
-        match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
+        match xdg::BaseDirectories::with_profile(crate::PROGRAM_NAME, "") {
             Ok(dirs) => {
-                let config_path = dirs.find_config_file(::THEME_FILE)?;
+                let config_path = dirs.find_config_file(crate::THEME_FILE)?;
                 match fs::read_to_string(&config_path) {
                     Ok(config_contents) => {
                         match toml::from_str(&config_contents) {
