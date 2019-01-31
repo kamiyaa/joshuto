@@ -26,6 +26,7 @@ impl TrashFiles {
     pub fn trash_files(paths: Vec<path::PathBuf>)
     {
         let trash_dir = get_trash_dir();
+        fs::create_dir_all(&trash_dir);
         fs_extra::move_items(&paths, trash_dir, &fs_extra::dir::CopyOptions::new());
     }
 }
