@@ -24,7 +24,7 @@ $ cargo build
 ```
 
 ## Configuration
-Place config files inside `$XDG_CONFIG_DIR/joshuto` (usually `$HOME/.config/joshuto/` for GNU/Linux)
+Place config files inside `$XDG_CONFIG_HOME/joshuto` (usually `$HOME/.config/joshuto/` for GNU/Linux)
 Joshuto can currently be configured using the following files:
 
  - [joshuto.toml](https://github.com/kamiyaa/joshuto/blob/master/config/joshuto.toml)
