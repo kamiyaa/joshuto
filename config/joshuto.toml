@@ -8,8 +8,7 @@ case_sensitive = false
 reverse = false
 directories_first = true
 
-
-show_prerview = true
+show_preview = true
 
 # ratios for parent view, current view and preview
 column_ratio = [1, 3, 4]

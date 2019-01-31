@@ -9,12 +9,28 @@ extern crate xdg;
 
 mod joshuto;
 
+use std::path;
+
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_FILE: &str = "joshuto.toml";
 const MIMETYPE_FILE: &str = "mimetype.toml";
 const KEYMAP_FILE: &str = "keymap.toml";
 const THEME_FILE: &str = "theme.toml";
 const PREVIEW_FILE: &str = "preview.toml";
+
+lazy_static! {
+    static ref CONFIG_HIERARCHY: Vec<path::PathBuf> = {
+        let mut temp = vec![];
+        match xdg::BaseDirectories::with_prefix(::PROGRAM_NAME) {
+            Ok(dirs) => temp.push(dirs.get_config_home()),
+            Err(e) => eprintln!("{}", e),
+        };
+        if cfg!(debug_assertions) {
+            temp.push(path::PathBuf::from("./config"));
+        }
+        temp
+    };
+}
 
 fn main()
 {

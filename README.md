@@ -1,7 +1,7 @@
 # joshuto
 
-ranger-like terminal file manager written in Rust.
-Is a work in progress.
+[ranger](https://github.com/ranger/ranger)-like terminal file manager written in Rust.
+Currently a work in progress.
 
 ![Alt text](joshuto_screenshot.png?raw=true "joshuto")
 
@@ -24,7 +24,8 @@ $ cargo build
 ```
 
 ## Configuration
-Place config files inside `$XDG_CONFIG_HOME/joshuto` (usually `$HOME/.config/joshuto/` for GNU/Linux)
+Place config files inside `$XDG_CONFIG_HOME/joshuto` (usually `$HOME/.config/joshuto/` for GNU/Linux).
+
 Joshuto can currently be configured using the following files:
 
  - [joshuto.toml](https://github.com/kamiyaa/joshuto/blob/master/config/joshuto.toml)
