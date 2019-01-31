@@ -54,9 +54,9 @@ pub use self::show_hidden::ToggleHiddenFiles;
 mod selection;
 pub use self::selection::SelectFiles;
 
-mod tab_operation;
-pub use self::tab_operation::NewTab;
-pub use self::tab_operation::CloseTab;
+mod tab_operations;
+pub use self::tab_operations::NewTab;
+pub use self::tab_operations::CloseTab;
 
 mod tab_switch;
 pub use self::tab_switch::TabSwitch;
@@ -291,4 +291,3 @@ pub fn split_shell_style(line: &String) -> Vec<&str>
     }
     args
 }
-

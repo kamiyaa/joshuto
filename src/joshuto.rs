@@ -12,6 +12,7 @@ mod history;
 mod preview;
 mod sort;
 mod structs;
+mod tab;
 mod textfield;
 mod ui;
 mod unix;
