@@ -1,12 +1,12 @@
 use std;
 
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::context::JoshutoContext;
-use joshuto::structs::JoshutoDirEntry;
-use joshuto::textfield::JoshutoTextField;
-use joshuto::ui;
-use joshuto::unix;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::structs::JoshutoDirEntry;
+use crate::joshuto::textfield::JoshutoTextField;
+use crate::joshuto::ui;
+use crate::joshuto::unix;
 
 #[derive(Clone, Debug)]
 pub struct SetMode;

@@ -1,5 +1,5 @@
-use joshuto::config::keymap;
-use joshuto::window;
+use crate::joshuto::config::keymap;
+use crate::joshuto::window;
 
 pub struct JoshutoTextField {
     pub win: window::JoshutoPanel,

@@ -1,5 +1,5 @@
-use joshuto::structs;
-use joshuto::ui;
+use crate::joshuto::structs;
+use crate::joshuto::ui;
 
 #[cfg(test)]
 mod test;

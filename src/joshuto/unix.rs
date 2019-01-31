@@ -1,7 +1,7 @@
 use std::path;
 use std::process;
 
-use joshuto::config::mimetype;
+use crate::joshuto::config::mimetype;
 
 // pub const BITMASK  : u32 = 0o170000;
 pub const S_IFSOCK : u32 = 0o140000;   /* socket */

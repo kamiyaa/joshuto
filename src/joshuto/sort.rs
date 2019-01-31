@@ -3,7 +3,7 @@ use std::cmp;
 use std::fs;
 use std::time;
 
-use joshuto::structs;
+use crate::joshuto::structs;
 
 #[derive(Debug, Clone)]
 pub struct SortOption {
@@ -226,4 +226,3 @@ impl SortMtime {
         compare(&file1, &file2).unwrap_or(cmp::Ordering::Less)
     }
 }
-

@@ -4,8 +4,8 @@ use std::ffi;
 use std::path;
 use std::time;
 
-use joshuto::sort;
-use joshuto::window::JoshutoPageState;
+use crate::joshuto::sort;
+use crate::joshuto::window::JoshutoPageState;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {

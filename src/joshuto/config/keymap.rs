@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::process;
 
-use joshuto::command;
+use crate::joshuto::command;
 
 pub const BACKSPACE: i32 = 0x7F;
 pub const TAB: i32 = 0x9;

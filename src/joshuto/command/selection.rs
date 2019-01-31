@@ -1,9 +1,9 @@
 use std;
 
-use joshuto::context::JoshutoContext;
-use joshuto::command::CursorMove;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::command::CursorMove;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
 
 #[derive(Debug, Clone)]
 pub struct SelectFiles {

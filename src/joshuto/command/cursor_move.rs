@@ -1,9 +1,9 @@
 use std;
 
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::context::JoshutoContext;
-use joshuto::preview;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::preview;
 
 #[derive(Clone, Debug)]
 pub struct CursorMove {

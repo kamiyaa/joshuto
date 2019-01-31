@@ -2,8 +2,8 @@ use std;
 use std::collections::HashMap;
 use std::path;
 
-use joshuto::structs;
-use joshuto::sort;
+use crate::joshuto::structs;
+use crate::joshuto::sort;
 use std::collections::hash_map::Entry;
 
 pub struct DirHistory {

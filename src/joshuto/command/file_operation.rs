@@ -3,13 +3,13 @@ use std::path;
 use std::sync;
 use std::thread;
 
-use joshuto::command;
-use joshuto::command::ProgressInfo;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::context::JoshutoContext;
-use joshuto::preview;
-use joshuto::structs::JoshutoDirList;
+use crate::joshuto::command;
+use crate::joshuto::command::ProgressInfo;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::preview;
+use crate::joshuto::structs::JoshutoDirList;
 
 lazy_static! {
     static ref selected_files: sync::Mutex<Vec<path::PathBuf>> = sync::Mutex::new(vec![]);

@@ -1,8 +1,8 @@
 use std::fs;
 use std::process;
 
-use joshuto;
-use joshuto::sort;
+use crate::joshuto;
+use crate::joshuto::sort;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortRawOption {

@@ -1,11 +1,11 @@
 use std;
 
-use joshuto::command::CursorMove;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::context::JoshutoContext;
-use joshuto::textfield::JoshutoTextField;
-use joshuto::ui;
+use crate::joshuto::command::CursorMove;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::textfield::JoshutoTextField;
+use crate::joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct Search;

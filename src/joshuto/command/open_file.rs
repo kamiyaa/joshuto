@@ -2,18 +2,18 @@ use std;
 use std::env;
 use std::path;
 
-use joshuto::context::JoshutoContext;
-use joshuto::command;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::config::mimetype;
-use joshuto::preview;
-use joshuto::textfield::JoshutoTextField;
-use joshuto::ui;
-use joshuto::unix;
-use joshuto::window;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::command;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::config::mimetype;
+use crate::joshuto::preview;
+use crate::joshuto::textfield::JoshutoTextField;
+use crate::joshuto::ui;
+use crate::joshuto::unix;
+use crate::joshuto::window;
 
-use joshuto::mimetype_t;
+use crate::joshuto::mimetype_t;
 
 #[derive(Clone, Debug)]
 pub struct OpenFile;

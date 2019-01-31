@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path;
 
-use joshuto::context::JoshutoContext;
-use joshuto::structs;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::structs;
 
 mod quit;
 pub use self::quit::Quit;

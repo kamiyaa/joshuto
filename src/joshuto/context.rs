@@ -2,16 +2,16 @@ use std::path;
 use std::sync;
 use std::thread;
 
-use joshuto::command;
-use joshuto::config;
-use joshuto::history;
-use joshuto::sort;
-use joshuto::structs::JoshutoDirList;
-use joshuto::ui;
-use joshuto::window::JoshutoView;
-use joshuto::window::JoshutoPanel;
+use crate::joshuto::command;
+use crate::joshuto::config;
+use crate::joshuto::history;
+use crate::joshuto::sort;
+use crate::joshuto::structs::JoshutoDirList;
+use crate::joshuto::ui;
+use crate::joshuto::window::JoshutoView;
+use crate::joshuto::window::JoshutoPanel;
 
-use joshuto::theme_t;
+use crate::joshuto::theme_t;
 
 pub struct JoshutoContext {
     pub username: String,

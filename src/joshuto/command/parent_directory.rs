@@ -1,10 +1,10 @@
 use std;
 
-use joshuto::context::JoshutoContext;
-use joshuto::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::preview;
-use joshuto::ui;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::preview;
+use crate::joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct ParentDirectory;

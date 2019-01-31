@@ -1,9 +1,9 @@
 use std::path;
 use std::process;
 
-use joshuto::context::JoshutoContext;
-use joshuto::ui;
-use joshuto::window;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::ui;
+use crate::joshuto::window;
 
 pub fn preview_file(context: &mut JoshutoContext)
 {

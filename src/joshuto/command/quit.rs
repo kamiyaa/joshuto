@@ -1,10 +1,10 @@
 use std;
 use std::process;
 
-use joshuto::context::JoshutoContext;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::ui;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct Quit;

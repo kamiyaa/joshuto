@@ -1,13 +1,13 @@
 use std::path;
 use std::fs;
 
-use joshuto::command;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::config::keymap;
-use joshuto::context::JoshutoContext;
-use joshuto::preview;
-use joshuto::ui;
+use crate::joshuto::command;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::config::keymap;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::preview;
+use crate::joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct DeleteFiles;

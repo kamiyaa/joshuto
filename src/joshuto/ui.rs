@@ -1,13 +1,13 @@
 use std::fs;
 use std::time;
 
-use joshuto::config::JoshutoColorTheme;
-use joshuto::context::JoshutoContext;
-use joshuto::structs;
-use joshuto::unix;
-use joshuto::window;
+use crate::joshuto::config::JoshutoColorTheme;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::structs;
+use crate::joshuto::unix;
+use crate::joshuto::window;
 
-use joshuto::theme_t;
+use crate::joshuto::theme_t;
 
 pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;

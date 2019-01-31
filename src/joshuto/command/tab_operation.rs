@@ -2,12 +2,12 @@ use std;
 use std::path;
 use std::env;
 
-use joshuto::context::JoshutoContext;
-use joshuto::context::JoshutoTab;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::command::TabSwitch;
-use joshuto::ui;
+use crate::joshuto::context::JoshutoContext;
+use crate::joshuto::context::JoshutoTab;
+use crate::joshuto::command::JoshutoCommand;
+use crate::joshuto::command::JoshutoRunnable;
+use crate::joshuto::command::TabSwitch;
+use crate::joshuto::ui;
 
 #[derive(Clone, Debug)]
 pub struct NewTab;
