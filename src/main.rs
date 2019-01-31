@@ -1,12 +1,3 @@
-#[macro_use]
-extern crate clap;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde_derive;
-extern crate toml;
-extern crate xdg;
-
 mod joshuto;
 
 const PROGRAM_NAME: &str = "joshuto";

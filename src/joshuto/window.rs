@@ -1,5 +1,3 @@
-extern crate ncurses;
-
 use joshuto::structs;
 use joshuto::ui;
 

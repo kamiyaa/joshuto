@@ -1,7 +1,3 @@
-extern crate fs_extra;
-extern crate ncurses;
-extern crate open;
-
 use std;
 use std::env;
 use std::path;

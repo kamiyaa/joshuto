@@ -1,5 +1,3 @@
-extern crate ncurses;
-
 use std;
 use std::collections::HashMap;
 use std::time;

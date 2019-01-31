@@ -1,5 +1,3 @@
-extern crate wordexp;
-
 use std;
 use std::collections::HashMap;
 use std::fmt;
@@ -291,4 +289,3 @@ pub fn split_shell_style(line: &String) -> Vec<&str>
     }
     args
 }
-

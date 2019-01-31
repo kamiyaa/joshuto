@@ -1,6 +1,3 @@
-extern crate ncurses;
-extern crate whoami;
-
 use std::path;
 use std::sync;
 use std::thread;

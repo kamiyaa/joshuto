@@ -1,6 +1,3 @@
-extern crate ncurses;
-extern crate unicode_width;
-
 use std::fs;
 use std::time;
 

@@ -1,6 +1,3 @@
-extern crate libc;
-extern crate ncurses;
-
 use std::path;
 use std::process;
 

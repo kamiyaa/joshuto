@@ -1,7 +1,3 @@
-extern crate ncurses;
-extern crate mime_detective;
-extern crate mime;
-
 use std::path;
 use std::process;
 

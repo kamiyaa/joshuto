@@ -1,5 +1,3 @@
-extern crate libc;
-
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct wordexp_t {

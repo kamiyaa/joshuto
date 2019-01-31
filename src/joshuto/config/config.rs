@@ -1,7 +1,3 @@
-extern crate whoami;
-extern crate toml;
-extern crate xdg;
-
 use std::fs;
 use std::process;
 

@@ -1,6 +1,3 @@
-extern crate fs_extra;
-extern crate ncurses;
-
 use std;
 use std::path;
 use std::sync;

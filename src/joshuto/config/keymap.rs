@@ -1,7 +1,3 @@
-extern crate fs_extra;
-extern crate toml;
-extern crate xdg;
-
 use std::collections::HashMap;
 use std::fs;
 use std::process;

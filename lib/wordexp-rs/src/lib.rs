@@ -1,5 +1,3 @@
-extern crate libc;
-
 use std::ffi::CString;
 use std::ffi::CStr;
 
