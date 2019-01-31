@@ -1,3 +1,7 @@
+extern crate serde;
+
+use self::serde::de::DeserializeOwned;
+
 pub mod config;
 pub mod keymap;
 pub mod mimetype;
@@ -40,4 +44,22 @@ fn read_config(filename: &str) -> Option<String> {
             std::process::exit(1)
         },
     }
+}
+
+trait Flattenable<T> {
+    fn flatten(self) -> T;
+}
+
+fn parse_config<T, S>(filename: &str) -> Option<S>
+    where T: DeserializeOwned + Flattenable<S>
+{
+    let config_contents = read_config(filename)?;
+    let config = match toml::from_str::<T>(&config_contents) {
+        Ok(config) => config,
+        Err(e) => {
+            eprintln!("Error parsing {} file: {}", filename, e);
+            std::process::exit(1);
+        },
+    };
+    Some(config.flatten())
 }

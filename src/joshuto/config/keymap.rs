@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::process;
 
 use joshuto::command;
+use joshuto::config::{Flattenable, parse_config};
 
 pub const BACKSPACE: i32 = 0x7F;
 pub const TAB: i32 = 0x9;
@@ -27,10 +28,8 @@ struct JoshutoRawKeymap {
     mapcommand: Option<Vec<JoshutoMapCommand>>,
 }
 
-impl JoshutoRawKeymap {
-
-    pub fn flatten(self) -> JoshutoKeymap
-    {
+impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
+    fn flatten(self) -> JoshutoKeymap {
         let mut keymaps: HashMap<i32, command::CommandKeybind> = HashMap::new();
         if let Some(maps) = self.mapcommand {
             for mapcommand in maps {
@@ -64,29 +63,9 @@ impl JoshutoKeymap {
         }
     }
 
-    fn read_config() -> Option<JoshutoRawKeymap> {
-        let config_contents = crate::joshuto::config::read_config(::KEYMAP_FILE)?;
-        match toml::from_str(&config_contents) {
-            Ok(config) => {
-                Some(config)
-            },
-            Err(e) => {
-                eprintln!("Error parsing keymap file: {}", e);
-                process::exit(1);
-            },
-        }
-    }
-
-    pub fn get_config() -> JoshutoKeymap
-    {
-        match JoshutoKeymap::read_config() {
-            Some(config) => {
-                config.flatten()
-            }
-            None => {
-                JoshutoKeymap::new()
-            }
-        }
+    pub fn get_config() -> JoshutoKeymap {
+        parse_config::<JoshutoRawKeymap, JoshutoKeymap>(::KEYMAP_FILE)
+            .unwrap_or_else(|| JoshutoKeymap::new())
     }
 }
 

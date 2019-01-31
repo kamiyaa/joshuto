@@ -2,10 +2,9 @@ extern crate whoami;
 extern crate toml;
 extern crate xdg;
 
-use std::process;
-
 use joshuto;
 use joshuto::sort;
+use joshuto::config::{Flattenable, parse_config};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortRawOption {
@@ -34,8 +33,10 @@ impl JoshutoRawConfig {
             column_ratio: Some([1, 3, 4]),
         }
     }
+}
 
-    pub fn flatten(self) -> JoshutoConfig
+impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
+    fn flatten(self) -> JoshutoConfig
     {
         let column_ratio = match self.column_ratio {
             Some(s) => (s[0], s[1], s[2]),
@@ -116,28 +117,8 @@ impl JoshutoConfig {
         }
     }
 
-    fn read_config() -> Option<JoshutoRawConfig> {
-        let config_contents = crate::joshuto::config::read_config(::CONFIG_FILE)?;
-        match toml::from_str(&config_contents) {
-            Ok(config) => {
-                Some(config)
-            },
-            Err(e) => {
-                eprintln!("Error parsing config file: {}", e);
-                process::exit(1);
-            },
-        }
-    }
-
-    pub fn get_config() -> Self
-    {
-        match Self::read_config() {
-            Some(config) => {
-                config.flatten()
-            }
-            None => {
-                JoshutoConfig::new()
-            }
-        }
+    pub fn get_config() -> JoshutoConfig {
+        parse_config::<JoshutoRawConfig, JoshutoConfig>(::CONFIG_FILE)
+            .unwrap_or_else(|| JoshutoConfig::new())
     }
 }

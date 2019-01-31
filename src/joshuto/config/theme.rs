@@ -2,7 +2,8 @@ extern crate toml;
 extern crate xdg;
 
 use std::collections::HashMap;
-use std::process;
+
+use joshuto::config::{Flattenable, parse_config};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct JoshutoColorPair {
@@ -56,8 +57,8 @@ pub struct JoshutoRawTheme {
     ext: Option<HashMap<String, JoshutoRawColorTheme>>,
 }
 
-impl JoshutoRawTheme {
-    pub fn flatten(self) -> JoshutoTheme
+impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
+    fn flatten(self) -> JoshutoTheme
     {
         let colorpair = match self.colorpair {
                 Some(s) => s,
@@ -231,28 +232,8 @@ impl JoshutoTheme {
 
     }
 
-    fn read_config() -> Option<JoshutoRawTheme> {
-        let config_contents = crate::joshuto::config::read_config(::THEME_FILE)?;
-        match toml::from_str(&config_contents) {
-            Ok(config) => {
-                Some(config)
-            },
-            Err(e) => {
-                eprintln!("Error parsing theme file: {}", e);
-                process::exit(1);
-            },
-        }
-    }
-
-    pub fn get_config() -> Self
-    {
-        match Self::read_config() {
-            Some(config) => {
-                config.flatten()
-            }
-            None => {
-                Self::new()
-            }
-        }
+    pub fn get_config() -> JoshutoTheme {
+        parse_config::<JoshutoRawTheme, JoshutoTheme>(::THEME_FILE)
+            .unwrap_or_else(|| JoshutoTheme::new())
     }
 }

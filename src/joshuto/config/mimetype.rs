@@ -3,7 +3,8 @@ extern crate xdg;
 
 use std::fmt;
 use std::collections::HashMap;
-use std::process;
+
+use joshuto::config::{Flattenable, parse_config};
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
@@ -52,8 +53,10 @@ impl JoshutoRawMimetype {
             extensions: None,
         }
     }
+}
 
-    pub fn flatten(self) -> JoshutoMimetype
+impl Flattenable<JoshutoMimetype> for JoshutoRawMimetype {
+    fn flatten(self) -> JoshutoMimetype
     {
         let mimetypes = self.mimetypes.unwrap_or(HashMap::new());
         let extensions = self.extensions.unwrap_or(HashMap::new());
@@ -81,28 +84,8 @@ impl JoshutoMimetype {
         }
     }
 
-    fn read_config() -> Option<JoshutoRawMimetype> {
-        let config_contents = crate::joshuto::config::read_config(::MIMETYPE_FILE)?;
-        match toml::from_str(&config_contents) {
-            Ok(config) => {
-                Some(config)
-            },
-            Err(e) => {
-                eprintln!("Error parsing mimetype file: {}", e);
-                process::exit(1);
-            },
-        }
-    }
-
-    pub fn get_config() -> Self
-    {
-        match Self::read_config() {
-            Some(config) => {
-                config.flatten()
-            }
-            None => {
-                Self::new()
-            }
-        }
+    pub fn get_config() -> JoshutoMimetype {
+        parse_config::<JoshutoRawMimetype, JoshutoMimetype>(::MIMETYPE_FILE)
+            .unwrap_or_else(|| JoshutoMimetype::new())
     }
 }
