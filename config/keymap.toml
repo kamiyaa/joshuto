@@ -118,11 +118,11 @@ args = [ "overwrite" ]
 
 [[mapcommand]]
 keys = [ "d", "D" ]
-command = "delete_files"
+command = "trash_files"
 
 [[mapcommand]]
 keys = [ "Delete" ]
-command = "delete_files"
+command = "trash_files"
 
 
 [[mapcommand]]

@@ -35,8 +35,8 @@ pub use self::file_operation::CutFiles;
 pub use self::file_operation::CopyFiles;
 pub use self::file_operation::PasteFiles;
 
-mod delete_file;
-pub use self::delete_file::DeleteFiles;
+mod trash_files;
+pub use self::trash_files::TrashFiles;
 
 mod rename_file;
 pub use self::rename_file::RenameFile;
@@ -133,7 +133,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         "cursor_move_page_up" => Some(Box::new(self::CursorMovePageUp::new())),
         "cursor_move_page_down" => Some(Box::new(self::CursorMovePageDown::new())),
         "cut_files" => Some(Box::new(self::CutFiles::new())),
-        "delete_files" => Some(Box::new(self::DeleteFiles::new())),
+        "trash_files" => Some(Box::new(self::TrashFiles::new())),
         "mkdir" => Some(Box::new(self::NewDirectory::new())),
         "new_tab" => Some(Box::new(self::NewTab::new())),
         "open_file" => Some(Box::new(self::OpenFile::new())),
@@ -291,4 +291,3 @@ pub fn split_shell_style(line: &String) -> Vec<&str>
     }
     args
 }
-

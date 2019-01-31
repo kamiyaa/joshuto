@@ -1,4 +1,5 @@
 extern crate ncurses;
+extern crate fs_extra;
 
 use std::path;
 use std::fs;
@@ -11,40 +12,37 @@ use joshuto::context::JoshutoContext;
 use joshuto::preview;
 use joshuto::ui;
 
+fn get_trash_dir() -> path::PathBuf {
+    xdg::BaseDirectories::new().unwrap().get_data_home().join("Trash/files")
+}
+
 #[derive(Clone, Debug)]
-pub struct DeleteFiles;
+pub struct TrashFiles;
 
-impl DeleteFiles {
-    pub fn new() -> Self { DeleteFiles }
-    pub const fn command() -> &'static str { "delete_files" }
+impl TrashFiles {
+    pub fn new() -> Self { TrashFiles }
+    pub const fn command() -> &'static str { "trash_files" }
 
-    pub fn remove_files(paths: Vec<path::PathBuf>)
+    pub fn trash_files(paths: Vec<path::PathBuf>)
     {
-        for path in &paths {
-            if let Ok(metadata) = fs::symlink_metadata(path) {
-                if metadata.is_dir() {
-                    fs::remove_dir_all(&path).unwrap();
-                } else {
-                    fs::remove_file(&path).unwrap();
-                }
-            }
-        }
+        let trash_dir = get_trash_dir();
+        fs_extra::move_items(&paths, trash_dir, &fs_extra::dir::CopyOptions::new());
     }
 }
 
-impl JoshutoCommand for DeleteFiles {}
+impl JoshutoCommand for TrashFiles {}
 
-impl std::fmt::Display for DeleteFiles {
+impl std::fmt::Display for TrashFiles {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         f.write_str(Self::command())
     }
 }
 
-impl JoshutoRunnable for DeleteFiles {
+impl JoshutoRunnable for TrashFiles {
     fn execute(&self, context: &mut JoshutoContext)
     {
-        ui::wprint_msg(&context.views.bot_win, "Delete selected files? (Y/n)");
+        ui::wprint_msg(&context.views.bot_win, "Trash selected files? (Y/n)");
         ncurses::timeout(-1);
         ncurses::doupdate();
 
@@ -52,10 +50,10 @@ impl JoshutoRunnable for DeleteFiles {
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
                 if let Some(paths) = command::collect_selected_paths(s) {
-                    Self::remove_files(paths);
+                    Self::trash_files(paths);
                 }
             }
-            ui::wprint_msg(&context.views.bot_win, "Deleted files");
+            ui::wprint_msg(&context.views.bot_win, "Trashed files");
 
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             curr_tab.reload_contents(&context.config_t.sort_type);
