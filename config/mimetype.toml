@@ -1,56 +1,56 @@
 # specify which applications to use to open certain file types
-[mimetypes]
+[mimetype]
 
-[[mimetypes.text]]
+[[mimetype.text]]
 program = "nano"
 
-[[mimetypes.text]]
+[[mimetype.text]]
 program = "gedit"
 
-[[mimetypes.text]]
+[[mimetype.text]]
 program = "bat"
 
-[[mimetypes.audio]]
+[[mimetype.audio]]
 program = "mpv"
 
-[[mimetypes.video]]
+[[mimetype.video]]
 program = "mpv"
 fork = true
 silent = true
 
-[[mimetypes.image]]
+[[mimetype.image]]
 program = "qimgv"
 fork = true
 silent = true
 
-[[mimetypes.image]]
+[[mimetype.image]]
 program = "krita"
 fork = true
 silent = true
 
 
-[extensions]
+[extension]
 
-[[extensions.tex]]
+[[extension.tex]]
 program = "nano"
-[[extensions.tex]]
+[[extension.tex]]
 program = "pdflatex"
 
-[[extensions.pdf]]
+[[extension.pdf]]
 program = "evince"
 fork = true
 silent = true
 
-[[extensions.7z]]
+[[extension.7z]]
 program = "file-roller"
 fork = true
 silent = true
 
-[[extensions.odt]]
+[[extension.odt]]
 program = "libreoffice"
 fork = true
 silent = true
 
-[[extensions.rar]]
+[[extension.rar]]
 program = "unrar"
 args = [ "e" ]
