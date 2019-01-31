@@ -15,11 +15,11 @@ mod ui;
 mod unix;
 mod window;
 
-use self::config::JoshutoTheme;
-use self::config::JoshutoMimetype;
-use self::context::JoshutoContext;
-use self::command::CommandKeybind;
-use self::command::JoshutoCommand;
+use config::JoshutoTheme;
+use config::JoshutoMimetype;
+use context::JoshutoContext;
+use command::CommandKeybind;
+use command::JoshutoCommand;
 
 lazy_static! {
     static ref theme_t: JoshutoTheme = JoshutoTheme::get_config();
