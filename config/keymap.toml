@@ -13,17 +13,34 @@ command = "cursor_move"
 args = [ "-1" ]
 
 [[mapcommand]]
+keys = [ "k" ]
+command = "cursor_move"
+args = [ "-1" ]
+
+[[mapcommand]]
 keys = [ "Down" ]
 command = "cursor_move"
 args = [ "1" ]
 
+[[mapcommand]]
+keys = [ "j" ]
+command = "cursor_move"
+args = [ "1" ]
 
 [[mapcommand]]
 keys = [ "Left" ]
 command = "parent_directory"
 
 [[mapcommand]]
+keys = [ "h" ]
+command = "parent_directory"
+
+[[mapcommand]]
 keys = [ "Right" ]
+command = "open_file"
+
+[[mapcommand]]
+keys = [ "l" ]
 command = "open_file"
 
 [[mapcommand]]
@@ -36,7 +53,15 @@ keys = [ "Home" ]
 command = "cursor_move_home"
 
 [[mapcommand]]
+keys = [ "g", "g" ]
+command = "cursor_move_home"
+
+[[mapcommand]]
 keys = [ "End" ]
+command = "cursor_move_end"
+
+[[mapcommand]]
+keys = [ "G" ]
 command = "cursor_move_end"
 
 
@@ -166,4 +191,3 @@ command = "set_mode"
 [[mapcommand]]
 keys = [ "b", "b" ]
 command = "bulk_rename"
-
