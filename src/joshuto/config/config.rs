@@ -2,11 +2,9 @@ extern crate whoami;
 extern crate toml;
 extern crate xdg;
 
-use std::fs;
-use std::process;
-
 use joshuto;
 use joshuto::sort;
+use joshuto::config::{Flattenable, parse_config};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortRawOption {
@@ -35,8 +33,10 @@ impl JoshutoRawConfig {
             column_ratio: Some([1, 3, 4]),
         }
     }
+}
 
-    pub fn flatten(self) -> JoshutoConfig
+impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
+    fn flatten(self) -> JoshutoConfig
     {
         let column_ratio = match self.column_ratio {
             Some(s) => (s[0], s[1], s[2]),
@@ -117,45 +117,8 @@ impl JoshutoConfig {
         }
     }
 
-    fn read_config() -> Option<JoshutoRawConfig>
-    {
-        match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
-            Ok(dirs) => {
-                let config_path = dirs.find_config_file(::CONFIG_FILE)?;
-                match fs::read_to_string(&config_path) {
-                    Ok(config_contents) => {
-                        match toml::from_str(&config_contents) {
-                            Ok(config) => {
-                                Some(config)
-                            },
-                            Err(e) => {
-                                eprintln!("Error parsing keymap file: {}", e);
-                                process::exit(1);
-                            },
-                        }
-                    },
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        None
-                    },
-                }
-            },
-            Err(e) => {
-                eprintln!("{}", e);
-                None
-            },
-        }
-    }
-
-    pub fn get_config() -> Self
-    {
-        match Self::read_config() {
-            Some(config) => {
-                config.flatten()
-            }
-            None => {
-                JoshutoConfig::new()
-            }
-        }
+    pub fn get_config() -> JoshutoConfig {
+        parse_config::<JoshutoRawConfig, JoshutoConfig>(::CONFIG_FILE)
+            .unwrap_or_else(|| JoshutoConfig::new())
     }
 }

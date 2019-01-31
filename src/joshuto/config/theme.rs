@@ -2,8 +2,8 @@ extern crate toml;
 extern crate xdg;
 
 use std::collections::HashMap;
-use std::fs;
-use std::process;
+
+use joshuto::config::{Flattenable, parse_config};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct JoshutoColorPair {
@@ -57,8 +57,8 @@ pub struct JoshutoRawTheme {
     ext: Option<HashMap<String, JoshutoRawColorTheme>>,
 }
 
-impl JoshutoRawTheme {
-    pub fn flatten(self) -> JoshutoTheme
+impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
+    fn flatten(self) -> JoshutoTheme
     {
         let colorpair = match self.colorpair {
                 Some(s) => s,
@@ -232,45 +232,8 @@ impl JoshutoTheme {
 
     }
 
-    fn read_config() -> Option<JoshutoRawTheme>
-    {
-        match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
-            Ok(dirs) => {
-                let config_path = dirs.find_config_file(::THEME_FILE)?;
-                match fs::read_to_string(&config_path) {
-                    Ok(config_contents) => {
-                        match toml::from_str(&config_contents) {
-                            Ok(config) => {
-                                Some(config)
-                            },
-                            Err(e) => {
-                                eprintln!("Error parsing theme file: {}", e);
-                                process::exit(1);
-                            },
-                        }
-                    },
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        None
-                    },
-                }
-            },
-            Err(e) => {
-                eprintln!("{}", e);
-                None
-            },
-        }
-    }
-
-    pub fn get_config() -> Self
-    {
-        match Self::read_config() {
-            Some(config) => {
-                config.flatten()
-            }
-            None => {
-                Self::new()
-            }
-        }
+    pub fn get_config() -> JoshutoTheme {
+        parse_config::<JoshutoRawTheme, JoshutoTheme>(::THEME_FILE)
+            .unwrap_or_else(|| JoshutoTheme::new())
     }
 }
