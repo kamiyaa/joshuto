@@ -3,5 +3,4 @@
 *.log
 *.tmp
 *~
-Cargo.lock
 **/*.rs.bk
