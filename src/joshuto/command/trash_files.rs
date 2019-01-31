@@ -43,29 +43,19 @@ impl std::fmt::Display for TrashFiles {
 impl JoshutoRunnable for TrashFiles {
     fn execute(&self, context: &mut JoshutoContext)
     {
-        ui::wprint_msg(&context.views.bot_win, "Trash selected files? (Y/n)");
-        ncurses::timeout(-1);
-        ncurses::doupdate();
-
-        let ch: i32 = ncurses::getch();
-        if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-            if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-                if let Some(paths) = command::collect_selected_paths(s) {
-                    Self::trash_files(paths);
-                }
+        if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
+            if let Some(paths) = command::collect_selected_paths(s) {
+                Self::trash_files(paths);
             }
-            ui::wprint_msg(&context.views.bot_win, "Trashed files");
-
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            curr_tab.reload_contents(&context.config_t.sort_type);
-            curr_tab.refresh(&context.views, &context.config_t,
-                &context.username, &context.hostname);
-        } else {
-            let curr_tab = &context.tabs[context.curr_tab_index];
-            curr_tab.refresh_file_status(&context.views.bot_win);
-            curr_tab.refresh_path_status(&context.views.top_win,
-                    &context.username, &context.hostname);
         }
+
+        ui::wprint_msg(&context.views.bot_win, "Trashed files");
+
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        curr_tab.reload_contents(&context.config_t.sort_type);
+        curr_tab.refresh(&context.views, &context.config_t,
+            &context.username, &context.hostname);
+
         ncurses::doupdate();
     }
 }
