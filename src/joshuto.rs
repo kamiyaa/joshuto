@@ -114,7 +114,6 @@ fn resize_handler(context: &mut JoshutoContext)
 
 pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap)
 {
-    eprintln!("{:#?}", preview_t);
     ui::init_ncurses();
     ncurses::doupdate();
 

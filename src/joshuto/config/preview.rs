@@ -2,9 +2,9 @@ extern crate toml;
 extern crate xdg;
 
 use std::fmt;
-use std::fs;
 use std::collections::HashMap;
-use std::process;
+
+use joshuto::config::{Flattenable, parse_config};
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoPreviewEntry {
@@ -27,8 +27,10 @@ impl JoshutoRawPreview {
             extension: None,
         }
     }
+}
 
-    pub fn flatten(self) -> JoshutoPreview
+impl Flattenable<JoshutoPreview> for JoshutoRawPreview {
+    fn flatten(self) -> JoshutoPreview
     {
         let mimetype = self.mimetype.unwrap_or(HashMap::new());
         let extension = self.extension.unwrap_or(HashMap::new());
@@ -56,45 +58,8 @@ impl JoshutoPreview {
         }
     }
 
-    fn read_config() -> Option<JoshutoRawPreview>
-    {
-        match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
-            Ok(dirs) => {
-                let config_path = dirs.find_config_file(::PREVIEW_FILE)?;
-                match fs::read_to_string(&config_path) {
-                    Ok(config_contents) => {
-                        match toml::from_str(&config_contents) {
-                            Ok(config) => {
-                                Some(config)
-                            },
-                            Err(e) => {
-                                eprintln!("Error parsing preview file: {}", e);
-                                process::exit(1);
-                            },
-                        }
-                    },
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        None
-                    },
-                }
-            },
-            Err(e) => {
-                eprintln!("{}", e);
-                None
-            },
-        }
-    }
-
-    pub fn get_config() -> Self
-    {
-        match Self::read_config() {
-            Some(config) => {
-                config.flatten()
-            }
-            None => {
-                Self::new()
-            }
-        }
+    pub fn get_config() -> JoshutoPreview {
+        parse_config::<JoshutoRawPreview, JoshutoPreview>(::PREVIEW_FILE)
+            .unwrap_or_else(|| JoshutoPreview::new())
     }
 }
