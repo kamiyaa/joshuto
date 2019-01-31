@@ -14,25 +14,13 @@ pub use self::theme::JoshutoTheme;
 pub use self::theme::JoshutoColorTheme;
 
 pub fn search_config_hierarchy(filename: &str) -> Option<std::path::PathBuf> {
-    match xdg::BaseDirectories::with_prefix(::PROGRAM_NAME) {
-        Ok(dirs) => {
-            dirs
-                // 1st priority is $XDG_CONFIG_HOME
-                .find_config_file(filename)
-                // 2nd priority is ./config
-                .or_else(|| {
-                    let default_config = std::path::Path::new("./config").join(filename);
-                    match default_config.exists() {
-                        true => Some(default_config),
-                        false => None,
-                    }
-                })
-        },
-        Err(e) => {
-            eprintln!("{}", e);
-            None
-        },
+    for path in ::CONFIG_HIERARCHY.iter() {
+        let filepath = path.join(filename);
+        if filepath.exists() {
+            return Some(filepath)
+        }
     }
+    None
 }
 
 fn read_config(filename: &str) -> Option<String> {
