@@ -13,7 +13,7 @@ fs_extra = "1.1.0"
 lazy_static = "1.2.0"
 libc = "0.2.46"
 mime = "0.3.13"
-mime-detective = "0.2.1"
+mime-detective = { git = "https://github.com/cjbassi/mime-detective", branch = "arch-linux" }
 open = "1.2.2"
 serde = "1.0.84"
 serde_derive = "1.0.84"
