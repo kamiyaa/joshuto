@@ -65,7 +65,7 @@ impl JoshutoRunnable for DeleteFiles {
             let curr_tab = &context.tabs[context.curr_tab_index];
             curr_tab.refresh_file_status(&context.views.bot_win);
             curr_tab.refresh_path_status(&context.views.top_win,
-                    &context.username, &context.hostname);
+                    &context.username, &context.hostname, context.config_t.tilde_in_titlebar);
         }
         ncurses::doupdate();
     }

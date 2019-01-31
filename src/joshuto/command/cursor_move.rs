@@ -47,7 +47,7 @@ impl CursorMove {
             }
             curr_tab.refresh_curr(&context.views.mid_win, context.config_t.scroll_offset);
             curr_tab.refresh_file_status(&context.views.bot_win);
-            curr_tab.refresh_path_status(&context.views.top_win, &context.username, &context.hostname);
+            curr_tab.refresh_path_status(&context.views.top_win, &context.username, &context.hostname, context.config_t.tilde_in_titlebar);
         }
         preview::preview_file(context);
         ncurses::doupdate();

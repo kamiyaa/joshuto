@@ -70,15 +70,15 @@ impl JoshutoTab {
     pub fn refresh(&mut self, views: &JoshutoView, config_t: &config::JoshutoConfig,
             username: &str, hostname: &str)
     {
-        self.refresh_(views, config_t.scroll_offset, username, hostname);
+        self.refresh_(views, config_t.tilde_in_titlebar, config_t.scroll_offset, username, hostname);
     }
 
-    pub fn refresh_(&mut self, views: &JoshutoView, scroll_offset: usize,
+    pub fn refresh_(&mut self, views: &JoshutoView, tilde_in_titlebar: bool, scroll_offset: usize,
             username: &str, hostname: &str)
     {
         self.refresh_curr(&views.mid_win, scroll_offset);
         self.refresh_parent(&views.left_win, scroll_offset);
-        self.refresh_path_status(&views.top_win, username, hostname);
+        self.refresh_path_status(&views.top_win, username, hostname, tilde_in_titlebar);
         self.refresh_file_status(&views.bot_win);
     }
 
@@ -115,7 +115,7 @@ impl JoshutoTab {
         }
     }
 
-    pub fn refresh_path_status(&self, win: &JoshutoPanel, username: &str, hostname: &str)
+    pub fn refresh_path_status(&self, win: &JoshutoPanel, username: &str, hostname: &str, tilde_in_titlebar: bool)
     {
         let path_str: &str = self.curr_path.to_str().unwrap();
 
@@ -128,7 +128,12 @@ impl JoshutoTab {
         ncurses::waddstr(win.win, " ");
 
         ncurses::wattron(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
-        ncurses::waddstr(win.win, path_str);
+        if tilde_in_titlebar {
+            let path_str = &path_str.replace(&format!("/home/{}", username), "~");
+            ncurses::waddstr(win.win, path_str);
+        } else {
+            ncurses::waddstr(win.win, path_str);
+        }
         ncurses::waddstr(win.win, "/");
         ncurses::wattroff(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
         if let Some(ref dirlist) = self.curr_list {

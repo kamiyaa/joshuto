@@ -17,6 +17,7 @@ pub struct SortRawOption {
 #[derive(Clone, Debug, Deserialize)]
 pub struct JoshutoRawConfig {
     scroll_offset: Option<usize>,
+    tilde_in_titlebar: Option<bool>,
     sort_type: Option<String>,
     sort_option: Option<SortRawOption>,
     column_ratio: Option<[usize; 3]>,
@@ -28,6 +29,7 @@ impl JoshutoRawConfig {
     {
         JoshutoRawConfig {
             scroll_offset: Some(8),
+            tilde_in_titlebar: Some(true),
             sort_type: Some(String::from("natural")),
             sort_option: None,
             column_ratio: Some([1, 3, 4]),
@@ -44,6 +46,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
             };
 
         let scroll_offset: usize = self.scroll_offset.unwrap_or(6);
+        let tilde_in_titlebar: bool = self.tilde_in_titlebar.unwrap_or(true);
 
         let show_hidden: bool;
         let case_sensitive: bool;
@@ -85,6 +88,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 
         JoshutoConfig {
             scroll_offset,
+            tilde_in_titlebar,
             sort_type,
             column_ratio,
         }
@@ -94,6 +98,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 #[derive(Debug, Clone)]
 pub struct JoshutoConfig {
     pub scroll_offset: usize,
+    pub tilde_in_titlebar: bool,
     pub sort_type: joshuto::sort::SortType,
     pub column_ratio: (usize, usize, usize),
 }
@@ -112,6 +117,7 @@ impl JoshutoConfig {
 
         JoshutoConfig {
             scroll_offset: 6,
+            tilde_in_titlebar: true,
             sort_type,
             column_ratio: (1, 3, 4),
         }
