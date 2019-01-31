@@ -176,7 +176,9 @@ impl JoshutoTab {
 
         ncurses::wattron(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
         ncurses::waddstr(win.win, path_str);
-        ncurses::waddstr(win.win, "/");
+        if path_str != "/" {
+            ncurses::waddstr(win.win, "/");
+        }
         ncurses::wattroff(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
         if let Some(ref dirlist) = self.curr_list {
             if let Some(entry) = dirlist.get_curr_ref() {
