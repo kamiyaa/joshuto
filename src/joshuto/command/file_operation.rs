@@ -2,6 +2,7 @@ use std;
 use std::path;
 use std::sync;
 use std::thread;
+use lazy_static::lazy_static;
 
 use crate::joshuto::command;
 use crate::joshuto::command::ProgressInfo;

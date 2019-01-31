@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::process;
+use serde_derive::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct JoshutoColorPair {

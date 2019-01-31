@@ -1,6 +1,7 @@
 use std;
 use std::collections::HashMap;
 use std::time;
+use lazy_static::lazy_static;
 
 pub mod config;
 

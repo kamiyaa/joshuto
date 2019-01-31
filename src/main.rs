@@ -1,5 +1,7 @@
 mod joshuto;
 
+use clap::crate_version;
+
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_FILE: &str = "joshuto.toml";
 const MIMETYPE_FILE: &str = "mimetype.toml";

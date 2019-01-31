@@ -1,5 +1,6 @@
 use std::fs;
 use std::process;
+use serde_derive::Deserialize;
 
 use crate::joshuto;
 use crate::joshuto::sort;

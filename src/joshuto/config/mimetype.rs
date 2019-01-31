@@ -2,6 +2,7 @@ use std::fmt;
 use std::fs;
 use std::collections::HashMap;
 use std::process;
+use serde_derive::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
