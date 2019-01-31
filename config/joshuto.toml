@@ -2,6 +2,8 @@
 ## currently only supports: natural, mtime
 sort_type = "natural"
 
+tilde_in_titlebar = true
+
 [sort_option]
 show_hidden = false
 case_sensitive = false
