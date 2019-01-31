@@ -2,7 +2,6 @@ extern crate toml;
 extern crate xdg;
 
 use std::fmt;
-use std::fs;
 use std::collections::HashMap;
 use std::process;
 
@@ -82,32 +81,15 @@ impl JoshutoMimetype {
         }
     }
 
-    fn read_config() -> Option<JoshutoRawMimetype>
-    {
-        match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
-            Ok(dirs) => {
-                let config_path = dirs.find_config_file(::MIMETYPE_FILE)?;
-                match fs::read_to_string(&config_path) {
-                    Ok(config_contents) => {
-                        match toml::from_str(&config_contents) {
-                            Ok(config) => {
-                                Some(config)
-                            },
-                            Err(e) => {
-                                eprintln!("Error parsing mimetype file: {}", e);
-                                process::exit(1);
-                            },
-                        }
-                    },
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        None
-                    },
-                }
+    fn read_config() -> Option<JoshutoRawMimetype> {
+        let config_contents = crate::joshuto::config::read_config(::MIMETYPE_FILE)?;
+        match toml::from_str(&config_contents) {
+            Ok(config) => {
+                Some(config)
             },
             Err(e) => {
-                eprintln!("{}", e);
-                None
+                eprintln!("Error parsing mimetype file: {}", e);
+                process::exit(1);
             },
         }
     }

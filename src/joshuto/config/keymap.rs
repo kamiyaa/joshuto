@@ -3,7 +3,6 @@ extern crate toml;
 extern crate xdg;
 
 use std::collections::HashMap;
-use std::fs;
 use std::process;
 
 use joshuto::command;
@@ -65,32 +64,15 @@ impl JoshutoKeymap {
         }
     }
 
-    fn read_config() -> Option<JoshutoRawKeymap>
-    {
-        match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
-            Ok(dirs) => {
-                let config_path = dirs.find_config_file(::KEYMAP_FILE)?;
-                match fs::read_to_string(&config_path) {
-                    Ok(config_contents) => {
-                        match toml::from_str(&config_contents) {
-                            Ok(config) => {
-                                Some(config)
-                            },
-                            Err(e) => {
-                                eprintln!("Error parsing keymap file: {}", e);
-                                process::exit(1);
-                            },
-                        }
-                    },
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        process::exit(1);
-                    },
-                }
+    fn read_config() -> Option<JoshutoRawKeymap> {
+        let config_contents = crate::joshuto::config::read_config(::KEYMAP_FILE)?;
+        match toml::from_str(&config_contents) {
+            Ok(config) => {
+                Some(config)
             },
             Err(e) => {
-                eprintln!("{}", e);
-                None
+                eprintln!("Error parsing keymap file: {}", e);
+                process::exit(1);
             },
         }
     }
