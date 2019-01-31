@@ -14,6 +14,7 @@ const CONFIG_FILE: &str = "joshuto.toml";
 const MIMETYPE_FILE: &str = "mimetype.toml";
 const KEYMAP_FILE: &str = "keymap.toml";
 const THEME_FILE: &str = "theme.toml";
+const PREVIEW_FILE: &str = "preview.toml";
 
 fn main()
 {
@@ -26,10 +27,7 @@ fn main()
     }
 
     let config = joshuto::config::JoshutoConfig::get_config();
-//    println!("{:#?}", config);
-
     let keymap = joshuto::config::JoshutoKeymap::get_config();
-//    println!("{:#?}", keymap);
 
     joshuto::run(config, keymap);
 }

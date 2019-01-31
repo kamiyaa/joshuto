@@ -7,86 +7,60 @@ use std::collections::HashMap;
 use std::process;
 
 #[derive(Debug, Deserialize)]
-pub struct JoshutoMimetypeEntry {
+pub struct JoshutoPreviewEntry {
     pub program: String,
     pub args: Option<Vec<String>>,
-    pub fork: Option<bool>,
-    pub silent: Option<bool>,
-}
-
-impl std::fmt::Display for JoshutoMimetypeEntry {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
-        f.write_str(self.program.as_str()).unwrap();
-        if let Some(s) = self.args.as_ref() {
-            for arg in s {
-                write!(f, " {}", arg).unwrap();
-            }
-        }
-        f.write_str("\t[").unwrap();
-        if let Some(s) = self.fork {
-            if s {
-                f.write_str("fork,").unwrap();
-            }
-        }
-        if let Some(s) = self.silent {
-            if s {
-                f.write_str("silent").unwrap();
-            }
-        }
-        f.write_str("]")
-    }
 }
 
 #[derive(Debug, Deserialize)]
-pub struct JoshutoRawMimetype {
-    mimetype: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
-    extension: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
+pub struct JoshutoRawPreview {
+    pub mimetype: Option<HashMap<String, JoshutoPreviewEntry>>,
+    pub extension: Option<HashMap<String, JoshutoPreviewEntry>>,
 }
 
-impl JoshutoRawMimetype {
+impl JoshutoRawPreview {
     #[allow(dead_code)]
     pub fn new() -> Self
     {
-        JoshutoRawMimetype {
+        JoshutoRawPreview {
             mimetype: None,
             extension: None,
         }
     }
 
-    pub fn flatten(self) -> JoshutoMimetype
+    pub fn flatten(self) -> JoshutoPreview
     {
         let mimetype = self.mimetype.unwrap_or(HashMap::new());
         let extension = self.extension.unwrap_or(HashMap::new());
 
-        JoshutoMimetype {
+        JoshutoPreview {
             mimetype,
-            extension
+            extension,
         }
     }
 }
 
 #[derive(Debug)]
-pub struct JoshutoMimetype {
-    pub mimetype: HashMap<String, Vec<JoshutoMimetypeEntry>>,
-    pub extension: HashMap<String, Vec<JoshutoMimetypeEntry>>,
+pub struct JoshutoPreview {
+    pub mimetype: HashMap<String, JoshutoPreviewEntry>,
+    pub extension: HashMap<String, JoshutoPreviewEntry>,
 }
 
-impl JoshutoMimetype {
+impl JoshutoPreview {
 
     pub fn new() -> Self
     {
-        JoshutoMimetype {
+        JoshutoPreview {
             mimetype: HashMap::new(),
             extension: HashMap::new(),
         }
     }
 
-    fn read_config() -> Option<JoshutoRawMimetype>
+    fn read_config() -> Option<JoshutoRawPreview>
     {
         match xdg::BaseDirectories::with_profile(::PROGRAM_NAME, "") {
             Ok(dirs) => {
-                let config_path = dirs.find_config_file(::MIMETYPE_FILE)?;
+                let config_path = dirs.find_config_file(::PREVIEW_FILE)?;
                 match fs::read_to_string(&config_path) {
                     Ok(config_contents) => {
                         match toml::from_str(&config_contents) {
@@ -94,7 +68,7 @@ impl JoshutoMimetype {
                                 Some(config)
                             },
                             Err(e) => {
-                                eprintln!("Error parsing mimetype file: {}", e);
+                                eprintln!("Error parsing preview file: {}", e);
                                 process::exit(1);
                             },
                         }

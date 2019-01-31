@@ -71,42 +71,21 @@ pub fn preview_file(context: &mut JoshutoContext)
 
 pub fn text_preview(win: &window::JoshutoPanel, path: &path::PathBuf)
 {
-/*
-    let mut command = process::Command::new("bat");
-    command.arg("--terminal-width");
-    command.arg(win.cols.to_string());
-//    command.arg("--wrap=never");
-    command.arg("line-range");
-    command.arg(format!("{}:{}", 0, win.rows));
-    command.arg("--style=numbers");
-    command.arg("--tabs");
-    command.arg("4");
-//    command.arg("--color");
-//    command.arg("always");
-    command.arg(path.as_os_str());
-    command.stdout(process::Stdio::piped());
-    // eprintln!("{:?}", command);
-
-*/
     let mut command = process::Command::new("head");
     command.arg("-n");
     command.arg(win.cols.to_string());
     command.arg(path.as_os_str());
-    command.stdout(process::Stdio::piped());
+    command.stdin(std::process::Stdio::piped());
+    command.stdout(std::process::Stdio::piped());
+    command.stderr(std::process::Stdio::piped());
 
-    match command.output() {
-        Ok(s) => {
-            match std::str::from_utf8(&s.stdout) {
-                Ok(s) => {
-                    let lines = s.split('\n');
-                    for (i, line) in lines.enumerate() {
-                        ncurses::wmove(win.win, i as i32, 0);
-                        ncurses::waddnstr(win.win, line, win.cols);
-                    }
-                },
-                Err(e) => {
-                    ncurses::waddstr(win.win, e.to_string().as_str());
-                },
+    match command.spawn() {
+        Ok(child) => {
+            if let Some(output) = child.stdout {
+                let mut reader = std::io::BufReader::new(output);
+                let mut buffer = String::new();
+
+                // reader.read_line(&mut buffer);
             }
         },
         Err(e) => {

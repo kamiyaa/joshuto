@@ -34,7 +34,7 @@ impl OpenFile {
         match path.extension() {
             Some(file_ext) => {
                 if let Some(file_ext) = file_ext.to_str() {
-                    match mimetype_t.extensions.get(file_ext) {
+                    match mimetype_t.extension.get(file_ext) {
                         Some(s) => {
                             for option in s {
                                 mimetype_options.push(&option);
@@ -49,7 +49,7 @@ impl OpenFile {
         let detective = mime_detective::MimeDetective::new().unwrap();
         match detective.detect_filepath(path) {
             Ok(mime_type) => {
-                match mimetype_t.mimetypes.get(mime_type.type_().as_str()) {
+                match mimetype_t.mimetype.get(mime_type.type_().as_str()) {
                     Some(s) => {
                         for option in s {
                             mimetype_options.push(&option);

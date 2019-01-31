@@ -19,6 +19,7 @@ mod window;
 
 use self::config::JoshutoTheme;
 use self::config::JoshutoMimetype;
+use self::config::JoshutoPreview;
 use self::context::JoshutoContext;
 use self::command::CommandKeybind;
 use self::command::JoshutoCommand;
@@ -26,6 +27,7 @@ use self::command::JoshutoCommand;
 lazy_static! {
     static ref theme_t: JoshutoTheme = JoshutoTheme::get_config();
     static ref mimetype_t: JoshutoMimetype = JoshutoMimetype::get_config();
+    static ref preview_t: JoshutoPreview = JoshutoPreview::get_config();
 }
 
 fn recurse_get_keycommand<'a>(keymap: &'a HashMap<i32, CommandKeybind>)
@@ -112,6 +114,7 @@ fn resize_handler(context: &mut JoshutoContext)
 
 pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap)
 {
+    eprintln!("{:#?}", preview_t);
     ui::init_ncurses();
     ncurses::doupdate();
 
