@@ -3,7 +3,7 @@ use std::path;
 use std::env;
 
 use joshuto::context::JoshutoContext;
-use joshuto::context::JoshutoTab;
+use joshuto::tab::JoshutoTab;
 use joshuto::command::JoshutoCommand;
 use joshuto::command::JoshutoRunnable;
 use joshuto::command::TabSwitch;
