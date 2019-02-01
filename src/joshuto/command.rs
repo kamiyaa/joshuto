@@ -2,8 +2,8 @@ extern crate wordexp;
 
 mod change_directory;
 mod cursor_move;
-mod delete_file;
-mod file_operation;
+mod delete_files;
+mod file_operations;
 mod new_directory;
 mod open_file;
 mod parent_directory;
@@ -21,8 +21,8 @@ pub use self::change_directory::ChangeDirectory;
 pub use self::cursor_move::{
     CursorMove, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
 };
-pub use self::delete_file::DeleteFiles;
-pub use self::file_operation::{CopyFiles, CutFiles, PasteFiles};
+pub use self::delete_files::DeleteFiles;
+pub use self::file_operations::{CopyFiles, CutFiles, PasteFiles};
 pub use self::new_directory::NewDirectory;
 pub use self::open_file::{OpenFile, OpenFileWith};
 pub use self::parent_directory::ParentDirectory;
