@@ -1,10 +1,6 @@
 extern crate ncurses;
 
-use std;
-
-use joshuto::command::CursorMove;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
+use joshuto::command::{CursorMove, JoshutoCommand, JoshutoRunnable};
 use joshuto::context::JoshutoContext;
 use joshuto::textfield::JoshutoTextField;
 use joshuto::ui;

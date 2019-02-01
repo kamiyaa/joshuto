@@ -1,9 +1,5 @@
 extern crate ncurses;
 
-use std;
-use std::collections::HashMap;
-use std::time;
-
 pub mod config;
 
 mod command;
@@ -18,11 +14,11 @@ mod ui;
 mod unix;
 mod window;
 
-use self::command::CommandKeybind;
-use self::command::JoshutoCommand;
-use self::config::JoshutoMimetype;
-use self::config::JoshutoPreview;
-use self::config::JoshutoTheme;
+use std::collections::HashMap;
+use std::time;
+
+use self::command::{CommandKeybind, JoshutoCommand};
+use self::config::{JoshutoMimetype, JoshutoPreview, JoshutoTheme};
 use self::context::JoshutoContext;
 
 lazy_static! {

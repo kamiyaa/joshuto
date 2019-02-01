@@ -1,7 +1,5 @@
 extern crate serde;
 
-use self::serde::de::DeserializeOwned;
-
 pub mod config;
 pub mod keymap;
 pub mod mimetype;
@@ -12,8 +10,9 @@ pub use self::config::JoshutoConfig;
 pub use self::keymap::JoshutoKeymap;
 pub use self::mimetype::JoshutoMimetype;
 pub use self::preview::JoshutoPreview;
-pub use self::theme::JoshutoColorTheme;
-pub use self::theme::JoshutoTheme;
+pub use self::theme::{JoshutoColorTheme, JoshutoTheme};
+
+use self::serde::de::DeserializeOwned;
 
 pub fn search_config_hierarchy(filename: &str) -> Option<std::path::PathBuf> {
     for path in ::CONFIG_HIERARCHY.iter() {

@@ -1,7 +1,5 @@
 extern crate ncurses;
 
-use std;
-
 use joshuto::command::JoshutoRunnable;
 use joshuto::context::JoshutoContext;
 use joshuto::preview;

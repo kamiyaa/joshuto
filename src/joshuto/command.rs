@@ -1,68 +1,47 @@
 extern crate wordexp;
 
-use std;
+mod change_directory;
+mod cursor_move;
+mod delete_file;
+mod file_operation;
+mod new_directory;
+mod open_file;
+mod parent_directory;
+mod quit;
+mod reload_dir;
+mod rename_file;
+mod search;
+mod selection;
+mod set_mode;
+mod show_hidden;
+mod tab_operations;
+mod tab_switch;
+
+pub use self::change_directory::ChangeDirectory;
+pub use self::cursor_move::{
+    CursorMove, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
+};
+pub use self::delete_file::DeleteFiles;
+pub use self::file_operation::{CopyFiles, CutFiles, PasteFiles};
+pub use self::new_directory::NewDirectory;
+pub use self::open_file::{OpenFile, OpenFileWith};
+pub use self::parent_directory::ParentDirectory;
+pub use self::quit::Quit;
+pub use self::reload_dir::ReloadDirList;
+pub use self::rename_file::{RenameFile, RenameFileMethod};
+pub use self::search::Search;
+pub use self::selection::SelectFiles;
+pub use self::set_mode::SetMode;
+pub use self::show_hidden::ToggleHiddenFiles;
+pub use self::tab_operations::{CloseTab, NewTab};
+pub use self::tab_switch::TabSwitch;
+
 use std::collections::HashMap;
 use std::fmt;
 use std::path;
 
 use joshuto::context::JoshutoContext;
 use joshuto::structs;
-
-mod quit;
-pub use self::quit::Quit;
-
-mod parent_directory;
-pub use self::parent_directory::ParentDirectory;
-
-mod open_file;
-pub use self::open_file::OpenFile;
-pub use self::open_file::OpenFileWith;
-
-mod change_directory;
-pub use self::change_directory::ChangeDirectory;
-mod reload_dir;
-pub use self::reload_dir::ReloadDirList;
-
-mod cursor_move;
-pub use self::cursor_move::CursorMove;
-pub use self::cursor_move::CursorMoveEnd;
-pub use self::cursor_move::CursorMoveHome;
-pub use self::cursor_move::CursorMovePageDown;
-pub use self::cursor_move::CursorMovePageUp;
-
-mod file_operation;
-pub use self::file_operation::CopyFiles;
-pub use self::file_operation::CutFiles;
-pub use self::file_operation::PasteFiles;
-
-mod delete_file;
-pub use self::delete_file::DeleteFiles;
-
-mod rename_file;
-pub use self::rename_file::RenameFile;
-pub use self::rename_file::RenameFileMethod;
-
-mod new_directory;
-pub use self::new_directory::NewDirectory;
-
-mod search;
-pub use self::search::Search;
-
-mod show_hidden;
-pub use self::show_hidden::ToggleHiddenFiles;
-
-mod selection;
-pub use self::selection::SelectFiles;
-
-mod tab_operations;
-pub use self::tab_operations::CloseTab;
-pub use self::tab_operations::NewTab;
-
-mod tab_switch;
-pub use self::tab_switch::TabSwitch;
-
-mod set_mode;
-pub use self::set_mode::SetMode;
 
 #[derive(Debug)]
 pub enum CommandKeybind {

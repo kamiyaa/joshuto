@@ -1,15 +1,11 @@
 extern crate fs_extra;
 extern crate ncurses;
 
-use std;
 use std::path;
 use std::sync;
 use std::thread;
 
-use joshuto::command;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::command::ProgressInfo;
+use joshuto::command::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
 use joshuto::context::JoshutoContext;
 use joshuto::preview;
 use joshuto::structs::JoshutoDirList;

@@ -2,13 +2,10 @@ extern crate fs_extra;
 extern crate ncurses;
 extern crate open;
 
-use std;
 use std::env;
 use std::path;
 
-use joshuto::command;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
+use joshuto::command::{self, JoshutoCommand, JoshutoRunnable};
 use joshuto::config::mimetype;
 use joshuto::context::JoshutoContext;
 use joshuto::preview;

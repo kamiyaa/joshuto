@@ -1,11 +1,8 @@
 extern crate ncurses;
 
-use std;
 use std::path;
 
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
-use joshuto::command::ReloadDirList;
+use joshuto::command::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use joshuto::context::JoshutoContext;
 use joshuto::textfield::JoshutoTextField;
 use joshuto::ui;

@@ -1,7 +1,4 @@
-use std;
-
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
+use joshuto::command::{JoshutoCommand, JoshutoRunnable};
 use joshuto::context::JoshutoContext;
 use joshuto::ui;
 

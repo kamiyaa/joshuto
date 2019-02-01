@@ -1,11 +1,11 @@
+use std::path;
+
 use joshuto::config;
 use joshuto::history;
 use joshuto::sort;
 use joshuto::structs::JoshutoDirList;
 use joshuto::ui;
-use joshuto::window::JoshutoPanel;
-use joshuto::window::JoshutoView;
-use std::path;
+use joshuto::window::{JoshutoPanel, JoshutoView};
 
 use joshuto::theme_t;
 

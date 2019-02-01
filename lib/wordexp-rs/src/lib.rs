@@ -1,9 +1,8 @@
 extern crate libc;
 
-use std::ffi::CStr;
-use std::ffi::CString;
-
 mod ll;
+
+use std::ffi::{CStr, CString};
 
 pub const WRDE_DOOFFS: i32 = (1 << 0);
 pub const WRDE_APPEND: i32 = (1 << 1);
