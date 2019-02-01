@@ -100,7 +100,7 @@ pub fn wordexp<'a>(s: &str, flags: i32) -> Result<Wordexp, WordexpError>
 {
     let mut wordexp = ll::wordexp_t {
         we_wordc: 0,
-        we_wordv: libc::PT_NULL as *const *const libc::c_char,
+        we_wordv: std::ptr::null(),
         we_offs: 0,
         };
 
