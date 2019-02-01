@@ -15,8 +15,7 @@ use joshuto::theme_t;
 pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;
 
-pub fn init_ncurses()
-{
+pub fn init_ncurses() {
     let locale_conf = ncurses::LcCategory::all;
 
     ncurses::setlocale(locale_conf, "");
@@ -38,8 +37,7 @@ pub fn init_ncurses()
     ncurses::refresh();
 }
 
-fn process_theme()
-{
+fn process_theme() {
     for pair in theme_t.colorpair.iter() {
         ncurses::init_pair(pair.id, pair.fg, pair.bg);
     }
@@ -50,40 +48,35 @@ fn process_theme()
     ncurses::init_pair(EMPTY_COLOR, ncurses::COLOR_WHITE, ncurses::COLOR_RED);
 }
 
-pub fn end_ncurses()
-{
-        ncurses::endwin();
+pub fn end_ncurses() {
+    ncurses::endwin();
 }
 
-pub fn getmaxyx() -> (i32, i32)
-{
+pub fn getmaxyx() -> (i32, i32) {
     let mut term_rows: i32 = 0;
     let mut term_cols: i32 = 0;
     ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
     (term_rows, term_cols)
 }
 
-pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>)
-{
+pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>) {
     ncurses::werase(win.win);
     ncurses::mvwhline(win.win, 0, 0, 0, win.cols);
 
     for (i, val) in vals.iter().enumerate() {
-        ncurses::wmove(win.win, (i+1) as i32, 0);
+        ncurses::wmove(win.win, (i + 1) as i32, 0);
         ncurses::waddstr(win.win, val.as_str());
     }
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_msg(win: &window::JoshutoPanel, msg: &str)
-{
+pub fn wprint_msg(win: &window::JoshutoPanel, msg: &str) {
     ncurses::werase(win.win);
     ncurses::mvwaddstr(win.win, 0, 0, msg);
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_err(win: &window::JoshutoPanel, msg: &str)
-{
+pub fn wprint_err(win: &window::JoshutoPanel, msg: &str) {
     ncurses::werase(win.win);
     ncurses::wattron(win.win, ncurses::A_BOLD());
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
@@ -93,8 +86,7 @@ pub fn wprint_err(win: &window::JoshutoPanel, msg: &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn wprint_empty(win: &window::JoshutoPanel, msg : &str)
-{
+pub fn wprint_empty(win: &window::JoshutoPanel, msg: &str) {
     ncurses::werase(win.win);
     ncurses::wattron(win.win, ncurses::COLOR_PAIR(EMPTY_COLOR));
     ncurses::mvwaddstr(win.win, 0, 0, msg);
@@ -102,9 +94,12 @@ pub fn wprint_empty(win: &window::JoshutoPanel, msg : &str)
     ncurses::wnoutrefresh(win.win);
 }
 
-fn wprint_file_name(win: ncurses::WINDOW, file_name: &str,
-        coord: (i32, i32), mut space_avail: usize)
-{
+fn wprint_file_name(
+    win: ncurses::WINDOW,
+    file_name: &str,
+    coord: (i32, i32),
+    mut space_avail: usize,
+) {
     let name_visual_space = unicode_width::UnicodeWidthStr::width(file_name);
     if name_visual_space < space_avail {
         ncurses::mvwaddstr(win, coord.0, coord.1, &file_name);
@@ -138,9 +133,12 @@ fn wprint_file_name(win: ncurses::WINDOW, file_name: &str,
     ncurses::waddstr(win, "…");
 }
 
-pub fn wprint_entry(win: &window::JoshutoPanel,
-        file: &structs::JoshutoDirEntry, prefix: (usize, &str), coord: (i32, i32))
-{
+pub fn wprint_entry(
+    win: &window::JoshutoPanel,
+    file: &structs::JoshutoDirEntry,
+    prefix: (usize, &str),
+    coord: (i32, i32),
+) {
     ncurses::waddstr(win.win, prefix.1);
     let space_avail: usize;
     if win.cols >= prefix.0 as i32 {
@@ -148,12 +146,20 @@ pub fn wprint_entry(win: &window::JoshutoPanel,
     } else {
         space_avail = 0;
     }
-    wprint_file_name(win.win, &file.file_name_as_string, (coord.0, coord.1 + prefix.0 as i32), space_avail);
+    wprint_file_name(
+        win.win,
+        &file.file_name_as_string,
+        (coord.0, coord.1 + prefix.0 as i32),
+        space_avail,
+    );
 }
 
-pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
-        file: &structs::JoshutoDirEntry, prefix: (usize, &str), coord: (i32, i32))
-{
+pub fn wprint_entry_detailed(
+    win: &window::JoshutoPanel,
+    file: &structs::JoshutoDirEntry,
+    prefix: (usize, &str),
+    coord: (i32, i32),
+) {
     ncurses::waddstr(win.win, prefix.1);
     let coord = (coord.0, coord.1 + prefix.0 as i32);
     let mut space_avail: usize;
@@ -175,8 +181,7 @@ pub fn wprint_entry_detailed(win: &window::JoshutoPanel,
     wprint_file_name(win.win, &file.file_name_as_string, coord, space_avail);
 }
 
-pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
-{
+pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
     use std::os::unix::fs::PermissionsExt;
 
     let mode = file.metadata.permissions.mode();
@@ -186,8 +191,7 @@ pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
     ncurses::wattroff(win, ncurses::COLOR_PAIR(6));
 }
 
-pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
-{
+pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
     use std::os::unix::fs::PermissionsExt;
 
     let mode = file.metadata.permissions.mode();
@@ -209,29 +213,38 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry)
     }
 }
 
-pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext)
-{
+pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {
     let tab_len = context.tabs.len();
     if tab_len == 1 {
         ncurses::werase(win.win);
     } else {
         ncurses::wmove(win.win, 0, 0);
         ncurses::wattron(win.win, ncurses::A_BOLD());
-        ncurses::waddstr(win.win, format!("{} {}", context.curr_tab_index + 1, tab_len).as_str());
+        ncurses::waddstr(
+            win.win,
+            format!("{} {}", context.curr_tab_index + 1, tab_len).as_str(),
+        );
         ncurses::wattroff(win.win, ncurses::A_BOLD());
     }
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32)
-{
+pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32) {
     let cols: i32 = (win.cols as f32 * percentage) as i32;
-    ncurses::mvwchgat(win.win, 0, 0, cols, ncurses::A_STANDOUT(),
-            theme_t.selection.colorpair);
+    ncurses::mvwchgat(
+        win.win,
+        0,
+        0,
+        cols,
+        ncurses::A_STANDOUT(),
+        theme_t.selection.colorpair,
+    );
 }
 
-pub fn get_theme_attr(mut attr: ncurses::attr_t, entry: &structs::JoshutoDirEntry) -> ((usize, &str), ncurses::attr_t, i16)
-{
+pub fn get_theme_attr(
+    mut attr: ncurses::attr_t,
+    entry: &structs::JoshutoDirEntry,
+) -> ((usize, &str), ncurses::attr_t, i16) {
     use std::os::unix::fs::FileTypeExt;
     use std::os::unix::fs::PermissionsExt;
 
@@ -266,7 +279,7 @@ pub fn get_theme_attr(mut attr: ncurses::attr_t, entry: &structs::JoshutoDirEntr
             theme = &theme_t.executable;
             colorpair = theme_t.executable.colorpair;
         } else if let Some(ext) = entry.file_name_as_string.rfind('.') {
-            let extension: &str = &entry.file_name_as_string[ext+1..];
+            let extension: &str = &entry.file_name_as_string[ext + 1..];
             if let Some(s) = theme_t.ext.get(extension) {
                 theme = &s;
                 colorpair = theme.colorpair;
@@ -297,9 +310,8 @@ pub fn get_theme_attr(mut attr: ncurses::attr_t, entry: &structs::JoshutoDirEntr
     (prefix, attr, colorpair)
 }
 
-fn file_size_to_string_detailed(mut file_size: f64) -> String
-{
-    const FILE_UNITS: [&str ; 6] = ["B", "KB", "MB", "GB", "TB", "EB"];
+fn file_size_to_string_detailed(mut file_size: f64) -> String {
+    const FILE_UNITS: [&str; 6] = ["B", "KB", "MB", "GB", "TB", "EB"];
     const CONV_RATE: f64 = 1024.0;
 
     let mut index = 0;
@@ -319,18 +331,15 @@ fn file_size_to_string_detailed(mut file_size: f64) -> String
     }
 }
 
-fn file_mtime_to_string(mtime: time::SystemTime) -> String
-{
+fn file_mtime_to_string(mtime: time::SystemTime) -> String {
     const MTIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
 
     let datetime: chrono::DateTime<chrono::offset::Utc> = mtime.into();
     datetime.format(MTIME_FORMATTING).to_string()
 }
 
-
-fn file_size_to_string(mut file_size: f64) -> String
-{
-    const FILE_UNITS: [&str ; 6] = ["B", "K", "M", "G", "T", "E"];
+fn file_size_to_string(mut file_size: f64) -> String {
+    const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "E"];
     const CONV_RATE: f64 = 1024.0;
 
     let mut index = 0;

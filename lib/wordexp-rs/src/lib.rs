@@ -1,13 +1,13 @@
 extern crate libc;
 
-use std::ffi::CString;
 use std::ffi::CStr;
+use std::ffi::CString;
 
 mod ll;
 
 pub const WRDE_DOOFFS: i32 = (1 << 0);
 pub const WRDE_APPEND: i32 = (1 << 1);
-pub const WRDE_NOCMD: i32 =  (1 << 2);
+pub const WRDE_NOCMD: i32 = (1 << 2);
 pub const WRDE_REUSE: i32 = (1 << 3);
 pub const WRDE_SHOWERR: i32 = (1 << 4);
 pub const WRDE_UNDEF: i32 = (1 << 5);
@@ -16,7 +16,7 @@ trait ToCStr {
     fn to_c_str(&self) -> CString;
 }
 
-impl <'a>ToCStr for &'a str {
+impl<'a> ToCStr for &'a str {
     fn to_c_str(&self) -> CString {
         CString::new(*self).unwrap()
     }
@@ -30,8 +30,7 @@ pub struct Wordexp<'a> {
 }
 
 impl<'a> Wordexp<'a> {
-    pub fn new(wordexp_ref: ll::wordexp_t) -> Self
-    {
+    pub fn new(wordexp_ref: ll::wordexp_t) -> Self {
         let we_wordc: usize = wordexp_ref.we_wordc as usize;
         let mut we_wordv: Vec<&str> = Vec::with_capacity(we_wordc);
         unsafe {
@@ -62,8 +61,7 @@ impl<'a> std::ops::Drop for Wordexp<'a> {
 impl<'a> std::iter::Iterator for Wordexp<'a> {
     type Item = &'a str;
 
-    fn next(&mut self) -> Option<&'a str>
-    {
+    fn next(&mut self) -> Option<&'a str> {
         if self.counter >= self.we_wordv.len() {
             self.counter = 0;
             None
@@ -81,28 +79,25 @@ pub struct WordexpError {
 }
 
 impl WordexpError {
-    pub fn new(error_type: i32) -> Self
-    {
+    pub fn new(error_type: i32) -> Self {
         WordexpError { error_type }
     }
 }
 
 impl std::fmt::Display for WordexpError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.error_type)
     }
 }
 
 impl std::error::Error for WordexpError {}
 
-pub fn wordexp<'a>(s: &str, flags: i32) -> Result<Wordexp, WordexpError>
-{
+pub fn wordexp<'a>(s: &str, flags: i32) -> Result<Wordexp, WordexpError> {
     let mut wordexp = ll::wordexp_t {
         we_wordc: 0,
         we_wordv: std::ptr::null(),
         we_offs: 0,
-        };
+    };
 
     let result: i32;
     unsafe {

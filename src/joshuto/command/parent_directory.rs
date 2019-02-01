@@ -2,21 +2,24 @@ extern crate ncurses;
 
 use std;
 
-use joshuto::context::JoshutoContext;
-use joshuto::JoshutoCommand;
 use joshuto::command::JoshutoRunnable;
+use joshuto::context::JoshutoContext;
 use joshuto::preview;
 use joshuto::ui;
+use joshuto::JoshutoCommand;
 
 #[derive(Clone, Debug)]
 pub struct ParentDirectory;
 
 impl ParentDirectory {
-    pub fn new() -> Self { ParentDirectory }
-    pub const fn command() -> &'static str { "parent_directory" }
+    pub fn new() -> Self {
+        ParentDirectory
+    }
+    pub const fn command() -> &'static str {
+        "parent_directory"
+    }
 
-    pub fn parent_directory(context: &mut JoshutoContext)
-    {
+    pub fn parent_directory(context: &mut JoshutoContext) {
         if context.curr_tab_mut().curr_path.pop() == false {
             return;
         }
@@ -33,27 +36,34 @@ impl ParentDirectory {
 
                     match curr_tab.curr_path.parent() {
                         Some(parent) => {
-                            curr_tab.parent_list = match curr_tab.history.pop_or_create(&parent, &context.config_t.sort_type) {
+                            curr_tab.parent_list = match curr_tab
+                                .history
+                                .pop_or_create(&parent, &context.config_t.sort_type)
+                            {
                                 Ok(s) => Some(s),
                                 Err(e) => {
                                     ui::wprint_err(&context.views.left_win, e.to_string().as_str());
                                     None
-                                },
+                                }
                             };
-                        },
+                        }
                         None => {
                             ncurses::werase(context.views.left_win.win);
                             ncurses::wnoutrefresh(context.views.left_win.win);
-                        },
+                        }
                     }
-                    curr_tab.refresh(&context.views, &context.config_t,
-                        &context.username, &context.hostname);
+                    curr_tab.refresh(
+                        &context.views,
+                        &context.config_t,
+                        &context.username,
+                        &context.hostname,
+                    );
                 }
                 preview::preview_file(context);
-            },
+            }
             Err(e) => {
                 ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
-            },
+            }
         };
         ncurses::doupdate();
     }
@@ -62,15 +72,13 @@ impl ParentDirectory {
 impl JoshutoCommand for ParentDirectory {}
 
 impl std::fmt::Display for ParentDirectory {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.write_str(Self::command())
     }
 }
 
 impl JoshutoRunnable for ParentDirectory {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         Self::parent_directory(context);
     }
 }

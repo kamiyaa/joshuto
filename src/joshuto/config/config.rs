@@ -1,10 +1,10 @@
-extern crate whoami;
 extern crate toml;
+extern crate whoami;
 extern crate xdg;
 
 use joshuto;
+use joshuto::config::{parse_config, Flattenable};
 use joshuto::sort;
-use joshuto::config::{Flattenable, parse_config};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortRawOption {
@@ -25,8 +25,7 @@ pub struct JoshutoRawConfig {
 
 impl JoshutoRawConfig {
     #[allow(dead_code)]
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         JoshutoRawConfig {
             scroll_offset: Some(8),
             tilde_in_titlebar: Some(true),
@@ -38,12 +37,11 @@ impl JoshutoRawConfig {
 }
 
 impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
-    fn flatten(self) -> JoshutoConfig
-    {
+    fn flatten(self) -> JoshutoConfig {
         let column_ratio = match self.column_ratio {
             Some(s) => (s[0], s[1], s[2]),
             None => (1, 3, 4),
-            };
+        };
 
         let scroll_offset: usize = self.scroll_offset.unwrap_or(6);
         let tilde_in_titlebar: bool = self.tilde_in_titlebar.unwrap_or(true);
@@ -69,22 +67,20 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
         }
 
         let sort_option = sort::SortOption {
-                show_hidden,
-                directories_first,
-                case_sensitive,
-                reverse,
-            };
+            show_hidden,
+            directories_first,
+            case_sensitive,
+            reverse,
+        };
 
         let sort_type: sort::SortType = match self.sort_type {
-            Some(s) => {
-                match s.as_str() {
-                    "natural" => sort::SortType::SortNatural(sort_option),
-                    "mtime" => sort::SortType::SortMtime(sort_option),
-                    _ => sort::SortType::SortNatural(sort_option),
-                }
-            }
+            Some(s) => match s.as_str() {
+                "natural" => sort::SortType::SortNatural(sort_option),
+                "mtime" => sort::SortType::SortMtime(sort_option),
+                _ => sort::SortType::SortNatural(sort_option),
+            },
             _ => sort::SortType::SortNatural(sort_option),
-            };
+        };
 
         JoshutoConfig {
             scroll_offset,
@@ -104,15 +100,13 @@ pub struct JoshutoConfig {
 }
 
 impl JoshutoConfig {
-
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         let sort_option = sort::SortOption {
-                show_hidden: false,
-                directories_first: true,
-                case_sensitive: false,
-                reverse: false,
-            };
+            show_hidden: false,
+            directories_first: true,
+            case_sensitive: false,
+            reverse: false,
+        };
         let sort_type = sort::SortType::SortNatural(sort_option);
 
         JoshutoConfig {

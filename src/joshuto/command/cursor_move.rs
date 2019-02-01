@@ -13,16 +13,14 @@ pub struct CursorMove {
 }
 
 impl CursorMove {
-    pub fn new(movement: i32) -> Self
-    {
-        CursorMove {
-            movement,
-        }
+    pub fn new(movement: i32) -> Self {
+        CursorMove { movement }
     }
-    pub const fn command() -> &'static str { "cursor_move" }
+    pub const fn command() -> &'static str {
+        "cursor_move"
+    }
 
-    pub fn cursor_move(new_index: i32, context: &mut JoshutoContext)
-    {
+    pub fn cursor_move(new_index: i32, context: &mut JoshutoContext) {
         {
             let curr_tab = &mut context.tabs[context.curr_tab_index];
 
@@ -47,7 +45,12 @@ impl CursorMove {
             }
             curr_tab.refresh_curr(&context.views.mid_win, context.config_t.scroll_offset);
             curr_tab.refresh_file_status(&context.views.bot_win);
-            curr_tab.refresh_path_status(&context.views.top_win, &context.username, &context.hostname, context.config_t.tilde_in_titlebar);
+            curr_tab.refresh_path_status(
+                &context.views.top_win,
+                &context.username,
+                &context.hostname,
+                context.config_t.tilde_in_titlebar,
+            );
         }
         preview::preview_file(context);
         ncurses::doupdate();
@@ -57,15 +60,13 @@ impl CursorMove {
 impl JoshutoCommand for CursorMove {}
 
 impl std::fmt::Display for CursorMove {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{} {}", Self::command(), self.movement)
     }
 }
 
 impl JoshutoRunnable for CursorMove {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         let mut movement: Option<i32> = None;
 
         {
@@ -85,22 +86,24 @@ impl JoshutoRunnable for CursorMove {
 pub struct CursorMovePageUp;
 
 impl CursorMovePageUp {
-    pub fn new() -> Self { CursorMovePageUp }
-    pub const fn command() -> &'static str { "cursor_move_page_up" }
+    pub fn new() -> Self {
+        CursorMovePageUp
+    }
+    pub const fn command() -> &'static str {
+        "cursor_move_page_up"
+    }
 }
 
 impl JoshutoCommand for CursorMovePageUp {}
 
 impl std::fmt::Display for CursorMovePageUp {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", Self::command())
     }
 }
 
 impl JoshutoRunnable for CursorMovePageUp {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         let mut movement: Option<i32> = None;
 
         {
@@ -125,22 +128,24 @@ impl JoshutoRunnable for CursorMovePageUp {
 pub struct CursorMovePageDown;
 
 impl CursorMovePageDown {
-    pub fn new() -> Self { CursorMovePageDown }
-    pub const fn command() -> &'static str { "cursor_move_page_down" }
+    pub fn new() -> Self {
+        CursorMovePageDown
+    }
+    pub const fn command() -> &'static str {
+        "cursor_move_page_down"
+    }
 }
 
 impl JoshutoCommand for CursorMovePageDown {}
 
 impl std::fmt::Display for CursorMovePageDown {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", Self::command())
     }
 }
 
 impl JoshutoRunnable for CursorMovePageDown {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         let mut movement: Option<i32> = None;
 
         {
@@ -166,22 +171,24 @@ impl JoshutoRunnable for CursorMovePageDown {
 pub struct CursorMoveHome;
 
 impl CursorMoveHome {
-    pub fn new() -> Self { CursorMoveHome }
-    pub const fn command() -> &'static str { "cursor_move_home" }
+    pub fn new() -> Self {
+        CursorMoveHome
+    }
+    pub const fn command() -> &'static str {
+        "cursor_move_home"
+    }
 }
 
 impl JoshutoCommand for CursorMoveHome {}
 
 impl std::fmt::Display for CursorMoveHome {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", Self::command())
     }
 }
 
 impl JoshutoRunnable for CursorMoveHome {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         let mut movement: Option<i32> = None;
 
         {
@@ -204,22 +211,24 @@ impl JoshutoRunnable for CursorMoveHome {
 pub struct CursorMoveEnd;
 
 impl CursorMoveEnd {
-    pub fn new() -> Self { CursorMoveEnd }
-    pub const fn command() -> &'static str { "cursor_move_end" }
+    pub fn new() -> Self {
+        CursorMoveEnd
+    }
+    pub const fn command() -> &'static str {
+        "cursor_move_end"
+    }
 }
 
 impl JoshutoCommand for CursorMoveEnd {}
 
 impl std::fmt::Display for CursorMoveEnd {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", Self::command())
     }
 }
 
 impl JoshutoRunnable for CursorMoveEnd {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         let mut movement: Option<i32> = None;
 
         {

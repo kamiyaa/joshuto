@@ -1,10 +1,10 @@
 extern crate toml;
 extern crate xdg;
 
-use std::fmt;
 use std::collections::HashMap;
+use std::fmt;
 
-use joshuto::config::{Flattenable, parse_config};
+use joshuto::config::{parse_config, Flattenable};
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoPreviewEntry {
@@ -20,8 +20,7 @@ pub struct JoshutoRawPreview {
 
 impl JoshutoRawPreview {
     #[allow(dead_code)]
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         JoshutoRawPreview {
             mimetype: None,
             extension: None,
@@ -30,8 +29,7 @@ impl JoshutoRawPreview {
 }
 
 impl Flattenable<JoshutoPreview> for JoshutoRawPreview {
-    fn flatten(self) -> JoshutoPreview
-    {
+    fn flatten(self) -> JoshutoPreview {
         let mimetype = self.mimetype.unwrap_or(HashMap::new());
         let extension = self.extension.unwrap_or(HashMap::new());
 
@@ -49,9 +47,7 @@ pub struct JoshutoPreview {
 }
 
 impl JoshutoPreview {
-
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         JoshutoPreview {
             mimetype: HashMap::new(),
             extension: HashMap::new(),
