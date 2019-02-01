@@ -1,69 +1,47 @@
 extern crate wordexp;
 
-use std;
+mod change_directory;
+mod cursor_move;
+mod delete_files;
+mod file_operations;
+mod new_directory;
+mod open_file;
+mod parent_directory;
+mod quit;
+mod reload_dir;
+mod rename_file;
+mod search;
+mod selection;
+mod set_mode;
+mod show_hidden;
+mod tab_operations;
+mod tab_switch;
+
+pub use self::change_directory::ChangeDirectory;
+pub use self::cursor_move::{
+    CursorMove, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
+};
+pub use self::delete_files::DeleteFiles;
+pub use self::file_operations::{CopyFiles, CutFiles, PasteFiles};
+pub use self::new_directory::NewDirectory;
+pub use self::open_file::{OpenFile, OpenFileWith};
+pub use self::parent_directory::ParentDirectory;
+pub use self::quit::Quit;
+pub use self::reload_dir::ReloadDirList;
+pub use self::rename_file::{RenameFile, RenameFileMethod};
+pub use self::search::Search;
+pub use self::selection::SelectFiles;
+pub use self::set_mode::SetMode;
+pub use self::show_hidden::ToggleHiddenFiles;
+pub use self::tab_operations::{CloseTab, NewTab};
+pub use self::tab_switch::TabSwitch;
+
 use std::collections::HashMap;
 use std::fmt;
 use std::path;
 
 use joshuto::context::JoshutoContext;
 use joshuto::structs;
-
-mod quit;
-pub use self::quit::Quit;
-
-mod parent_directory;
-pub use self::parent_directory::ParentDirectory;
-
-mod open_file;
-pub use self::open_file::OpenFile;
-pub use self::open_file::OpenFileWith;
-
-mod change_directory;
-pub use self::change_directory::ChangeDirectory;
-mod reload_dir;
-pub use self::reload_dir::ReloadDirList;
-
-mod cursor_move;
-pub use self::cursor_move::CursorMove;
-pub use self::cursor_move::CursorMovePageUp;
-pub use self::cursor_move::CursorMovePageDown;
-pub use self::cursor_move::CursorMoveHome;
-pub use self::cursor_move::CursorMoveEnd;
-
-mod file_operation;
-pub use self::file_operation::CutFiles;
-pub use self::file_operation::CopyFiles;
-pub use self::file_operation::PasteFiles;
-
-mod delete_file;
-pub use self::delete_file::DeleteFiles;
-
-mod rename_file;
-pub use self::rename_file::RenameFile;
-pub use self::rename_file::RenameFileMethod;
-
-mod new_directory;
-pub use self::new_directory::NewDirectory;
-
-mod search;
-pub use self::search::Search;
-
-mod show_hidden;
-pub use self::show_hidden::ToggleHiddenFiles;
-
-mod selection;
-pub use self::selection::SelectFiles;
-
-mod tab_operations;
-pub use self::tab_operations::NewTab;
-pub use self::tab_operations::CloseTab;
-
-mod tab_switch;
-pub use self::tab_switch::TabSwitch;
-
-mod set_mode;
-pub use self::set_mode::SetMode;
-
 
 #[derive(Debug)]
 pub enum CommandKeybind {
@@ -92,8 +70,7 @@ pub struct ProgressInfo {
     pub total_bytes: u64,
 }
 
-pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn JoshutoCommand>>
-{
+pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn JoshutoCommand>> {
     match command {
         "cd" => {
             if let Some(args) = args {
@@ -103,14 +80,14 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                             let path = path::PathBuf::from(exp_str);
                             return Some(Box::new(self::ChangeDirectory::new(path)));
                         }
-                    },
+                    }
                     Err(_) => {
                         eprintln!("Failed to parse: {:?}", args[0]);
                     }
                 }
             }
             return None;
-        },
+        }
         "close_tab" => Some(Box::new(self::CloseTab::new())),
         "copy_files" => Some(Box::new(self::CopyFiles::new())),
         "cursor_move" => {
@@ -119,15 +96,15 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                     match args[0].parse::<i32>() {
                         Ok(s) => {
                             return Some(Box::new(self::CursorMove::new(s)));
-                        },
+                        }
                         Err(e) => {
                             eprintln!("{}", e);
-                        },
+                        }
                     }
                 }
             }
             return None;
-        },
+        }
         "cursor_move_home" => Some(Box::new(self::CursorMoveHome::new())),
         "cursor_move_end" => Some(Box::new(self::CursorMoveEnd::new())),
         "cursor_move_page_up" => Some(Box::new(self::CursorMovePageUp::new())),
@@ -152,22 +129,22 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                                 } else {
                                     eprintln!("Failed to parse: {}", arg);
                                 }
-                            },
+                            }
                             "skip_exist" => {
                                 if let Ok(s) = splitarg[1].parse::<bool>() {
                                     options.skip_exist = s;
                                 } else {
                                     eprintln!("Failed to parse: {}", arg);
                                 }
-                            },
-                            _ => {},
+                            }
+                            _ => {}
                         }
                     }
                 }
             }
             let paste = self::PasteFiles::new(options);
             Some(Box::new(paste))
-        },
+        }
         "quit" => Some(Box::new(self::Quit::new())),
         "reload_dir_list" => Some(Box::new(self::ReloadDirList::new())),
         "rename_file" => {
@@ -187,7 +164,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                 method = self::RenameFileMethod::Append;
             }
             Some(Box::new(self::RenameFile::new(method)))
-        },
+        }
         "search" => Some(Box::new(self::Search::new())),
         "select_files" => {
             let mut toggle = false;
@@ -203,21 +180,21 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                                 } else {
                                     eprintln!("Failed to parse: {}", arg);
                                 }
-                            },
+                            }
                             "all" => {
                                 if let Ok(s) = splitarg[1].parse::<bool>() {
                                     all = s;
                                 } else {
                                     eprintln!("Failed to parse: {}", arg);
                                 }
-                            },
-                            _ => {},
+                            }
+                            _ => {}
                         }
                     }
                 }
             }
             Some(Box::new(self::SelectFiles::new(toggle, all)))
-        },
+        }
         "set_mode" => Some(Box::new(self::SetMode::new())),
         "tab_switch" => {
             if let Some(args) = args {
@@ -225,30 +202,31 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                     match args[0].parse::<i32>() {
                         Ok(s) => {
                             return Some(Box::new(self::TabSwitch::new(s)));
-                        },
+                        }
                         Err(e) => {
                             eprintln!("{}", e);
-                        },
+                        }
                     }
                 }
             }
             return None;
-        },
+        }
         "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
         _ => None,
     }
 }
 
-pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
-        -> Option<Vec<path::PathBuf>>
-{
+pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList) -> Option<Vec<path::PathBuf>> {
     if dirlist.index < 0 {
         return None;
     }
 
-    let selected: Vec<path::PathBuf> = dirlist.contents.iter()
-            .filter(|entry| entry.selected)
-            .map(|entry| entry.path.clone()).collect();
+    let selected: Vec<path::PathBuf> = dirlist
+        .contents
+        .iter()
+        .filter(|entry| entry.selected)
+        .map(|entry| entry.path.clone())
+        .collect();
     if selected.len() > 0 {
         Some(selected)
     } else {
@@ -257,8 +235,7 @@ pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList)
 }
 
 #[allow(dead_code)]
-pub fn split_shell_style(line: &String) -> Vec<&str>
-{
+pub fn split_shell_style(line: &String) -> Vec<&str> {
     let mut args: Vec<&str> = Vec::new();
     let mut char_ind = line.char_indices();
 
@@ -269,14 +246,14 @@ pub fn split_shell_style(line: &String) -> Vec<&str>
         if ch == '\'' {
             while let Some((j, ch)) = char_ind.next() {
                 if ch == '\'' {
-                    args.push(&line[i+1..j]);
+                    args.push(&line[i + 1..j]);
                     break;
                 }
             }
-        } else if ch == '"'{
+        } else if ch == '"' {
             while let Some((j, ch)) = char_ind.next() {
                 if ch == '"' {
-                    args.push(&line[i+1..j]);
+                    args.push(&line[i + 1..j]);
                     break;
                 }
             }

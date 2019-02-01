@@ -1,19 +1,19 @@
 extern crate ncurses;
 
-use std;
-
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
+use joshuto::command::{JoshutoCommand, JoshutoRunnable};
 use joshuto::context::JoshutoContext;
 
 #[derive(Clone, Debug)]
 pub struct ToggleHiddenFiles;
 
 impl ToggleHiddenFiles {
-    pub fn new() -> Self { ToggleHiddenFiles }
-    pub const fn command() -> &'static str { "toggle_hidden" }
-    pub fn toggle_hidden(context: &mut JoshutoContext)
-    {
+    pub fn new() -> Self {
+        ToggleHiddenFiles
+    }
+    pub const fn command() -> &'static str {
+        "toggle_hidden"
+    }
+    pub fn toggle_hidden(context: &mut JoshutoContext) {
         let opposite = !context.config_t.sort_type.show_hidden();
         context.config_t.sort_type.set_show_hidden(opposite);
 
@@ -27,20 +27,22 @@ impl ToggleHiddenFiles {
 impl JoshutoCommand for ToggleHiddenFiles {}
 
 impl std::fmt::Display for ToggleHiddenFiles {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.write_str(Self::command())
     }
 }
 
 impl JoshutoRunnable for ToggleHiddenFiles {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         Self::toggle_hidden(context);
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab.reload_contents(&context.config_t.sort_type);
-        curr_tab.refresh(&context.views, &context.config_t,
-            &context.username, &context.hostname);
+        curr_tab.refresh(
+            &context.views,
+            &context.config_t,
+            &context.username,
+            &context.hostname,
+        );
 
         ncurses::doupdate();
     }

@@ -1,9 +1,5 @@
-use std;
-
+use joshuto::command::{CursorMove, JoshutoCommand, JoshutoRunnable};
 use joshuto::context::JoshutoContext;
-use joshuto::command::CursorMove;
-use joshuto::command::JoshutoCommand;
-use joshuto::command::JoshutoRunnable;
 
 #[derive(Debug, Clone)]
 pub struct SelectFiles {
@@ -12,28 +8,30 @@ pub struct SelectFiles {
 }
 
 impl SelectFiles {
-    pub fn new(toggle: bool, all: bool) -> Self
-    {
-        SelectFiles {
-            toggle,
-            all,
-        }
+    pub fn new(toggle: bool, all: bool) -> Self {
+        SelectFiles { toggle, all }
     }
-    pub const fn command() -> &'static str { "select_files" }
+    pub const fn command() -> &'static str {
+        "select_files"
+    }
 }
 
 impl JoshutoCommand for SelectFiles {}
 
 impl std::fmt::Display for SelectFiles {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
-        write!(f, "{} toggle={} all={}", Self::command(), self.toggle, self.all)
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{} toggle={} all={}",
+            Self::command(),
+            self.toggle,
+            self.all
+        )
     }
 }
 
 impl JoshutoRunnable for SelectFiles {
-    fn execute(&self, context: &mut JoshutoContext)
-    {
+    fn execute(&self, context: &mut JoshutoContext) {
         if self.toggle && !self.all {
             let mut selected = false;
 

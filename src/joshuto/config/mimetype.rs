@@ -1,10 +1,10 @@
 extern crate toml;
 extern crate xdg;
 
-use std::fmt;
 use std::collections::HashMap;
+use std::fmt;
 
-use joshuto::config::{Flattenable, parse_config};
+use joshuto::config::{parse_config, Flattenable};
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
@@ -15,8 +15,7 @@ pub struct JoshutoMimetypeEntry {
 }
 
 impl std::fmt::Display for JoshutoMimetypeEntry {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(self.program.as_str()).unwrap();
         if let Some(s) = self.args.as_ref() {
             for arg in s {
@@ -46,8 +45,7 @@ pub struct JoshutoRawMimetype {
 
 impl JoshutoRawMimetype {
     #[allow(dead_code)]
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         JoshutoRawMimetype {
             mimetype: None,
             extension: None,
@@ -56,14 +54,13 @@ impl JoshutoRawMimetype {
 }
 
 impl Flattenable<JoshutoMimetype> for JoshutoRawMimetype {
-    fn flatten(self) -> JoshutoMimetype
-    {
+    fn flatten(self) -> JoshutoMimetype {
         let mimetype = self.mimetype.unwrap_or(HashMap::new());
         let extension = self.extension.unwrap_or(HashMap::new());
 
         JoshutoMimetype {
             mimetype,
-            extension
+            extension,
         }
     }
 }
@@ -75,9 +72,7 @@ pub struct JoshutoMimetype {
 }
 
 impl JoshutoMimetype {
-
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         JoshutoMimetype {
             mimetype: HashMap::new(),
             extension: HashMap::new(),

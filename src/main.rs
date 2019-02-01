@@ -32,13 +32,12 @@ lazy_static! {
     };
 }
 
-fn main()
-{
+fn main() {
     let args: Vec<String> = std::env::args().collect();
     for arg in &args {
         if arg.as_str() == "-v" {
             println!("{}", crate_version!());
-            return
+            return;
         }
     }
 

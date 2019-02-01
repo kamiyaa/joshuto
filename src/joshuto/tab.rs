@@ -1,11 +1,11 @@
 use std::path;
+
 use joshuto::config;
 use joshuto::history;
 use joshuto::sort;
 use joshuto::structs::JoshutoDirList;
 use joshuto::ui;
-use joshuto::window::JoshutoView;
-use joshuto::window::JoshutoPanel;
+use joshuto::window::{JoshutoPanel, JoshutoView};
 
 use joshuto::theme_t;
 
@@ -17,21 +17,22 @@ pub struct JoshutoTab {
 }
 
 impl JoshutoTab {
-    pub fn new(curr_path: path::PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error>
-    {
+    pub fn new(
+        curr_path: path::PathBuf,
+        sort_type: &sort::SortType,
+    ) -> Result<Self, std::io::Error> {
         let mut history = history::DirHistory::new();
         history.populate_to_root(&curr_path, sort_type);
 
         let curr_list: JoshutoDirList = history.pop_or_create(&curr_path, sort_type)?;
 
-        let parent_list: Option<JoshutoDirList> =
-            match curr_path.parent() {
-                Some(parent) => {
-                    let tmp_list = history.pop_or_create(&parent, sort_type)?;
-                    Some(tmp_list)
-                },
-                None => { None },
-            };
+        let parent_list: Option<JoshutoDirList> = match curr_path.parent() {
+            Some(parent) => {
+                let tmp_list = history.pop_or_create(&parent, sort_type)?;
+                Some(tmp_list)
+            }
+            None => None,
+        };
 
         let tab = JoshutoTab {
             curr_path,
@@ -42,16 +43,15 @@ impl JoshutoTab {
         Ok(tab)
     }
 
-    pub fn reload_contents(&mut self, sort_type: &sort::SortType)
-    {
+    pub fn reload_contents(&mut self, sort_type: &sort::SortType) {
         let mut list = self.curr_list.take();
         match list {
             Some(ref mut s) => {
                 if s.path.exists() {
                     s.update_contents(sort_type).unwrap();
                 }
-            },
-            None => {},
+            }
+            None => {}
         };
         self.curr_list = list;
 
@@ -61,45 +61,57 @@ impl JoshutoTab {
                 if s.path.exists() {
                     s.update_contents(sort_type).unwrap();
                 }
-            },
-            None => {},
+            }
+            None => {}
         };
         self.parent_list = list;
     }
 
-    pub fn refresh(&mut self, views: &JoshutoView, config_t: &config::JoshutoConfig,
-            username: &str, hostname: &str)
-    {
-        self.refresh_(views, config_t.tilde_in_titlebar, config_t.scroll_offset, username, hostname);
+    pub fn refresh(
+        &mut self,
+        views: &JoshutoView,
+        config_t: &config::JoshutoConfig,
+        username: &str,
+        hostname: &str,
+    ) {
+        self.refresh_(
+            views,
+            config_t.tilde_in_titlebar,
+            config_t.scroll_offset,
+            username,
+            hostname,
+        );
     }
 
-    pub fn refresh_(&mut self, views: &JoshutoView, tilde_in_titlebar: bool, scroll_offset: usize,
-            username: &str, hostname: &str)
-    {
+    pub fn refresh_(
+        &mut self,
+        views: &JoshutoView,
+        tilde_in_titlebar: bool,
+        scroll_offset: usize,
+        username: &str,
+        hostname: &str,
+    ) {
         self.refresh_curr(&views.mid_win, scroll_offset);
         self.refresh_parent(&views.left_win, scroll_offset);
         self.refresh_path_status(&views.top_win, username, hostname, tilde_in_titlebar);
         self.refresh_file_status(&views.bot_win);
     }
 
-    pub fn refresh_curr(&mut self, win: &JoshutoPanel, scroll_offset: usize)
-    {
+    pub fn refresh_curr(&mut self, win: &JoshutoPanel, scroll_offset: usize) {
         if let Some(ref mut s) = self.curr_list {
             win.display_contents_detailed(s, scroll_offset);
             win.queue_for_refresh();
         }
     }
 
-    pub fn refresh_parent(&mut self, win: &JoshutoPanel, scroll_offset: usize)
-    {
+    pub fn refresh_parent(&mut self, win: &JoshutoPanel, scroll_offset: usize) {
         if let Some(ref mut s) = self.parent_list {
             win.display_contents(s, scroll_offset);
             win.queue_for_refresh();
         }
     }
 
-    pub fn refresh_file_status(&self, win: &JoshutoPanel)
-    {
+    pub fn refresh_file_status(&self, win: &JoshutoPanel) {
         if let Some(ref dirlist) = self.curr_list {
             ncurses::werase(win.win);
             ncurses::wmove(win.win, 0, 0);
@@ -107,7 +119,10 @@ impl JoshutoTab {
             if let Some(entry) = dirlist.get_curr_ref() {
                 ui::wprint_file_mode(win.win, entry);
                 ncurses::waddstr(win.win, " ");
-                ncurses::waddstr(win.win, format!("{}/{} ", dirlist.index + 1, dirlist.contents.len()).as_str());
+                ncurses::waddstr(
+                    win.win,
+                    format!("{}/{} ", dirlist.index + 1, dirlist.contents.len()).as_str(),
+                );
                 ncurses::waddstr(win.win, "  ");
                 ui::wprint_file_info(win.win, entry);
             }
@@ -115,8 +130,13 @@ impl JoshutoTab {
         }
     }
 
-    pub fn refresh_path_status(&self, win: &JoshutoPanel, username: &str, hostname: &str, tilde_in_titlebar: bool)
-    {
+    pub fn refresh_path_status(
+        &self,
+        win: &JoshutoPanel,
+        username: &str,
+        hostname: &str,
+        tilde_in_titlebar: bool,
+    ) {
         let path_str: &str = self.curr_path.to_str().unwrap();
 
         ncurses::werase(win.win);

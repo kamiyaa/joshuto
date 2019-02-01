@@ -1,6 +1,5 @@
-use std;
-use std::fs;
 use std::ffi;
+use std::fs;
 use std::path;
 use std::time;
 
@@ -16,8 +15,7 @@ pub struct JoshutoMetadata {
 }
 
 impl JoshutoMetadata {
-    pub fn from(metadata: &fs::Metadata) -> Result<Self, std::io::Error>
-    {
+    pub fn from(metadata: &fs::Metadata) -> Result<Self, std::io::Error> {
         let len = metadata.len();
         let modified = metadata.modified()?;
         let permissions = metadata.permissions();
@@ -27,7 +25,7 @@ impl JoshutoMetadata {
             len,
             modified,
             permissions,
-            file_type
+            file_type,
         })
     }
 }
@@ -43,35 +41,36 @@ pub struct JoshutoDirEntry {
 }
 
 impl JoshutoDirEntry {
-    pub fn from(direntry: &fs::DirEntry) -> Result<Self, std::io::Error>
-    {
+    pub fn from(direntry: &fs::DirEntry) -> Result<Self, std::io::Error> {
         let file_name = direntry.file_name();
         let file_name_as_string: String = match file_name.clone().into_string() {
-                Ok(s) => s,
-                Err(_) => return Err(std::io::Error::new(
-                            std::io::ErrorKind::NotFound,
-                            "Failed to get file_name")),
-            };
+            Ok(s) => s,
+            Err(_) => {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "Failed to get file_name",
+                ));
+            }
+        };
         let path = direntry.path();
 
         let metadata = direntry.metadata()?;
         let metadata = JoshutoMetadata::from(&metadata)?;
 
         let dir_entry = JoshutoDirEntry {
-                file_name,
-                file_name_as_string,
-                path,
-                metadata,
-                selected: false,
-                marked: false,
-            };
+            file_name,
+            file_name_as_string,
+            path,
+            metadata,
+            selected: false,
+            marked: false,
+        };
         Ok(dir_entry)
     }
 }
 
 impl std::fmt::Debug for JoshutoDirEntry {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error>
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         write!(f, "JoshutoDirEntry {{\n\tfile_name: {:?}, \n\tfile_name_as_string: {}, \n\tpath: {:?} \n}}",
             self.file_name, self.file_name_as_string, self.path)
     }
@@ -88,16 +87,11 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
-    pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error>
-    {
+    pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error> {
         let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
         contents.sort_by(&sort_type.compare_func());
 
-        let index = if contents.len() > 0 {
-                0
-            } else {
-                -1
-            };
+        let index = if contents.len() > 0 { 0 } else { -1 };
 
         let metadata = fs::metadata(&path)?;
         let metadata = JoshutoMetadata::from(&metadata)?;
@@ -113,19 +107,17 @@ impl JoshutoDirList {
         })
     }
 
-    fn read_dir_list(path: &path::Path, sort_type: &sort::SortType)
-            -> Result<Vec<JoshutoDirEntry>, std::io::Error>
-    {
+    fn read_dir_list(
+        path: &path::Path,
+        sort_type: &sort::SortType,
+    ) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
         let filter_func = sort_type.filter_func();
         let results: fs::ReadDir = fs::read_dir(path)?;
-        let result_vec: Vec<JoshutoDirEntry> = results
-                .filter_map(filter_func)
-                .collect();
+        let result_vec: Vec<JoshutoDirEntry> = results.filter_map(filter_func).collect();
         Ok(result_vec)
     }
 
-    pub fn need_update(&self) -> bool
-    {
+    pub fn need_update(&self) -> bool {
         if self.update_needed {
             return true;
         }
@@ -137,8 +129,7 @@ impl JoshutoDirList {
         return true;
     }
 
-    pub fn update_contents(&mut self, sort_type: &sort::SortType) -> Result<(), std::io::Error>
-    {
+    pub fn update_contents(&mut self, sort_type: &sort::SortType) -> Result<(), std::io::Error> {
         let sort_func = sort_type.compare_func();
         self.update_needed = false;
 
@@ -163,19 +154,16 @@ impl JoshutoDirList {
         Ok(())
     }
 
-    pub fn get_curr_ref(&self) -> Option<&JoshutoDirEntry>
-    {
+    pub fn get_curr_ref(&self) -> Option<&JoshutoDirEntry> {
         self.get_curr_ref_(self.index)
     }
 
-    pub fn get_curr_mut(&mut self) -> Option<&mut JoshutoDirEntry>
-    {
+    pub fn get_curr_mut(&mut self) -> Option<&mut JoshutoDirEntry> {
         let index = self.index;
         self.get_curr_mut_(index)
     }
 
-    fn get_curr_mut_(&mut self, index: i32) -> Option<&mut JoshutoDirEntry>
-    {
+    fn get_curr_mut_(&mut self, index: i32) -> Option<&mut JoshutoDirEntry> {
         if index >= 0 && (index as usize) < self.contents.len() {
             Some(&mut self.contents[index as usize])
         } else {
@@ -183,8 +171,7 @@ impl JoshutoDirList {
         }
     }
 
-    fn get_curr_ref_(&self, index: i32) -> Option<&JoshutoDirEntry>
-    {
+    fn get_curr_ref_(&self, index: i32) -> Option<&JoshutoDirEntry> {
         if index >= 0 && (index as usize) < self.contents.len() {
             Some(&self.contents[index as usize])
         } else {
@@ -192,8 +179,7 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn curr_toggle_select(&mut self)
-    {
+    pub fn curr_toggle_select(&mut self) {
         let index = self.index;
         self.toggle_select(index);
     }

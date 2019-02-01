@@ -3,7 +3,7 @@ extern crate xdg;
 
 use std::collections::HashMap;
 
-use joshuto::config::{Flattenable, parse_config};
+use joshuto::config::{parse_config, Flattenable};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct JoshutoColorPair {
@@ -13,13 +13,8 @@ pub struct JoshutoColorPair {
 }
 
 impl JoshutoColorPair {
-    pub fn new(id: i16, fg: i16, bg: i16) -> Self
-    {
-        JoshutoColorPair {
-            id,
-            fg,
-            bg,
-        }
+    pub fn new(id: i16, fg: i16, bg: i16) -> Self {
+        JoshutoColorPair { id, fg, bg }
     }
 }
 
@@ -33,8 +28,7 @@ pub struct JoshutoRawColorTheme {
 }
 
 impl JoshutoRawColorTheme {
-    pub fn flatten(self) -> JoshutoColorTheme
-    {
+    pub fn flatten(self) -> JoshutoColorTheme {
         JoshutoColorTheme {
             colorpair: self.colorpair,
             bold: self.bold.unwrap_or(false),
@@ -58,20 +52,19 @@ pub struct JoshutoRawTheme {
 }
 
 impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
-    fn flatten(self) -> JoshutoTheme
-    {
+    fn flatten(self) -> JoshutoTheme {
         let colorpair = match self.colorpair {
-                Some(s) => s,
-                None => {
-                    let mut colorpair: Vec<JoshutoColorPair> = Vec::with_capacity(10);
-                    colorpair.push(JoshutoColorPair::new(2, 2, -1));
-                    colorpair.push(JoshutoColorPair::new(3, 3, -1));
-                    colorpair.push(JoshutoColorPair::new(4, 4, -1));
-                    colorpair.push(JoshutoColorPair::new(5, 5, -1));
-                    colorpair.push(JoshutoColorPair::new(6, 6, -1));
-                    colorpair
-                }
-            };
+            Some(s) => s,
+            None => {
+                let mut colorpair: Vec<JoshutoColorPair> = Vec::with_capacity(10);
+                colorpair.push(JoshutoColorPair::new(2, 2, -1));
+                colorpair.push(JoshutoColorPair::new(3, 3, -1));
+                colorpair.push(JoshutoColorPair::new(4, 4, -1));
+                colorpair.push(JoshutoColorPair::new(5, 5, -1));
+                colorpair.push(JoshutoColorPair::new(6, 6, -1));
+                colorpair
+            }
+        };
 
         let selection = self.selection.unwrap_or(JoshutoRawColorTheme {
             colorpair: 3,
@@ -79,7 +72,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             underline: None,
             prefix: None,
             prefixsize: None,
-            });
+        });
 
         let executable = self.executable.unwrap_or(JoshutoRawColorTheme {
             colorpair: 2,
@@ -87,7 +80,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             underline: None,
             prefix: None,
             prefixsize: None,
-            });
+        });
 
         let regular = self.regular.unwrap_or(JoshutoRawColorTheme {
             colorpair: 0,
@@ -95,7 +88,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             underline: None,
             prefix: None,
             prefixsize: None,
-            });
+        });
 
         let directory = self.directory.unwrap_or(JoshutoRawColorTheme {
             colorpair: 4,
@@ -103,7 +96,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             underline: None,
             prefix: None,
             prefixsize: None,
-            });
+        });
 
         let link = self.link.unwrap_or(JoshutoRawColorTheme {
             colorpair: 6,
@@ -111,7 +104,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             underline: None,
             prefix: None,
             prefixsize: None,
-            });
+        });
 
         let socket = self.socket.unwrap_or(JoshutoRawColorTheme {
             colorpair: 6,
@@ -119,7 +112,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             underline: None,
             prefix: None,
             prefixsize: None,
-            });
+        });
 
         let mut extraw = self.ext.unwrap_or(HashMap::new());
         let mut ext: HashMap<String, JoshutoColorTheme> = HashMap::new();
@@ -158,12 +151,11 @@ pub struct JoshutoTheme {
     pub executable: JoshutoColorTheme,
     pub link: JoshutoColorTheme,
     pub socket: JoshutoColorTheme,
-    pub ext: HashMap<String, JoshutoColorTheme>
+    pub ext: HashMap<String, JoshutoColorTheme>,
 }
 
 impl JoshutoTheme {
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         let mut colorpair: Vec<JoshutoColorPair> = Vec::with_capacity(10);
         colorpair.push(JoshutoColorPair::new(2, 2, -1));
         colorpair.push(JoshutoColorPair::new(3, 3, -1));
@@ -177,7 +169,7 @@ impl JoshutoTheme {
             underline: false,
             prefix: None,
             prefixsize: None,
-            };
+        };
 
         let executable = JoshutoColorTheme {
             colorpair: 2,
@@ -185,7 +177,7 @@ impl JoshutoTheme {
             underline: false,
             prefix: None,
             prefixsize: None,
-            };
+        };
 
         let regular = JoshutoColorTheme {
             colorpair: 0,
@@ -193,7 +185,7 @@ impl JoshutoTheme {
             underline: false,
             prefix: None,
             prefixsize: None,
-            };
+        };
 
         let directory = JoshutoColorTheme {
             colorpair: 4,
@@ -201,7 +193,7 @@ impl JoshutoTheme {
             underline: false,
             prefix: None,
             prefixsize: None,
-            };
+        };
 
         let link = JoshutoColorTheme {
             colorpair: 6,
@@ -209,7 +201,7 @@ impl JoshutoTheme {
             underline: false,
             prefix: None,
             prefixsize: None,
-            };
+        };
 
         let socket = JoshutoColorTheme {
             colorpair: 6,
@@ -217,7 +209,7 @@ impl JoshutoTheme {
             underline: false,
             prefix: None,
             prefixsize: None,
-            };
+        };
 
         JoshutoTheme {
             colorpair,
@@ -229,7 +221,6 @@ impl JoshutoTheme {
             socket,
             ext: HashMap::new(),
         }
-
     }
 
     pub fn get_config() -> JoshutoTheme {

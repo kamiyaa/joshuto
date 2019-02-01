@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::process;
 
 use joshuto::command;
-use joshuto::config::{Flattenable, parse_config};
+use joshuto::config::{parse_config, Flattenable};
 
 pub const BACKSPACE: i32 = 0x7F;
 pub const TAB: i32 = 0x9;
@@ -22,7 +22,6 @@ struct JoshutoMapCommand {
     pub args: Option<Vec<String>>,
 }
 
-
 #[derive(Debug, Deserialize)]
 struct JoshutoRawKeymap {
     mapcommand: Option<Vec<JoshutoMapCommand>>,
@@ -36,16 +35,14 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
                 match command::from_args(mapcommand.command.as_str(), mapcommand.args.as_ref()) {
                     Some(command) => {
                         insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]);
-                    },
+                    }
                     None => {
                         println!("Unknown command: {}", mapcommand.command);
                     }
                 }
             }
         }
-        JoshutoKeymap {
-            keymaps,
-        }
+        JoshutoKeymap { keymaps }
     }
 }
 
@@ -55,12 +52,9 @@ pub struct JoshutoKeymap {
 }
 
 impl JoshutoKeymap {
-    pub fn new() -> Self
-    {
+    pub fn new() -> Self {
         let keymaps = HashMap::new();
-        JoshutoKeymap {
-            keymaps,
-        }
+        JoshutoKeymap { keymaps }
     }
 
     pub fn get_config() -> JoshutoKeymap {
@@ -69,15 +63,16 @@ impl JoshutoKeymap {
     }
 }
 
-
-fn insert_keycommand(map: &mut HashMap<i32, command::CommandKeybind>,
-        keycommand: Box<dyn command::JoshutoCommand>, keys: &[String])
-{
+fn insert_keycommand(
+    map: &mut HashMap<i32, command::CommandKeybind>,
+    keycommand: Box<dyn command::JoshutoCommand>,
+    keys: &[String],
+) {
     if keys.len() == 1 {
         match key_to_i32(&keys[0]) {
             Some(s) => {
                 map.insert(s, command::CommandKeybind::SimpleKeybind(keycommand));
-            },
+            }
             None => {}
         }
     } else {
@@ -87,11 +82,11 @@ fn insert_keycommand(map: &mut HashMap<i32, command::CommandKeybind>,
                 match map.remove(&s) {
                     Some(command::CommandKeybind::CompositeKeybind(mut m)) => {
                         new_map = m;
-                    },
+                    }
                     Some(_) => {
                         eprintln!("Error: Keybindings ambiguous");
                         process::exit(1);
-                    },
+                    }
                     None => {
                         new_map = HashMap::new();
                     }
@@ -99,15 +94,13 @@ fn insert_keycommand(map: &mut HashMap<i32, command::CommandKeybind>,
                 insert_keycommand(&mut new_map, keycommand, &keys[1..]);
                 let composite_command = command::CommandKeybind::CompositeKeybind(new_map);
                 map.insert(s as i32, composite_command);
-            },
+            }
             None => {}
         }
     }
 }
 
-
-pub fn key_to_i32(keycode: &str) -> Option<i32>
-{
+pub fn key_to_i32(keycode: &str) -> Option<i32> {
     if keycode.len() == 1 {
         for ch in keycode.chars() {
             if ch.is_ascii() {
@@ -123,7 +116,6 @@ pub fn key_to_i32(keycode: &str) -> Option<i32>
             "Delete" => Some(ncurses::KEY_DC),
             "Enter" => Some(ENTER),
             "Escape" => Some(ESCAPE),
-
 
             "F0" => Some(ncurses::KEY_F0),
             "F1" => Some(ncurses::KEY_F1),
@@ -142,10 +134,10 @@ pub fn key_to_i32(keycode: &str) -> Option<i32>
             "F14" => Some(ncurses::KEY_F14),
             "F15" => Some(ncurses::KEY_F15),
 
-            "Insert" => Some(ncurses::KEY_IC),           /* insert-character key */
-            "PageUp" => Some(ncurses::KEY_PPAGE),        /* next-page key */
-            "PageDown" => Some(ncurses::KEY_NPAGE),      /* previous-page key */
-            "PrintScreen" => Some(ncurses::KEY_PRINT),    /* print key */
+            "Insert" => Some(ncurses::KEY_IC), /* insert-character key */
+            "PageUp" => Some(ncurses::KEY_PPAGE), /* next-page key */
+            "PageDown" => Some(ncurses::KEY_NPAGE), /* previous-page key */
+            "PrintScreen" => Some(ncurses::KEY_PRINT), /* print key */
 
             "Up" => Some(ncurses::KEY_UP),
             "Down" => Some(ncurses::KEY_DOWN),

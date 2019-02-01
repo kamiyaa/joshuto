@@ -6,7 +6,6 @@ use joshuto::ui;
 #[cfg(test)]
 mod test;
 
-
 #[derive(Clone, Debug)]
 pub struct JoshutoPageState {
     pub start: usize,
@@ -14,16 +13,17 @@ pub struct JoshutoPageState {
 }
 
 impl JoshutoPageState {
-    pub fn new() -> Self
-    {
-        JoshutoPageState {
-            start: 0,
-            end: 0,
-        }
+    pub fn new() -> Self {
+        JoshutoPageState { start: 0, end: 0 }
     }
 
-    pub fn update_page_state(&mut self, index: usize, win_rows: i32, vec_len: usize, offset: usize)
-    {
+    pub fn update_page_state(
+        &mut self,
+        index: usize,
+        win_rows: i32,
+        vec_len: usize,
+        offset: usize,
+    ) {
         if self.end != win_rows as usize + self.start {
             self.end = self.start + win_rows as usize;
         }
@@ -33,37 +33,37 @@ impl JoshutoPageState {
 
         if self.start + offset >= index {
             self.start = if index as usize <= offset {
-                    0
-                } else {
-                    index as usize - offset
-                };
+                0
+            } else {
+                index as usize - offset
+            };
             self.end = if self.start + win_rows as usize >= vec_len {
-                    vec_len
-                } else {
-                    self.start + win_rows as usize
-                };
+                vec_len
+            } else {
+                self.start + win_rows as usize
+            };
             self.start = if self.end <= win_rows as usize {
-                    0
-                } else {
-                    self.end - win_rows as usize
-                };
+                0
+            } else {
+                self.end - win_rows as usize
+            };
         }
         if self.end <= index + offset {
             self.end = if index as usize + offset >= vec_len {
-                    vec_len
-                } else {
-                    index as usize + offset
-                };
+                vec_len
+            } else {
+                index as usize + offset
+            };
             self.start = if self.end <= win_rows as usize {
-                    0
-                } else {
-                    self.end - win_rows as usize
-                };
+                0
+            } else {
+                self.end - win_rows as usize
+            };
             self.end = if self.start + win_rows as usize >= vec_len {
-                    vec_len
-                } else {
-                    self.start + win_rows as usize
-                };
+                vec_len
+            } else {
+                self.start + win_rows as usize
+            };
         }
     }
 }
@@ -75,12 +75,11 @@ pub struct JoshutoPanel {
     pub rows: i32,
     pub cols: i32,
     /* coords (y, x) */
-    pub coords: (usize, usize)
+    pub coords: (usize, usize),
 }
 
 impl std::ops::Drop for JoshutoPanel {
-    fn drop(&mut self)
-    {
+    fn drop(&mut self) {
         ncurses::del_panel(self.panel);
         ncurses::delwin(self.win);
         ncurses::update_panels();
@@ -88,8 +87,7 @@ impl std::ops::Drop for JoshutoPanel {
 }
 
 impl JoshutoPanel {
-    pub fn new(rows: i32, cols: i32, coords: (usize, usize)) -> Self
-    {
+    pub fn new(rows: i32, cols: i32, coords: (usize, usize)) -> Self {
         let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
         let panel = ncurses::new_panel(win);
         ncurses::leaveok(win, true);
@@ -104,38 +102,37 @@ impl JoshutoPanel {
         }
     }
 
-    pub fn move_to_top(&self)
-    {
+    pub fn move_to_top(&self) {
         ncurses::top_panel(self.panel);
     }
-    pub fn move_to_bottom(&self)
-    {
+    pub fn move_to_bottom(&self) {
         ncurses::bottom_panel(self.panel);
     }
-    pub fn queue_for_refresh(&self)
-    {
+    pub fn queue_for_refresh(&self) {
         ncurses::wnoutrefresh(self.win);
     }
 
-    pub fn display_contents(&self, dirlist: &mut structs::JoshutoDirList,
-            scroll_offset: usize)
-    {
+    pub fn display_contents(&self, dirlist: &mut structs::JoshutoDirList, scroll_offset: usize) {
         if self.non_empty_dir_checks(dirlist, scroll_offset) {
             Self::draw_dir_list(self, dirlist, ui::wprint_entry);
         }
     }
 
-    pub fn display_contents_detailed(&self, dirlist: &mut structs::JoshutoDirList,
-            scroll_offset: usize)
-    {
+    pub fn display_contents_detailed(
+        &self,
+        dirlist: &mut structs::JoshutoDirList,
+        scroll_offset: usize,
+    ) {
         if self.non_empty_dir_checks(dirlist, scroll_offset) {
             Self::draw_dir_list(self, dirlist, ui::wprint_entry_detailed);
         }
     }
 
-    pub fn draw_dir_list(win: &JoshutoPanel, dirlist: &structs::JoshutoDirList,
-            draw_func: fn (&JoshutoPanel, &structs::JoshutoDirEntry, (usize, &str), (i32, i32)))
-    {
+    pub fn draw_dir_list(
+        win: &JoshutoPanel,
+        dirlist: &structs::JoshutoDirList,
+        draw_func: fn(&JoshutoPanel, &structs::JoshutoDirEntry, (usize, &str), (i32, i32)),
+    ) {
         let dir_contents = &dirlist.contents;
         let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
 
@@ -159,8 +156,11 @@ impl JoshutoPanel {
         }
     }
 
-    fn non_empty_dir_checks(&self, dirlist: &mut structs::JoshutoDirList, scroll_offset: usize) -> bool
-    {
+    fn non_empty_dir_checks(
+        &self,
+        dirlist: &mut structs::JoshutoDirList,
+        scroll_offset: usize,
+    ) -> bool {
         if self.cols < 8 {
             return false;
         }
@@ -173,7 +173,9 @@ impl JoshutoPanel {
         ncurses::werase(self.win);
 
         if index >= 0 {
-            dirlist.pagestate.update_page_state(index as usize, self.rows, vec_len, scroll_offset);
+            dirlist
+                .pagestate
+                .update_page_state(index as usize, self.rows, vec_len, scroll_offset);
         }
         ncurses::wmove(self.win, 0, 0);
         return true;
@@ -192,8 +194,7 @@ pub struct JoshutoView {
 }
 
 impl JoshutoView {
-    pub fn new(win_ratio : (usize, usize, usize)) -> Self
-    {
+    pub fn new(win_ratio: (usize, usize, usize)) -> Self {
         let sum_ratio: usize = win_ratio.0 + win_ratio.1 + win_ratio.2;
 
         let mut term_rows: i32 = 0;
@@ -209,7 +210,6 @@ impl JoshutoView {
         let win_coord: (usize, usize) = (0, term_cols as usize - 5);
         let tab_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
-
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 1);
         let win_coord: (usize, usize) = (1, 0);
         let left_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
@@ -221,7 +221,6 @@ impl JoshutoView {
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.2 as i32) - 1);
         let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.2);
         let right_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
-
 
         let win_xy: (i32, i32) = (1, term_cols);
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
@@ -238,8 +237,7 @@ impl JoshutoView {
         }
     }
 
-    pub fn resize_views(&mut self)
-    {
+    pub fn resize_views(&mut self) {
         let new_view = Self::new(self.win_ratio);
 
         self.top_win = new_view.top_win;
