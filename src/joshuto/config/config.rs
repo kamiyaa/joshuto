@@ -2,7 +2,6 @@ extern crate toml;
 extern crate whoami;
 extern crate xdg;
 
-use joshuto;
 use joshuto::config::{parse_config, Flattenable};
 use joshuto::sort;
 
@@ -95,7 +94,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 pub struct JoshutoConfig {
     pub scroll_offset: usize,
     pub tilde_in_titlebar: bool,
-    pub sort_type: joshuto::sort::SortType,
+    pub sort_type: sort::SortType,
     pub column_ratio: (usize, usize, usize),
 }
 
