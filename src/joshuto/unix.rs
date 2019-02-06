@@ -6,15 +6,6 @@ use std::process;
 
 use joshuto::config::mimetype;
 
-// pub const BITMASK  : u32 = 0o170000;
-pub const S_IFSOCK: u32 = 0o140000; /* socket */
-pub const S_IFLNK: u32 = 0o120000; /* symbolic link */
-pub const S_IFREG: u32 = 0o100000; /* regular file */
-pub const S_IFBLK: u32 = 0o060000; /* block device */
-pub const S_IFDIR: u32 = 0o040000; /* directory */
-pub const S_IFCHR: u32 = 0o020000; /* character device */
-pub const S_IFIFO: u32 = 0o010000; /* FIFO */
-
 /*
 pub const fn is_reg(mode: u32) -> bool
 {
@@ -51,13 +42,13 @@ pub fn stringify_mode(mode: libc::mode_t) -> String {
     let mut mode_str: String = String::with_capacity(10);
 
     const LIBC_FILE_VALS: [(libc::mode_t, char); 7] = [
-        (S_IFREG, '-'),
-        (S_IFDIR, 'd'),
-        (S_IFLNK, 'l'),
-        (S_IFSOCK, 's'),
-        (S_IFBLK, 'b'),
-        (S_IFCHR, 'c'),
-        (S_IFIFO, 'f'),
+        (libc::S_IFREG, '-'),
+        (libc::S_IFDIR, 'd'),
+        (libc::S_IFLNK, 'l'),
+        (libc::S_IFSOCK, 's'),
+        (libc::S_IFBLK, 'b'),
+        (libc::S_IFCHR, 'c'),
+        (libc::S_IFIFO, 'f'),
     ];
 
     const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [

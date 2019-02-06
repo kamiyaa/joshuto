@@ -1,5 +1,3 @@
-use std::thread;
-
 use joshuto::command::FileOperationThread;
 use joshuto::config;
 use joshuto::tab::JoshutoTab;
