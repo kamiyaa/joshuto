@@ -68,28 +68,38 @@ fn recurse_get_keycommand<'a>(
 }
 
 fn process_threads(context: &mut JoshutoContext) {
-    let wait_duration: time::Duration = time::Duration::from_millis(100);
-    let mut something_finished = false;
-    for i in 0..context.threads.len() {
-        if let Ok(progress_info) = &context.threads[i].0.recv_timeout(wait_duration) {
-            if progress_info.bytes_finished == progress_info.total_bytes {
-                let (_, chandle) = context.threads.remove(i);
-                chandle.join().unwrap();
-                ncurses::werase(context.views.bot_win.win);
-                something_finished = true;
-                break;
-            } else {
+    let thread_wait_duration: time::Duration = time::Duration::from_millis(100);
+
+    let mut i: usize = 0;
+    while i < context.threads.len() {
+        match &context.threads[i].recv_timeout(&thread_wait_duration) {
+            Ok(progress_info) => {
                 let percent =
                     (progress_info.bytes_finished as f64 / progress_info.total_bytes as f64) as f32;
                 ui::draw_progress_bar(&context.views.bot_win, percent);
                 ncurses::wnoutrefresh(context.views.bot_win.win);
                 ncurses::doupdate();
+                i = i + 1;
+            }
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+                ncurses::werase(context.views.bot_win.win);
+                let thread = context.threads.swap_remove(i);
+                eprintln!("joining thread");
+                ncurses::doupdate();
+                thread.handle.join().unwrap();
+                let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
+                if tab_src < context.tabs.len() {
+                    context.tabs[tab_src].reload_contents(&context.config_t.sort_type);
+                }
+                if tab_dest != tab_src && tab_dest < context.tabs.len() {
+                    context.tabs[tab_dest].reload_contents(&context.config_t.sort_type);
+                }
+                eprintln!("done refreshing");
+            }
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                i = i + 1;
             }
         }
-    }
-    if something_finished {
-        // command::ReloadDirList::reload(context);
-        ncurses::doupdate();
     }
 }
 
@@ -110,7 +120,6 @@ fn resize_handler(context: &mut JoshutoContext) {
 
 pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     ui::init_ncurses();
-    ncurses::doupdate();
 
     let mut context = context::JoshutoContext::new(config_t);
     command::NewTab::new_tab(&mut context);

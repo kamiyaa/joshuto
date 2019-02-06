@@ -4,6 +4,7 @@ extern crate ncurses;
 use std::path;
 use std::sync;
 use std::thread;
+use std::time;
 
 use joshuto::command::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
 use joshuto::context::JoshutoContext;
@@ -13,11 +14,33 @@ use joshuto::structs::JoshutoDirList;
 lazy_static! {
     static ref selected_files: sync::Mutex<Vec<path::PathBuf>> = sync::Mutex::new(vec![]);
     static ref fileop: sync::Mutex<FileOp> = sync::Mutex::new(FileOp::Copy);
+    static ref tab_src: sync::Mutex<usize> = sync::Mutex::new(0);
+}
+
+pub struct FileOperationThread {
+    pub tab_src: usize,
+    pub tab_dest: usize,
+    pub handle: thread::JoinHandle<i32>,
+    pub recv: sync::mpsc::Receiver<ProgressInfo>,
+}
+
+impl FileOperationThread {
+    pub fn recv_timeout(
+        &self,
+        wait_duration: &time::Duration,
+    ) -> Result<ProgressInfo, std::sync::mpsc::RecvTimeoutError> {
+        self.recv.recv_timeout(*wait_duration)
+    }
 }
 
 fn set_file_op(operation: FileOp) {
     let mut data = fileop.lock().unwrap();
     *data = operation;
+}
+
+fn set_tab_src(tab_index: usize) {
+    let mut data = tab_src.lock().unwrap();
+    *data = tab_index;
 }
 
 fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
@@ -62,10 +85,11 @@ impl std::fmt::Display for CutFiles {
 
 impl JoshutoRunnable for CutFiles {
     fn execute(&self, context: &mut JoshutoContext) {
-        let curr_tab = &context.tabs[context.curr_tab_index];
+        let curr_tab = context.curr_tab_ref();
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
                 set_file_op(FileOp::Cut);
+                set_tab_src(context.curr_tab_index);
             }
         }
     }
@@ -93,10 +117,11 @@ impl std::fmt::Display for CopyFiles {
 
 impl JoshutoRunnable for CopyFiles {
     fn execute(&self, context: &mut JoshutoContext) {
-        let curr_tab = &context.tabs[context.curr_tab_index];
+        let curr_tab = context.curr_tab_ref();
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
                 set_file_op(FileOp::Copy);
+                set_tab_src(context.curr_tab_index);
             }
         }
     }
@@ -154,10 +179,7 @@ impl PasteFiles {
                         if let Ok(metadata) = std::fs::symlink_metadata(path) {
                             if metadata.is_dir() {
                                 destination.pop();
-                                match fs_extra::dir::move_dir(&path, &destination, &options) {
-                                    Ok(_) => {}
-                                    Err(e) => eprintln!("dir: {}", e),
-                                }
+                                fs_extra::dir::move_dir(&path, &destination, &options).unwrap();
                             } else {
                                 if let Ok(_) = std::fs::copy(&path, &destination) {
                                     std::fs::remove_file(&path).unwrap();
@@ -173,11 +195,9 @@ impl PasteFiles {
                 progress_info.bytes_finished = progress_info.bytes_finished + 1;
                 tx.send(progress_info.clone()).unwrap();
             }
-
             paths.clear();
             0
         });
-
         (rx, child)
     }
 
@@ -238,21 +258,25 @@ impl JoshutoRunnable for PasteFiles {
     fn execute(&self, context: &mut JoshutoContext) {
         let file_operation = fileop.lock().unwrap();
 
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        let cprocess = match *file_operation {
+        let tab_dest = context.curr_tab_index;
+        let curr_tab = &context.tabs[tab_dest];
+        let tab_src_index: usize;
+        {
+            tab_src_index = *tab_src.lock().unwrap();
+        }
+
+        let (recv, handle) = match *file_operation {
             FileOp::Copy => self.copy(&curr_tab.curr_path),
             FileOp::Cut => self.cut(&curr_tab.curr_path),
         };
-        context.threads.push(cprocess);
 
-        curr_tab.reload_contents(&context.config_t.sort_type);
-        curr_tab.refresh(
-            &context.views,
-            &context.config_t,
-            &context.username,
-            &context.hostname,
-        );
-        ncurses::timeout(0);
-        ncurses::doupdate();
+        let thread = FileOperationThread {
+            tab_src: tab_src_index,
+            tab_dest,
+            handle,
+            recv,
+        };
+
+        context.threads.push(thread);
     }
 }

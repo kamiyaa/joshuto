@@ -22,7 +22,7 @@ pub use self::cursor_move::{
     CursorMove, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
 };
 pub use self::delete_files::DeleteFiles;
-pub use self::file_operations::{CopyFiles, CutFiles, PasteFiles};
+pub use self::file_operations::{CopyFiles, CutFiles, FileOperationThread, PasteFiles};
 pub use self::new_directory::NewDirectory;
 pub use self::open_file::{OpenFile, OpenFileWith};
 pub use self::parent_directory::ParentDirectory;

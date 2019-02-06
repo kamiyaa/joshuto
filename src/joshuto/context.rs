@@ -1,7 +1,6 @@
-use std::sync;
 use std::thread;
 
-use joshuto::command;
+use joshuto::command::FileOperationThread;
 use joshuto::config;
 use joshuto::tab::JoshutoTab;
 use joshuto::window::JoshutoView;
@@ -9,10 +8,7 @@ use joshuto::window::JoshutoView;
 pub struct JoshutoContext {
     pub username: String,
     pub hostname: String,
-    pub threads: Vec<(
-        sync::mpsc::Receiver<command::ProgressInfo>,
-        thread::JoinHandle<i32>,
-    )>,
+    pub threads: Vec<FileOperationThread>,
     pub views: JoshutoView,
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,

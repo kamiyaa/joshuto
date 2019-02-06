@@ -16,9 +16,7 @@ pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;
 
 pub fn init_ncurses() {
-    let locale_conf = ncurses::LcCategory::all;
-
-    ncurses::setlocale(locale_conf, "");
+    ncurses::setlocale(ncurses::LcCategory::all, "");
 
     ncurses::initscr();
     ncurses::cbreak();
