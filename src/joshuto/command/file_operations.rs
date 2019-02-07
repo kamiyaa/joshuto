@@ -201,7 +201,13 @@ impl PasteFiles {
         (rx, child)
     }
 
-    fn copy(&self, destination: path::PathBuf) -> (sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>) {
+    fn copy(
+        &self,
+        destination: path::PathBuf,
+    ) -> (
+        sync::mpsc::Receiver<command::ProgressInfo>,
+        thread::JoinHandle<i32>,
+    ) {
         let (tx, rx) = sync::mpsc::channel();
 
         let options = self.options.clone();

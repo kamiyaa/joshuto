@@ -102,8 +102,9 @@ fn process_threads(context: &mut JoshutoContext) {
                         }
                     }
                 } else {
-                    let percent =
-                        (progress_info.bytes_finished as f64 / progress_info.total_bytes as f64) as f32;
+                    let percent = (progress_info.bytes_finished as f64
+                        / progress_info.total_bytes as f64)
+                        as f32;
                     ui::draw_progress_bar(&context.views.bot_win, percent);
                     ncurses::wnoutrefresh(context.views.bot_win.win);
                     i = i + 1;
