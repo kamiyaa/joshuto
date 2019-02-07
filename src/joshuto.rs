@@ -74,27 +74,70 @@ fn process_threads(context: &mut JoshutoContext) {
     while i < context.threads.len() {
         match &context.threads[i].recv_timeout(&thread_wait_duration) {
             Ok(progress_info) => {
-                let percent =
-                    (progress_info.bytes_finished as f64 / progress_info.total_bytes as f64) as f32;
-                ui::draw_progress_bar(&context.views.bot_win, percent);
-                ncurses::wnoutrefresh(context.views.bot_win.win);
+                if progress_info.bytes_finished == progress_info.total_bytes {
+                    ncurses::werase(context.views.bot_win.win);
+                    let thread = context.threads.swap_remove(i);
+                    thread.handle.join().unwrap();
+                    let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
+                    if tab_src < context.tabs.len() {
+                        context.tabs[tab_src].reload_contents(&context.config_t.sort_type);
+                        if tab_src == context.curr_tab_index {
+                            context.tabs[tab_src].refresh(
+                                &context.views,
+                                &context.config_t,
+                                &context.username,
+                                &context.hostname,
+                            );
+                        }
+                    }
+                    if tab_dest != tab_src && tab_dest < context.tabs.len() {
+                        context.tabs[tab_dest].reload_contents(&context.config_t.sort_type);
+                        if tab_dest == context.curr_tab_index {
+                            context.tabs[tab_dest].refresh(
+                                &context.views,
+                                &context.config_t,
+                                &context.username,
+                                &context.hostname,
+                            );
+                        }
+                    }
+                } else {
+                    let percent =
+                        (progress_info.bytes_finished as f64 / progress_info.total_bytes as f64) as f32;
+                    ui::draw_progress_bar(&context.views.bot_win, percent);
+                    ncurses::wnoutrefresh(context.views.bot_win.win);
+                    i = i + 1;
+                }
                 ncurses::doupdate();
-                i = i + 1;
             }
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
                 ncurses::werase(context.views.bot_win.win);
                 let thread = context.threads.swap_remove(i);
-                eprintln!("joining thread");
-                ncurses::doupdate();
-                thread.handle.join().unwrap();
                 let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
+                thread.handle.join().unwrap();
                 if tab_src < context.tabs.len() {
                     context.tabs[tab_src].reload_contents(&context.config_t.sort_type);
+                    if tab_src == context.curr_tab_index {
+                        context.tabs[tab_src].refresh(
+                            &context.views,
+                            &context.config_t,
+                            &context.username,
+                            &context.hostname,
+                        );
+                    }
                 }
                 if tab_dest != tab_src && tab_dest < context.tabs.len() {
                     context.tabs[tab_dest].reload_contents(&context.config_t.sort_type);
+                    if tab_dest == context.curr_tab_index {
+                        context.tabs[tab_dest].refresh(
+                            &context.views,
+                            &context.config_t,
+                            &context.username,
+                            &context.hostname,
+                        );
+                    }
                 }
-                eprintln!("done refreshing");
+                ncurses::doupdate();
             }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
                 i = i + 1;
@@ -125,18 +168,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     command::NewTab::new_tab(&mut context);
     ncurses::doupdate();
 
-    while let Some(ch) = ncurses::get_wch() {
-        let ch = match ch {
-            ncurses::WchResult::Char(s) => s as i32,
-            ncurses::WchResult::KeyCode(s) => s,
-        };
-
-        if ch == ncurses::KEY_RESIZE {
-            context.views.resize_views();
-            resize_handler(&mut context);
-            continue;
-        }
-
+    loop {
         if context.threads.len() > 0 {
             ncurses::timeout(0);
             process_threads(&mut context);
@@ -144,22 +176,36 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
             ncurses::timeout(-1);
         }
 
-        let keycommand: &std::boxed::Box<dyn JoshutoCommand>;
+        if let Some(ch) = ncurses::get_wch() {
+            let ch = match ch {
+                ncurses::WchResult::Char(s) => s as i32,
+                ncurses::WchResult::KeyCode(s) => s,
+            };
 
-        match keymap_t.keymaps.get(&ch) {
-            Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
-                Some(s) => {
-                    keycommand = s;
-                }
-                None => continue,
-            },
-            Some(CommandKeybind::SimpleKeybind(s)) => {
-                keycommand = s;
-            }
-            None => {
+            if ch == ncurses::KEY_RESIZE {
+                context.views.resize_views();
+                resize_handler(&mut context);
                 continue;
             }
+
+            let keycommand: &std::boxed::Box<dyn JoshutoCommand>;
+
+            match keymap_t.keymaps.get(&ch) {
+                Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
+                    Some(s) => {
+                        keycommand = s;
+                    }
+                    None => continue,
+                },
+                Some(CommandKeybind::SimpleKeybind(s)) => {
+                    keycommand = s;
+                }
+                None => {
+                    continue;
+                }
+            }
+            keycommand.execute(&mut context);
         }
-        keycommand.execute(&mut context);
     }
+    ncurses::endwin();
 }

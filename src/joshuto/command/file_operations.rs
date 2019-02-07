@@ -201,16 +201,9 @@ impl PasteFiles {
         (rx, child)
     }
 
-    fn copy(
-        &self,
-        destination: &path::PathBuf,
-    ) -> (
-        sync::mpsc::Receiver<command::ProgressInfo>,
-        thread::JoinHandle<i32>,
-    ) {
+    fn copy(&self, destination: path::PathBuf) -> (sync::mpsc::Receiver<command::ProgressInfo>, thread::JoinHandle<i32>) {
         let (tx, rx) = sync::mpsc::channel();
 
-        let destination = destination.clone();
         let options = self.options.clone();
 
         let child = thread::spawn(move || {
@@ -225,10 +218,7 @@ impl PasteFiles {
                 fs_extra::dir::TransitProcessResult::ContinueOrAbort
             };
 
-            match fs_extra::copy_items_with_progress(&files, &destination, &options, handle) {
-                Ok(_) => {}
-                Err(_) => {}
-            }
+            fs_extra::copy_items_with_progress(&files, &destination, &options, handle).unwrap();
             0
         });
         (rx, child)
@@ -266,7 +256,7 @@ impl JoshutoRunnable for PasteFiles {
         }
 
         let (recv, handle) = match *file_operation {
-            FileOp::Copy => self.copy(&curr_tab.curr_path),
+            FileOp::Copy => self.copy(curr_tab.curr_path.clone()),
             FileOp::Cut => self.cut(&curr_tab.curr_path),
         };
 
@@ -276,7 +266,7 @@ impl JoshutoRunnable for PasteFiles {
             handle,
             recv,
         };
-
+        ncurses::timeout(-1);
         context.threads.push(thread);
     }
 }
