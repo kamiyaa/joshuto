@@ -156,14 +156,15 @@ impl PasteFiles {
         {
             let paths = selected_files.lock().unwrap();
             if paths.len() == 0 {
-                return Err(std::io::Error::new(std::io::ErrorKind::Other, "oh no!"));
+                return Err(std::io::Error::new(std::io::ErrorKind::Other, "no files selected"));
             }
             path_ino = paths[0].metadata()?.st_dev();
         }
 
         let (tx, rx) = sync::mpsc::channel();
+        let handle;
         if dest_ino == path_ino {
-            let handle = thread::spawn(move || {
+           handle = thread::spawn(move || {
                 let mut paths = selected_files.lock().unwrap();
                 let mut progress_info = ProgressInfo {
                     bytes_finished: 1,
@@ -173,15 +174,15 @@ impl PasteFiles {
                 for path in (*paths).iter() {
                     let mut file_name = path.file_name().unwrap().to_os_string();
 
+                    if options.skip_exist && destination.exists() {
+                        continue;
+                    }
+
                     while path::Path::new(&file_name).exists() {
                         file_name.push("_0");
                     }
 
                     destination.push(file_name);
-                    if options.skip_exist && destination.exists() {
-                        continue;
-                    }
-
                     std::fs::rename(&path, &destination).unwrap();
                     destination.pop();
 
@@ -191,16 +192,9 @@ impl PasteFiles {
                 paths.clear();
                 0
             });
-            let thread = FileOperationThread {
-                tab_src: tab_src_index,
-                tab_dest,
-                handle,
-                recv: rx,
-            };
-            Ok(thread)
         } else {
-            let handle = thread::spawn(move || {
-                let files = selected_files.lock().unwrap();
+            handle = thread::spawn(move || {
+                let mut paths = selected_files.lock().unwrap();
 
                 let handle = |process_info: fs_extra::TransitProcess| {
                     let progress_info = ProgressInfo {
@@ -211,18 +205,60 @@ impl PasteFiles {
                     fs_extra::dir::TransitProcessResult::ContinueOrAbort
                 };
 
-                fs_extra::move_items_with_progress(&files, &destination, &options, handle).unwrap();
+                fs_extra::move_items_with_progress(&paths, &destination, &options, handle).unwrap();
+                paths.clear();
                 0
             });
-
-            let thread = FileOperationThread {
-                tab_src: tab_src_index,
-                tab_dest,
-                handle,
-                recv: rx,
-            };
-            Ok(thread)
         }
+        let thread = FileOperationThread {
+            tab_src: tab_src_index,
+            tab_dest,
+            handle,
+            recv: rx,
+        };
+        Ok(thread)
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    fn cut(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
+        let tab_dest = context.curr_tab_index;
+        let tab_src_index: usize;
+        {
+            tab_src_index = *tab_src.lock().unwrap();
+        }
+        let mut destination = context.tabs[tab_dest].curr_path.clone();
+        let options = self.options.clone();
+
+        {
+            let paths = selected_files.lock().unwrap();
+            if paths.len() == 0 {
+                return Err(std::io::Error::new(std::io::ErrorKind::Other, "no files selected"));
+            }
+        }
+
+        let handle = thread::spawn(move || {
+                let mut paths = selected_files.lock().unwrap();
+
+                let handle = |process_info: fs_extra::TransitProcess| {
+                    let progress_info = ProgressInfo {
+                        bytes_finished: process_info.copied_bytes,
+                        total_bytes: process_info.total_bytes,
+                    };
+                    tx.send(progress_info).unwrap();
+                    fs_extra::dir::TransitProcessResult::ContinueOrAbort
+                };
+
+                fs_extra::move_items_with_progress(&paths, &destination, &options, handle).unwrap();
+                paths.clear();
+                0
+            });
+        let thread = FileOperationThread {
+            tab_src: tab_src_index,
+            tab_dest,
+            handle,
+            recv: rx,
+        };
+        Ok(thread)
     }
 
     fn copy(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {

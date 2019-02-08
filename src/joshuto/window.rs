@@ -105,9 +105,6 @@ impl JoshutoPanel {
     pub fn move_to_top(&self) {
         ncurses::top_panel(self.panel);
     }
-    pub fn move_to_bottom(&self) {
-        ncurses::bottom_panel(self.panel);
-    }
     pub fn queue_for_refresh(&self) {
         ncurses::wnoutrefresh(self.win);
     }

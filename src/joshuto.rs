@@ -162,6 +162,7 @@ fn resize_handler(context: &mut JoshutoContext) {
     ncurses::doupdate();
 }
 
+#[allow(unreachable_code)]
 pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     ui::init_ncurses();
 
@@ -208,6 +209,5 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
             keycommand.execute(&mut context);
         }
     }
-    #[allow(unreachable_code)]
     ncurses::endwin();
 }
