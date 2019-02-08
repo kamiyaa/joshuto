@@ -208,5 +208,6 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
             keycommand.execute(&mut context);
         }
     }
+    #[allow(unreachable_code)]
     ncurses::endwin();
 }
