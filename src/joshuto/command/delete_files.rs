@@ -6,7 +6,6 @@ use std::path;
 use joshuto::command::{self, JoshutoCommand, JoshutoRunnable};
 use joshuto::config::keymap;
 use joshuto::context::JoshutoContext;
-use joshuto::preview;
 use joshuto::ui;
 
 #[derive(Clone, Debug)]
@@ -20,16 +19,17 @@ impl DeleteFiles {
         "delete_files"
     }
 
-    pub fn remove_files(paths: Vec<path::PathBuf>) {
+    pub fn remove_files(paths: Vec<path::PathBuf>) -> Result<(), std::io::Error> {
         for path in &paths {
             if let Ok(metadata) = fs::symlink_metadata(path) {
                 if metadata.is_dir() {
-                    fs::remove_dir_all(&path).unwrap();
+                    fs::remove_dir_all(&path)?;
                 } else {
-                    fs::remove_file(&path).unwrap();
+                    fs::remove_file(&path)?;
                 }
             }
         }
+        Ok(())
     }
 }
 
@@ -51,10 +51,12 @@ impl JoshutoRunnable for DeleteFiles {
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
                 if let Some(paths) = command::collect_selected_paths(s) {
-                    Self::remove_files(paths);
+                    match Self::remove_files(paths) {
+                        Ok(_) => ui::wprint_msg(&context.views.bot_win, "Deleted files"),
+                        Err(e) => ui::wprint_err(&context.views.bot_win, e.to_string().as_str()),
+                    }
                 }
             }
-            ui::wprint_msg(&context.views.bot_win, "Deleted files");
 
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             curr_tab.reload_contents(&context.config_t.sort_type);
