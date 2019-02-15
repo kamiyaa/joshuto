@@ -14,7 +14,7 @@ pub struct JoshutoContext {
     pub config_t: config::JoshutoConfig,
 }
 
-impl<'a> JoshutoContext {
+impl JoshutoContext {
     pub fn new(config_t: config::JoshutoConfig) -> Self {
         let username: String = whoami::username();
         let hostname: String = whoami::hostname();
@@ -31,10 +31,10 @@ impl<'a> JoshutoContext {
             config_t,
         }
     }
-    pub fn curr_tab_ref(&'a self) -> &'a JoshutoTab {
+    pub fn curr_tab_ref(&self) -> &JoshutoTab {
         &self.tabs[self.curr_tab_index]
     }
-    pub fn curr_tab_mut(&'a mut self) -> &'a mut JoshutoTab {
+    pub fn curr_tab_mut(&mut self) -> &mut JoshutoTab {
         &mut self.tabs[self.curr_tab_index]
     }
 }
