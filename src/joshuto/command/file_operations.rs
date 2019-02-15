@@ -156,7 +156,10 @@ impl PasteFiles {
         {
             let paths = selected_files.lock().unwrap();
             if paths.len() == 0 {
-                return Err(std::io::Error::new(std::io::ErrorKind::Other, "no files selected"));
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "no files selected",
+                ));
             }
             path_ino = paths[0].metadata()?.st_dev();
         }
@@ -164,7 +167,7 @@ impl PasteFiles {
         let (tx, rx) = sync::mpsc::channel();
         let handle;
         if dest_ino == path_ino {
-           handle = thread::spawn(move || {
+            handle = thread::spawn(move || {
                 let mut paths = selected_files.lock().unwrap();
                 let mut progress_info = ProgressInfo {
                     bytes_finished: 1,
@@ -232,26 +235,29 @@ impl PasteFiles {
         {
             let paths = selected_files.lock().unwrap();
             if paths.len() == 0 {
-                return Err(std::io::Error::new(std::io::ErrorKind::Other, "no files selected"));
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "no files selected",
+                ));
             }
         }
 
         let handle = thread::spawn(move || {
-                let mut paths = selected_files.lock().unwrap();
+            let mut paths = selected_files.lock().unwrap();
 
-                let handle = |process_info: fs_extra::TransitProcess| {
-                    let progress_info = ProgressInfo {
-                        bytes_finished: process_info.copied_bytes,
-                        total_bytes: process_info.total_bytes,
-                    };
-                    tx.send(progress_info).unwrap();
-                    fs_extra::dir::TransitProcessResult::ContinueOrAbort
+            let handle = |process_info: fs_extra::TransitProcess| {
+                let progress_info = ProgressInfo {
+                    bytes_finished: process_info.copied_bytes,
+                    total_bytes: process_info.total_bytes,
                 };
+                tx.send(progress_info).unwrap();
+                fs_extra::dir::TransitProcessResult::ContinueOrAbort
+            };
 
-                fs_extra::move_items_with_progress(&paths, &destination, &options, handle).unwrap();
-                paths.clear();
-                0
-            });
+            fs_extra::move_items_with_progress(&paths, &destination, &options, handle).unwrap();
+            paths.clear();
+            0
+        });
         let thread = FileOperationThread {
             tab_src: tab_src_index,
             tab_dest,
