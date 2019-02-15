@@ -1,16 +1,14 @@
 #[macro_use]
-extern crate clap;
-#[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
-extern crate toml;
+extern crate structopt;
 extern crate xdg;
 
 mod joshuto;
 
-use std::env;
 use std::path::PathBuf;
+use structopt::StructOpt;
 
 use joshuto::config::{JoshutoConfig, JoshutoKeymap};
 
@@ -37,14 +35,11 @@ lazy_static! {
     };
 }
 
+#[derive(StructOpt, Debug)]
+pub struct Args {}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    for arg in &args {
-        if arg.as_str() == "-v" {
-            println!("{}", crate_version!());
-            return;
-        }
-    }
+    let _ = Args::from_args();
 
     let config = JoshutoConfig::get_config();
     let keymap = JoshutoKeymap::get_config();
