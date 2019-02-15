@@ -5,7 +5,7 @@ extern crate xdg;
 use std::collections::HashMap;
 use std::process::exit;
 
-use joshuto::command;
+use joshuto::commands;
 use joshuto::config::{parse_config_file, Flattenable};
 use KEYMAP_FILE;
 
@@ -30,10 +30,10 @@ struct JoshutoRawKeymap {
 
 impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
     fn flatten(self) -> JoshutoKeymap {
-        let mut keymaps: HashMap<i32, command::CommandKeybind> = HashMap::new();
+        let mut keymaps: HashMap<i32, commands::CommandKeybind> = HashMap::new();
         if let Some(maps) = self.mapcommand {
             for mapcommand in maps {
-                match command::from_args(mapcommand.command.as_str(), mapcommand.args.as_ref()) {
+                match commands::from_args(mapcommand.command.as_str(), mapcommand.args.as_ref()) {
                     Some(command) => {
                         insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]);
                     }
@@ -49,7 +49,7 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
 
 #[derive(Debug)]
 pub struct JoshutoKeymap {
-    pub keymaps: HashMap<i32, command::CommandKeybind>,
+    pub keymaps: HashMap<i32, commands::CommandKeybind>,
 }
 
 impl JoshutoKeymap {
@@ -65,23 +65,23 @@ impl JoshutoKeymap {
 }
 
 fn insert_keycommand(
-    map: &mut HashMap<i32, command::CommandKeybind>,
-    keycommand: Box<dyn command::JoshutoCommand>,
+    map: &mut HashMap<i32, commands::CommandKeybind>,
+    keycommand: Box<dyn commands::JoshutoCommand>,
     keys: &[String],
 ) {
     if keys.len() == 1 {
         match key_to_i32(&keys[0]) {
             Some(s) => {
-                map.insert(s, command::CommandKeybind::SimpleKeybind(keycommand));
+                map.insert(s, commands::CommandKeybind::SimpleKeybind(keycommand));
             }
             None => {}
         }
     } else {
         match key_to_i32(&keys[0]) {
             Some(s) => {
-                let mut new_map: HashMap<i32, command::CommandKeybind>;
+                let mut new_map: HashMap<i32, commands::CommandKeybind>;
                 match map.remove(&s) {
-                    Some(command::CommandKeybind::CompositeKeybind(mut m)) => {
+                    Some(commands::CommandKeybind::CompositeKeybind(mut m)) => {
                         new_map = m;
                     }
                     Some(_) => {
@@ -93,7 +93,7 @@ fn insert_keycommand(
                     }
                 }
                 insert_keycommand(&mut new_map, keycommand, &keys[1..]);
-                let composite_command = command::CommandKeybind::CompositeKeybind(new_map);
+                let composite_command = commands::CommandKeybind::CompositeKeybind(new_map);
                 map.insert(s as i32, composite_command);
             }
             None => {}

@@ -3,7 +3,7 @@ extern crate ncurses;
 use std::fs;
 use std::path;
 
-use joshuto::command::{self, JoshutoCommand, JoshutoRunnable};
+use joshuto::commands::{self, JoshutoCommand, JoshutoRunnable};
 use joshuto::config::keymap;
 use joshuto::context::JoshutoContext;
 use joshuto::preview;
@@ -50,7 +50,7 @@ impl JoshutoRunnable for DeleteFiles {
         let ch: i32 = ncurses::getch();
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-                if let Some(paths) = command::collect_selected_paths(s) {
+                if let Some(paths) = commands::collect_selected_paths(s) {
                     Self::remove_files(paths);
                 }
             }

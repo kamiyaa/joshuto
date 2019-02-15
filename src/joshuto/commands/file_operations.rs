@@ -6,7 +6,7 @@ use std::sync;
 use std::thread;
 use std::time;
 
-use joshuto::command::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
+use joshuto::commands::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
 use joshuto::context::JoshutoContext;
 use joshuto::preview;
 use joshuto::structs::JoshutoDirList;
@@ -44,7 +44,7 @@ fn set_tab_src(tab_index: usize) {
 }
 
 fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
-    if let Some(contents) = command::collect_selected_paths(dirlist) {
+    if let Some(contents) = commands::collect_selected_paths(dirlist) {
         let mut data = selected_files.lock().unwrap();
         *data = contents;
         return true;

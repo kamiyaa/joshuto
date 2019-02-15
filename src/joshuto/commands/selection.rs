@@ -1,4 +1,4 @@
-use joshuto::command::{CursorMove, JoshutoCommand, JoshutoRunnable};
+use joshuto::commands::{CursorMove, JoshutoCommand, JoshutoRunnable};
 use joshuto::context::JoshutoContext;
 
 #[derive(Debug, Clone)]

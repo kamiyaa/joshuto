@@ -1,7 +1,7 @@
 use std::env;
 use std::path;
 
-use joshuto::command::{JoshutoCommand, JoshutoRunnable, TabSwitch};
+use joshuto::commands::{JoshutoCommand, JoshutoRunnable, TabSwitch};
 use joshuto::context::JoshutoContext;
 use joshuto::tab::JoshutoTab;
 use joshuto::ui;

@@ -1,6 +1,6 @@
 use std::process;
 
-use joshuto::command::{JoshutoCommand, JoshutoRunnable};
+use joshuto::commands::{JoshutoCommand, JoshutoRunnable};
 use joshuto::context::JoshutoContext;
 use joshuto::ui;
 

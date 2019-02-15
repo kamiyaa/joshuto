@@ -2,7 +2,7 @@ extern crate ncurses;
 
 pub mod config;
 
-mod command;
+mod commands;
 mod context;
 mod history;
 mod preview;
@@ -17,7 +17,7 @@ mod window;
 use std::collections::HashMap;
 use std::time;
 
-use self::command::{CommandKeybind, JoshutoCommand};
+use self::commands::{CommandKeybind, JoshutoCommand};
 use self::config::{JoshutoMimetype, JoshutoPreview, JoshutoTheme};
 use self::context::JoshutoContext;
 use self::window::JoshutoPanel;
@@ -168,7 +168,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     ui::init_ncurses();
 
     let mut context = context::JoshutoContext::new(config_t);
-    command::NewTab::new_tab(&mut context);
+    commands::NewTab::new_tab(&mut context);
     ncurses::doupdate();
 
     loop {

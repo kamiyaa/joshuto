@@ -1,4 +1,4 @@
-use joshuto::command::FileOperationThread;
+use joshuto::commands::FileOperationThread;
 use joshuto::config;
 use joshuto::tab::JoshutoTab;
 use joshuto::window::JoshutoView;

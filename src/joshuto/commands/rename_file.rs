@@ -3,7 +3,7 @@ extern crate ncurses;
 use std::fs;
 use std::path;
 
-use joshuto::command::{JoshutoCommand, JoshutoRunnable};
+use joshuto::commands::{JoshutoCommand, JoshutoRunnable};
 use joshuto::context::JoshutoContext;
 use joshuto::preview;
 use joshuto::textfield::JoshutoTextField;
