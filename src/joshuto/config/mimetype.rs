@@ -4,7 +4,8 @@ extern crate xdg;
 use std::collections::HashMap;
 use std::fmt;
 
-use joshuto::config::{parse_config, Flattenable};
+use joshuto::config::{parse_config_file, Flattenable};
+use MIMETYPE_FILE;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
@@ -80,7 +81,7 @@ impl JoshutoMimetype {
     }
 
     pub fn get_config() -> JoshutoMimetype {
-        parse_config::<JoshutoRawMimetype, JoshutoMimetype>(::MIMETYPE_FILE)
+        parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
             .unwrap_or_else(|| JoshutoMimetype::new())
     }
 }

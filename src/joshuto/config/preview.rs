@@ -2,9 +2,9 @@ extern crate toml;
 extern crate xdg;
 
 use std::collections::HashMap;
-use std::fmt;
 
-use joshuto::config::{parse_config, Flattenable};
+use joshuto::config::{parse_config_file, Flattenable};
+use PREVIEW_FILE;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoPreviewEntry {
@@ -55,7 +55,7 @@ impl JoshutoPreview {
     }
 
     pub fn get_config() -> JoshutoPreview {
-        parse_config::<JoshutoRawPreview, JoshutoPreview>(::PREVIEW_FILE)
+        parse_config_file::<JoshutoRawPreview, JoshutoPreview>(PREVIEW_FILE)
             .unwrap_or_else(|| JoshutoPreview::new())
     }
 }

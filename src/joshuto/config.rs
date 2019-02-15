@@ -13,10 +13,23 @@ pub use self::preview::JoshutoPreview;
 pub use self::theme::{JoshutoColorTheme, JoshutoTheme};
 
 use self::serde::de::DeserializeOwned;
+use std::fs;
+use std::path::{Path, PathBuf};
 
-pub fn search_config_hierarchy(filename: &str) -> Option<std::path::PathBuf> {
-    for path in ::CONFIG_HIERARCHY.iter() {
-        let filepath = path.join(filename);
+use CONFIG_HIERARCHY;
+
+// implemented by config file implementations to turn a RawConfig into a Config
+trait Flattenable<T> {
+    fn flatten(self) -> T;
+}
+
+// searches a list of folders for a given file in order of preference
+pub fn search_directories<P>(filename: &str, directories: &[P]) -> Option<PathBuf>
+where
+    P: AsRef<Path>,
+{
+    for path in directories.iter() {
+        let filepath = path.as_ref().join(filename);
         if filepath.exists() {
             return Some(filepath);
         }
@@ -24,31 +37,24 @@ pub fn search_config_hierarchy(filename: &str) -> Option<std::path::PathBuf> {
     None
 }
 
-fn read_config(filename: &str) -> Option<String> {
-    let config_path = search_config_hierarchy(filename)?;
-    match std::fs::read_to_string(&config_path) {
-        Ok(content) => Some(content),
-        Err(e) => {
-            eprintln!("{}", e);
-            std::process::exit(1)
-        }
-    }
-}
-
-trait Flattenable<T> {
-    fn flatten(self) -> T;
-}
-
-fn parse_config<T, S>(filename: &str) -> Option<S>
+// parses a config file into its appropriate format
+fn parse_config_file<T, S>(filename: &str) -> Option<S>
 where
     T: DeserializeOwned + Flattenable<S>,
 {
-    let config_contents = read_config(filename)?;
-    let config = match toml::from_str::<T>(&config_contents) {
+    let file_path = search_directories(filename, &CONFIG_HIERARCHY)?;
+    let file_contents = match fs::read_to_string(&file_path) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading {} file: {}", filename, e);
+            return None;
+        }
+    };
+    let config = match toml::from_str::<T>(&file_contents) {
         Ok(config) => config,
         Err(e) => {
             eprintln!("Error parsing {} file: {}", filename, e);
-            std::process::exit(1);
+            return None;
         }
     };
     Some(config.flatten())

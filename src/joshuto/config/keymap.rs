@@ -6,7 +6,8 @@ use std::collections::HashMap;
 use std::process;
 
 use joshuto::command;
-use joshuto::config::{parse_config, Flattenable};
+use joshuto::config::{parse_config_file, Flattenable};
+use KEYMAP_FILE;
 
 pub const BACKSPACE: i32 = 0x7F;
 pub const TAB: i32 = 0x9;
@@ -58,7 +59,7 @@ impl JoshutoKeymap {
     }
 
     pub fn get_config() -> JoshutoKeymap {
-        parse_config::<JoshutoRawKeymap, JoshutoKeymap>(::KEYMAP_FILE)
+        parse_config_file::<JoshutoRawKeymap, JoshutoKeymap>(KEYMAP_FILE)
             .unwrap_or_else(|| JoshutoKeymap::new())
     }
 }

@@ -2,8 +2,10 @@ extern crate toml;
 extern crate whoami;
 extern crate xdg;
 
-use joshuto::config::{parse_config, Flattenable};
+use joshuto::config::{parse_config_file, Flattenable};
 use joshuto::sort;
+
+use CONFIG_FILE;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortRawOption {
@@ -117,7 +119,7 @@ impl JoshutoConfig {
     }
 
     pub fn get_config() -> JoshutoConfig {
-        parse_config::<JoshutoRawConfig, JoshutoConfig>(::CONFIG_FILE)
+        parse_config_file::<JoshutoRawConfig, JoshutoConfig>(CONFIG_FILE)
             .unwrap_or_else(|| JoshutoConfig::new())
     }
 }

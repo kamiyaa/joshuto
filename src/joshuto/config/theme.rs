@@ -3,7 +3,7 @@ extern crate xdg;
 
 use std::collections::HashMap;
 
-use joshuto::config::{parse_config, Flattenable};
+use joshuto::config::{parse_config_file, Flattenable};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct JoshutoColorPair {
@@ -224,7 +224,7 @@ impl JoshutoTheme {
     }
 
     pub fn get_config() -> JoshutoTheme {
-        parse_config::<JoshutoRawTheme, JoshutoTheme>(::THEME_FILE)
+        parse_config_file::<JoshutoRawTheme, JoshutoTheme>(::THEME_FILE)
             .unwrap_or_else(|| JoshutoTheme::new())
     }
 }
