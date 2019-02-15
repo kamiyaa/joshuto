@@ -20,6 +20,7 @@ use std::time;
 use self::command::{CommandKeybind, JoshutoCommand};
 use self::config::{JoshutoMimetype, JoshutoPreview, JoshutoTheme};
 use self::context::JoshutoContext;
+use self::window::JoshutoPanel;
 
 lazy_static! {
     static ref theme_t: JoshutoTheme = JoshutoTheme::get_config();
@@ -36,7 +37,7 @@ fn recurse_get_keycommand<'a>(
     let ch: i32;
     {
         let keymap_len = keymap.len();
-        let win = window::JoshutoPanel::new(
+        let win = JoshutoPanel::new(
             keymap_len as i32 + 1,
             term_cols,
             ((term_rows - keymap_len as i32 - 2) as usize, 0),
