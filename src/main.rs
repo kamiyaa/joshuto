@@ -5,12 +5,25 @@ extern crate serde_derive;
 extern crate structopt;
 extern crate xdg;
 
-mod joshuto;
+mod commands;
+mod config;
+mod context;
+mod history;
+mod preview;
+mod run;
+mod sort;
+mod structs;
+mod tab;
+mod textfield;
+mod ui;
+mod unix;
+mod window;
 
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-use joshuto::config::{JoshutoConfig, JoshutoKeymap};
+use config::{JoshutoConfig, JoshutoKeymap, JoshutoMimetype, JoshutoPreview, JoshutoTheme};
+use run::run;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_FILE: &str = "joshuto.toml";
@@ -33,6 +46,9 @@ lazy_static! {
         }
         temp
     };
+    static ref theme_t: JoshutoTheme = JoshutoTheme::get_config();
+    static ref mimetype_t: JoshutoMimetype = JoshutoMimetype::get_config();
+    static ref preview_t: JoshutoPreview = JoshutoPreview::get_config();
 }
 
 #[derive(StructOpt, Debug)]
@@ -44,5 +60,5 @@ fn main() {
     let config = JoshutoConfig::get_config();
     let keymap = JoshutoKeymap::get_config();
 
-    joshuto::run(config, keymap);
+    run(config, keymap);
 }
