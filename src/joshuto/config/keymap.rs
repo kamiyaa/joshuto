@@ -3,7 +3,7 @@ extern crate toml;
 extern crate xdg;
 
 use std::collections::HashMap;
-use std::process;
+use std::process::exit;
 
 use joshuto::command;
 use joshuto::config::{parse_config_file, Flattenable};
@@ -86,7 +86,7 @@ fn insert_keycommand(
                     }
                     Some(_) => {
                         eprintln!("Error: Keybindings ambiguous");
-                        process::exit(1);
+                        exit(1);
                     }
                     None => {
                         new_map = HashMap::new();

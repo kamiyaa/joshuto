@@ -38,7 +38,7 @@ pub use self::tab_switch::TabSwitch;
 
 use std::collections::HashMap;
 use std::fmt;
-use std::path;
+use std::path::PathBuf;
 
 use joshuto::context::JoshutoContext;
 use joshuto::structs;
@@ -77,7 +77,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                 match wordexp::wordexp(args[0].as_str(), 0) {
                     Ok(exp_strs) => {
                         for exp_str in exp_strs {
-                            let path = path::PathBuf::from(exp_str);
+                            let path = PathBuf::from(exp_str);
                             return Some(Box::new(self::ChangeDirectory::new(path)));
                         }
                     }
@@ -216,12 +216,12 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
     }
 }
 
-pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList) -> Option<Vec<path::PathBuf>> {
+pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList) -> Option<Vec<PathBuf>> {
     if dirlist.index < 0 {
         return None;
     }
 
-    let selected: Vec<path::PathBuf> = dirlist
+    let selected: Vec<PathBuf> = dirlist
         .contents
         .iter()
         .filter(|entry| entry.selected)

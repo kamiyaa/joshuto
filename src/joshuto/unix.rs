@@ -1,7 +1,7 @@
 extern crate libc;
 extern crate ncurses;
 
-use std::path;
+use std::path::{Path, PathBuf};
 use std::process;
 
 use joshuto::config::mimetype;
@@ -82,7 +82,7 @@ pub fn stringify_mode(mode: libc::mode_t) -> String {
     mode_str
 }
 
-pub fn set_mode(path: &path::Path, mode: libc::mode_t) {
+pub fn set_mode(path: &Path, mode: libc::mode_t) {
     let os_path = path.as_os_str();
     if let Some(s) = os_path.to_str() {
         let svec: Vec<i8> = s.bytes().map(|ch| ch as i8).collect();
@@ -92,7 +92,7 @@ pub fn set_mode(path: &path::Path, mode: libc::mode_t) {
     }
 }
 
-pub fn open_with_entry(paths: &Vec<path::PathBuf>, entry: &mimetype::JoshutoMimetypeEntry) {
+pub fn open_with_entry(paths: &Vec<PathBuf>, entry: &mimetype::JoshutoMimetypeEntry) {
     let program = entry.program.clone();
 
     let mut command = process::Command::new(program);
@@ -123,7 +123,7 @@ pub fn open_with_entry(paths: &Vec<path::PathBuf>, entry: &mimetype::JoshutoMime
     }
 }
 
-pub fn open_with_args(paths: &Vec<path::PathBuf>, args: &Vec<String>) {
+pub fn open_with_args(paths: &Vec<PathBuf>, args: &Vec<String>) {
     let program = args[0].clone();
     let args_len = args.len();
 

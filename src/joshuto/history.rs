@@ -1,12 +1,11 @@
-use std::collections::HashMap;
-use std::path;
+use std::collections::{hash_map::Entry, HashMap};
+use std::path::{Path, PathBuf};
 
 use joshuto::sort;
 use joshuto::structs;
-use std::collections::hash_map::Entry;
 
 pub struct DirHistory {
-    map: HashMap<path::PathBuf, structs::JoshutoDirList>,
+    map: HashMap<PathBuf, structs::JoshutoDirList>,
 }
 
 impl DirHistory {
@@ -16,7 +15,7 @@ impl DirHistory {
         }
     }
 
-    pub fn populate_to_root(&mut self, pathbuf: &path::PathBuf, sort_type: &sort::SortType) {
+    pub fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_type: &sort::SortType) {
         let mut ancestors = pathbuf.ancestors();
         if let Some(mut ancestor) = ancestors.next() {
             while let Some(curr) = ancestors.next() {
@@ -39,7 +38,7 @@ impl DirHistory {
 
     pub fn pop_or_create(
         &mut self,
-        path: &path::Path,
+        path: &Path,
         sort_type: &sort::SortType,
     ) -> Result<structs::JoshutoDirList, std::io::Error> {
         match self.map.remove(&path.to_path_buf()) {
@@ -58,7 +57,7 @@ impl DirHistory {
 
     pub fn get_mut_or_create(
         &mut self,
-        path: &path::Path,
+        path: &Path,
         sort_type: &sort::SortType,
     ) -> Option<&mut structs::JoshutoDirList> {
         let pathbuf = path.to_path_buf();

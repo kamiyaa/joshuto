@@ -1,4 +1,4 @@
-use std::path;
+use std::path::PathBuf;
 
 use joshuto::config;
 use joshuto::history;
@@ -11,16 +11,13 @@ use joshuto::theme_t;
 
 pub struct JoshutoTab {
     pub history: history::DirHistory,
-    pub curr_path: path::PathBuf,
+    pub curr_path: PathBuf,
     pub parent_list: Option<JoshutoDirList>,
     pub curr_list: Option<JoshutoDirList>,
 }
 
 impl JoshutoTab {
-    pub fn new(
-        curr_path: path::PathBuf,
-        sort_type: &sort::SortType,
-    ) -> Result<Self, std::io::Error> {
+    pub fn new(curr_path: PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error> {
         let mut history = history::DirHistory::new();
         history.populate_to_root(&curr_path, sort_type);
 

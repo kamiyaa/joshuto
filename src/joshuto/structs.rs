@@ -1,6 +1,6 @@
 use std::ffi;
 use std::fs;
-use std::path;
+use std::path::{Path, PathBuf};
 use std::time;
 
 use joshuto::sort;
@@ -34,7 +34,7 @@ impl JoshutoMetadata {
 pub struct JoshutoDirEntry {
     pub file_name: ffi::OsString,
     pub file_name_as_string: String,
-    pub path: path::PathBuf,
+    pub path: PathBuf,
     pub metadata: JoshutoMetadata,
     pub selected: bool,
     pub marked: bool,
@@ -79,7 +79,7 @@ impl std::fmt::Debug for JoshutoDirEntry {
 #[derive(Debug)]
 pub struct JoshutoDirList {
     pub index: i32,
-    pub path: path::PathBuf,
+    pub path: PathBuf,
     pub update_needed: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
@@ -87,7 +87,7 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
-    pub fn new(path: path::PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error> {
+    pub fn new(path: PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error> {
         let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
         contents.sort_by(&sort_type.compare_func());
 
@@ -108,7 +108,7 @@ impl JoshutoDirList {
     }
 
     fn read_dir_list(
-        path: &path::Path,
+        path: &Path,
         sort_type: &sort::SortType,
     ) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
         let filter_func = sort_type.filter_func();

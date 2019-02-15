@@ -2,7 +2,7 @@ extern crate mime;
 extern crate mime_detective;
 extern crate ncurses;
 
-use std::path;
+use std::path::PathBuf;
 use std::process;
 
 use joshuto::context::JoshutoContext;
@@ -68,7 +68,7 @@ pub fn preview_file(context: &mut JoshutoContext) {
     */
 }
 
-pub fn text_preview(win: &window::JoshutoPanel, path: &path::PathBuf) {
+pub fn text_preview(win: &window::JoshutoPanel, path: &PathBuf) {
     let mut command = process::Command::new("head");
     command.arg("-n");
     command.arg(win.cols.to_string());
