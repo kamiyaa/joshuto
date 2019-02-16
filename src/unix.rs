@@ -35,7 +35,7 @@ pub fn is_executable(mode: u32) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 
 pub fn stringify_mode(mode: libc::mode_t) -> String {
@@ -92,7 +92,7 @@ pub fn set_mode(path: &Path, mode: libc::mode_t) {
     }
 }
 
-pub fn open_with_entry(paths: &Vec<PathBuf>, entry: &mimetype::JoshutoMimetypeEntry) {
+pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry) {
     let program = entry.program.clone();
 
     let mut command = process::Command::new(program);
@@ -123,13 +123,12 @@ pub fn open_with_entry(paths: &Vec<PathBuf>, entry: &mimetype::JoshutoMimetypeEn
     }
 }
 
-pub fn open_with_args(paths: &Vec<PathBuf>, args: &Vec<String>) {
+pub fn open_with_args(paths: &[PathBuf], args: &[String]) {
     let program = args[0].clone();
-    let args_len = args.len();
 
     let mut command = process::Command::new(program);
-    for i in 1..args_len {
-        command.arg(args[i].clone());
+    for arg in args {
+        command.arg(arg.clone());
     }
     for path in paths {
         command.arg(path.as_os_str());

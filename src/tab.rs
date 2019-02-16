@@ -42,24 +42,18 @@ impl JoshutoTab {
 
     pub fn reload_contents(&mut self, sort_type: &sort::SortType) {
         let mut list = self.curr_list.take();
-        match list {
-            Some(ref mut s) => {
-                if s.path.exists() {
-                    s.update_contents(sort_type).unwrap();
-                }
+        if let Some(ref mut s) = list {
+            if s.path.exists() {
+                s.update_contents(sort_type).unwrap();
             }
-            None => {}
         };
         self.curr_list = list;
 
         list = self.parent_list.take();
-        match list {
-            Some(ref mut s) => {
-                if s.path.exists() {
-                    s.update_contents(sort_type).unwrap();
-                }
+        if let Some(ref mut s) = list {
+            if s.path.exists() {
+                s.update_contents(sort_type).unwrap();
             }
-            None => {}
         };
         self.parent_list = list;
     }

@@ -60,7 +60,7 @@ impl JoshutoKeymap {
 
     pub fn get_config() -> JoshutoKeymap {
         parse_config_file::<JoshutoRawKeymap, JoshutoKeymap>(KEYMAP_FILE)
-            .unwrap_or_else(|| JoshutoKeymap::new())
+            .unwrap_or_else(JoshutoKeymap::new)
     }
 }
 
@@ -70,33 +70,27 @@ fn insert_keycommand(
     keys: &[String],
 ) {
     if keys.len() == 1 {
-        match key_to_i32(&keys[0]) {
-            Some(s) => {
-                map.insert(s, commands::CommandKeybind::SimpleKeybind(keycommand));
-            }
-            None => {}
+        if let Some(s) = key_to_i32(&keys[0]) {
+            map.insert(s, commands::CommandKeybind::SimpleKeybind(keycommand));
         }
     } else {
-        match key_to_i32(&keys[0]) {
-            Some(s) => {
-                let mut new_map: HashMap<i32, commands::CommandKeybind>;
-                match map.remove(&s) {
-                    Some(commands::CommandKeybind::CompositeKeybind(mut m)) => {
-                        new_map = m;
-                    }
-                    Some(_) => {
-                        eprintln!("Error: Keybindings ambiguous");
-                        exit(1);
-                    }
-                    None => {
-                        new_map = HashMap::new();
-                    }
+        if let Some(s) = key_to_i32(&keys[0]) {
+            let mut new_map: HashMap<i32, commands::CommandKeybind>;
+            match map.remove(&s) {
+                Some(commands::CommandKeybind::CompositeKeybind(mut m)) => {
+                    new_map = m;
                 }
-                insert_keycommand(&mut new_map, keycommand, &keys[1..]);
-                let composite_command = commands::CommandKeybind::CompositeKeybind(new_map);
-                map.insert(s as i32, composite_command);
+                Some(_) => {
+                    eprintln!("Error: Keybindings ambiguous");
+                    exit(1);
+                }
+                None => {
+                    new_map = HashMap::new();
+                }
             }
-            None => {}
+            insert_keycommand(&mut new_map, keycommand, &keys[1..]);
+            let composite_command = commands::CommandKeybind::CompositeKeybind(new_map);
+            map.insert(s as i32, composite_command);
         }
     }
 }
@@ -108,7 +102,7 @@ pub fn key_to_i32(keycode: &str) -> Option<i32> {
                 return Some(ch as i32);
             }
         }
-        return None;
+        None
     } else {
         match keycode {
             "Tab" => Some(TAB),

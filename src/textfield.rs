@@ -2,6 +2,7 @@ extern crate ncurses;
 extern crate unicode_width;
 
 use config::keymap;
+use std::iter::FromIterator;
 use window;
 
 pub struct JoshutoTextField {
@@ -24,7 +25,7 @@ impl JoshutoTextField {
         for ch in prefix.chars() {
             let char_len = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
             buf_vec.push(ch);
-            curs_x = curs_x + char_len as i32;
+            curs_x += char_len as i32;
         }
         let curr_index: usize = buf_vec.len();
 
@@ -32,8 +33,7 @@ impl JoshutoTextField {
             buf_vec.push(ch);
         }
         ncurses::timeout(-1);
-        let user_input = self.readline_(buf_vec, curs_x, curr_index);
-        user_input
+        self.readline_(buf_vec, curs_x, curr_index)
     }
 
     fn readline_(
@@ -56,7 +56,7 @@ impl JoshutoTextField {
         loop {
             ncurses::wmove(win, coord.0, coord.1 as i32);
             {
-                let str_ch: String = buffer.iter().collect();
+                let str_ch: String = String::from_iter(&buffer);
                 ncurses::waddstr(win, &str_ch);
             }
             ncurses::waddstr(win, "    ");
@@ -82,25 +82,23 @@ impl JoshutoTextField {
             } else if ch == ncurses::KEY_END {
                 let buffer_len = buffer.len();
                 if curr_index != buffer_len {
-                    for i in curr_index..buffer_len {
-                        curs_x = curs_x + buffer[i] as i32;
+                    for x in &buffer {
+                        curs_x += *x as i32;
                     }
                     curr_index = buffer_len;
                 }
             } else if ch == ncurses::KEY_LEFT {
                 if curr_index > 0 {
-                    curr_index = curr_index - 1;
-                    curs_x = curs_x
-                        - unicode_width::UnicodeWidthChar::width(buffer[curr_index]).unwrap_or(1)
-                            as i32;
+                    curr_index -= 1;
+                    curs_x -= unicode_width::UnicodeWidthChar::width(buffer[curr_index])
+                        .unwrap_or(1) as i32;
                 }
             } else if ch == ncurses::KEY_RIGHT {
                 let buffer_len = buffer.len();
                 if curr_index < buffer_len {
-                    curs_x = curs_x
-                        + unicode_width::UnicodeWidthChar::width(buffer[curr_index]).unwrap_or(1)
-                            as i32;
-                    curr_index = curr_index + 1;
+                    curs_x += unicode_width::UnicodeWidthChar::width(buffer[curr_index])
+                        .unwrap_or(1) as i32;
+                    curr_index += 1;
                 }
             } else if ch == keymap::BACKSPACE {
                 let buffer_len = buffer.len();
@@ -109,16 +107,14 @@ impl JoshutoTextField {
                 }
 
                 if curr_index == buffer_len {
-                    curr_index = curr_index - 1;
+                    curr_index -= 1;
                     if let Some(ch) = buffer.pop() {
-                        curs_x =
-                            curs_x - unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1) as i32;
+                        curs_x -= unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1) as i32;
                     }
                 } else if curr_index > 0 {
-                    curr_index = curr_index - 1;
+                    curr_index -= 1;
                     let ch = buffer.remove(curr_index);
-                    curs_x =
-                        curs_x - unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1) as i32;
+                    curs_x -= unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1) as i32;
                 }
             } else if ch == ncurses::KEY_DC {
                 let buffer_len = buffer.len();
@@ -130,9 +126,8 @@ impl JoshutoTextField {
                 if curr_index > 0 {
                     let ch = buffer.remove(curr_index);
                     if curr_index > buffer_len {
-                        curr_index = curr_index - 1;
-                        curs_x =
-                            curs_x - unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1) as i32;
+                        curr_index -= 1;
+                        curs_x -= unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1) as i32;
                     }
                 } else if curr_index == 0 {
                     buffer.remove(curr_index);
@@ -143,12 +138,12 @@ impl JoshutoTextField {
 
                 buffer.insert(curr_index, ch);
 
-                curs_x = curs_x + char_len as i32;
-                curr_index = curr_index + 1;
+                curs_x += char_len as i32;
+                curr_index += 1;
             }
         }
         let user_str: String = buffer.iter().map(|ch| ch).collect();
 
-        return Some(user_str);
+        Some(user_str)
     }
 }

@@ -53,14 +53,14 @@ impl SetMode {
             let mut mode: libc::mode_t = 0;
             for (i, ch) in s.chars().enumerate() {
                 if ch == LIBC_PERMISSION_VALS[i].1 {
-                    mode = mode | LIBC_PERMISSION_VALS[i].0;
+                    mode |= LIBC_PERMISSION_VALS[i].0;
                 }
             }
             unix::set_mode(entry.path.as_path(), mode);
             entry.metadata.permissions.set_mode(mode + (1 << 15));
             return true;
         }
-        return false;
+        false
     }
 }
 

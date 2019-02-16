@@ -120,6 +120,6 @@ impl JoshutoConfig {
 
     pub fn get_config() -> JoshutoConfig {
         parse_config_file::<JoshutoRawConfig, JoshutoConfig>(CONFIG_FILE)
-            .unwrap_or_else(|| JoshutoConfig::new())
+            .unwrap_or_else(JoshutoConfig::new)
     }
 }

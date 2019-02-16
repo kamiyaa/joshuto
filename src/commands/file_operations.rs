@@ -49,7 +49,7 @@ fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
         *data = contents;
         return true;
     }
-    return false;
+    false
 }
 
 enum FileOp {
@@ -165,9 +165,8 @@ impl PasteFiles {
         }
 
         let (tx, rx) = sync::mpsc::channel();
-        let handle;
-        if dest_ino == path_ino {
-            handle = thread::spawn(move || {
+        let handle = if dest_ino == path_ino {
+            thread::spawn(move || {
                 let mut paths = selected_files.lock().unwrap();
                 let mut progress_info = ProgressInfo {
                     bytes_finished: 1,
@@ -189,14 +188,14 @@ impl PasteFiles {
                     std::fs::rename(&path, &destination).unwrap();
                     destination.pop();
 
-                    progress_info.bytes_finished = progress_info.bytes_finished + 1;
+                    progress_info.bytes_finished += 1;
                     tx.send(progress_info.clone()).unwrap();
                 }
                 paths.clear();
                 0
-            });
+            })
         } else {
-            handle = thread::spawn(move || {
+            thread::spawn(move || {
                 let mut paths = selected_files.lock().unwrap();
 
                 let handle = |process_info: fs_extra::TransitProcess| {
@@ -211,8 +210,8 @@ impl PasteFiles {
                 fs_extra::move_items_with_progress(&paths, &destination, &options, handle).unwrap();
                 paths.clear();
                 0
-            });
-        }
+            })
+        };
         let thread = FileOperationThread {
             tab_src: tab_src_index,
             tab_dest,

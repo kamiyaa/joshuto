@@ -91,7 +91,7 @@ impl JoshutoDirList {
         let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
         contents.sort_by(&sort_type.compare_func());
 
-        let index = if contents.len() > 0 { 0 } else { -1 };
+        let index = if !contents.is_empty() { 0 } else { -1 };
 
         let metadata = fs::metadata(&path)?;
         let metadata = JoshutoMetadata::from(&metadata)?;
@@ -126,7 +126,7 @@ impl JoshutoDirList {
                 return self.metadata.modified < modified;
             }
         }
-        return true;
+        true
     }
 
     pub fn update_contents(&mut self, sort_type: &sort::SortType) -> Result<(), std::io::Error> {

@@ -78,7 +78,7 @@ impl JoshutoPanel {
 
             let mut attr: ncurses::attr_t = 0;
             if i == curr_index {
-                attr = attr | ncurses::A_STANDOUT();
+                attr |= ncurses::A_STANDOUT();
             }
             let attrs = ui::get_theme_attr(attr, entry);
 
@@ -110,6 +110,6 @@ impl JoshutoPanel {
                 .update_page_state(index as usize, self.rows, vec_len, scroll_offset);
         }
         ncurses::wmove(self.win, 0, 0);
-        return true;
+        true
     }
 }

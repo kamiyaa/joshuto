@@ -3,7 +3,7 @@ extern crate ncurses;
 extern crate open;
 
 use std::env;
-use std::path;
+use std::path::{Path, PathBuf};
 
 use commands::{self, JoshutoCommand, JoshutoRunnable};
 use config::mimetype;
@@ -27,40 +27,30 @@ impl OpenFile {
         "open_file"
     }
 
-    pub fn get_options<'a>(path: &path::PathBuf) -> Vec<&'a mimetype::JoshutoMimetypeEntry> {
+    pub fn get_options<'a>(path: &Path) -> Vec<&'a mimetype::JoshutoMimetypeEntry> {
         let mut mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = Vec::new();
 
-        match path.extension() {
-            Some(file_ext) => {
-                if let Some(file_ext) = file_ext.to_str() {
-                    match mimetype_t.extension.get(file_ext) {
-                        Some(s) => {
-                            for option in s {
-                                mimetype_options.push(&option);
-                            }
-                        }
-                        None => {}
-                    }
-                }
-            }
-            None => {}
-        }
-        let detective = mime_detective::MimeDetective::new().unwrap();
-        match detective.detect_filepath(path) {
-            Ok(mime_type) => match mimetype_t.mimetype.get(mime_type.type_().as_str()) {
-                Some(s) => {
+        if let Some(file_ext) = path.extension() {
+            if let Some(file_ext) = file_ext.to_str() {
+                if let Some(s) = mimetype_t.extension.get(file_ext) {
                     for option in s {
                         mimetype_options.push(&option);
                     }
                 }
-                None => {}
-            },
-            Err(_) => {}
+            }
+        }
+        let detective = mime_detective::MimeDetective::new().unwrap();
+        if let Ok(mime_type) = detective.detect_filepath(path) {
+            if let Some(s) = mimetype_t.mimetype.get(mime_type.type_().as_str()) {
+                for option in s {
+                    mimetype_options.push(&option);
+                }
+            }
         }
         mimetype_options
     }
 
-    fn into_directory(path: &path::PathBuf, context: &mut JoshutoContext) {
+    fn enter_directory(path: &Path, context: &mut JoshutoContext) {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
 
         match env::set_current_dir(path) {
@@ -103,12 +93,12 @@ impl OpenFile {
         }
     }
 
-    fn into_file(paths: &Vec<path::PathBuf>) {
+    fn open_file(paths: &[PathBuf]) {
         let mimetype_options = Self::get_options(&paths[0]);
 
         ncurses::savetty();
         ncurses::endwin();
-        if mimetype_options.len() > 0 {
+        if !mimetype_options.is_empty() {
             unix::open_with_entry(paths, &mimetype_options[0]);
         } else {
             open::that(&paths[0]).unwrap();
@@ -129,7 +119,7 @@ impl std::fmt::Display for OpenFile {
 
 impl JoshutoRunnable for OpenFile {
     fn execute(&self, context: &mut JoshutoContext) {
-        let mut path: Option<path::PathBuf> = None;
+        let mut path: Option<PathBuf> = None;
         if let Some(curr_list) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(entry) = curr_list.get_curr_ref() {
                 if entry.path.is_dir() {
@@ -138,7 +128,7 @@ impl JoshutoRunnable for OpenFile {
             }
         }
         if let Some(path) = path {
-            Self::into_directory(&path, context);
+            Self::enter_directory(&path, context);
             {
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
                 curr_tab.refresh(
@@ -151,14 +141,14 @@ impl JoshutoRunnable for OpenFile {
             preview::preview_file(context);
             ncurses::doupdate();
         } else {
-            let paths: Option<Vec<path::PathBuf>> =
+            let paths: Option<Vec<PathBuf>> =
                 match context.tabs[context.curr_tab_index].curr_list.as_ref() {
                     Some(s) => commands::collect_selected_paths(s),
                     None => None,
                 };
             if let Some(paths) = paths {
-                if paths.len() > 0 {
-                    Self::into_file(&paths);
+                if !paths.is_empty() {
+                    Self::open_file(&paths);
                 } else {
                     ui::wprint_msg(&context.views.bot_win, "No files selected: 0");
                 }
@@ -181,7 +171,7 @@ impl OpenFileWith {
         "open_file_with"
     }
 
-    pub fn open_with(paths: &Vec<path::PathBuf>) {
+    pub fn open_with(paths: &[PathBuf]) {
         const PROMPT: &str = ":open_with ";
 
         let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> =
@@ -218,7 +208,7 @@ impl OpenFileWith {
         ncurses::doupdate();
 
         if let Some(user_input) = user_input {
-            if user_input.len() == 0 {
+            if user_input.is_empty() {
                 return;
             }
             match user_input.parse::<usize>() {
@@ -232,10 +222,8 @@ impl OpenFileWith {
                     }
                 }
                 Err(_) => {
-                    let args: Vec<String> = user_input
-                        .split_whitespace()
-                        .map(|x| String::from(x))
-                        .collect();
+                    let args: Vec<String> =
+                        user_input.split_whitespace().map(String::from).collect();
                     ncurses::savetty();
                     ncurses::endwin();
                     unix::open_with_args(&paths, &args);

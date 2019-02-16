@@ -30,8 +30,8 @@ impl JoshutoRawPreview {
 
 impl Flattenable<JoshutoPreview> for JoshutoRawPreview {
     fn flatten(self) -> JoshutoPreview {
-        let mimetype = self.mimetype.unwrap_or(HashMap::new());
-        let extension = self.extension.unwrap_or(HashMap::new());
+        let mimetype = self.mimetype.unwrap_or_default();
+        let extension = self.extension.unwrap_or_default();
 
         JoshutoPreview {
             mimetype,
@@ -56,6 +56,6 @@ impl JoshutoPreview {
 
     pub fn get_config() -> JoshutoPreview {
         parse_config_file::<JoshutoRawPreview, JoshutoPreview>(PREVIEW_FILE)
-            .unwrap_or_else(|| JoshutoPreview::new())
+            .unwrap_or_else(JoshutoPreview::new)
     }
 }

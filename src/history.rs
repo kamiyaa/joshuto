@@ -18,7 +18,7 @@ impl DirHistory {
     pub fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_type: &sort::SortType) {
         let mut ancestors = pathbuf.ancestors();
         if let Some(mut ancestor) = ancestors.next() {
-            while let Some(curr) = ancestors.next() {
+            for curr in ancestors {
                 match structs::JoshutoDirList::new(curr.to_path_buf().clone(), sort_type) {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.iter().enumerate() {
@@ -49,7 +49,7 @@ impl DirHistory {
                 Ok(dir_entry)
             }
             None => {
-                let path_clone = path.clone().to_path_buf();
+                let path_clone = path.to_path_buf();
                 structs::JoshutoDirList::new(path_clone, &sort_type)
             }
         }
@@ -69,8 +69,7 @@ impl DirHistory {
                 }
             }
             Entry::Vacant(entry) => {
-                if let Ok(s) = structs::JoshutoDirList::new(path.clone().to_path_buf(), &sort_type)
-                {
+                if let Ok(s) = structs::JoshutoDirList::new(path.to_path_buf(), &sort_type) {
                     entry.insert(s);
                 }
             }
