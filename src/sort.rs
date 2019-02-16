@@ -103,7 +103,7 @@ fn filter_hidden_files(
     match result {
         Ok(direntry) => match direntry.file_name().into_string() {
             Ok(file_name) => {
-                if file_name.starts_with(".") {
+                if file_name.starts_with('.') {
                     None
                 } else {
                     match structs::JoshutoDirEntry::from(&direntry) {

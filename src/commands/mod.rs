@@ -76,7 +76,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
             if let Some(args) = args {
                 match wordexp::wordexp(args[0].as_str(), 0) {
                     Ok(exp_strs) => {
-                        for exp_str in exp_strs {
+                        if let Some(exp_str) = exp_strs.into_iter().next() {
                             let path = PathBuf::from(exp_str);
                             return Some(Box::new(self::ChangeDirectory::new(path)));
                         }
@@ -86,13 +86,13 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                     }
                 }
             }
-            return None;
+            None
         }
         "close_tab" => Some(Box::new(self::CloseTab::new())),
         "copy_files" => Some(Box::new(self::CopyFiles::new())),
         "cursor_move" => {
             if let Some(args) = args {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     match args[0].parse::<i32>() {
                         Ok(s) => {
                             return Some(Box::new(self::CursorMove::new(s)));
@@ -103,7 +103,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                     }
                 }
             }
-            return None;
+            None
         }
         "cursor_move_home" => Some(Box::new(self::CursorMoveHome::new())),
         "cursor_move_end" => Some(Box::new(self::CursorMoveEnd::new())),
@@ -150,7 +150,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         "rename_file" => {
             let method: RenameFileMethod;
             if let Some(args) = args {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     method = match args[0].as_str() {
                         "prepend" => self::RenameFileMethod::Prepend,
                         "overwrite" => self::RenameFileMethod::Overwrite,
@@ -198,7 +198,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         "set_mode" => Some(Box::new(self::SetMode::new())),
         "tab_switch" => {
             if let Some(args) = args {
-                if args.len() > 0 {
+                if !args.is_empty() {
                     match args[0].parse::<i32>() {
                         Ok(s) => {
                             return Some(Box::new(self::TabSwitch::new(s)));
@@ -209,7 +209,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
                     }
                 }
             }
-            return None;
+            None
         }
         "toggle_hidden" => Some(Box::new(self::ToggleHiddenFiles::new())),
         _ => None,
@@ -227,7 +227,7 @@ pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList) -> Option<Vec<P
         .filter(|entry| entry.selected)
         .map(|entry| entry.path.clone())
         .collect();
-    if selected.len() > 0 {
+    if !selected.is_empty() {
         Some(selected)
     } else {
         Some(vec![dirlist.contents[dirlist.index as usize].path.clone()])
@@ -235,7 +235,7 @@ pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList) -> Option<Vec<P
 }
 
 #[allow(dead_code)]
-pub fn split_shell_style(line: &String) -> Vec<&str> {
+pub fn split_shell_style(line: &str) -> Vec<&str> {
     let mut args: Vec<&str> = Vec::new();
     let mut char_ind = line.char_indices();
 

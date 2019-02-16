@@ -30,7 +30,7 @@ impl std::fmt::Display for NewDirectory {
 impl JoshutoRunnable for NewDirectory {
     fn execute(&self, context: &mut JoshutoContext) {
         let (term_rows, term_cols) = ui::getmaxyx();
-        const PROMPT: &'static str = ":mkdir ";
+        const PROMPT: &str = ":mkdir ";
 
         let user_input: Option<String>;
 

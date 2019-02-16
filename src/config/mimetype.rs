@@ -56,8 +56,8 @@ impl JoshutoRawMimetype {
 
 impl Flattenable<JoshutoMimetype> for JoshutoRawMimetype {
     fn flatten(self) -> JoshutoMimetype {
-        let mimetype = self.mimetype.unwrap_or(HashMap::new());
-        let extension = self.extension.unwrap_or(HashMap::new());
+        let mimetype = self.mimetype.unwrap_or_default();
+        let extension = self.extension.unwrap_or_default();
 
         JoshutoMimetype {
             mimetype,
@@ -82,6 +82,6 @@ impl JoshutoMimetype {
 
     pub fn get_config() -> JoshutoMimetype {
         parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
-            .unwrap_or_else(|| JoshutoMimetype::new())
+            .unwrap_or_else(JoshutoMimetype::new)
     }
 }

@@ -47,10 +47,10 @@ impl JoshutoRunnable for TabSwitch {
         let mut new_index = context.curr_tab_index as i32 + self.movement;
         let tab_len = context.tabs.len() as i32;
         while new_index < 0 {
-            new_index = new_index + tab_len;
+            new_index += tab_len;
         }
         while new_index >= tab_len {
-            new_index = new_index - tab_len;
+            new_index -= tab_len;
         }
         Self::tab_switch(new_index, context);
     }

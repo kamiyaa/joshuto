@@ -58,7 +58,7 @@ pub fn getmaxyx() -> (i32, i32) {
     (term_rows, term_cols)
 }
 
-pub fn display_options(win: &window::JoshutoPanel, vals: &Vec<String>) {
+pub fn display_options(win: &window::JoshutoPanel, vals: &[String]) {
     ncurses::werase(win.win);
     ncurses::mvwhline(win.win, 0, 0, 0, win.cols);
 
@@ -108,12 +108,12 @@ fn wprint_file_name(
         let extension: &str = &file_name[ext..];
         let ext_len = unicode_width::UnicodeWidthStr::width(extension);
         if space_avail > ext_len {
-            space_avail = space_avail - ext_len;
+            space_avail -= ext_len;
             ncurses::mvwaddstr(win, coord.0, space_avail as i32, &extension);
         }
     }
     if space_avail > 2 {
-        space_avail = space_avail - 2;
+        space_avail -= 2;
     }
 
     ncurses::wmove(win, coord.0, coord.1);
@@ -126,7 +126,7 @@ fn wprint_file_name(
             trim_index = index;
             break;
         }
-        total = total + unicode_width::UnicodeWidthChar::width(ch).unwrap_or(2);
+        total += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(2);
     }
     ncurses::waddstr(win, &file_name[..trim_index]);
     ncurses::waddstr(win, "…");
@@ -139,12 +139,11 @@ pub fn wprint_entry(
     coord: (i32, i32),
 ) {
     ncurses::waddstr(win.win, prefix.1);
-    let space_avail: usize;
-    if win.cols >= prefix.0 as i32 {
-        space_avail = win.cols as usize - prefix.0;
+    let space_avail = if win.cols >= prefix.0 as i32 {
+        win.cols as usize - prefix.0
     } else {
-        space_avail = 0;
-    }
+        0
+    };
     wprint_file_name(
         win.win,
         &file.file_name_as_string,
@@ -161,18 +160,17 @@ pub fn wprint_entry_detailed(
 ) {
     ncurses::waddstr(win.win, prefix.1);
     let coord = (coord.0, coord.1 + prefix.0 as i32);
-    let mut space_avail: usize;
-    if win.cols >= prefix.0 as i32 {
-        space_avail = win.cols as usize - prefix.0;
+    let mut space_avail = if win.cols >= prefix.0 as i32 {
+        win.cols as usize - prefix.0
     } else {
-        space_avail = 0;
-    }
+        0
+    };
 
     if file.path.is_dir() {
     } else {
         let file_size_string = file_size_to_string(file.metadata.len as f64);
         if space_avail > file_size_string.len() {
-            space_avail = space_avail - file_size_string.len();
+            space_avail -= file_size_string.len();
             ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
         }
     }
@@ -260,16 +258,11 @@ pub fn get_theme_attr(
     } else if file_type.is_symlink() {
         theme = &theme_t.link;
         colorpair = theme_t.link.colorpair;
-    } else if file_type.is_block_device() {
-        theme = &theme_t.socket;
-        colorpair = theme_t.link.colorpair;
-    } else if file_type.is_char_device() {
-        theme = &theme_t.socket;
-        colorpair = theme_t.link.colorpair;
-    } else if file_type.is_fifo() {
-        theme = &theme_t.socket;
-        colorpair = theme_t.link.colorpair;
-    } else if file_type.is_socket() {
+    } else if file_type.is_block_device()
+        || file_type.is_char_device()
+        || file_type.is_fifo()
+        || file_type.is_socket()
+    {
         theme = &theme_t.socket;
         colorpair = theme_t.link.colorpair;
     } else {
@@ -293,10 +286,10 @@ pub fn get_theme_attr(
     }
 
     if theme.bold {
-        attr = attr | ncurses::A_BOLD();
+        attr |= ncurses::A_BOLD();
     }
     if theme.underline {
-        attr = attr | ncurses::A_UNDERLINE();
+        attr |= ncurses::A_UNDERLINE();
     }
 
     let mut prefix: (usize, &str) = (1, " ");
@@ -315,7 +308,7 @@ fn file_size_to_string_detailed(mut file_size: f64) -> String {
 
     let mut index = 0;
     while file_size > CONV_RATE {
-        file_size = file_size / CONV_RATE;
+        file_size /= CONV_RATE;
         index += 1;
     }
 
@@ -343,13 +336,11 @@ fn file_size_to_string(mut file_size: f64) -> String {
 
     let mut index = 0;
     while file_size > CONV_RATE {
-        file_size = file_size / CONV_RATE;
+        file_size /= CONV_RATE;
         index += 1;
     }
 
-    if file_size >= 1000.0 {
-        format!(" {:.0} {}", file_size, FILE_UNITS[index])
-    } else if file_size >= 100.0 {
+    if file_size >= 100.0 {
         format!(" {:.0} {}", file_size, FILE_UNITS[index])
     } else if file_size >= 10.0 {
         format!(" {:.1} {}", file_size, FILE_UNITS[index])

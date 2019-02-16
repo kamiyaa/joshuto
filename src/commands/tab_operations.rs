@@ -72,7 +72,7 @@ impl CloseTab {
 
         context.tabs.remove(context.curr_tab_index);
         if context.curr_tab_index > 0 {
-            context.curr_tab_index = context.curr_tab_index - 1;
+            context.curr_tab_index -= 1;
         }
         TabSwitch::tab_switch(context.curr_tab_index as i32, context);
     }

@@ -17,7 +17,7 @@ impl ParentDirectory {
     }
 
     pub fn parent_directory(context: &mut JoshutoContext) {
-        if context.curr_tab_mut().curr_path.pop() == false {
+        if !context.curr_tab_mut().curr_path.pop() {
             return;
         }
 

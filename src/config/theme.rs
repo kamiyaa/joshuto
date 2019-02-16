@@ -114,7 +114,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             prefixsize: None,
         });
 
-        let mut extraw = self.ext.unwrap_or(HashMap::new());
+        let mut extraw = self.ext.unwrap_or_default();
         let mut ext: HashMap<String, JoshutoColorTheme> = HashMap::new();
         for (k, v) in extraw.drain() {
             ext.insert(k, v.flatten());
@@ -225,6 +225,6 @@ impl JoshutoTheme {
 
     pub fn get_config() -> JoshutoTheme {
         parse_config_file::<JoshutoRawTheme, JoshutoTheme>(::THEME_FILE)
-            .unwrap_or_else(|| JoshutoTheme::new())
+            .unwrap_or_else(JoshutoTheme::new)
     }
 }

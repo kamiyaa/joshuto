@@ -11,8 +11,8 @@ use preview;
 use ui;
 use window::JoshutoPanel;
 
-fn recurse_get_keycommand<'a>(
-    keymap: &'a HashMap<i32, CommandKeybind>,
+fn recurse_get_keycommand(
+    keymap: &HashMap<i32, CommandKeybind>,
 ) -> Option<&Box<dyn JoshutoCommand>> {
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
@@ -91,7 +91,7 @@ fn process_threads(context: &mut JoshutoContext) {
                         as f32;
                     ui::draw_progress_bar(&context.views.bot_win, percent);
                     ncurses::wnoutrefresh(context.views.bot_win.win);
-                    i = i + 1;
+                    i += 1;
                 }
                 ncurses::doupdate();
             }
@@ -125,7 +125,7 @@ fn process_threads(context: &mut JoshutoContext) {
                 ncurses::doupdate();
             }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
-                i = i + 1;
+                i += 1;
             }
         }
     }
@@ -155,7 +155,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     ncurses::doupdate();
 
     loop {
-        if context.threads.len() > 0 {
+        if !context.threads.is_empty() {
             ncurses::timeout(0);
             process_threads(&mut context);
         } else {
@@ -174,7 +174,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
                 continue;
             }
 
-            let keycommand: &std::boxed::Box<dyn JoshutoCommand>;
+            let keycommand: &Box<dyn JoshutoCommand>;
 
             match keymap_t.keymaps.get(&ch) {
                 Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
