@@ -38,7 +38,7 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
                         insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]);
                     }
                     None => {
-                        println!("Unknown command: {}", mapcommand.command);
+                        eprintln!("Unknown command: {}", mapcommand.command);
                     }
                 }
             }

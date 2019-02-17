@@ -96,6 +96,10 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     let program = entry.program.clone();
 
     let mut command = process::Command::new(program);
+    if let Some(true) = entry.silent {
+        command.stdout(process::Stdio::null());
+        command.stderr(process::Stdio::null());
+    }
     if let Some(args) = entry.args.as_ref() {
         for arg in args {
             command.arg(arg.clone());
@@ -103,10 +107,6 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     }
     for path in paths {
         command.arg(path.as_os_str());
-    }
-    if let Some(true) = entry.silent {
-        command.stdout(process::Stdio::null());
-        command.stderr(process::Stdio::null());
     }
 
     match command.spawn() {
@@ -127,7 +127,7 @@ pub fn open_with_args(paths: &[PathBuf], args: &[String]) {
     let program = args[0].clone();
 
     let mut command = process::Command::new(program);
-    for arg in args {
+    for arg in &args[1..] {
         command.arg(arg.clone());
     }
     for path in paths {
