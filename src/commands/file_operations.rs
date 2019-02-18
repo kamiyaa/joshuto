@@ -240,6 +240,7 @@ impl PasteFiles {
                 ));
             }
         }
+        let (tx, rx) = sync::mpsc::channel();
 
         let handle = thread::spawn(move || {
             let mut paths = selected_files.lock().unwrap();
