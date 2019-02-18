@@ -27,8 +27,8 @@ pub fn get_unix_filetype(mode : u32) -> &'static str
 }
 */
 
-pub fn is_executable(mode: u32) -> bool {
-    const LIBC_PERMISSION_VALS: [u32; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
+pub fn is_executable(mode: libc::mode_t) -> bool {
+    const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 
     for val in LIBC_PERMISSION_VALS.iter() {
         if mode & val != 0 {

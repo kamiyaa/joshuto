@@ -1,3 +1,4 @@
+extern crate libc;
 extern crate ncurses;
 
 use commands::{JoshutoCommand, JoshutoRunnable};
@@ -37,7 +38,7 @@ impl SetMode {
         }
         ncurses::doupdate();
 
-        const LIBC_PERMISSION_VALS: [(u32, char); 9] = [
+        const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
             (libc::S_IRUSR, 'r'),
             (libc::S_IWUSR, 'w'),
             (libc::S_IXUSR, 'x'),
