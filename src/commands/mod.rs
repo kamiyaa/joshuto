@@ -26,6 +26,7 @@ pub use self::file_operations::{CopyFiles, CutFiles, FileOperationThread, PasteF
 pub use self::new_directory::NewDirectory;
 pub use self::open_file::{OpenFile, OpenFileWith};
 pub use self::parent_directory::ParentDirectory;
+pub use self::quit::ForceQuit;
 pub use self::quit::Quit;
 pub use self::reload_dir::ReloadDirList;
 pub use self::rename_file::{RenameFile, RenameFileMethod};
@@ -111,6 +112,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn Jo
         "cursor_move_page_down" => Some(Box::new(self::CursorMovePageDown::new())),
         "cut_files" => Some(Box::new(self::CutFiles::new())),
         "delete_files" => Some(Box::new(self::DeleteFiles::new())),
+        "force_quit" => Some(Box::new(self::ForceQuit::new())),
         "mkdir" => Some(Box::new(self::NewDirectory::new())),
         "new_tab" => Some(Box::new(self::NewTab::new())),
         "open_file" => Some(Box::new(self::OpenFile::new())),
