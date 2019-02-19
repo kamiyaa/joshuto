@@ -213,15 +213,27 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
 
 pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {
     let tab_len = context.tabs.len();
+    ncurses::werase(win.win);
     if tab_len == 1 {
-        ncurses::werase(win.win);
-    } else {
+    } else if tab_len >= 6 {
         ncurses::wmove(win.win, 0, 0);
         ncurses::wattron(win.win, ncurses::A_BOLD());
-        ncurses::waddstr(
-            win.win,
-            format!("{} {}", context.curr_tab_index + 1, tab_len).as_str(),
-        );
+        ncurses::wattron(win.win, ncurses::A_STANDOUT());
+        ncurses::waddstr(win.win, &format!("{}", context.curr_tab_index + 1));
+        ncurses::wattroff(win.win, ncurses::A_STANDOUT());
+        ncurses::waddstr(win.win, &format!(" {}", tab_len));
+        ncurses::wattroff(win.win, ncurses::A_BOLD());
+    } else {
+        ncurses::wattron(win.win, ncurses::A_BOLD());
+        for i in 0..tab_len {
+            if i == context.curr_tab_index {
+                ncurses::wattron(win.win, ncurses::A_STANDOUT());
+                ncurses::waddstr(win.win, &format!("{} ", i+1));
+                ncurses::wattroff(win.win, ncurses::A_STANDOUT());
+            } else {
+                ncurses::waddstr(win.win, &format!("{} ", i+1));
+            }
+        }
         ncurses::wattroff(win.win, ncurses::A_BOLD());
     }
     ncurses::wnoutrefresh(win.win);
