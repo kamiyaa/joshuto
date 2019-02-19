@@ -1,8 +1,5 @@
-use std::process;
-
 use commands::{JoshutoCommand, JoshutoRunnable};
 use context::JoshutoContext;
-use ui;
 
 #[derive(Clone, Debug)]
 pub struct Quit;

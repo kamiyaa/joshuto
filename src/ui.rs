@@ -228,10 +228,10 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {
         for i in 0..tab_len {
             if i == context.curr_tab_index {
                 ncurses::wattron(win.win, ncurses::A_STANDOUT());
-                ncurses::waddstr(win.win, &format!("{} ", i+1));
+                ncurses::waddstr(win.win, &format!("{} ", i + 1));
                 ncurses::wattroff(win.win, ncurses::A_STANDOUT());
             } else {
-                ncurses::waddstr(win.win, &format!("{} ", i+1));
+                ncurses::waddstr(win.win, &format!("{} ", i + 1));
             }
         }
         ncurses::wattroff(win.win, ncurses::A_BOLD());
