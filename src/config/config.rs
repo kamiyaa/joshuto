@@ -28,11 +28,11 @@ impl JoshutoRawConfig {
     #[allow(dead_code)]
     pub fn new() -> Self {
         JoshutoRawConfig {
-            scroll_offset: Some(8),
-            tilde_in_titlebar: Some(true),
-            sort_type: Some(String::from("natural")),
+            scroll_offset: None,
+            tilde_in_titlebar: None,
+            sort_type: None,
             sort_option: None,
-            column_ratio: Some([1, 3, 4]),
+            column_ratio: None,
         }
     }
 }
