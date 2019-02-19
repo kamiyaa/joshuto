@@ -106,6 +106,7 @@ pub fn key_to_i32(keycode: &str) -> Option<i32> {
     } else {
         match keycode {
             "Tab" => Some(TAB),
+            "ShiftTab" => Some(ncurses::KEY_BTAB),
             "Space" => Some(' ' as i32),
             "Backspace" => Some(BACKSPACE),
             "Delete" => Some(ncurses::KEY_DC),
