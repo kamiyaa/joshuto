@@ -27,10 +27,11 @@ pub fn get_unix_filetype(mode : u32) -> &'static str
 }
 */
 
-pub fn is_executable(mode: libc::mode_t) -> bool {
+pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 
     for val in LIBC_PERMISSION_VALS.iter() {
+        let val: u32 = (*val).into();
         if mode & val != 0 {
             return true;
         }
@@ -38,7 +39,7 @@ pub fn is_executable(mode: libc::mode_t) -> bool {
     false
 }
 
-pub fn stringify_mode(mode: libc::mode_t) -> String {
+pub fn stringify_mode(mode: u32) -> String {
     let mut mode_str: String = String::with_capacity(10);
 
     const LIBC_FILE_VALS: [(libc::mode_t, char); 7] = [
@@ -64,17 +65,19 @@ pub fn stringify_mode(mode: libc::mode_t) -> String {
     ];
 
     let mode_shifted = mode >> 9;
-    for val in LIBC_FILE_VALS.iter() {
-        let val_shifted = val.0 >> 9;
-        if mode_shifted & val_shifted == mode_shifted {
-            mode_str.push(val.1);
+
+    for (val, ch) in LIBC_FILE_VALS.iter() {
+        let val: u32 = (*val >> 9).into();
+        if mode_shifted & val == mode_shifted {
+            mode_str.push(*ch);
             break;
         }
     }
 
-    for val in LIBC_PERMISSION_VALS.iter() {
-        if mode & val.0 != 0 {
-            mode_str.push(val.1);
+    for (val, ch) in LIBC_PERMISSION_VALS.iter() {
+        let val: u32 = (*val).into();
+        if mode & val != 0 {
+            mode_str.push(*ch);
         } else {
             mode_str.push('-');
         }
@@ -82,7 +85,7 @@ pub fn stringify_mode(mode: libc::mode_t) -> String {
     mode_str
 }
 
-pub fn set_mode(path: &Path, mode: libc::mode_t) {
+pub fn set_mode(path: &Path, mode: u32) {
     let os_path = path.as_os_str();
     if let Some(s) = os_path.to_str() {
         let svec: Vec<i8> = s.bytes().map(|ch| ch as i8).collect();

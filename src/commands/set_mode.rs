@@ -11,6 +11,18 @@ use unix;
 #[derive(Clone, Debug)]
 pub struct SetMode;
 
+const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
+    (libc::S_IRUSR, 'r'),
+    (libc::S_IWUSR, 'w'),
+    (libc::S_IXUSR, 'x'),
+    (libc::S_IRGRP, 'r'),
+    (libc::S_IWGRP, 'w'),
+    (libc::S_IXGRP, 'x'),
+    (libc::S_IROTH, 'r'),
+    (libc::S_IWOTH, 'w'),
+    (libc::S_IXOTH, 'x'),
+];
+
 impl SetMode {
     pub fn new() -> Self {
         SetMode
@@ -38,20 +50,8 @@ impl SetMode {
         }
         ncurses::doupdate();
 
-        const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
-            (libc::S_IRUSR, 'r'),
-            (libc::S_IWUSR, 'w'),
-            (libc::S_IXUSR, 'x'),
-            (libc::S_IRGRP, 'r'),
-            (libc::S_IWGRP, 'w'),
-            (libc::S_IXGRP, 'x'),
-            (libc::S_IROTH, 'r'),
-            (libc::S_IWOTH, 'w'),
-            (libc::S_IXOTH, 'x'),
-        ];
-
         if let Some(s) = user_input {
-            let mut mode: libc::mode_t = 0;
+            let mut mode: u32 = 0;
             for (i, ch) in s.chars().enumerate() {
                 if ch == LIBC_PERMISSION_VALS[i].1 {
                     mode |= LIBC_PERMISSION_VALS[i].0;

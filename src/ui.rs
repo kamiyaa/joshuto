@@ -198,7 +198,8 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
     ncurses::waddch(win, ' ' as ncurses::chtype);
 
     if file.path.is_dir() {
-        if mode >> 9 & libc::S_IFLNK >> 9 == mode >> 9 {
+        let is_link: u32 = libc::S_IFLNK.into();
+        if mode >> 9 & is_link >> 9 == mode >> 9 {
             if let Ok(path) = fs::read_link(&file.path) {
                 ncurses::waddstr(win, " -> ");
                 ncurses::waddstr(win, path.to_str().unwrap());
