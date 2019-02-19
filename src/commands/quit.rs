@@ -14,7 +14,7 @@ impl Quit {
     }
 
     pub fn quit(context: &mut JoshutoContext) {
-        if (!context.threads.is_empty()) {
+        if !context.threads.is_empty() {
             ui::wprint_err(
                 &context.views.bot_win,
                 "Error: operations running in background, use force_quit to quit",
