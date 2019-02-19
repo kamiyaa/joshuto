@@ -10,6 +10,7 @@ pub struct JoshutoContext {
     pub views: JoshutoView,
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
+    pub exit: bool,
 
     pub config_t: config::JoshutoConfig,
 }
@@ -28,6 +29,7 @@ impl JoshutoContext {
             views,
             curr_tab_index: 0,
             tabs: Vec::new(),
+            exit: false,
             config_t,
         }
     }

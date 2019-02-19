@@ -67,6 +67,7 @@ impl CloseTab {
 
     pub fn close_tab(context: &mut JoshutoContext) {
         if context.tabs.len() <= 1 {
+            context.exit = true;
             return;
         }
 

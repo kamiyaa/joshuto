@@ -25,8 +25,7 @@ impl std::fmt::Display for Quit {
 }
 
 impl JoshutoRunnable for Quit {
-    fn execute(&self, _: &mut JoshutoContext) {
-        ui::end_ncurses();
-        process::exit(0);
+    fn execute(&self, context: &mut JoshutoContext) {
+        context.exit = true;
     }
 }

@@ -146,7 +146,6 @@ fn resize_handler(context: &mut JoshutoContext) {
     ncurses::doupdate();
 }
 
-#[allow(unreachable_code)]
 pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     ui::init_ncurses();
 
@@ -154,7 +153,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     commands::NewTab::new_tab(&mut context);
     ncurses::doupdate();
 
-    loop {
+    while !context.exit {
         if !context.threads.is_empty() {
             ncurses::timeout(0);
             process_threads(&mut context);
@@ -187,11 +186,13 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
                     keycommand = s;
                 }
                 None => {
+                    ui::wprint_err(&context.views.bot_win, &format!("Unknown keycode: {}", ch));
+                    ncurses::doupdate();
                     continue;
                 }
             }
             keycommand.execute(&mut context);
         }
     }
-    ncurses::endwin();
+    ui::end_ncurses();
 }
