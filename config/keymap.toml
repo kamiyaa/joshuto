@@ -1,6 +1,6 @@
 [[mapcommand]]
-keys = [ "q" ]
-command = "quit"
+keys = [ "Q" ]
+command = "force_quit"
 
 [[mapcommand]]
 keys = [ "R" ]
@@ -169,18 +169,18 @@ keys = [ "T" ]
 command = "new_tab"
 
 [[mapcommand]]
-keys = [ "W" ]
+keys = [ "q" ]
 command = "close_tab"
-
-[[mapcommand]]
-keys = [ "[" ]
-command = "tab_switch"
-args = [ "-1" ]
 
 [[mapcommand]]
 keys = [ "Tab" ]
 command = "tab_switch"
 args = [ "1" ]
+
+[[mapcommand]]
+keys = [ "ShiftTab" ]
+command = "tab_switch"
+args = [ "-1" ]
 
 [[mapcommand]]
 keys = [ "=" ]
@@ -191,3 +191,4 @@ command = "set_mode"
 [[mapcommand]]
 keys = [ "b", "b" ]
 command = "bulk_rename"
+
