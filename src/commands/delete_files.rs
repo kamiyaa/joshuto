@@ -1,13 +1,10 @@
-extern crate ncurses;
-
 use std::fs;
 use std::path;
 
-use commands::{self, JoshutoCommand, JoshutoRunnable};
-use config::keymap;
-use context::JoshutoContext;
-use preview;
-use ui;
+use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
+use crate::config::keymap;
+use crate::context::JoshutoContext;
+use crate::ui;
 
 #[derive(Clone, Debug)]
 pub struct DeleteFiles;

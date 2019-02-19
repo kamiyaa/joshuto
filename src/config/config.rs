@@ -1,11 +1,9 @@
-extern crate toml;
-extern crate whoami;
-extern crate xdg;
+use serde_derive::Deserialize;
 
-use config::{parse_config_file, Flattenable};
-use sort;
+use crate::config::{parse_config_file, Flattenable};
+use crate::sort;
 
-use CONFIG_FILE;
+use crate::CONFIG_FILE;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortRawOption {

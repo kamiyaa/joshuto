@@ -1,10 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde_derive;
-extern crate structopt;
-extern crate xdg;
-
 mod commands;
 mod config;
 mod context;
@@ -19,6 +12,7 @@ mod ui;
 mod unix;
 mod window;
 
+use lazy_static::lazy_static;
 use std::path::PathBuf;
 use structopt::StructOpt;
 

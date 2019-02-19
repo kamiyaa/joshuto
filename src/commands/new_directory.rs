@@ -1,11 +1,9 @@
-extern crate ncurses;
-
 use std::path;
 
-use commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
-use context::JoshutoContext;
-use textfield::JoshutoTextField;
-use ui;
+use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
+use crate::context::JoshutoContext;
+use crate::textfield::JoshutoTextField;
+use crate::ui;
 
 #[derive(Clone, Debug)]
 pub struct NewDirectory;

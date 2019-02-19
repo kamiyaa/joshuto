@@ -1,9 +1,7 @@
-extern crate ncurses;
-
-use commands::{CursorMove, JoshutoCommand, JoshutoRunnable};
-use context::JoshutoContext;
-use textfield::JoshutoTextField;
-use ui;
+use crate::commands::{CursorMove, JoshutoCommand, JoshutoRunnable};
+use crate::context::JoshutoContext;
+use crate::textfield::JoshutoTextField;
+use crate::ui;
 
 #[derive(Clone, Debug)]
 pub struct Search;

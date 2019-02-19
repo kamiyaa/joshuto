@@ -1,5 +1,3 @@
-extern crate serde;
-
 pub mod config;
 pub mod keymap;
 pub mod mimetype;
@@ -12,11 +10,11 @@ pub use self::mimetype::JoshutoMimetype;
 pub use self::preview::JoshutoPreview;
 pub use self::theme::{JoshutoColorTheme, JoshutoTheme};
 
-use self::serde::de::DeserializeOwned;
+use serde::de::DeserializeOwned;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use CONFIG_HIERARCHY;
+use crate::CONFIG_HIERARCHY;
 
 // implemented by config file implementations to turn a RawConfig into a Config
 trait Flattenable<T> {

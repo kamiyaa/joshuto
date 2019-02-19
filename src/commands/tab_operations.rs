@@ -1,10 +1,10 @@
 use std::env;
 use std::path;
 
-use commands::{JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
-use context::JoshutoContext;
-use tab::JoshutoTab;
-use ui;
+use crate::commands::{JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
+use crate::context::JoshutoContext;
+use crate::tab::JoshutoTab;
+use crate::ui;
 
 #[derive(Clone, Debug)]
 pub struct NewTab;

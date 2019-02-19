@@ -1,15 +1,13 @@
-extern crate ncurses;
-
 use std::collections::HashMap;
 use std::time;
 
-use commands;
-use commands::{CommandKeybind, JoshutoCommand};
-use config;
-use context::JoshutoContext;
-use preview;
-use ui;
-use window::JoshutoPanel;
+use crate::commands;
+use crate::commands::{CommandKeybind, JoshutoCommand};
+use crate::config;
+use crate::context::JoshutoContext;
+use crate::preview;
+use crate::ui;
+use crate::window::JoshutoPanel;
 
 fn recurse_get_keycommand(
     keymap: &HashMap<i32, CommandKeybind>,

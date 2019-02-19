@@ -1,10 +1,8 @@
-extern crate toml;
-extern crate xdg;
-
+use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use config::{parse_config_file, Flattenable};
-use PREVIEW_FILE;
+use crate::config::{parse_config_file, Flattenable};
+use crate::PREVIEW_FILE;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoPreviewEntry {

@@ -1,8 +1,8 @@
 use std::collections::{hash_map::Entry, HashMap};
 use std::path::{Path, PathBuf};
 
-use sort;
-use structs;
+use crate::sort;
+use crate::structs;
 
 pub struct DirHistory {
     map: HashMap<PathBuf, structs::JoshutoDirList>,

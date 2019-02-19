@@ -1,11 +1,9 @@
-extern crate toml;
-extern crate xdg;
-
+use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 
-use config::{parse_config_file, Flattenable};
-use MIMETYPE_FILE;
+use crate::config::{parse_config_file, Flattenable};
+use crate::MIMETYPE_FILE;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {

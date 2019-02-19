@@ -1,34 +1,31 @@
-extern crate fs_extra;
-extern crate ncurses;
-
+use lazy_static::lazy_static;
 use std::path;
-use std::sync;
+use std::sync::{mpsc, Mutex, atomic};
 use std::thread;
 use std::time;
 
-use commands::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
-use context::JoshutoContext;
-use preview;
-use structs::JoshutoDirList;
+use crate::commands::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
+use crate::context::JoshutoContext;
+use crate::structs::JoshutoDirList;
 
 lazy_static! {
-    static ref selected_files: sync::Mutex<Vec<path::PathBuf>> = sync::Mutex::new(vec![]);
-    static ref fileop: sync::Mutex<FileOp> = sync::Mutex::new(FileOp::Copy);
-    static ref tab_src: sync::Mutex<usize> = sync::Mutex::new(0);
+    static ref selected_files: Mutex<Vec<path::PathBuf>> = Mutex::new(vec![]);
+    static ref fileop: Mutex<FileOp> = Mutex::new(FileOp::Copy);
+    static ref tab_src: atomic::AtomicUsize = atomic::AtomicUsize::new(0);
 }
 
 pub struct FileOperationThread {
     pub tab_src: usize,
     pub tab_dest: usize,
     pub handle: thread::JoinHandle<i32>,
-    pub recv: sync::mpsc::Receiver<ProgressInfo>,
+    pub recv: mpsc::Receiver<ProgressInfo>,
 }
 
 impl FileOperationThread {
     pub fn recv_timeout(
         &self,
         wait_duration: &time::Duration,
-    ) -> Result<ProgressInfo, std::sync::mpsc::RecvTimeoutError> {
+    ) -> Result<ProgressInfo, mpsc::RecvTimeoutError> {
         self.recv.recv_timeout(*wait_duration)
     }
 }
@@ -39,8 +36,7 @@ fn set_file_op(operation: FileOp) {
 }
 
 fn set_tab_src(tab_index: usize) {
-    let mut data = tab_src.lock().unwrap();
-    *data = tab_index;
+    tab_src.store(tab_index, atomic::Ordering::Release);
 }
 
 fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
@@ -144,10 +140,8 @@ impl PasteFiles {
         use std::os::linux::fs::MetadataExt;
 
         let tab_dest = context.curr_tab_index;
-        let tab_src_index: usize;
-        {
-            tab_src_index = *tab_src.lock().unwrap();
-        }
+        let tab_src_index = tab_src.load(atomic::Ordering::SeqCst);
+
         let mut destination = context.tabs[tab_dest].curr_path.clone();
         let options = self.options.clone();
 
@@ -164,7 +158,7 @@ impl PasteFiles {
             path_ino = paths[0].metadata()?.st_dev();
         }
 
-        let (tx, rx) = sync::mpsc::channel();
+        let (tx, rx) = mpsc::channel();
         let handle = if dest_ino == path_ino {
             thread::spawn(move || {
                 let mut paths = selected_files.lock().unwrap();
@@ -224,10 +218,8 @@ impl PasteFiles {
     #[cfg(not(target_os = "linux"))]
     fn cut(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
         let tab_dest = context.curr_tab_index;
-        let tab_src_index: usize;
-        {
-            tab_src_index = *tab_src.lock().unwrap();
-        }
+        let tab_src_index = tab_src.load(atomic::Ordering::SeqCst);
+
         let mut destination = context.tabs[tab_dest].curr_path.clone();
         let options = self.options.clone();
 
@@ -240,7 +232,7 @@ impl PasteFiles {
                 ));
             }
         }
-        let (tx, rx) = sync::mpsc::channel();
+        let (tx, rx) = mpsc::channel();
 
         let handle = thread::spawn(move || {
             let mut paths = selected_files.lock().unwrap();
@@ -269,14 +261,12 @@ impl PasteFiles {
 
     fn copy(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
         let tab_dest = context.curr_tab_index;
-        let tab_src_index: usize;
-        {
-            tab_src_index = *tab_src.lock().unwrap();
-        }
+        let tab_src_index = tab_src.load(atomic::Ordering::SeqCst);
+
         let destination = context.tabs[tab_dest].curr_path.clone();
         let options = self.options.clone();
 
-        let (tx, rx) = sync::mpsc::channel();
+        let (tx, rx) = mpsc::channel();
 
         let handle = thread::spawn(move || {
             let mut paths = selected_files.lock().unwrap();

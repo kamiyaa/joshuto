@@ -4,7 +4,7 @@ mod ll;
 
 use std::ffi::{CStr, CString};
 
-pub const WRDE_DOOFFS: i32 = (1 << 0);
+pub const WRDE_DOOFFS: i32 = 1;
 pub const WRDE_APPEND: i32 = (1 << 1);
 pub const WRDE_NOCMD: i32 = (1 << 2);
 pub const WRDE_REUSE: i32 = (1 << 3);
@@ -36,7 +36,7 @@ impl<'a> Wordexp<'a> {
             let ptr: *const *const libc::c_char = wordexp_ref.we_wordv;
 
             for i in 0..we_wordc {
-                let cstr = CStr::from_ptr(*ptr.offset(i as isize));
+                let cstr = CStr::from_ptr(*ptr.add(i));
                 if let Ok(s) = cstr.to_str() {
                     we_wordv.push(s);
                 }
@@ -51,12 +51,6 @@ impl<'a> Wordexp<'a> {
     }
 }
 
-impl<'a> std::ops::Drop for Wordexp<'a> {
-    fn drop(&mut self) {
-        drop(&self.wordexp_ref);
-    }
-}
-
 impl<'a> std::iter::Iterator for Wordexp<'a> {
     type Item = &'a str;
 
@@ -66,7 +60,7 @@ impl<'a> std::iter::Iterator for Wordexp<'a> {
             None
         } else {
             let item = self.we_wordv[self.counter];
-            self.counter = self.counter + 1;
+            self.counter += 1;
             Some(item)
         }
     }
@@ -91,7 +85,7 @@ impl std::fmt::Display for WordexpError {
 
 impl std::error::Error for WordexpError {}
 
-pub fn wordexp<'a>(s: &str, flags: i32) -> Result<Wordexp, WordexpError> {
+pub fn wordexp(s: &str, flags: i32) -> Result<Wordexp, WordexpError> {
     let mut wordexp = ll::wordexp_t {
         we_wordc: 0,
         we_wordv: std::ptr::null(),

@@ -1,6 +1,4 @@
-extern crate ncurses;
-
-use window::JoshutoPanel;
+use crate::window::JoshutoPanel;
 
 #[derive(Debug)]
 pub struct JoshutoView {

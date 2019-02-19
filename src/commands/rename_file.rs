@@ -1,13 +1,11 @@
-extern crate ncurses;
-
 use std::fs;
 use std::path;
 
-use commands::{JoshutoCommand, JoshutoRunnable};
-use context::JoshutoContext;
-use preview;
-use textfield::JoshutoTextField;
-use ui;
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::context::JoshutoContext;
+use crate::preview;
+use crate::textfield::JoshutoTextField;
+use crate::ui;
 
 #[derive(Clone, Debug)]
 pub enum RenameFileMethod {

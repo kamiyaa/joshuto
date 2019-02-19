@@ -1,7 +1,5 @@
-extern crate ncurses;
-
-use commands::{JoshutoCommand, JoshutoRunnable};
-use context::JoshutoContext;
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::context::JoshutoContext;
 
 #[derive(Clone, Debug)]
 pub struct ToggleHiddenFiles;

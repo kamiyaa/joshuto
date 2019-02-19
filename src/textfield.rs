@@ -1,9 +1,7 @@
-extern crate ncurses;
-extern crate unicode_width;
-
-use config::keymap;
 use std::iter::FromIterator;
-use window;
+
+use crate::config::keymap;
+use crate::window;
 
 pub struct JoshutoTextField {
     pub win: window::JoshutoPanel,

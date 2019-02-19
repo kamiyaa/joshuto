@@ -1,5 +1,3 @@
-extern crate wordexp;
-
 mod change_directory;
 mod cursor_move;
 mod delete_files;
@@ -41,8 +39,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path::PathBuf;
 
-use context::JoshutoContext;
-use structs;
+use crate::context::JoshutoContext;
+use crate::structs;
 
 #[derive(Debug)]
 pub enum CommandKeybind {

@@ -1,20 +1,16 @@
-extern crate fs_extra;
-extern crate ncurses;
-extern crate open;
-
 use std::env;
 use std::path::{Path, PathBuf};
 
-use commands::{self, JoshutoCommand, JoshutoRunnable};
-use config::mimetype;
-use context::JoshutoContext;
-use preview;
-use textfield::JoshutoTextField;
-use ui;
-use unix;
-use window;
+use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
+use crate::config::mimetype;
+use crate::context::JoshutoContext;
+use crate::preview;
+use crate::textfield::JoshutoTextField;
+use crate::ui;
+use crate::unix;
+use crate::window;
 
-use mimetype_t;
+use crate::mimetype_t;
 
 #[derive(Clone, Debug)]
 pub struct OpenFile;

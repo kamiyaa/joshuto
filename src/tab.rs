@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
-use config;
-use history;
-use sort;
-use structs::JoshutoDirList;
-use ui;
-use window::{JoshutoPanel, JoshutoView};
+use crate::config;
+use crate::history;
+use crate::sort;
+use crate::structs::JoshutoDirList;
+use crate::ui;
+use crate::window::{JoshutoPanel, JoshutoView};
 
-use theme_t;
+use crate::theme_t;
 
 pub struct JoshutoTab {
     pub history: history::DirHistory,

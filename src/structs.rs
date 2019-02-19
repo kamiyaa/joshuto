@@ -3,8 +3,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time;
 
-use sort;
-use window::JoshutoPageState;
+use crate::sort;
+use crate::window::JoshutoPageState;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {

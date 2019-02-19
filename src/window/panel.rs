@@ -1,7 +1,7 @@
-extern crate ncurses;
+use ncurses;
 
-use structs;
-use ui;
+use crate::structs;
+use crate::ui;
 
 #[derive(Debug, Clone)]
 pub struct JoshutoPanel {

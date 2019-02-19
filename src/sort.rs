@@ -2,7 +2,7 @@ use std::cmp;
 use std::fs;
 use std::time;
 
-use structs;
+use crate::structs;
 
 #[derive(Debug, Clone)]
 pub struct SortOption {

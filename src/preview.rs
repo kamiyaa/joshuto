@@ -1,13 +1,8 @@
-extern crate mime;
-extern crate mime_detective;
-extern crate ncurses;
-
 use std::path::PathBuf;
 use std::process;
 
-use context::JoshutoContext;
-use ui;
-use window;
+use crate::context::JoshutoContext;
+use crate::window;
 
 pub fn preview_file(context: &mut JoshutoContext) {
     /*

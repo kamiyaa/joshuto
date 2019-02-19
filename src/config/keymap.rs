@@ -1,13 +1,10 @@
-extern crate fs_extra;
-extern crate toml;
-extern crate xdg;
-
+use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::process::exit;
 
-use commands;
-use config::{parse_config_file, Flattenable};
-use KEYMAP_FILE;
+use crate::commands;
+use crate::config::{parse_config_file, Flattenable};
+use crate::KEYMAP_FILE;
 
 pub const BACKSPACE: i32 = 0x7F;
 pub const TAB: i32 = 0x9;
@@ -73,25 +70,23 @@ fn insert_keycommand(
         if let Some(s) = key_to_i32(&keys[0]) {
             map.insert(s, commands::CommandKeybind::SimpleKeybind(keycommand));
         }
-    } else {
-        if let Some(s) = key_to_i32(&keys[0]) {
-            let mut new_map: HashMap<i32, commands::CommandKeybind>;
-            match map.remove(&s) {
-                Some(commands::CommandKeybind::CompositeKeybind(mut m)) => {
-                    new_map = m;
-                }
-                Some(_) => {
-                    eprintln!("Error: Keybindings ambiguous");
-                    exit(1);
-                }
-                None => {
-                    new_map = HashMap::new();
-                }
+    } else if let Some(s) = key_to_i32(&keys[0]) {
+        let mut new_map: HashMap<i32, commands::CommandKeybind>;
+        match map.remove(&s) {
+            Some(commands::CommandKeybind::CompositeKeybind(m)) => {
+                new_map = m;
             }
-            insert_keycommand(&mut new_map, keycommand, &keys[1..]);
-            let composite_command = commands::CommandKeybind::CompositeKeybind(new_map);
-            map.insert(s as i32, composite_command);
+            Some(_) => {
+                eprintln!("Error: Keybindings ambiguous");
+                exit(1);
+            }
+            None => {
+                new_map = HashMap::new();
+            }
         }
+        insert_keycommand(&mut new_map, keycommand, &keys[1..]);
+        let composite_command = commands::CommandKeybind::CompositeKeybind(new_map);
+        map.insert(s as i32, composite_command);
     }
 }
 

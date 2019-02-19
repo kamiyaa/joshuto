@@ -1,10 +1,7 @@
-extern crate libc;
-extern crate ncurses;
-
 use std::path::{Path, PathBuf};
 use std::process;
 
-use config::mimetype;
+use crate::config::mimetype;
 
 /*
 pub const fn is_reg(mode: u32) -> bool

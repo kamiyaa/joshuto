@@ -1,17 +1,13 @@
-extern crate libc;
-extern crate ncurses;
-extern crate unicode_width;
-
 use std::fs;
 use std::time;
 
-use config::JoshutoColorTheme;
-use context::JoshutoContext;
-use structs;
-use unix;
-use window;
+use crate::config::JoshutoColorTheme;
+use crate::context::JoshutoContext;
+use crate::structs;
+use crate::unix;
+use crate::window;
 
-use theme_t;
+use crate::theme_t;
 
 pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;

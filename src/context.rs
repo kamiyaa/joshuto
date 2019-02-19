@@ -1,7 +1,7 @@
-use commands::FileOperationThread;
-use config;
-use tab::JoshutoTab;
-use window::JoshutoView;
+use crate::commands::FileOperationThread;
+use crate::config;
+use crate::tab::JoshutoTab;
+use crate::window::JoshutoView;
 
 pub struct JoshutoContext {
     pub username: String,

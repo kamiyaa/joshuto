@@ -1,9 +1,7 @@
-extern crate toml;
-extern crate xdg;
-
+use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use config::{parse_config_file, Flattenable};
+use crate::config::{parse_config_file, Flattenable};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct JoshutoColorPair {
@@ -224,7 +222,7 @@ impl JoshutoTheme {
     }
 
     pub fn get_config() -> JoshutoTheme {
-        parse_config_file::<JoshutoRawTheme, JoshutoTheme>(::THEME_FILE)
+        parse_config_file::<JoshutoRawTheme, JoshutoTheme>(crate::THEME_FILE)
             .unwrap_or_else(JoshutoTheme::new)
     }
 }

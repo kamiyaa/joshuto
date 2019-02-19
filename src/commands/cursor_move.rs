@@ -1,8 +1,6 @@
-extern crate ncurses;
-
-use commands::{JoshutoCommand, JoshutoRunnable};
-use context::JoshutoContext;
-use preview;
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::context::JoshutoContext;
+use crate::preview;
 
 #[derive(Clone, Debug)]
 pub struct CursorMove {

@@ -1,12 +1,9 @@
-extern crate libc;
-extern crate ncurses;
-
-use commands::{JoshutoCommand, JoshutoRunnable};
-use context::JoshutoContext;
-use structs::JoshutoDirEntry;
-use textfield::JoshutoTextField;
-use ui;
-use unix;
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::context::JoshutoContext;
+use crate::structs::JoshutoDirEntry;
+use crate::textfield::JoshutoTextField;
+use crate::ui;
+use crate::unix;
 
 #[derive(Clone, Debug)]
 pub struct SetMode;

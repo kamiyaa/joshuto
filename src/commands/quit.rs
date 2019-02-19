@@ -1,6 +1,6 @@
-use commands::{JoshutoCommand, JoshutoRunnable};
-use context::JoshutoContext;
-use ui;
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::context::JoshutoContext;
+use crate::ui;
 
 #[derive(Clone, Debug)]
 pub struct Quit;
