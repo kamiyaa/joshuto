@@ -36,7 +36,7 @@ impl JoshutoTextField {
 
     fn readline_(
         &self,
-        mut buffer: Vec<(char)>,
+        mut buffer: Vec<char>,
         mut curs_x: i32,
         mut curr_index: usize,
     ) -> Option<String> {
@@ -80,8 +80,9 @@ impl JoshutoTextField {
             } else if ch == ncurses::KEY_END {
                 let buffer_len = buffer.len();
                 if curr_index != buffer_len {
-                    for x in &buffer {
-                        curs_x += *x as i32;
+                    for i in curr_index..buffer_len {
+                        curs_x += unicode_width::UnicodeWidthChar::width(buffer[i])
+                            .unwrap_or(1) as i32;
                     }
                     curr_index = buffer_len;
                 }
