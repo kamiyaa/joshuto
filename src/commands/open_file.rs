@@ -49,15 +49,12 @@ impl OpenFile {
     fn enter_directory(path: &Path, context: &mut JoshutoContext) {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
 
-        match env::set_current_dir(path) {
-            Ok(_) => {}
-            Err(e) => {
-                ui::wprint_err(
-                    &context.views.bot_win,
-                    format!("{}: {:?}", e, path).as_str(),
-                );
-                return;
-            }
+        if let Err(e) = env::set_current_dir(path) {
+            ui::wprint_err(
+                &context.views.bot_win,
+                format!("{}: {:?}", e, path).as_str(),
+            );
+            return;
         }
 
         {
@@ -135,7 +132,6 @@ impl JoshutoRunnable for OpenFile {
                 );
                 preview::preview_file(curr_tab, &context.views, &context.config_t);
             }
-            ncurses::doupdate();
         } else {
             let paths: Option<Vec<PathBuf>> =
                 match context.tabs[context.curr_tab_index].curr_list.as_ref() {
@@ -151,8 +147,8 @@ impl JoshutoRunnable for OpenFile {
             } else {
                 ui::wprint_msg(&context.views.bot_win, "No files selected: None");
             }
-            ncurses::doupdate();
         }
+        ncurses::doupdate();
     }
 }
 

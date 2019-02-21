@@ -29,7 +29,7 @@ impl DirHistory {
                         }
                         self.map.insert(curr.to_path_buf(), s);
                     }
-                    Err(e) => eprintln!("{}", e),
+                    Err(e) => eprintln!("populate_to_root: {}", e),
                 };
                 ancestor = curr;
             }
@@ -59,7 +59,7 @@ impl DirHistory {
         &mut self,
         path: &Path,
         sort_type: &sort::SortType,
-    ) -> Option<&mut structs::JoshutoDirList> {
+    ) -> Result<&mut structs::JoshutoDirList, std::io::Error> {
         let pathbuf = path.to_path_buf();
         match self.map.entry(pathbuf.clone()) {
             Entry::Occupied(mut entry) => {
@@ -69,12 +69,17 @@ impl DirHistory {
                 }
             }
             Entry::Vacant(entry) => {
-                if let Ok(s) = structs::JoshutoDirList::new(path.to_path_buf(), &sort_type) {
-                    entry.insert(s);
-                }
+                let s = structs::JoshutoDirList::new(path.to_path_buf(), &sort_type)?;
+                entry.insert(s);
             }
         };
-        self.map.get_mut(&pathbuf)
+        match self.map.get_mut(&pathbuf) {
+            Some(s) => Ok(s),
+            None => Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "Can't find file",
+                )),
+        }
     }
 
     pub fn put_back(&mut self, dirlist: Option<structs::JoshutoDirList>) {

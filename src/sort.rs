@@ -88,10 +88,7 @@ fn filter_default(
     match result {
         Ok(direntry) => match structs::JoshutoDirEntry::from(&direntry) {
             Ok(s) => Some(s),
-            Err(e) => {
-                eprintln!("error: {:?}", e);
-                None
-            }
+            Err(e) => None,
         },
         Err(_) => None,
     }
@@ -108,10 +105,7 @@ fn filter_hidden_files(
                 } else {
                     match structs::JoshutoDirEntry::from(&direntry) {
                         Ok(s) => Some(s),
-                        Err(e) => {
-                            eprintln!("error: {:?}", e);
-                            None
-                        }
+                        Err(e) => None,
                     }
                 }
             }

@@ -10,11 +10,14 @@ pub fn preview_file(curr_tab: &mut JoshutoTab, views: &JoshutoView, config_t: &J
     if let Some(ref curr_list) = curr_tab.curr_list {
         if let Some(entry) = curr_list.get_curr_ref() {
             if entry.path.is_dir() {
-                if let Some(dirlist) = curr_tab.history.get_mut_or_create(&entry.path, &config_t.sort_type) {
-                    views.right_win.display_contents(dirlist, config_t.scroll_offset);
-                    views.right_win.queue_for_refresh();
-                } else {
-                    ui::wprint_err(&views.right_win, "Can't find directory");
+                match curr_tab.history.get_mut_or_create(&entry.path, &config_t.sort_type) {
+                    Ok(dirlist) => {
+                        views.right_win.display_contents(dirlist, config_t.scroll_offset);
+                        views.right_win.queue_for_refresh();
+                    }
+                    Err(e) => {
+                        ui::wprint_err(&views.right_win, &e.to_string());
+                    }
                 }
             } else {
                 ncurses::werase(views.right_win.win);
@@ -65,6 +68,7 @@ pub fn preview_file(curr_tab: &mut JoshutoTab, views: &JoshutoView, config_t: &J
     }
 }
 
+/*
 pub fn text_preview(win: &JoshutoPanel, path: &PathBuf) {
     let mut command = process::Command::new("head");
     command.arg("-n");
@@ -89,3 +93,4 @@ pub fn text_preview(win: &JoshutoPanel, path: &PathBuf) {
     }
     // bat joshuto.rs --terminal-width 20 --wrap=never --line-range 0:26 --style='numbers'
 }
+*/
