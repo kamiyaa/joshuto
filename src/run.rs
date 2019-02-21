@@ -149,7 +149,11 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
 
     let mut context = JoshutoContext::new(config_t);
     commands::NewTab::new_tab(&mut context);
-    preview::preview_file(&mut context.tabs[context.curr_tab_index], &context.views, &context.config_t);
+    preview::preview_file(
+        &mut context.tabs[context.curr_tab_index],
+        &context.views,
+        &context.config_t,
+    );
     ncurses::doupdate();
 
     while !context.exit {

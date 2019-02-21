@@ -89,7 +89,11 @@ impl std::fmt::Display for ChangeDirectory {
 impl JoshutoRunnable for ChangeDirectory {
     fn execute(&self, context: &mut JoshutoContext) {
         Self::change_directory(&self.path, context);
-        preview::preview_file(&mut context.tabs[context.curr_tab_index], &context.views, &context.config_t);
+        preview::preview_file(
+            &mut context.tabs[context.curr_tab_index],
+            &context.views,
+            &context.config_t,
+        );
         ncurses::doupdate();
     }
 }

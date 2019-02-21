@@ -81,8 +81,8 @@ impl JoshutoTextField {
                 let buffer_len = buffer.len();
                 if curr_index != buffer_len {
                     for i in curr_index..buffer_len {
-                        curs_x += unicode_width::UnicodeWidthChar::width(buffer[i])
-                            .unwrap_or(1) as i32;
+                        curs_x +=
+                            unicode_width::UnicodeWidthChar::width(buffer[i]).unwrap_or(1) as i32;
                     }
                     curr_index = buffer_len;
                 }

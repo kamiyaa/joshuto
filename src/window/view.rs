@@ -20,7 +20,6 @@ impl JoshutoView {
         ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
         let term_divide: i32 = term_cols / sum_ratio as i32;
 
-
         let win_xy: (i32, i32) = (1, 10);
         let win_coord: (usize, usize) = (0, term_cols as usize - win_xy.1 as usize);
         let tab_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);

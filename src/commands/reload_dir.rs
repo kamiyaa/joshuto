@@ -36,7 +36,11 @@ impl std::fmt::Display for ReloadDirList {
 impl JoshutoRunnable for ReloadDirList {
     fn execute(&self, context: &mut JoshutoContext) {
         Self::reload(context);
-        preview::preview_file(&mut context.tabs[context.curr_tab_index], &context.views, &context.config_t);
+        preview::preview_file(
+            &mut context.tabs[context.curr_tab_index],
+            &context.views,
+            &context.config_t,
+        );
         ncurses::doupdate();
     }
 }

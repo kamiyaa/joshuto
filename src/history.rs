@@ -76,9 +76,9 @@ impl DirHistory {
         match self.map.get_mut(&pathbuf) {
             Some(s) => Ok(s),
             None => Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "Can't find file",
-                )),
+                std::io::ErrorKind::NotFound,
+                "Can't find file",
+            )),
         }
     }
 

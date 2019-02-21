@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use std::path;
-use std::sync::{mpsc, Mutex, atomic};
+use std::sync::{atomic, mpsc, Mutex};
 use std::thread;
 use std::time;
 
