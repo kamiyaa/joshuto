@@ -54,7 +54,8 @@ impl<'a> Wordexp<'a> {
 impl<'a> std::iter::Iterator for Wordexp<'a> {
     type Item = &'a str;
 
-    fn next(&mut self) -> Option<&'a str> {
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
         if self.counter >= self.we_wordv.len() {
             self.counter = 0;
             None

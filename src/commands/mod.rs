@@ -74,8 +74,8 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
         "cd" => {
             if let Some(args) = args {
                 match wordexp::wordexp(args[0].as_str(), 0) {
-                    Ok(exp_strs) => {
-                        if let Some(exp_str) = exp_strs.into_iter().next() {
+                    Ok(mut exp_strs) => {
+                        if let Some(exp_str) = exp_strs.next() {
                             let path = PathBuf::from(exp_str);
                             return Some(Box::new(self::ChangeDirectory::new(path)));
                         }
