@@ -63,7 +63,7 @@ impl JoshutoKeymap {
 
 fn insert_keycommand(
     map: &mut HashMap<i32, commands::CommandKeybind>,
-    keycommand: Box<dyn commands::JoshutoCommand>,
+    keycommand: Box<commands::JoshutoCommand>,
     keys: &[String],
 ) {
     if keys.len() == 1 {

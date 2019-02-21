@@ -44,7 +44,7 @@ use crate::structs;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
-    SimpleKeybind(Box<dyn JoshutoCommand>),
+    SimpleKeybind(Box<JoshutoCommand>),
     CompositeKeybind(HashMap<i32, CommandKeybind>),
 }
 
@@ -69,7 +69,7 @@ pub struct ProgressInfo {
     pub total_bytes: u64,
 }
 
-pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<dyn JoshutoCommand>> {
+pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<JoshutoCommand>> {
     match command {
         "cd" => {
             if let Some(args) = args {

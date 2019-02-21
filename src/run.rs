@@ -11,7 +11,7 @@ use crate::window::JoshutoPanel;
 
 fn recurse_get_keycommand(
     keymap: &HashMap<i32, CommandKeybind>,
-) -> Option<&Box<dyn JoshutoCommand>> {
+) -> Option<&Box<JoshutoCommand>> {
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
 
@@ -176,7 +176,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
                 continue;
             }
 
-            let keycommand: &Box<dyn JoshutoCommand>;
+            let keycommand: &Box<JoshutoCommand>;
 
             match keymap_t.keymaps.get(&ch) {
                 Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
