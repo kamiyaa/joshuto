@@ -46,8 +46,8 @@ impl CursorMove {
                 &context.hostname,
                 context.config_t.tilde_in_titlebar,
             );
+            preview::preview_file(curr_tab, &context.views, &context.config_t);
         }
-        preview::preview_file(context);
         ncurses::doupdate();
     }
 }

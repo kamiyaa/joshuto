@@ -107,7 +107,7 @@ impl JoshutoRunnable for RenameFile {
         if let Some(file_name) = file_name {
             if let Some(path) = path {
                 self.rename_file(&path, context, file_name);
-                preview::preview_file(context);
+                preview::preview_file(&mut context.tabs[context.curr_tab_index], &context.views, &context.config_t);
                 ncurses::doupdate();
             }
         }

@@ -53,8 +53,8 @@ impl ParentDirectory {
                         &context.username,
                         &context.hostname,
                     );
+                    preview::preview_file(curr_tab, &context.views, &context.config_t);
                 }
-                preview::preview_file(context);
             }
             Err(e) => {
                 ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
