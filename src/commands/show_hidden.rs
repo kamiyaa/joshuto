@@ -1,5 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::preview;
 
 #[derive(Clone, Debug)]
 pub struct ToggleHiddenFiles;
@@ -41,7 +42,11 @@ impl JoshutoRunnable for ToggleHiddenFiles {
             &context.username,
             &context.hostname,
         );
-
+        preview::preview_file(
+            &mut context.tabs[context.curr_tab_index],
+            &context.views,
+            &context.config_t,
+        );
         ncurses::doupdate();
     }
 }
