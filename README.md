@@ -7,8 +7,8 @@ Currently a work in progress.
 
 ## Dependencies
  - ncurses
- - [cargo](https://github.com/rust-lang/cargo/) >= 0.31.0
- - [rustc](https://www.rust-lang.org/) >= 1.31.0
+ - [cargo](https://github.com/rust-lang/cargo/) >= 0.32.0
+ - [rustc](https://www.rust-lang.org/) >= 1.32.0
 
 Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 
