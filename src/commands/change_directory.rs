@@ -22,15 +22,9 @@ impl ChangeDirectory {
     pub fn change_directory(path: &path::PathBuf, context: &mut JoshutoContext) {
         if !path.exists() {
             ui::wprint_err(&context.views.bot_win, "Error: No such file or directory");
-            ncurses::doupdate();
             return;
         }
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-
-        let parent_list = curr_tab.parent_list.take();
-        curr_tab.history.put_back(parent_list);
-        let curr_list = curr_tab.curr_list.take();
-        curr_tab.history.put_back(curr_list);
 
         match std::env::set_current_dir(path.as_path()) {
             Ok(_) => {
@@ -41,6 +35,12 @@ impl ChangeDirectory {
                 return;
             }
         }
+
+        let parent_list = curr_tab.parent_list.take();
+        curr_tab.history.put_back(parent_list);
+        let curr_list = curr_tab.curr_list.take();
+        curr_tab.history.put_back(curr_list);
+
         curr_tab
             .history
             .populate_to_root(&curr_tab.curr_path, &context.config_t.sort_type);
@@ -51,8 +51,8 @@ impl ChangeDirectory {
         {
             Ok(s) => Some(s),
             Err(e) => {
-                eprintln!("{}", e);
-                process::exit(1);
+                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                None
             }
         };
 
@@ -63,8 +63,8 @@ impl ChangeDirectory {
             {
                 Ok(s) => Some(s),
                 Err(e) => {
-                    eprintln!("{}", e);
-                    process::exit(1);
+                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                    None
                 }
             };
         }
