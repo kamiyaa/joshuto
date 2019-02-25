@@ -9,9 +9,7 @@ use crate::preview;
 use crate::ui;
 use crate::window::JoshutoPanel;
 
-fn recurse_get_keycommand(
-    keymap: &HashMap<i32, CommandKeybind>,
-) -> Option<&Box<JoshutoCommand>> {
+fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<JoshutoCommand>> {
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
 
@@ -49,6 +47,7 @@ fn recurse_get_keycommand(
     }
 }
 
+#[inline]
 fn process_threads(context: &mut JoshutoContext) {
     let thread_wait_duration: time::Duration = time::Duration::from_millis(100);
 
@@ -129,6 +128,7 @@ fn process_threads(context: &mut JoshutoContext) {
     }
 }
 
+#[inline]
 fn resize_handler(context: &mut JoshutoContext) {
     ui::redraw_tab_view(&context.views.tab_win, &context);
     {

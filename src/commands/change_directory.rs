@@ -1,5 +1,4 @@
 use std::path;
-use std::process;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;

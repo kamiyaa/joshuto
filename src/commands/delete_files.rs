@@ -51,7 +51,11 @@ impl JoshutoRunnable for DeleteFiles {
                 if let Some(paths) = commands::collect_selected_paths(s) {
                     match Self::remove_files(paths) {
                         Ok(_) => ui::wprint_msg(&context.views.bot_win, "Deleted files"),
-                        Err(e) => ui::wprint_err(&context.views.bot_win, e.to_string().as_str()),
+                        Err(e) => {
+                            ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                            ncurses::doupdate();
+                            return;
+                        }
                     }
                 }
             }

@@ -279,8 +279,7 @@ impl PasteFiles {
                 tx.send(progress_info).unwrap();
                 fs_extra::dir::TransitProcessResult::ContinueOrAbort
             };
-            fs_extra::copy_items_with_progress(&paths, &destination, &options, handle).unwrap();
-
+            fs_extra::copy_items_with_progress(&paths, &destination, &options, handle);
             paths.clear();
             0
         });
