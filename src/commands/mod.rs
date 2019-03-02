@@ -28,7 +28,7 @@ pub use self::quit::ForceQuit;
 pub use self::quit::Quit;
 pub use self::reload_dir::ReloadDirList;
 pub use self::rename_file::{RenameFile, RenameFileMethod};
-pub use self::search::Search;
+pub use self::search::{Search, SearchNext, SearchPrev};
 pub use self::selection::SelectFiles;
 pub use self::set_mode::SetMode;
 pub use self::show_hidden::ToggleHiddenFiles;
@@ -166,6 +166,8 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
             Some(Box::new(self::RenameFile::new(method)))
         }
         "search" => Some(Box::new(self::Search::new())),
+        "search_next" => Some(Box::new(self::SearchNext::new())),
+        "search_prev" => Some(Box::new(self::SearchPrev::new())),
         "select_files" => {
             let mut toggle = false;
             let mut all = false;
