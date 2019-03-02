@@ -51,7 +51,8 @@ impl SetMode {
             let mut mode: u32 = 0;
             for (i, ch) in s.chars().enumerate() {
                 if ch == LIBC_PERMISSION_VALS[i].1 {
-                    mode |= LIBC_PERMISSION_VALS[i].0;
+                    let val: u32 = LIBC_PERMISSION_VALS[i].0.into();
+                    mode |= val;
                 }
             }
             unix::set_mode(entry.path.as_path(), mode);

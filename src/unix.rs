@@ -87,7 +87,7 @@ pub fn set_mode(path: &Path, mode: u32) {
     if let Some(s) = os_path.to_str() {
         let svec: Vec<i8> = s.bytes().map(|ch| ch as i8).collect();
         unsafe {
-            libc::chmod(svec.as_ptr(), mode);
+            libc::chmod(svec.as_ptr(), mode.into());
         }
     }
 }
