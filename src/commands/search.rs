@@ -3,8 +3,8 @@ use std::sync::Mutex;
 
 use crate::commands::{CursorMove, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::textfield::JoshutoTextField;
 use crate::tab::JoshutoTab;
+use crate::textfield::JoshutoTextField;
 use crate::ui;
 
 lazy_static! {
@@ -86,7 +86,7 @@ impl JoshutoRunnable for Search {
                 CursorMove::cursor_move(index, context);
             }
             let mut data = search_pattern.lock().unwrap();
-	        *data = Some(user_input);
+            *data = Some(user_input);
             ncurses::doupdate();
         }
     }
