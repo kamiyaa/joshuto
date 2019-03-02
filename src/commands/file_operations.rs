@@ -142,8 +142,8 @@ impl PasteFiles {
         let tab_dest = context.curr_tab_index;
         let tab_src_index = tab_src.load(atomic::Ordering::SeqCst);
 
-        let mut destination = context.tabs[tab_dest].curr_path.clone();
         let options = self.options.clone();
+        let mut destination = context.tabs[tab_dest].curr_path.clone();
 
         let dest_ino = destination.metadata()?.st_dev();
         let path_ino;
@@ -168,20 +168,27 @@ impl PasteFiles {
                 };
 
                 for path in (*paths).iter() {
-                    let mut file_name = path.file_name().unwrap().to_os_string();
+                    let file_name = path.file_name().unwrap().to_os_string();
 
-                    if options.skip_exist && destination.exists() {
-                        continue;
+                    destination.push(file_name.clone());
+
+                    if destination.exists() {
+                        if !options.skip_exist {
+                            for i in 0.. {
+                                if !destination.exists() {
+                                    break;
+                                }
+                                destination.pop();
+                                let mut file_name = file_name.clone();
+                                file_name.push(&format!("_{}", i));
+                                destination.push(file_name);
+                            }
+                            std::fs::rename(&path, &destination);
+                        }
+                    } else {
+                        std::fs::rename(&path, &destination);
                     }
-
-                    while path::Path::new(&file_name).exists() {
-                        file_name.push("_0");
-                    }
-
-                    destination.push(file_name);
-                    std::fs::rename(&path, &destination).unwrap();
                     destination.pop();
-
                     progress_info.bytes_finished += 1;
                     tx.send(progress_info.clone()).unwrap();
                 }
@@ -299,9 +306,10 @@ impl std::fmt::Display for PasteFiles {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "{} overwrite={}",
+            "{} overwrite={} skip_exist={}",
             Self::command(),
-            self.options.overwrite
+            self.options.overwrite,
+            self.options.skip_exist,
         )
     }
 }
