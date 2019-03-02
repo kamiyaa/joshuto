@@ -1,5 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::preview;
 use crate::ui;
 
 #[derive(Clone, Debug)]
@@ -27,10 +28,9 @@ impl TabSwitch {
                 &context.hostname,
             );
         }
-
         ui::redraw_tab_view(&context.views.tab_win, &context);
-
-        ncurses::doupdate();
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        preview::preview_file(curr_tab, &context.views, &context.config_t);
     }
 }
 
@@ -53,5 +53,6 @@ impl JoshutoRunnable for TabSwitch {
             new_index -= tab_len;
         }
         Self::tab_switch(new_index, context);
+        ncurses::doupdate();
     }
 }

@@ -4,6 +4,7 @@ use std::path;
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
 use crate::config::keymap;
 use crate::context::JoshutoContext;
+use crate::preview;
 use crate::ui;
 
 #[derive(Clone, Debug)]
@@ -78,6 +79,8 @@ impl JoshutoRunnable for DeleteFiles {
                 context.config_t.tilde_in_titlebar,
             );
         }
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        preview::preview_file(curr_tab, &context.views, &context.config_t);
         ncurses::doupdate();
     }
 }

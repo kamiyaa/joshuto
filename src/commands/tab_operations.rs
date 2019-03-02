@@ -51,6 +51,7 @@ impl std::fmt::Display for NewTab {
 impl JoshutoRunnable for NewTab {
     fn execute(&self, context: &mut JoshutoContext) {
         Self::new_tab(context);
+        ncurses::doupdate();
     }
 }
 
@@ -71,7 +72,7 @@ impl CloseTab {
             return;
         }
 
-        context.tabs.remove(context.curr_tab_index);
+        let _ = context.tabs.remove(context.curr_tab_index);
         if context.curr_tab_index > 0 {
             context.curr_tab_index -= 1;
         }
@@ -90,5 +91,6 @@ impl std::fmt::Display for CloseTab {
 impl JoshutoRunnable for CloseTab {
     fn execute(&self, context: &mut JoshutoContext) {
         Self::close_tab(context);
+        ncurses::doupdate();
     }
 }
