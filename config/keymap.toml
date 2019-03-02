@@ -163,6 +163,14 @@ args = [ "~/Downloads" ]
 keys = [ "/" ]
 command = "search"
 
+[[mapcommand]]
+keys = [ "n" ]
+command = "search_next"
+
+[[mapcommand]]
+keys = [ "p" ]
+command = "search_prev"
+
 
 [[mapcommand]]
 keys = [ "T" ]
