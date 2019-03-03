@@ -168,7 +168,7 @@ keys = [ "n" ]
 command = "search_next"
 
 [[mapcommand]]
-keys = [ "p" ]
+keys = [ "N" ]
 command = "search_prev"
 
 

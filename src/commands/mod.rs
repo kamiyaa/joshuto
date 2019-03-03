@@ -142,8 +142,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
                     }
                 }
             }
-            let paste = self::PasteFiles::new(options);
-            Some(Box::new(paste))
+            Some(Box::new(self::PasteFiles::new(options)))
         }
         "quit" => Some(Box::new(self::Quit::new())),
         "reload_dir_list" => Some(Box::new(self::ReloadDirList::new())),

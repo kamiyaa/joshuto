@@ -1,5 +1,6 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
+use std::collections::hash_map;
 use std::process::exit;
 
 use crate::commands;
@@ -68,7 +69,17 @@ fn insert_keycommand(
 ) {
     if keys.len() == 1 {
         if let Some(s) = key_to_i32(&keys[0]) {
-            map.insert(s, commands::CommandKeybind::SimpleKeybind(keycommand));
+            match map.entry(s) {
+                hash_map::Entry::Occupied(entry) => {
+                    eprintln!("Error: Keybindings ambiguous");
+                    exit(1);
+                }
+                hash_map::Entry::Vacant(entry) => {
+                    entry.insert(commands::CommandKeybind::SimpleKeybind(keycommand));
+                }
+            }
+        } else {
+            eprintln!("Error: Failed to parse keycode: {}", keys[0]);
         }
     } else if let Some(s) = key_to_i32(&keys[0]) {
         let mut new_map: HashMap<i32, commands::CommandKeybind>;
@@ -86,7 +97,7 @@ fn insert_keycommand(
         }
         insert_keycommand(&mut new_map, keycommand, &keys[1..]);
         let composite_command = commands::CommandKeybind::CompositeKeybind(new_map);
-        map.insert(s as i32, composite_command);
+        map.insert(s, composite_command);
     }
 }
 
