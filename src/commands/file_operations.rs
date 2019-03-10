@@ -276,7 +276,7 @@ impl PasteFiles {
         let (tx, rx) = mpsc::channel();
 
         let handle = thread::spawn(move || {
-            let mut paths = selected_files.lock().unwrap();
+            let paths = selected_files.lock().unwrap();
 
             let handle = |process_info: fs_extra::TransitProcess| {
                 let progress_info = ProgressInfo {
@@ -287,7 +287,6 @@ impl PasteFiles {
                 fs_extra::dir::TransitProcessResult::ContinueOrAbort
             };
             fs_extra::copy_items_with_progress(&paths, &destination, &options, handle);
-            paths.clear();
             0
         });
         let thread = FileOperationThread {
