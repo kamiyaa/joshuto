@@ -3,4 +3,5 @@
 *.log
 *.tmp
 *~
+*.lock
 **/*.rs.bk
