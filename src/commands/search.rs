@@ -6,9 +6,10 @@ use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
+use crate::window::JoshutoView;
 
 lazy_static! {
-    static ref search_pattern: Mutex<Option<String>> = Mutex::new(None);
+    static ref SEARCH_PATTERN: Mutex<Option<String>> = Mutex::new(None);
 }
 
 #[derive(Clone, Debug)]
@@ -21,32 +22,42 @@ impl Search {
     pub const fn command() -> &'static str {
         "search"
     }
-    pub fn search(curr_tab: &JoshutoTab, pattern: &str) -> Option<i32> {
+    pub fn search(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
         if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-            let offset = curr_list.index as usize + 1;
-            let contents_len = curr_list.contents.len();
-            for i in 0..contents_len {
-                let file_name_lower = curr_list.contents[(offset + i) % contents_len]
-                    .file_name_as_string
-                    .to_lowercase();
-                if file_name_lower.contains(pattern) {
-                    return Some(((offset + i) % contents_len) as i32);
+            match curr_list.index {
+                Some(index) => {
+                    let offset = index + 1;
+                    let contents_len = curr_list.contents.len();
+                    for i in 0..contents_len {
+                        let file_name_lower = curr_list.contents[(offset + i) % contents_len]
+                            .file_name_as_string
+                            .to_lowercase();
+                        if file_name_lower.contains(pattern) {
+                            return Some((offset + i) % contents_len);
+                        }
+                    }
+                    return None;
                 }
+                None => return None,
             }
         }
         return None;
     }
-    pub fn search_rev(curr_tab: &JoshutoTab, pattern: &str) -> Option<i32> {
+    pub fn search_rev(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
         if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-            let offset = curr_list.index as usize;
-            let contents_len = curr_list.contents.len();
-            for i in (0..contents_len).rev() {
-                let file_name_lower = curr_list.contents[(offset + i) % contents_len]
-                    .file_name_as_string
-                    .to_lowercase();
-                if file_name_lower.contains(pattern) {
-                    return Some(((offset + i) % contents_len) as i32);
+            match curr_list.index {
+                Some(offset) => {
+                    let contents_len = curr_list.contents.len();
+                    for i in (0..contents_len).rev() {
+                        let file_name_lower = curr_list.contents[(offset + i) % contents_len]
+                            .file_name_as_string
+                            .to_lowercase();
+                        if file_name_lower.contains(pattern) {
+                            return Some((offset + i) % contents_len);
+                        }
+                    }
                 }
+                None => return None,
             }
         }
         return None;
@@ -62,7 +73,7 @@ impl std::fmt::Display for Search {
 }
 
 impl JoshutoRunnable for Search {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
         const PROMPT: &str = ":search ";
         let (term_rows, term_cols) = ui::getmaxyx();
         let user_input: Option<String>;
@@ -83,12 +94,27 @@ impl JoshutoRunnable for Search {
 
             let index = Self::search(&context.tabs[context.curr_tab_index], &user_input);
             if let Some(index) = index {
-                CursorMove::cursor_move(index, context);
+                CursorMove::cursor_move(index, context, view);
             }
-            let mut data = search_pattern.lock().unwrap();
+            let mut data = SEARCH_PATTERN.lock().unwrap();
             *data = Some(user_input);
             ncurses::doupdate();
         }
+    }
+}
+
+fn search_with_func(
+    context: &mut JoshutoContext,
+    view: &JoshutoView,
+    search_func: fn(&JoshutoTab, &str) -> Option<usize>,
+) {
+    let data = SEARCH_PATTERN.lock().unwrap();
+    if let Some(s) = (*data).as_ref() {
+        let index = search_func(&context.tabs[context.curr_tab_index], s);
+        if let Some(index) = index {
+            CursorMove::cursor_move(index, context, view);
+        }
+        ncurses::doupdate();
     }
 }
 
@@ -113,15 +139,8 @@ impl std::fmt::Display for SearchNext {
 }
 
 impl JoshutoRunnable for SearchNext {
-    fn execute(&self, context: &mut JoshutoContext) {
-        let data = search_pattern.lock().unwrap();
-        if let Some(s) = (*data).as_ref() {
-            let index = Search::search(&context.tabs[context.curr_tab_index], s);
-            if let Some(index) = index {
-                CursorMove::cursor_move(index, context);
-            }
-            ncurses::doupdate();
-        }
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+        search_with_func(context, view, Search::search);
     }
 }
 
@@ -146,14 +165,7 @@ impl std::fmt::Display for SearchPrev {
 }
 
 impl JoshutoRunnable for SearchPrev {
-    fn execute(&self, context: &mut JoshutoContext) {
-        let data = search_pattern.lock().unwrap();
-        if let Some(s) = (*data).as_ref() {
-            let index = Search::search_rev(&context.tabs[context.curr_tab_index], s);
-            if let Some(index) = index {
-                CursorMove::cursor_move(index, context);
-            }
-            ncurses::doupdate();
-        }
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+        search_with_func(context, view, Search::search_rev);
     }
 }

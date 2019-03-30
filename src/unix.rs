@@ -3,27 +3,6 @@ use std::process;
 
 use crate::config::mimetype;
 
-/*
-pub const fn is_reg(mode: u32) -> bool
-{
-    mode >> 9 & S_IFREG >> 9 == mode >> 9
-}
-
-pub fn get_unix_filetype(mode : u32) -> &'static str
-{
-    match mode & BITMASK {
-        S_IFBLK => "inode/blockdevice",
-        S_IFCHR => "inode/chardevice",
-        S_IFDIR => "inode/directory",
-        S_IFIFO => "inode/fifo",
-        S_IFLNK => "inode/symlink",
-        S_IFSOCK => "inode/socket",
-        S_IFREG => "inode/regular",
-        _ => "unknown",
-    }
-}
-*/
-
 pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 

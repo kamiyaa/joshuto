@@ -7,7 +7,7 @@ use crate::structs::JoshutoDirList;
 use crate::ui;
 use crate::window::{JoshutoPanel, JoshutoView};
 
-use crate::theme_t;
+use crate::THEME_T;
 
 pub struct JoshutoTab {
     pub history: history::DirHistory,
@@ -110,10 +110,12 @@ impl JoshutoTab {
             if let Some(entry) = dirlist.get_curr_ref() {
                 ui::wprint_file_mode(win.win, entry);
                 ncurses::waddstr(win.win, " ");
-                ncurses::waddstr(
-                    win.win,
-                    format!("{}/{} ", dirlist.index + 1, dirlist.contents.len()).as_str(),
-                );
+                if let Some(index) = dirlist.index {
+                    ncurses::waddstr(
+                        win.win,
+                        format!("{}/{} ", index + 1, dirlist.contents.len()).as_str(),
+                    );
+                }
                 ncurses::waddstr(win.win, "  ");
                 ui::wprint_file_info(win.win, entry);
             }
@@ -138,7 +140,7 @@ impl JoshutoTab {
 
         ncurses::waddstr(win.win, " ");
 
-        ncurses::wattron(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
+        ncurses::wattron(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
         if tilde_in_titlebar {
             let path_str = &path_str.replace(&format!("/home/{}", username), "~");
             ncurses::waddstr(win.win, path_str);
@@ -146,7 +148,7 @@ impl JoshutoTab {
             ncurses::waddstr(win.win, path_str);
         }
         ncurses::waddstr(win.win, "/");
-        ncurses::wattroff(win.win, ncurses::COLOR_PAIR(theme_t.directory.colorpair));
+        ncurses::wattroff(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
         if let Some(ref dirlist) = self.curr_list {
             if let Some(entry) = dirlist.get_curr_ref() {
                 ncurses::waddstr(win.win, &entry.file_name_as_string);

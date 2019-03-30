@@ -4,6 +4,7 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::preview;
 use crate::ui;
+use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub struct ChangeDirectory {
@@ -18,9 +19,13 @@ impl ChangeDirectory {
         "cd"
     }
 
-    pub fn change_directory(path: &path::PathBuf, context: &mut JoshutoContext) {
+    pub fn change_directory(
+        path: &path::PathBuf,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) {
         if !path.exists() {
-            ui::wprint_err(&context.views.bot_win, "Error: No such file or directory");
+            ui::wprint_err(&view.bot_win, "Error: No such file or directory");
             return;
         }
         let curr_tab = &mut context.tabs[context.curr_tab_index];
@@ -30,7 +35,7 @@ impl ChangeDirectory {
                 curr_tab.curr_path = path.clone();
             }
             Err(e) => {
-                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                ui::wprint_err(&view.bot_win, e.to_string().as_str());
                 return;
             }
         }
@@ -50,7 +55,7 @@ impl ChangeDirectory {
         {
             Ok(s) => Some(s),
             Err(e) => {
-                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                ui::wprint_err(&view.bot_win, e.to_string().as_str());
                 None
             }
         };
@@ -62,14 +67,14 @@ impl ChangeDirectory {
             {
                 Ok(s) => Some(s),
                 Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
                     None
                 }
             };
         }
 
         curr_tab.refresh(
-            &context.views,
+            view,
             &context.config_t,
             &context.username,
             &context.hostname,
@@ -86,11 +91,11 @@ impl std::fmt::Display for ChangeDirectory {
 }
 
 impl JoshutoRunnable for ChangeDirectory {
-    fn execute(&self, context: &mut JoshutoContext) {
-        Self::change_directory(&self.path, context);
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+        Self::change_directory(&self.path, context, view);
         preview::preview_file(
             &mut context.tabs[context.curr_tab_index],
-            &context.views,
+            &view,
             &context.config_t,
         );
         ncurses::doupdate();

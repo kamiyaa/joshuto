@@ -37,9 +37,11 @@ impl JoshutoPanel {
         }
     }
 
+    #[inline]
     pub fn move_to_top(&self) {
         ncurses::top_panel(self.panel);
     }
+    #[inline]
     pub fn queue_for_refresh(&self) {
         ncurses::wnoutrefresh(self.win);
     }
@@ -68,7 +70,7 @@ impl JoshutoPanel {
         let dir_contents = &dirlist.contents;
         let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
 
-        let curr_index = dirlist.index as usize;
+        let curr_index = dirlist.index.unwrap();
 
         for i in start..end {
             let coord: (i32, i32) = (i as i32 - start as i32, 0);
@@ -96,7 +98,6 @@ impl JoshutoPanel {
         if self.cols < 8 {
             return false;
         }
-        let index = dirlist.index;
         let vec_len = dirlist.contents.len();
         if vec_len == 0 {
             ui::wprint_empty(self, "empty");
@@ -104,10 +105,10 @@ impl JoshutoPanel {
         }
         ncurses::werase(self.win);
 
-        if index >= 0 {
+        if let Some(index) = dirlist.index {
             dirlist
                 .pagestate
-                .update_page_state(index as usize, self.rows, vec_len, scroll_offset);
+                .update_page_state(index, self.rows, vec_len, scroll_offset);
         }
         ncurses::wmove(self.win, 0, 0);
         true

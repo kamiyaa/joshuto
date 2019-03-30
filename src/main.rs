@@ -40,9 +40,9 @@ lazy_static! {
         }
         temp
     };
-    static ref theme_t: JoshutoTheme = JoshutoTheme::get_config();
-    static ref mimetype_t: JoshutoMimetype = JoshutoMimetype::get_config();
-    static ref preview_t: JoshutoPreview = JoshutoPreview::get_config();
+    static ref THEME_T: JoshutoTheme = JoshutoTheme::get_config();
+    static ref MIMETYPE_T: JoshutoMimetype = JoshutoMimetype::get_config();
+    static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config();
 }
 
 #[derive(StructOpt, Debug)]

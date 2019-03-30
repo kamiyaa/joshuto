@@ -2,6 +2,7 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::preview;
 use crate::ui;
+use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub struct ParentDirectory;
@@ -14,7 +15,7 @@ impl ParentDirectory {
         "parent_directory"
     }
 
-    pub fn parent_directory(context: &mut JoshutoContext) {
+    pub fn parent_directory(context: &mut JoshutoContext, view: &JoshutoView) {
         if !context.curr_tab_mut().curr_path.pop() {
             return;
         }
@@ -36,26 +37,26 @@ impl ParentDirectory {
                         {
                             Ok(s) => Some(s),
                             Err(e) => {
-                                ui::wprint_err(&context.views.left_win, e.to_string().as_str());
+                                ui::wprint_err(&view.left_win, e.to_string().as_str());
                                 None
                             }
                         };
                     }
                     None => {
-                        ncurses::werase(context.views.left_win.win);
-                        ncurses::wnoutrefresh(context.views.left_win.win);
+                        ncurses::werase(view.left_win.win);
+                        view.left_win.queue_for_refresh();
                     }
                 }
                 curr_tab.refresh(
-                    &context.views,
+                    view,
                     &context.config_t,
                     &context.username,
                     &context.hostname,
                 );
-                preview::preview_file(curr_tab, &context.views, &context.config_t);
+                preview::preview_file(curr_tab, view, &context.config_t);
             }
             Err(e) => {
-                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                ui::wprint_err(&view.bot_win, e.to_string().as_str());
             }
         };
         ncurses::doupdate();
@@ -71,7 +72,7 @@ impl std::fmt::Display for ParentDirectory {
 }
 
 impl JoshutoRunnable for ParentDirectory {
-    fn execute(&self, context: &mut JoshutoContext) {
-        Self::parent_directory(context);
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+        Self::parent_directory(context, view);
     }
 }

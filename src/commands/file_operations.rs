@@ -7,11 +7,12 @@ use std::time;
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
 use crate::context::JoshutoContext;
 use crate::structs::JoshutoDirList;
+use crate::window::JoshutoView;
 
 lazy_static! {
-    static ref selected_files: Mutex<Vec<path::PathBuf>> = Mutex::new(vec![]);
-    static ref fileop: Mutex<FileOp> = Mutex::new(FileOp::Copy);
-    static ref tab_src: atomic::AtomicUsize = atomic::AtomicUsize::new(0);
+    static ref SELECTED_FILES: Mutex<Vec<path::PathBuf>> = Mutex::new(vec![]);
+    static ref FILE_OPERATION: Mutex<FileOp> = Mutex::new(FileOp::Copy);
+    static ref TAB_SRC: atomic::AtomicUsize = atomic::AtomicUsize::new(0);
 }
 
 pub struct FileOperationThread {
@@ -31,17 +32,17 @@ impl FileOperationThread {
 }
 
 fn set_file_op(operation: FileOp) {
-    let mut data = fileop.lock().unwrap();
+    let mut data = FILE_OPERATION.lock().unwrap();
     *data = operation;
 }
 
 fn set_tab_src(tab_index: usize) {
-    tab_src.store(tab_index, atomic::Ordering::Release);
+    TAB_SRC.store(tab_index, atomic::Ordering::Release);
 }
 
 fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
     if let Some(contents) = commands::collect_selected_paths(dirlist) {
-        let mut data = selected_files.lock().unwrap();
+        let mut data = SELECTED_FILES.lock().unwrap();
         *data = contents;
         return true;
     }
@@ -80,7 +81,7 @@ impl std::fmt::Display for CutFiles {
 }
 
 impl JoshutoRunnable for CutFiles {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
         let curr_tab = context.curr_tab_ref();
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
@@ -112,7 +113,7 @@ impl std::fmt::Display for CopyFiles {
 }
 
 impl JoshutoRunnable for CopyFiles {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
         let curr_tab = context.curr_tab_ref();
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
@@ -140,7 +141,7 @@ impl PasteFiles {
         use std::os::linux::fs::MetadataExt;
 
         let tab_dest = context.curr_tab_index;
-        let tab_src_index = tab_src.load(atomic::Ordering::SeqCst);
+        let tab_src_index = TAB_SRC.load(atomic::Ordering::SeqCst);
 
         let options = self.options.clone();
         let mut destination = context.tabs[tab_dest].curr_path.clone();
@@ -148,7 +149,7 @@ impl PasteFiles {
         let dest_ino = destination.metadata()?.st_dev();
         let path_ino;
         {
-            let paths = selected_files.lock().unwrap();
+            let paths = SELECTED_FILES.lock().unwrap();
             if paths.len() == 0 {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
@@ -161,7 +162,7 @@ impl PasteFiles {
         let (tx, rx) = mpsc::channel();
         let handle = if dest_ino == path_ino {
             thread::spawn(move || {
-                let mut paths = selected_files.lock().unwrap();
+                let mut paths = SELECTED_FILES.lock().unwrap();
                 let mut progress_info = ProgressInfo {
                     bytes_finished: 1,
                     total_bytes: paths.len() as u64 + 1,
@@ -197,7 +198,7 @@ impl PasteFiles {
             })
         } else {
             thread::spawn(move || {
-                let mut paths = selected_files.lock().unwrap();
+                let mut paths = SELECTED_FILES.lock().unwrap();
 
                 let handle = |process_info: fs_extra::TransitProcess| {
                     let progress_info = ProgressInfo {
@@ -225,13 +226,13 @@ impl PasteFiles {
     #[cfg(not(target_os = "linux"))]
     fn cut(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
         let tab_dest = context.curr_tab_index;
-        let tab_src_index = tab_src.load(atomic::Ordering::SeqCst);
+        let tab_src_index = TAB_SRC.load(atomic::Ordering::SeqCst);
 
         let mut destination = context.tabs[tab_dest].curr_path.clone();
         let options = self.options.clone();
 
         {
-            let paths = selected_files.lock().unwrap();
+            let paths = SELECTED_FILES.lock().unwrap();
             if paths.len() == 0 {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
@@ -242,7 +243,7 @@ impl PasteFiles {
         let (tx, rx) = mpsc::channel();
 
         let handle = thread::spawn(move || {
-            let mut paths = selected_files.lock().unwrap();
+            let mut paths = SELECTED_FILES.lock().unwrap();
 
             let handle = |process_info: fs_extra::TransitProcess| {
                 let progress_info = ProgressInfo {
@@ -268,7 +269,7 @@ impl PasteFiles {
 
     fn copy(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
         let tab_dest = context.curr_tab_index;
-        let tab_src_index = tab_src.load(atomic::Ordering::SeqCst);
+        let tab_src_index = TAB_SRC.load(atomic::Ordering::SeqCst);
 
         let destination = context.tabs[tab_dest].curr_path.clone();
         let options = self.options.clone();
@@ -276,7 +277,7 @@ impl PasteFiles {
         let (tx, rx) = mpsc::channel();
 
         let handle = thread::spawn(move || {
-            let paths = selected_files.lock().unwrap();
+            let paths = SELECTED_FILES.lock().unwrap();
 
             let handle = |process_info: fs_extra::TransitProcess| {
                 let progress_info = ProgressInfo {
@@ -320,8 +321,8 @@ impl std::fmt::Debug for PasteFiles {
 }
 
 impl JoshutoRunnable for PasteFiles {
-    fn execute(&self, context: &mut JoshutoContext) {
-        let file_operation = fileop.lock().unwrap();
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
+        let file_operation = FILE_OPERATION.lock().unwrap();
 
         let thread = match *file_operation {
             FileOp::Copy => self.copy(context),

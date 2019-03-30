@@ -7,7 +7,7 @@ use crate::structs;
 use crate::unix;
 use crate::window;
 
-use crate::theme_t;
+use crate::THEME_T;
 
 pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;
@@ -33,7 +33,7 @@ pub fn init_ncurses() {
 }
 
 fn process_theme() {
-    for pair in theme_t.colorpair.iter() {
+    for pair in THEME_T.colorpair.iter() {
         ncurses::init_pair(pair.id, pair.fg, pair.bg);
     }
 
@@ -243,7 +243,7 @@ pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32) {
         0,
         cols,
         ncurses::A_STANDOUT(),
-        theme_t.selection.colorpair,
+        THEME_T.selection.colorpair,
     );
 }
 
@@ -259,37 +259,37 @@ pub fn get_theme_attr(
 
     let file_type = &entry.metadata.file_type;
     if entry.selected {
-        theme = &theme_t.selection;
-        colorpair = theme_t.selection.colorpair;
+        theme = &THEME_T.selection;
+        colorpair = THEME_T.selection.colorpair;
     } else if file_type.is_dir() {
-        theme = &theme_t.directory;
-        colorpair = theme_t.directory.colorpair;
+        theme = &THEME_T.directory;
+        colorpair = THEME_T.directory.colorpair;
     } else if file_type.is_symlink() {
-        theme = &theme_t.link;
-        colorpair = theme_t.link.colorpair;
+        theme = &THEME_T.link;
+        colorpair = THEME_T.link.colorpair;
     } else if file_type.is_block_device()
         || file_type.is_char_device()
         || file_type.is_fifo()
         || file_type.is_socket()
     {
-        theme = &theme_t.socket;
-        colorpair = theme_t.link.colorpair;
+        theme = &THEME_T.socket;
+        colorpair = THEME_T.link.colorpair;
     } else {
         let mode = entry.metadata.permissions.mode();
         if unix::is_executable(mode) {
-            theme = &theme_t.executable;
-            colorpair = theme_t.executable.colorpair;
+            theme = &THEME_T.executable;
+            colorpair = THEME_T.executable.colorpair;
         } else if let Some(ext) = entry.file_name_as_string.rfind('.') {
             let extension: &str = &entry.file_name_as_string[ext + 1..];
-            if let Some(s) = theme_t.ext.get(extension) {
+            if let Some(s) = THEME_T.ext.get(extension) {
                 theme = &s;
                 colorpair = theme.colorpair;
             } else {
-                theme = &theme_t.regular;
+                theme = &THEME_T.regular;
                 colorpair = theme.colorpair;
             }
         } else {
-            theme = &theme_t.regular;
+            theme = &THEME_T.regular;
             colorpair = theme.colorpair;
         }
     }

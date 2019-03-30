@@ -8,13 +8,13 @@ use crate::context::JoshutoContext;
 use crate::preview;
 use crate::ui;
 use crate::window::JoshutoPanel;
+use crate::window::JoshutoView;
 
 fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<JoshutoCommand>> {
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
 
-    let ch: i32;
-    {
+    let ch: i32 = {
         let keymap_len = keymap.len();
         let win = JoshutoPanel::new(
             keymap_len as i32 + 1,
@@ -32,8 +32,8 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
         ui::display_options(&win, &display_vec);
         ncurses::doupdate();
 
-        ch = ncurses::wgetch(win.win);
-    }
+        ncurses::wgetch(win.win)
+    };
     ncurses::doupdate();
 
     if ch == config::keymap::ESCAPE {
@@ -48,7 +48,7 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
 }
 
 #[inline]
-fn process_threads(context: &mut JoshutoContext) {
+fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
     let thread_wait_duration: time::Duration = time::Duration::from_millis(100);
 
     let mut i: usize = 0;
@@ -56,7 +56,7 @@ fn process_threads(context: &mut JoshutoContext) {
         match &context.threads[i].recv_timeout(&thread_wait_duration) {
             Ok(progress_info) => {
                 if progress_info.bytes_finished == progress_info.total_bytes {
-                    ncurses::werase(context.views.bot_win.win);
+                    ncurses::werase(view.bot_win.win);
                     let thread = context.threads.swap_remove(i);
                     thread.handle.join().unwrap();
                     let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
@@ -64,7 +64,7 @@ fn process_threads(context: &mut JoshutoContext) {
                         context.tabs[tab_src].reload_contents(&context.config_t.sort_type);
                         if tab_src == context.curr_tab_index {
                             context.tabs[tab_src].refresh(
-                                &context.views,
+                                view,
                                 &context.config_t,
                                 &context.username,
                                 &context.hostname,
@@ -75,7 +75,7 @@ fn process_threads(context: &mut JoshutoContext) {
                         context.tabs[tab_dest].reload_contents(&context.config_t.sort_type);
                         if tab_dest == context.curr_tab_index {
                             context.tabs[tab_dest].refresh(
-                                &context.views,
+                                view,
                                 &context.config_t,
                                 &context.username,
                                 &context.hostname,
@@ -86,37 +86,41 @@ fn process_threads(context: &mut JoshutoContext) {
                     let percent = (progress_info.bytes_finished as f64
                         / progress_info.total_bytes as f64)
                         as f32;
-                    ui::draw_progress_bar(&context.views.bot_win, percent);
-                    ncurses::wnoutrefresh(context.views.bot_win.win);
+                    ui::draw_progress_bar(&view.bot_win, percent);
+                    ncurses::wnoutrefresh(view.bot_win.win);
                     i += 1;
                 }
                 ncurses::doupdate();
             }
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
-                ncurses::werase(context.views.bot_win.win);
+                ncurses::werase(view.bot_win.win);
                 let thread = context.threads.swap_remove(i);
                 let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
                 thread.handle.join().unwrap();
                 if tab_src < context.tabs.len() {
-                    context.tabs[tab_src].reload_contents(&context.config_t.sort_type);
+                    let dirty_tab = &mut context.tabs[tab_src];
+                    dirty_tab.reload_contents(&context.config_t.sort_type);
                     if tab_src == context.curr_tab_index {
-                        context.tabs[tab_src].refresh(
-                            &context.views,
+                        dirty_tab.refresh(
+                            view,
                             &context.config_t,
                             &context.username,
                             &context.hostname,
                         );
+                        preview::preview_file(dirty_tab, view, &context.config_t);
                     }
                 }
                 if tab_dest != tab_src && tab_dest < context.tabs.len() {
-                    context.tabs[tab_dest].reload_contents(&context.config_t.sort_type);
-                    if tab_dest == context.curr_tab_index {
-                        context.tabs[tab_dest].refresh(
-                            &context.views,
+                    let dirty_tab = &mut context.tabs[tab_dest];
+                    dirty_tab.reload_contents(&context.config_t.sort_type);
+                    if tab_src == context.curr_tab_index {
+                        dirty_tab.refresh(
+                            view,
                             &context.config_t,
                             &context.username,
                             &context.hostname,
                         );
+                        preview::preview_file(dirty_tab, view, &context.config_t);
                     }
                 }
                 ncurses::doupdate();
@@ -129,17 +133,17 @@ fn process_threads(context: &mut JoshutoContext) {
 }
 
 #[inline]
-fn resize_handler(context: &mut JoshutoContext) {
-    ui::redraw_tab_view(&context.views.tab_win, &context);
+fn resize_handler(context: &mut JoshutoContext, view: &JoshutoView) {
+    ui::redraw_tab_view(&view.tab_win, &context);
     {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab.refresh(
-            &context.views,
+            view,
             &context.config_t,
             &context.username,
             &context.hostname,
         );
-        preview::preview_file(curr_tab, &context.views, &context.config_t);
+        preview::preview_file(curr_tab, view, &context.config_t);
     }
     ncurses::doupdate();
 }
@@ -148,10 +152,11 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     ui::init_ncurses();
 
     let mut context = JoshutoContext::new(config_t);
-    commands::NewTab::new_tab(&mut context);
+    let mut view = JoshutoView::new(context.config_t.column_ratio);
+    commands::NewTab::new_tab(&mut context, &view);
     preview::preview_file(
         &mut context.tabs[context.curr_tab_index],
-        &context.views,
+        &view,
         &context.config_t,
     );
     ncurses::doupdate();
@@ -159,7 +164,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     while !context.exit {
         if !context.threads.is_empty() {
             ncurses::timeout(0);
-            process_threads(&mut context);
+            process_threads(&mut context, &view);
         } else {
             ncurses::timeout(-1);
         }
@@ -171,8 +176,8 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
             };
 
             if ch == ncurses::KEY_RESIZE {
-                context.views.resize_views();
-                resize_handler(&mut context);
+                view.resize_views();
+                resize_handler(&mut context, &view);
                 continue;
             }
 
@@ -189,12 +194,12 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
                     keycommand = s;
                 }
                 None => {
-                    ui::wprint_err(&context.views.bot_win, &format!("Unknown keycode: {}", ch));
+                    ui::wprint_err(&view.bot_win, &format!("Unknown keycode: {}", ch));
                     ncurses::doupdate();
                     continue;
                 }
             }
-            keycommand.execute(&mut context);
+            keycommand.execute(&mut context, &view);
         }
     }
     ui::end_ncurses();

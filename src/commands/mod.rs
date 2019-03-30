@@ -17,7 +17,8 @@ mod tab_switch;
 
 pub use self::change_directory::ChangeDirectory;
 pub use self::cursor_move::{
-    CursorMove, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
+    CursorMove, CursorMoveDec, CursorMoveEnd, CursorMoveHome, CursorMoveInc, CursorMovePageDown,
+    CursorMovePageUp,
 };
 pub use self::delete_files::DeleteFiles;
 pub use self::file_operations::{CopyFiles, CutFiles, FileOperationThread, PasteFiles};
@@ -41,6 +42,7 @@ use std::path::PathBuf;
 
 use crate::context::JoshutoContext;
 use crate::structs;
+use crate::window::JoshutoView;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
@@ -49,7 +51,7 @@ pub enum CommandKeybind {
 }
 
 pub trait JoshutoRunnable {
-    fn execute(&self, context: &mut JoshutoContext);
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView);
 }
 
 pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
@@ -89,12 +91,27 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
         }
         "close_tab" => Some(Box::new(self::CloseTab::new())),
         "copy_files" => Some(Box::new(self::CopyFiles::new())),
-        "cursor_move" => {
+        "cursor_move_inc" => {
             if let Some(args) = args {
                 if !args.is_empty() {
-                    match args[0].parse::<i32>() {
+                    match args[0].parse::<usize>() {
                         Ok(s) => {
-                            return Some(Box::new(self::CursorMove::new(s)));
+                            return Some(Box::new(self::CursorMoveInc::new(s)));
+                        }
+                        Err(e) => {
+                            eprintln!("{}", e);
+                        }
+                    }
+                }
+            }
+            None
+        }
+        "cursor_move_dec" => {
+            if let Some(args) = args {
+                if !args.is_empty() {
+                    match args[0].parse::<usize>() {
+                        Ok(s) => {
+                            return Some(Box::new(self::CursorMoveDec::new(s)));
                         }
                         Err(e) => {
                             eprintln!("{}", e);
@@ -218,20 +235,21 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
 }
 
 pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList) -> Option<Vec<PathBuf>> {
-    if dirlist.index < 0 {
-        return None;
-    }
-
-    let selected: Vec<PathBuf> = dirlist
-        .contents
-        .iter()
-        .filter(|entry| entry.selected)
-        .map(|entry| entry.path.clone())
-        .collect();
-    if !selected.is_empty() {
-        Some(selected)
-    } else {
-        Some(vec![dirlist.contents[dirlist.index as usize].path.clone()])
+    match dirlist.index {
+        Some(index) => {
+            let selected: Vec<PathBuf> = dirlist
+                .contents
+                .iter()
+                .filter(|entry| entry.selected)
+                .map(|entry| entry.path.clone())
+                .collect();
+            if !selected.is_empty() {
+                Some(selected)
+            } else {
+                Some(vec![dirlist.contents[index].path.clone()])
+            }
+        }
+        None => None,
     }
 }
 

@@ -1,5 +1,6 @@
-use crate::commands::{CursorMove, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CursorMoveInc, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::window::JoshutoView;
 
 #[derive(Debug, Clone)]
 pub struct SelectFiles {
@@ -31,7 +32,7 @@ impl std::fmt::Display for SelectFiles {
 }
 
 impl JoshutoRunnable for SelectFiles {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
         if self.toggle && !self.all {
             let mut selected = false;
 
@@ -40,8 +41,7 @@ impl JoshutoRunnable for SelectFiles {
                 selected = true;
             }
             if selected {
-                let subcommand = CursorMove::new(1);
-                subcommand.execute(context);
+                CursorMoveInc::new(1).execute(context, view);
             }
         }
     }

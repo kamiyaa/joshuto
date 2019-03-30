@@ -78,7 +78,7 @@ impl std::fmt::Debug for JoshutoDirEntry {
 
 #[derive(Debug)]
 pub struct JoshutoDirList {
-    pub index: i32,
+    pub index: Option<usize>,
     pub path: PathBuf,
     pub update_needed: bool,
     pub metadata: JoshutoMetadata,
@@ -91,7 +91,7 @@ impl JoshutoDirList {
         let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
         contents.sort_by(&sort_type.compare_func());
 
-        let index = if !contents.is_empty() { 0 } else { -1 };
+        let index = if !contents.is_empty() { Some(0) } else { None };
 
         let metadata = fs::metadata(&path)?;
         let metadata = JoshutoMetadata::from(&metadata)?;
@@ -138,12 +138,9 @@ impl JoshutoDirList {
 
         let contents_len = contents.len() as i32;
         if contents_len == 0 {
-            self.index = -1;
-        } else if self.index >= contents_len {
-            self.index = contents_len - 1;
-        } else if self.index >= 0 && self.index < contents_len {
+            self.index = None;
         } else {
-            self.index = 0;
+            self.index = Some(0);
         }
 
         let metadata = std::fs::metadata(&self.path)?;
@@ -155,39 +152,39 @@ impl JoshutoDirList {
     }
 
     pub fn get_curr_ref(&self) -> Option<&JoshutoDirEntry> {
-        self.get_curr_ref_(self.index)
+        self.get_curr_ref_(self.index?)
     }
 
     pub fn get_curr_mut(&mut self) -> Option<&mut JoshutoDirEntry> {
-        let index = self.index;
-        self.get_curr_mut_(index)
+        self.get_curr_mut_(self.index?)
     }
 
-    fn get_curr_mut_(&mut self, index: i32) -> Option<&mut JoshutoDirEntry> {
-        if index >= 0 && (index as usize) < self.contents.len() {
-            Some(&mut self.contents[index as usize])
+    fn get_curr_mut_(&mut self, index: usize) -> Option<&mut JoshutoDirEntry> {
+        if index < self.contents.len() {
+            Some(&mut self.contents[index])
         } else {
             None
         }
     }
 
-    fn get_curr_ref_(&self, index: i32) -> Option<&JoshutoDirEntry> {
-        if index >= 0 && (index as usize) < self.contents.len() {
-            Some(&self.contents[index as usize])
+    fn get_curr_ref_(&self, index: usize) -> Option<&JoshutoDirEntry> {
+        if index < self.contents.len() {
+            Some(&self.contents[index])
         } else {
             None
         }
     }
 
     pub fn curr_toggle_select(&mut self) {
-        let index = self.index;
-        self.toggle_select(index);
+        if let Some(index) = self.index {
+            self.toggle_select(index);
+        }
     }
 
-    fn toggle_select(&mut self, index: i32) {
-        if index >= 0 && (index as usize) < self.contents.len() {
-            let tmp_bool = !self.contents[index as usize].selected;
-            self.contents[index as usize].selected = tmp_bool;
+    fn toggle_select(&mut self, index: usize) {
+        if index < self.contents.len() {
+            let tmp_bool = !self.contents[index].selected;
+            self.contents[index].selected = tmp_bool;
         }
     }
 }

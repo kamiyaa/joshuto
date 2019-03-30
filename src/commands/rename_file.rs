@@ -6,6 +6,7 @@ use crate::context::JoshutoContext;
 use crate::preview;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
+use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub enum RenameFileMethod {
@@ -31,6 +32,7 @@ impl RenameFile {
         &self,
         path: &path::PathBuf,
         context: &mut JoshutoContext,
+        view: &JoshutoView,
         start_str: String,
     ) {
         const PROMPT: &str = ":rename_file ";
@@ -62,7 +64,7 @@ impl RenameFile {
 
             new_path.push(s);
             if new_path.exists() {
-                ui::wprint_err(&context.views.bot_win, "Error: File with name exists");
+                ui::wprint_err(&view.bot_win, "Error: File with name exists");
                 return;
             }
             match fs::rename(&path, &new_path) {
@@ -71,15 +73,15 @@ impl RenameFile {
                     if let Some(ref mut s) = curr_tab.curr_list {
                         s.update_contents(&context.config_t.sort_type).unwrap();
                     }
-                    curr_tab.refresh_curr(&context.views.mid_win, context.config_t.scroll_offset);
+                    curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
                 }
                 Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
                 }
             }
         } else {
             let curr_tab = &context.tabs[context.curr_tab_index];
-            curr_tab.refresh_file_status(&context.views.bot_win);
+            curr_tab.refresh_file_status(&view.bot_win);
         }
     }
 }
@@ -93,7 +95,7 @@ impl std::fmt::Display for RenameFile {
 }
 
 impl JoshutoRunnable for RenameFile {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
         let mut path: Option<path::PathBuf> = None;
         let mut file_name: Option<String> = None;
 
@@ -106,10 +108,10 @@ impl JoshutoRunnable for RenameFile {
 
         if let Some(file_name) = file_name {
             if let Some(path) = path {
-                self.rename_file(&path, context, file_name);
+                self.rename_file(&path, context, view, file_name);
                 preview::preview_file(
                     &mut context.tabs[context.curr_tab_index],
-                    &context.views,
+                    view,
                     &context.config_t,
                 );
                 ncurses::doupdate();

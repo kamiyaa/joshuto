@@ -1,13 +1,11 @@
 use crate::commands::FileOperationThread;
 use crate::config;
 use crate::tab::JoshutoTab;
-use crate::window::JoshutoView;
 
 pub struct JoshutoContext {
     pub username: String,
     pub hostname: String,
     pub threads: Vec<FileOperationThread>,
-    pub views: JoshutoView,
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
     pub exit: bool,
@@ -20,13 +18,10 @@ impl JoshutoContext {
         let username: String = whoami::username();
         let hostname: String = whoami::hostname();
 
-        let views: JoshutoView = JoshutoView::new(config_t.column_ratio);
-
         JoshutoContext {
             username,
             hostname,
             threads: Vec::new(),
-            views,
             curr_tab_index: 0,
             tabs: Vec::new(),
             exit: false,

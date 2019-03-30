@@ -23,7 +23,7 @@ impl DirHistory {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.iter().enumerate() {
                             if dirent.path == ancestor {
-                                s.index = i as i32;
+                                s.index = Some(i);
                                 break;
                             }
                         }

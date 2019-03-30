@@ -4,6 +4,7 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
+use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub struct NewDirectory;
@@ -26,7 +27,7 @@ impl std::fmt::Display for NewDirectory {
 }
 
 impl JoshutoRunnable for NewDirectory {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
         let (term_rows, term_cols) = ui::getmaxyx();
         const PROMPT: &str = ":mkdir ";
 
@@ -47,10 +48,10 @@ impl JoshutoRunnable for NewDirectory {
 
             match std::fs::create_dir_all(&path) {
                 Ok(_) => {
-                    ReloadDirList::reload(context);
+                    ReloadDirList::reload(context, view);
                 }
                 Err(e) => {
-                    ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
                 }
             }
         }

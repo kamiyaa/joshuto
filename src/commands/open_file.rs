@@ -9,8 +9,9 @@ use crate::textfield::JoshutoTextField;
 use crate::ui;
 use crate::unix;
 use crate::window;
+use crate::window::JoshutoView;
 
-use crate::mimetype_t;
+use crate::MIMETYPE_T;
 
 #[derive(Clone, Debug)]
 pub struct OpenFile;
@@ -28,7 +29,7 @@ impl OpenFile {
 
         if let Some(file_ext) = path.extension() {
             if let Some(file_ext) = file_ext.to_str() {
-                if let Some(s) = mimetype_t.extension.get(file_ext) {
+                if let Some(s) = MIMETYPE_T.extension.get(file_ext) {
                     for option in s {
                         mimetype_options.push(&option);
                     }
@@ -37,7 +38,7 @@ impl OpenFile {
         }
         let detective = mime_detective::MimeDetective::new().unwrap();
         if let Ok(mime_type) = detective.detect_filepath(path) {
-            if let Some(s) = mimetype_t.mimetype.get(mime_type.type_().as_str()) {
+            if let Some(s) = MIMETYPE_T.mimetype.get(mime_type.type_().as_str()) {
                 for option in s {
                     mimetype_options.push(&option);
                 }
@@ -46,14 +47,11 @@ impl OpenFile {
         mimetype_options
     }
 
-    fn enter_directory(path: &Path, context: &mut JoshutoContext) {
+    fn open_directory(path: &Path, context: &mut JoshutoContext, view: &JoshutoView) {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
 
         if let Err(e) = env::set_current_dir(path) {
-            ui::wprint_err(
-                &context.views.bot_win,
-                format!("{}: {:?}", e, path).as_str(),
-            );
+            ui::wprint_err(&view.bot_win, format!("{}: {:?}", e, path).as_str());
             return;
         }
 
@@ -71,7 +69,7 @@ impl OpenFile {
         {
             Ok(s) => Some(s),
             Err(e) => {
-                ui::wprint_err(&context.views.left_win, e.to_string().as_str());
+                ui::wprint_err(&view.left_win, e.to_string().as_str());
                 None
             }
         };
@@ -80,7 +78,7 @@ impl OpenFile {
         match path.strip_prefix(curr_tab.curr_path.as_path()) {
             Ok(s) => curr_tab.curr_path.push(s),
             Err(e) => {
-                ui::wprint_err(&context.views.bot_win, e.to_string().as_str());
+                ui::wprint_err(&view.bot_win, e.to_string().as_str());
                 return;
             }
         }
@@ -111,7 +109,7 @@ impl std::fmt::Display for OpenFile {
 }
 
 impl JoshutoRunnable for OpenFile {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
         let mut path: Option<PathBuf> = None;
         if let Some(curr_list) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(entry) = curr_list.get_curr_ref() {
@@ -121,16 +119,16 @@ impl JoshutoRunnable for OpenFile {
             }
         }
         if let Some(path) = path {
-            Self::enter_directory(&path, context);
+            Self::open_directory(&path, context, view);
             {
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
                 curr_tab.refresh(
-                    &context.views,
+                    view,
                     &context.config_t,
                     &context.username,
                     &context.hostname,
                 );
-                preview::preview_file(curr_tab, &context.views, &context.config_t);
+                preview::preview_file(curr_tab, view, &context.config_t);
             }
         } else {
             let paths: Option<Vec<PathBuf>> =
@@ -142,10 +140,10 @@ impl JoshutoRunnable for OpenFile {
                 if !paths.is_empty() {
                     Self::open_file(&paths);
                 } else {
-                    ui::wprint_msg(&context.views.bot_win, "No files selected: 0");
+                    ui::wprint_msg(&view.bot_win, "No files selected: 0");
                 }
             } else {
-                ui::wprint_msg(&context.views.bot_win, "No files selected: None");
+                ui::wprint_msg(&view.bot_win, "No files selected: None");
             }
         }
         ncurses::doupdate();
@@ -236,7 +234,7 @@ impl std::fmt::Display for OpenFileWith {
 }
 
 impl JoshutoRunnable for OpenFileWith {
-    fn execute(&self, context: &mut JoshutoContext) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
         if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(paths) = commands::collect_selected_paths(s) {
                 Self::open_with(&paths);

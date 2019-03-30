@@ -1,6 +1,7 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::preview;
+use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub struct ReloadDirList;
@@ -13,11 +14,11 @@ impl ReloadDirList {
         "reload_dir_list"
     }
 
-    pub fn reload(context: &mut JoshutoContext) {
+    pub fn reload(context: &mut JoshutoContext, view: &JoshutoView) {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab.reload_contents(&context.config_t.sort_type);
         curr_tab.refresh(
-            &context.views,
+            view,
             &context.config_t,
             &context.username,
             &context.hostname,
@@ -34,11 +35,11 @@ impl std::fmt::Display for ReloadDirList {
 }
 
 impl JoshutoRunnable for ReloadDirList {
-    fn execute(&self, context: &mut JoshutoContext) {
-        Self::reload(context);
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+        Self::reload(context, view);
         preview::preview_file(
             &mut context.tabs[context.curr_tab_index],
-            &context.views,
+            view,
             &context.config_t,
         );
         ncurses::doupdate();
