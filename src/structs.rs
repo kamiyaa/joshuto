@@ -87,9 +87,9 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
-    pub fn new(path: PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error> {
-        let mut contents = Self::read_dir_list(path.as_path(), sort_type)?;
-        contents.sort_by(&sort_type.compare_func());
+    pub fn new(path: PathBuf, sort_option: &sort::SortOption) -> Result<Self, std::io::Error> {
+        let mut contents = Self::read_dir_list(path.as_path(), sort_option)?;
+        contents.sort_by(&sort_option.compare_func());
 
         let index = if !contents.is_empty() { Some(0) } else { None };
 
@@ -109,11 +109,15 @@ impl JoshutoDirList {
 
     fn read_dir_list(
         path: &Path,
-        sort_type: &sort::SortType,
+        sort_option: &sort::SortOption,
     ) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
-        let filter_func = sort_type.filter_func();
+
+        let filter_func = sort_option.filter_func();
         let results: fs::ReadDir = fs::read_dir(path)?;
-        let result_vec: Vec<JoshutoDirEntry> = results.filter_map(filter_func).collect();
+        let result_vec: Vec<JoshutoDirEntry> =
+                results.filter(filter_func)
+                       .filter_map(sort::map_entry_default)
+                       .collect();
         Ok(result_vec)
     }
 
@@ -129,11 +133,11 @@ impl JoshutoDirList {
         true
     }
 
-    pub fn update_contents(&mut self, sort_type: &sort::SortType) -> Result<(), std::io::Error> {
-        let sort_func = sort_type.compare_func();
+    pub fn update_contents(&mut self, sort_option: &sort::SortOption) -> Result<(), std::io::Error> {
+        let sort_func = sort_option.compare_func();
         self.update_needed = false;
 
-        let mut contents = Self::read_dir_list(&self.path, sort_type)?;
+        let mut contents = Self::read_dir_list(&self.path, sort_option)?;
         contents.sort_by(&sort_func);
 
         let contents_len = contents.len() as i32;

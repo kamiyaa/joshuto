@@ -14,12 +14,12 @@ impl ToggleHiddenFiles {
         "toggle_hidden"
     }
     pub fn toggle_hidden(context: &mut JoshutoContext) {
-        let opposite = !context.config_t.sort_type.show_hidden();
-        context.config_t.sort_type.set_show_hidden(opposite);
+        let opposite = !context.config_t.sort_option.show_hidden;
+        context.config_t.sort_option.show_hidden = opposite;
 
         for tab in &mut context.tabs {
             tab.history.depecrate_all_entries();
-            tab.reload_contents(&context.config_t.sort_type);
+            tab.reload_contents(&context.config_t.sort_option);
         }
     }
 }
@@ -36,7 +36,7 @@ impl JoshutoRunnable for ToggleHiddenFiles {
     fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
         Self::toggle_hidden(context);
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.reload_contents(&context.config_t.sort_type);
+        curr_tab.reload_contents(&context.config_t.sort_option);
         curr_tab.refresh(
             view,
             &context.config_t,

@@ -17,7 +17,7 @@ pub struct SortRawOption {
 pub struct JoshutoRawConfig {
     scroll_offset: Option<usize>,
     tilde_in_titlebar: Option<bool>,
-    sort_type: Option<String>,
+    sort_method: Option<String>,
     sort_option: Option<SortRawOption>,
     column_ratio: Option<[usize; 3]>,
 }
@@ -28,7 +28,7 @@ impl JoshutoRawConfig {
         JoshutoRawConfig {
             scroll_offset: None,
             tilde_in_titlebar: None,
-            sort_type: None,
+            sort_method: None,
             sort_option: None,
             column_ratio: None,
         }
@@ -44,6 +44,14 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 
         let scroll_offset: usize = self.scroll_offset.unwrap_or(6);
         let tilde_in_titlebar: bool = self.tilde_in_titlebar.unwrap_or(true);
+
+        let sort_method: sort::SortType = match self.sort_method {
+                Some(s) => match s.as_str() {
+                    "mtime" => sort::SortType::SortMtime,
+                    _ => sort::SortType::SortNatural,
+                },
+                _ => sort::SortType::SortNatural,
+            };
 
         let show_hidden: bool;
         let case_sensitive: bool;
@@ -66,26 +74,18 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
         }
 
         let sort_option = sort::SortOption {
-            show_hidden,
-            directories_first,
-            case_sensitive,
-            reverse,
-        };
-
-        let sort_type: sort::SortType = match self.sort_type {
-            Some(s) => match s.as_str() {
-                "natural" => sort::SortType::SortNatural(sort_option),
-                "mtime" => sort::SortType::SortMtime(sort_option),
-                _ => sort::SortType::SortNatural(sort_option),
-            },
-            _ => sort::SortType::SortNatural(sort_option),
-        };
+                show_hidden,
+                directories_first,
+                case_sensitive,
+                reverse,
+                sort_method,
+            };
 
         JoshutoConfig {
             scroll_offset,
             tilde_in_titlebar,
-            sort_type,
             column_ratio,
+            sort_option
         }
     }
 }
@@ -94,7 +94,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 pub struct JoshutoConfig {
     pub scroll_offset: usize,
     pub tilde_in_titlebar: bool,
-    pub sort_type: sort::SortType,
+    pub sort_option: sort::SortOption,
     pub column_ratio: (usize, usize, usize),
 }
 
@@ -105,13 +105,14 @@ impl JoshutoConfig {
             directories_first: true,
             case_sensitive: false,
             reverse: false,
+            sort_method: sort::SortType::SortNatural,
         };
-        let sort_type = sort::SortType::SortNatural(sort_option);
+
 
         JoshutoConfig {
             scroll_offset: 6,
             tilde_in_titlebar: true,
-            sort_type,
+            sort_option,
             column_ratio: (1, 3, 4),
         }
     }

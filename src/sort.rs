@@ -10,30 +10,23 @@ pub struct SortOption {
     pub directories_first: bool,
     pub case_sensitive: bool,
     pub reverse: bool,
+    pub sort_method: SortType,
 }
 
-#[derive(Debug, Clone)]
-pub enum SortType {
-    SortNatural(SortOption),
-    SortMtime(SortOption),
-}
-
-impl SortType {
-    pub fn compare_func(
-        &self,
-    ) -> fn(&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering {
-        match *self {
-            SortType::SortNatural(ref ss) => {
-                if ss.directories_first && !ss.case_sensitive && !ss.reverse {
+impl SortOption {
+    pub fn compare_func(&self) -> fn(&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering {
+        match self.sort_method {
+            SortType::SortNatural => {
+                if self.directories_first && !self.case_sensitive && !self.reverse {
                     SortNatural::dir_first_case_insensitive
-                } else if ss.directories_first && ss.case_sensitive && !ss.reverse {
+                } else if self.directories_first && self.case_sensitive && !self.reverse {
                     SortNatural::dir_first
                 } else {
                     SortNatural::default_sort
                 }
             }
-            SortType::SortMtime(ref ss) => {
-                if ss.directories_first && !ss.reverse {
+            SortType::SortMtime => {
+                if self.directories_first && !self.reverse {
                     SortMtime::dir_first
                 } else {
                     SortMtime::default_sort
@@ -42,47 +35,41 @@ impl SortType {
         }
     }
 
-    pub fn filter_func(
-        &self,
-    ) -> fn(Result<fs::DirEntry, std::io::Error>) -> Option<structs::JoshutoDirEntry> {
-        match *self {
-            SortType::SortNatural(ref ss) => {
-                if ss.show_hidden {
-                    filter_default
-                } else {
-                    filter_hidden_files
-                }
-            }
-            SortType::SortMtime(ref ss) => {
-                if ss.show_hidden {
-                    filter_default
-                } else {
-                    filter_hidden_files
-                }
-            }
+    pub fn filter_func(&self) -> fn(&Result<fs::DirEntry, std::io::Error>) -> bool {
+        if self.show_hidden {
+            no_filter
+        } else {
+            filter_hidden
         }
     }
+}
 
-    pub fn show_hidden(&self) -> bool {
-        match *self {
-            SortType::SortNatural(ref ss) => ss.show_hidden,
-            SortType::SortMtime(ref ss) => ss.show_hidden,
-        }
-    }
+#[derive(Debug, Clone)]
+pub enum SortType {
+    SortNatural,
+    SortMtime,
+}
 
-    pub fn set_show_hidden(&mut self, show_hidden: bool) {
-        match self {
-            SortType::SortNatural(ref mut ss) => {
-                ss.show_hidden = show_hidden;
-            }
-            SortType::SortMtime(ref mut ss) => {
-                ss.show_hidden = show_hidden;
+#[inline]
+fn no_filter(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
+    true
+}
+
+fn filter_hidden(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
+    match result {
+        Err(_) => false,
+        Ok(entry) => {
+            let file_name = entry.file_name();
+            if let Some(file_name) = file_name.to_str() {
+                !file_name.starts_with(".")
+            } else {
+                false
             }
         }
     }
 }
 
-fn filter_default(
+pub fn map_entry_default(
     result: Result<fs::DirEntry, std::io::Error>,
 ) -> Option<structs::JoshutoDirEntry> {
     match result {

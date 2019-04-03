@@ -61,7 +61,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
                     thread.handle.join().unwrap();
                     let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
                     if tab_src < context.tabs.len() {
-                        context.tabs[tab_src].reload_contents(&context.config_t.sort_type);
+                        context.tabs[tab_src].reload_contents(&context.config_t.sort_option);
                         if tab_src == context.curr_tab_index {
                             context.tabs[tab_src].refresh(
                                 view,
@@ -72,7 +72,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
                         }
                     }
                     if tab_dest != tab_src && tab_dest < context.tabs.len() {
-                        context.tabs[tab_dest].reload_contents(&context.config_t.sort_type);
+                        context.tabs[tab_dest].reload_contents(&context.config_t.sort_option);
                         if tab_dest == context.curr_tab_index {
                             context.tabs[tab_dest].refresh(
                                 view,
@@ -99,7 +99,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
                 thread.handle.join().unwrap();
                 if tab_src < context.tabs.len() {
                     let dirty_tab = &mut context.tabs[tab_src];
-                    dirty_tab.reload_contents(&context.config_t.sort_type);
+                    dirty_tab.reload_contents(&context.config_t.sort_option);
                     if tab_src == context.curr_tab_index {
                         dirty_tab.refresh(
                             view,
@@ -112,7 +112,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
                 }
                 if tab_dest != tab_src && tab_dest < context.tabs.len() {
                     let dirty_tab = &mut context.tabs[tab_dest];
-                    dirty_tab.reload_contents(&context.config_t.sort_type);
+                    dirty_tab.reload_contents(&context.config_t.sort_option);
                     if tab_src == context.curr_tab_index {
                         dirty_tab.refresh(
                             view,

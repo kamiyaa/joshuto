@@ -33,7 +33,7 @@ impl ParentDirectory {
                     Some(parent) => {
                         curr_tab.parent_list = match curr_tab
                             .history
-                            .pop_or_create(&parent, &context.config_t.sort_type)
+                            .pop_or_create(&parent, &context.config_t.sort_option)
                         {
                             Ok(s) => Some(s),
                             Err(e) => {

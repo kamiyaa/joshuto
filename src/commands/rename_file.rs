@@ -71,7 +71,7 @@ impl RenameFile {
                 Ok(_) => {
                     let curr_tab = &mut context.tabs[context.curr_tab_index];
                     if let Some(ref mut s) = curr_tab.curr_list {
-                        s.update_contents(&context.config_t.sort_type).unwrap();
+                        s.update_contents(&context.config_t.sort_option).unwrap();
                     }
                     curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
                 }

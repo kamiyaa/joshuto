@@ -27,7 +27,7 @@ impl NewTab {
             }
         };
 
-        match JoshutoTab::new(curr_path, &context.config_t.sort_type) {
+        match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
             Ok(tab) => {
                 context.tabs.push(tab);
                 context.curr_tab_index = context.tabs.len() - 1;

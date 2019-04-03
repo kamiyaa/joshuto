@@ -12,7 +12,7 @@ pub fn preview_file(curr_tab: &mut JoshutoTab, views: &JoshutoView, config_t: &J
             if entry.path.is_dir() {
                 match curr_tab
                     .history
-                    .get_mut_or_create(&entry.path, &config_t.sort_type)
+                    .get_mut_or_create(&entry.path, &config_t.sort_option)
                 {
                     Ok(dirlist) => {
                         views

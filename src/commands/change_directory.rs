@@ -47,11 +47,11 @@ impl ChangeDirectory {
 
         curr_tab
             .history
-            .populate_to_root(&curr_tab.curr_path, &context.config_t.sort_type);
+            .populate_to_root(&curr_tab.curr_path, &context.config_t.sort_option);
 
         curr_tab.curr_list = match curr_tab
             .history
-            .pop_or_create(&curr_tab.curr_path, &context.config_t.sort_type)
+            .pop_or_create(&curr_tab.curr_path, &context.config_t.sort_option)
         {
             Ok(s) => Some(s),
             Err(e) => {
@@ -63,7 +63,7 @@ impl ChangeDirectory {
         if let Some(parent) = curr_tab.curr_path.parent() {
             curr_tab.parent_list = match curr_tab
                 .history
-                .pop_or_create(&parent, &context.config_t.sort_type)
+                .pop_or_create(&parent, &context.config_t.sort_option)
             {
                 Ok(s) => Some(s),
                 Err(e) => {

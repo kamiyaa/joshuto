@@ -26,7 +26,7 @@ impl TabSwitch {
             Ok(_) => {
                 {
                     let curr_tab = &mut context.tabs[context.curr_tab_index];
-                    curr_tab.reload_contents(&context.config_t.sort_type);
+                    curr_tab.reload_contents(&context.config_t.sort_option);
                     curr_tab.refresh(
                         view,
                         &context.config_t,

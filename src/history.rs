@@ -15,11 +15,11 @@ impl DirHistory {
         }
     }
 
-    pub fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_type: &sort::SortType) {
+    pub fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) {
         let mut ancestors = pathbuf.ancestors();
         if let Some(mut ancestor) = ancestors.next() {
             for curr in ancestors {
-                match structs::JoshutoDirList::new(curr.to_path_buf().clone(), sort_type) {
+                match structs::JoshutoDirList::new(curr.to_path_buf().clone(), sort_option) {
                     Ok(mut s) => {
                         for (i, dirent) in s.contents.iter().enumerate() {
                             if dirent.path == ancestor {
@@ -39,18 +39,18 @@ impl DirHistory {
     pub fn pop_or_create(
         &mut self,
         path: &Path,
-        sort_type: &sort::SortType,
+        sort_option: &sort::SortOption,
     ) -> Result<structs::JoshutoDirList, std::io::Error> {
         match self.map.remove(&path.to_path_buf()) {
             Some(mut dir_entry) => {
                 if dir_entry.need_update() {
-                    dir_entry.update_contents(&sort_type)?
+                    dir_entry.update_contents(&sort_option)?
                 }
                 Ok(dir_entry)
             }
             None => {
                 let path_clone = path.to_path_buf();
-                structs::JoshutoDirList::new(path_clone, &sort_type)
+                structs::JoshutoDirList::new(path_clone, &sort_option)
             }
         }
     }
@@ -58,18 +58,18 @@ impl DirHistory {
     pub fn get_mut_or_create(
         &mut self,
         path: &Path,
-        sort_type: &sort::SortType,
+        sort_option: &sort::SortOption,
     ) -> Result<&mut structs::JoshutoDirList, std::io::Error> {
         let pathbuf = path.to_path_buf();
         match self.map.entry(pathbuf.clone()) {
             Entry::Occupied(mut entry) => {
                 let dir_entry = entry.get_mut();
                 if dir_entry.need_update() {
-                    dir_entry.update_contents(&sort_type).unwrap();
+                    dir_entry.update_contents(&sort_option).unwrap();
                 }
             }
             Entry::Vacant(entry) => {
-                let s = structs::JoshutoDirList::new(path.to_path_buf(), &sort_type)?;
+                let s = structs::JoshutoDirList::new(path.to_path_buf(), &sort_option)?;
                 entry.insert(s);
             }
         };

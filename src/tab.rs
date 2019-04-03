@@ -17,34 +17,31 @@ pub struct JoshutoTab {
 }
 
 impl JoshutoTab {
-    pub fn new(curr_path: PathBuf, sort_type: &sort::SortType) -> Result<Self, std::io::Error> {
+    pub fn new(curr_path: PathBuf, sort_option: &sort::SortOption) -> Result<Self, std::io::Error> {
         let mut history = history::DirHistory::new();
-        history.populate_to_root(&curr_path, sort_type);
+        history.populate_to_root(&curr_path, sort_option);
 
-        let curr_list: JoshutoDirList = history.pop_or_create(&curr_path, sort_type)?;
+        let curr_list: Option<JoshutoDirList> = Some(history.pop_or_create(&curr_path, sort_option)?);
 
         let parent_list: Option<JoshutoDirList> = match curr_path.parent() {
-            Some(parent) => {
-                let tmp_list = history.pop_or_create(&parent, sort_type)?;
-                Some(tmp_list)
-            }
+            Some(parent) => Some(history.pop_or_create(&parent, sort_option)?),
             None => None,
         };
 
         let tab = JoshutoTab {
             curr_path,
             history,
-            curr_list: Some(curr_list),
+            curr_list,
             parent_list,
         };
         Ok(tab)
     }
 
-    pub fn reload_contents(&mut self, sort_type: &sort::SortType) {
+    pub fn reload_contents(&mut self, sort_option: &sort::SortOption) {
         let mut list = self.curr_list.take();
         if let Some(ref mut s) = list {
             if s.path.exists() {
-                s.update_contents(sort_type).unwrap();
+                s.update_contents(sort_option).unwrap();
             }
         };
         self.curr_list = list;
@@ -52,7 +49,7 @@ impl JoshutoTab {
         list = self.parent_list.take();
         if let Some(ref mut s) = list {
             if s.path.exists() {
-                s.update_contents(sort_type).unwrap();
+                s.update_contents(sort_option).unwrap();
             }
         };
         self.parent_list = list;

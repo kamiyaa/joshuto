@@ -65,7 +65,7 @@ impl OpenFile {
 
         curr_tab.curr_list = match curr_tab
             .history
-            .pop_or_create(&path, &context.config_t.sort_type)
+            .pop_or_create(&path, &context.config_t.sort_option)
         {
             Ok(s) => Some(s),
             Err(e) => {
