@@ -14,7 +14,9 @@ pub struct SortOption {
 }
 
 impl SortOption {
-    pub fn compare_func(&self) -> fn(&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering {
+    pub fn compare_func(
+        &self,
+    ) -> fn(&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering {
         match self.sort_method {
             SortType::SortNatural => {
                 if self.directories_first && !self.case_sensitive && !self.reverse {
@@ -51,7 +53,7 @@ pub enum SortType {
 }
 
 #[inline]
-fn no_filter(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
+fn no_filter(_: &Result<fs::DirEntry, std::io::Error>) -> bool {
     true
 }
 
@@ -75,27 +77,6 @@ pub fn map_entry_default(
     match result {
         Ok(direntry) => match structs::JoshutoDirEntry::from(&direntry) {
             Ok(s) => Some(s),
-            Err(_) => None,
-        },
-        Err(_) => None,
-    }
-}
-
-fn filter_hidden_files(
-    result: Result<fs::DirEntry, std::io::Error>,
-) -> Option<structs::JoshutoDirEntry> {
-    match result {
-        Ok(direntry) => match direntry.file_name().into_string() {
-            Ok(file_name) => {
-                if file_name.starts_with('.') {
-                    None
-                } else {
-                    match structs::JoshutoDirEntry::from(&direntry) {
-                        Ok(s) => Some(s),
-                        Err(_) => None,
-                    }
-                }
-            }
             Err(_) => None,
         },
         Err(_) => None,

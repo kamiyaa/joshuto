@@ -21,7 +21,8 @@ impl JoshutoTab {
         let mut history = history::DirHistory::new();
         history.populate_to_root(&curr_path, sort_option);
 
-        let curr_list: Option<JoshutoDirList> = Some(history.pop_or_create(&curr_path, sort_option)?);
+        let curr_list: Option<JoshutoDirList> =
+            Some(history.pop_or_create(&curr_path, sort_option)?);
 
         let parent_list: Option<JoshutoDirList> = match curr_path.parent() {
             Some(parent) => Some(history.pop_or_create(&parent, sort_option)?),

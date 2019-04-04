@@ -70,7 +70,7 @@ fn insert_keycommand(
     if keys.len() == 1 {
         if let Some(s) = key_to_i32(&keys[0]) {
             match map.entry(s) {
-                hash_map::Entry::Occupied(entry) => {
+                hash_map::Entry::Occupied(_) => {
                     eprintln!("Error: Keybindings ambiguous");
                     exit(1);
                 }

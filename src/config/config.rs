@@ -46,12 +46,12 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
         let tilde_in_titlebar: bool = self.tilde_in_titlebar.unwrap_or(true);
 
         let sort_method: sort::SortType = match self.sort_method {
-                Some(s) => match s.as_str() {
-                    "mtime" => sort::SortType::SortMtime,
-                    _ => sort::SortType::SortNatural,
-                },
+            Some(s) => match s.as_str() {
+                "mtime" => sort::SortType::SortMtime,
                 _ => sort::SortType::SortNatural,
-            };
+            },
+            _ => sort::SortType::SortNatural,
+        };
 
         let show_hidden: bool;
         let case_sensitive: bool;
@@ -74,18 +74,18 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
         }
 
         let sort_option = sort::SortOption {
-                show_hidden,
-                directories_first,
-                case_sensitive,
-                reverse,
-                sort_method,
-            };
+            show_hidden,
+            directories_first,
+            case_sensitive,
+            reverse,
+            sort_method,
+        };
 
         JoshutoConfig {
             scroll_offset,
             tilde_in_titlebar,
             column_ratio,
-            sort_option
+            sort_option,
         }
     }
 }
@@ -107,7 +107,6 @@ impl JoshutoConfig {
             reverse: false,
             sort_method: sort::SortType::SortNatural,
         };
-
 
         JoshutoConfig {
             scroll_offset: 6,

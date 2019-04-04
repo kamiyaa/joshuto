@@ -1,12 +1,11 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::preview;
 use crate::window::JoshutoView;
 
-pub mod CursorMove {
-    use crate::context::JoshutoContext;
-    use crate::preview;
-    use crate::window::JoshutoView;
+pub struct CursorMove;
 
+impl CursorMove {
     pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &JoshutoView) {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
 

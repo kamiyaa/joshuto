@@ -111,13 +111,12 @@ impl JoshutoDirList {
         path: &Path,
         sort_option: &sort::SortOption,
     ) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
-
         let filter_func = sort_option.filter_func();
         let results: fs::ReadDir = fs::read_dir(path)?;
-        let result_vec: Vec<JoshutoDirEntry> =
-                results.filter(filter_func)
-                       .filter_map(sort::map_entry_default)
-                       .collect();
+        let result_vec: Vec<JoshutoDirEntry> = results
+            .filter(filter_func)
+            .filter_map(sort::map_entry_default)
+            .collect();
         Ok(result_vec)
     }
 
@@ -133,24 +132,35 @@ impl JoshutoDirList {
         true
     }
 
-    pub fn update_contents(&mut self, sort_option: &sort::SortOption) -> Result<(), std::io::Error> {
+    pub fn update_contents(
+        &mut self,
+        sort_option: &sort::SortOption,
+    ) -> Result<(), std::io::Error> {
         let sort_func = sort_option.compare_func();
         self.update_needed = false;
 
         let mut contents = Self::read_dir_list(&self.path, sort_option)?;
         contents.sort_by(&sort_func);
 
-        let contents_len = contents.len() as i32;
+        let contents_len = contents.len();
         if contents_len == 0 {
             self.index = None;
         } else {
-            self.index = Some(0);
+            self.index = match self.index {
+                Some(index) => {
+                    if index >= contents_len {
+                        Some(contents_len - 1)
+                    } else {
+                        self.index
+                    }
+                }
+                None => Some(0),
+            };
         }
 
         let metadata = std::fs::metadata(&self.path)?;
         let metadata = JoshutoMetadata::from(&metadata)?;
         self.metadata = metadata;
-
         self.contents = contents;
         Ok(())
     }
