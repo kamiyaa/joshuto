@@ -4,6 +4,7 @@ use std::path;
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
 use crate::config::keymap;
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::preview;
 use crate::ui;
 use crate::window::JoshutoView;
@@ -42,7 +43,11 @@ impl std::fmt::Display for DeleteFiles {
 }
 
 impl JoshutoRunnable for DeleteFiles {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         ui::wprint_msg(&view.bot_win, "Delete selected files? (Y/n)");
         ncurses::timeout(-1);
         ncurses::doupdate();
@@ -54,9 +59,7 @@ impl JoshutoRunnable for DeleteFiles {
                     match Self::remove_files(paths) {
                         Ok(_) => ui::wprint_msg(&view.bot_win, "Deleted files"),
                         Err(e) => {
-                            ui::wprint_err(&view.bot_win, e.to_string().as_str());
-                            ncurses::doupdate();
-                            return;
+                            return Err(JoshutoError::IO(e));
                         }
                     }
                 }
@@ -83,5 +86,6 @@ impl JoshutoRunnable for DeleteFiles {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         preview::preview_file(curr_tab, &view, &context.config_t);
         ncurses::doupdate();
+        Ok(())
     }
 }

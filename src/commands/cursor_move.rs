@@ -1,5 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::preview;
 use crate::window::JoshutoView;
 
@@ -60,7 +61,11 @@ impl std::fmt::Display for CursorMoveInc {
 }
 
 impl JoshutoRunnable for CursorMoveInc {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let mut movement: Option<usize> = None;
         {
             let curr_tab = context.curr_tab_mut();
@@ -69,8 +74,9 @@ impl JoshutoRunnable for CursorMoveInc {
             }
         }
         if let Some(s) = movement {
-            CursorMove::cursor_move(s, context, view);
+            CursorMove::cursor_move(s, context, view)
         }
+        Ok(())
     }
 }
 
@@ -97,7 +103,11 @@ impl std::fmt::Display for CursorMoveDec {
 }
 
 impl JoshutoRunnable for CursorMoveDec {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let mut movement: Option<usize> = None;
         {
             let curr_tab = context.curr_tab_mut();
@@ -114,6 +124,7 @@ impl JoshutoRunnable for CursorMoveDec {
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
         }
+        Ok(())
     }
 }
 
@@ -138,7 +149,11 @@ impl std::fmt::Display for CursorMovePageUp {
 }
 
 impl JoshutoRunnable for CursorMovePageUp {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
             let curr_tab = context.curr_tab_mut();
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
@@ -154,6 +169,7 @@ impl JoshutoRunnable for CursorMovePageUp {
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
         }
+        Ok(())
     }
 }
 
@@ -178,7 +194,11 @@ impl std::fmt::Display for CursorMovePageDown {
 }
 
 impl JoshutoRunnable for CursorMovePageDown {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
@@ -199,6 +219,7 @@ impl JoshutoRunnable for CursorMovePageDown {
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
         }
+        Ok(())
     }
 }
 
@@ -223,7 +244,11 @@ impl std::fmt::Display for CursorMoveHome {
 }
 
 impl JoshutoRunnable for CursorMoveHome {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
             let curr_tab = context.curr_tab_mut();
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
@@ -240,6 +265,7 @@ impl JoshutoRunnable for CursorMoveHome {
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
         }
+        Ok(())
     }
 }
 
@@ -264,7 +290,11 @@ impl std::fmt::Display for CursorMoveEnd {
 }
 
 impl JoshutoRunnable for CursorMoveEnd {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
             let curr_tab = context.curr_tab_mut();
             if let Some(curr_list) = curr_tab.curr_list.as_ref() {
@@ -278,5 +308,6 @@ impl JoshutoRunnable for CursorMoveEnd {
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
         }
+        Ok(())
     }
 }

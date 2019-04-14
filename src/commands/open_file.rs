@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype;
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::preview;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
@@ -109,7 +110,11 @@ impl std::fmt::Display for OpenFile {
 }
 
 impl JoshutoRunnable for OpenFile {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let mut path: Option<PathBuf> = None;
         if let Some(curr_list) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(entry) = curr_list.get_curr_ref() {
@@ -137,16 +142,14 @@ impl JoshutoRunnable for OpenFile {
                     None => None,
                 };
             if let Some(paths) = paths {
-                if !paths.is_empty() {
-                    Self::open_file(&paths);
-                } else {
-                    ui::wprint_msg(&view.bot_win, "No files selected: 0");
-                }
+                Self::open_file(&paths);
             } else {
-                ui::wprint_msg(&view.bot_win, "No files selected: None");
+                let err = std::io::Error::new(std::io::ErrorKind::NotFound, "No files selected");
+                return Err(JoshutoError::IO(err));
             }
         }
         ncurses::doupdate();
+        Ok(())
     }
 }
 
@@ -234,11 +237,12 @@ impl std::fmt::Display for OpenFileWith {
 }
 
 impl JoshutoRunnable for OpenFileWith {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
             if let Some(paths) = commands::collect_selected_paths(s) {
                 Self::open_with(&paths);
             }
         }
+        Ok(())
     }
 }

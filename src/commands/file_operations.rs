@@ -6,19 +6,31 @@ use std::time;
 
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::structs::JoshutoDirList;
 use crate::window::JoshutoView;
 
 lazy_static! {
-    static ref SELECTED_FILES: Mutex<Vec<path::PathBuf>> = Mutex::new(vec![]);
+    static ref SELECTED_FILES: Mutex<Option<Vec<path::PathBuf>>> = Mutex::new(None);
     static ref FILE_OPERATION: Mutex<FileOp> = Mutex::new(FileOp::Copy);
     static ref TAB_SRC: atomic::AtomicUsize = atomic::AtomicUsize::new(0);
+}
+
+enum FileOp {
+    Cut,
+    Copy,
+}
+
+#[derive(Clone, Debug)]
+pub struct CopyOptions {
+    pub overwrite: bool,
+    pub skip_exist: bool,
 }
 
 pub struct FileOperationThread {
     pub tab_src: usize,
     pub tab_dest: usize,
-    pub handle: thread::JoinHandle<i32>,
+    pub handle: thread::JoinHandle<Result<(), std::io::Error>>,
     pub recv: mpsc::Receiver<ProgressInfo>,
 }
 
@@ -41,23 +53,14 @@ fn set_tab_src(tab_index: usize) {
 }
 
 fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
-    if let Some(contents) = commands::collect_selected_paths(dirlist) {
-        let mut data = SELECTED_FILES.lock().unwrap();
-        *data = contents;
-        return true;
+    match commands::collect_selected_paths(dirlist) {
+        Some(s) => {
+            let mut data = SELECTED_FILES.lock().unwrap();
+            *data = Some(s);
+            true
+        }
+        None => false,
     }
-    false
-}
-
-enum FileOp {
-    Cut,
-    Copy,
-}
-
-#[derive(Clone, Debug)]
-pub struct CopyOptions {
-    pub overwrite: bool,
-    pub skip_exist: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -81,7 +84,7 @@ impl std::fmt::Display for CutFiles {
 }
 
 impl JoshutoRunnable for CutFiles {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_tab = context.curr_tab_ref();
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
@@ -89,6 +92,7 @@ impl JoshutoRunnable for CutFiles {
                 set_tab_src(context.curr_tab_index);
             }
         }
+        Ok(())
     }
 }
 
@@ -113,7 +117,7 @@ impl std::fmt::Display for CopyFiles {
 }
 
 impl JoshutoRunnable for CopyFiles {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_tab = context.curr_tab_ref();
         if let Some(s) = curr_tab.curr_list.as_ref() {
             if repopulated_selected_files(s) {
@@ -121,183 +125,12 @@ impl JoshutoRunnable for CopyFiles {
                 set_tab_src(context.curr_tab_index);
             }
         }
+        Ok(())
     }
 }
 
 pub struct PasteFiles {
     options: fs_extra::dir::CopyOptions,
-}
-
-impl PasteFiles {
-    pub fn new(options: fs_extra::dir::CopyOptions) -> Self {
-        PasteFiles { options }
-    }
-    pub const fn command() -> &'static str {
-        "paste_files"
-    }
-
-    #[cfg(target_os = "linux")]
-    fn cut(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
-        use std::os::linux::fs::MetadataExt;
-
-        let tab_dest = context.curr_tab_index;
-        let tab_src_index = TAB_SRC.load(atomic::Ordering::SeqCst);
-
-        let options = self.options.clone();
-        let mut destination = context.tabs[tab_dest].curr_path.clone();
-
-        let dest_ino = destination.metadata()?.st_dev();
-        let path_ino;
-        {
-            let paths = SELECTED_FILES.lock().unwrap();
-            if paths.len() == 0 {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "no files selected",
-                ));
-            }
-            path_ino = paths[0].metadata()?.st_dev();
-        }
-
-        let (tx, rx) = mpsc::channel();
-        let handle = if dest_ino == path_ino {
-            thread::spawn(move || {
-                let mut paths = SELECTED_FILES.lock().unwrap();
-                let mut progress_info = ProgressInfo {
-                    bytes_finished: 1,
-                    total_bytes: paths.len() as u64 + 1,
-                };
-
-                for path in (*paths).iter() {
-                    let file_name = path.file_name().unwrap().to_os_string();
-
-                    destination.push(file_name.clone());
-
-                    if destination.exists() {
-                        if !options.skip_exist {
-                            for i in 0.. {
-                                if !destination.exists() {
-                                    break;
-                                }
-                                destination.pop();
-                                let mut file_name = file_name.clone();
-                                file_name.push(&format!("_{}", i));
-                                destination.push(file_name);
-                            }
-                            std::fs::rename(&path, &destination);
-                        }
-                    } else {
-                        std::fs::rename(&path, &destination);
-                    }
-                    destination.pop();
-                    progress_info.bytes_finished += 1;
-                    tx.send(progress_info.clone()).unwrap();
-                }
-                paths.clear();
-                0
-            })
-        } else {
-            thread::spawn(move || {
-                let mut paths = SELECTED_FILES.lock().unwrap();
-
-                let handle = |process_info: fs_extra::TransitProcess| {
-                    let progress_info = ProgressInfo {
-                        bytes_finished: process_info.copied_bytes,
-                        total_bytes: process_info.total_bytes,
-                    };
-                    tx.send(progress_info).unwrap();
-                    fs_extra::dir::TransitProcessResult::ContinueOrAbort
-                };
-
-                fs_extra::move_items_with_progress(&paths, &destination, &options, handle).unwrap();
-                paths.clear();
-                0
-            })
-        };
-        let thread = FileOperationThread {
-            tab_src: tab_src_index,
-            tab_dest,
-            handle,
-            recv: rx,
-        };
-        Ok(thread)
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    fn cut(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
-        let tab_dest = context.curr_tab_index;
-        let tab_src_index = TAB_SRC.load(atomic::Ordering::SeqCst);
-
-        let mut destination = context.tabs[tab_dest].curr_path.clone();
-        let options = self.options.clone();
-
-        {
-            let paths = SELECTED_FILES.lock().unwrap();
-            if paths.len() == 0 {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "no files selected",
-                ));
-            }
-        }
-        let (tx, rx) = mpsc::channel();
-
-        let handle = thread::spawn(move || {
-            let mut paths = SELECTED_FILES.lock().unwrap();
-
-            let handle = |process_info: fs_extra::TransitProcess| {
-                let progress_info = ProgressInfo {
-                    bytes_finished: process_info.copied_bytes,
-                    total_bytes: process_info.total_bytes,
-                };
-                tx.send(progress_info).unwrap();
-                fs_extra::dir::TransitProcessResult::ContinueOrAbort
-            };
-
-            fs_extra::move_items_with_progress(&paths, &destination, &options, handle).unwrap();
-            paths.clear();
-            0
-        });
-        let thread = FileOperationThread {
-            tab_src: tab_src_index,
-            tab_dest,
-            handle,
-            recv: rx,
-        };
-        Ok(thread)
-    }
-
-    fn copy(&self, context: &mut JoshutoContext) -> Result<FileOperationThread, std::io::Error> {
-        let tab_dest = context.curr_tab_index;
-        let tab_src_index = TAB_SRC.load(atomic::Ordering::SeqCst);
-
-        let destination = context.tabs[tab_dest].curr_path.clone();
-        let options = self.options.clone();
-
-        let (tx, rx) = mpsc::channel();
-
-        let handle = thread::spawn(move || {
-            let paths = SELECTED_FILES.lock().unwrap();
-
-            let handle = |process_info: fs_extra::TransitProcess| {
-                let progress_info = ProgressInfo {
-                    bytes_finished: process_info.copied_bytes,
-                    total_bytes: process_info.total_bytes,
-                };
-                tx.send(progress_info).unwrap();
-                fs_extra::dir::TransitProcessResult::ContinueOrAbort
-            };
-            fs_extra::copy_items_with_progress(&paths, &destination, &options, handle);
-            0
-        });
-        let thread = FileOperationThread {
-            tab_src: tab_src_index,
-            tab_dest,
-            handle,
-            recv: rx,
-        };
-        Ok(thread)
-    }
 }
 
 impl JoshutoCommand for PasteFiles {}
@@ -321,17 +154,164 @@ impl std::fmt::Debug for PasteFiles {
 }
 
 impl JoshutoRunnable for PasteFiles {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let file_operation = FILE_OPERATION.lock().unwrap();
 
         let thread = match *file_operation {
-            FileOp::Copy => self.copy(context),
-            FileOp::Cut => self.cut(context),
+            FileOp::Copy => self.copy_paste(context),
+            FileOp::Cut => self.cut_paste(context),
         };
 
         if let Ok(s) = thread {
             ncurses::timeout(-1);
             context.threads.push(s);
         }
+        Ok(())
+    }
+}
+
+impl PasteFiles {
+    pub fn new(options: fs_extra::dir::CopyOptions) -> Self {
+        PasteFiles { options }
+    }
+    pub const fn command() -> &'static str {
+        "paste_files"
+    }
+
+    fn same_fs_cut(
+        &self,
+        context: &mut JoshutoContext,
+    ) -> Result<FileOperationThread, std::io::Error> {
+        let options = self.options.clone();
+
+        let (tx, rx) = mpsc::channel();
+
+        let tab_dest = context.curr_tab_index;
+        let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
+        let mut destination = context.tabs[tab_dest].curr_path.clone();
+
+        let handle = thread::spawn(move || {
+            let paths: Option<Vec<path::PathBuf>> = SELECTED_FILES.lock().unwrap().take();
+            match paths {
+                None => {}
+                Some(s) => {
+                    let mut progress_info = ProgressInfo {
+                        bytes_finished: 1,
+                        total_bytes: s.len() as u64 + 1,
+                    };
+
+                    for path in &s {
+                        let file_name = path.file_name().unwrap().to_os_string();
+
+                        destination.push(file_name.clone());
+                        if destination.exists() {
+                            if !options.skip_exist {
+                                for i in 0.. {
+                                    if !destination.exists() {
+                                        break;
+                                    }
+                                    destination.pop();
+                                    let mut file_name = file_name.clone();
+                                    file_name.push(&format!("_{}", i));
+                                    destination.push(file_name);
+                                }
+                            }
+                        }
+                        std::fs::rename(&path, &destination)?;
+                        destination.pop();
+
+                        progress_info.bytes_finished += 1;
+                        tx.send(progress_info.clone()).unwrap();
+                    }
+                }
+            }
+            return Ok(());
+        });
+
+        let thread = FileOperationThread {
+            tab_src,
+            tab_dest,
+            handle,
+            recv: rx,
+        };
+        Ok(thread)
+    }
+
+    #[cfg(target_os = "linux")]
+    fn cut_paste(
+        &self,
+        context: &mut JoshutoContext,
+    ) -> Result<FileOperationThread, std::io::Error> {
+        use std::os::linux::fs::MetadataExt;
+
+        let src_ino;
+        {
+            let paths = SELECTED_FILES.lock().unwrap();
+            match *paths {
+                Some(ref s) => {
+                    if s.len() == 0 {
+                        return Err(std::io::Error::new(
+                            std::io::ErrorKind::Other,
+                            "no files selected",
+                        ));
+                    }
+                    src_ino = s[0].metadata()?.st_dev();
+                }
+                None => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        "no files selected",
+                    ));
+                }
+            }
+        }
+
+        let tab_dest = context.curr_tab_index;
+        let destination = &context.tabs[tab_dest].curr_path;
+
+        let dest_ino = destination.metadata()?.st_dev();
+        if dest_ino == src_ino {
+            self.same_fs_cut(context)
+        } else {
+            self.same_fs_cut(context)
+        }
+    }
+
+    fn copy_paste(
+        &self,
+        context: &mut JoshutoContext,
+    ) -> Result<FileOperationThread, std::io::Error> {
+        let tab_dest = context.curr_tab_index;
+        let destination = context.tabs[tab_dest].curr_path.clone();
+
+        let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
+        let options = self.options.clone();
+
+        let (tx, rx) = mpsc::channel();
+
+        let handle = thread::spawn(move || {
+            let paths = SELECTED_FILES.lock().unwrap();
+            match *paths {
+                Some(ref s) => {
+                    let progress_info = ProgressInfo {
+                        bytes_finished: 0,
+                        total_bytes: 0,
+                    };
+                    match tx.send(progress_info) {
+                        Ok(_) => {}
+                        Err(e) => {}
+                    }
+                    return Ok(());
+                }
+                None => return Ok(()),
+            }
+        });
+        let thread = FileOperationThread {
+            tab_src,
+            tab_dest,
+            handle,
+            recv: rx,
+        };
+        Ok(thread)
     }
 }

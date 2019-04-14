@@ -3,6 +3,7 @@ use std::sync::Mutex;
 
 use crate::commands::{CursorMove, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
@@ -73,11 +74,14 @@ impl std::fmt::Display for Search {
 }
 
 impl JoshutoRunnable for Search {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         const PROMPT: &str = ":search ";
         let (term_rows, term_cols) = ui::getmaxyx();
-        let user_input: Option<String>;
-        {
+        let user_input: Option<String> = {
             let textfield = JoshutoTextField::new(
                 1,
                 term_cols,
@@ -85,8 +89,8 @@ impl JoshutoRunnable for Search {
                 PROMPT.to_string(),
             );
 
-            user_input = textfield.readline_with_initial("", "");
-        }
+            textfield.readline_with_initial("", "")
+        };
         ncurses::doupdate();
 
         if let Some(user_input) = user_input {
@@ -100,6 +104,7 @@ impl JoshutoRunnable for Search {
             *data = Some(user_input);
             ncurses::doupdate();
         }
+        Ok(())
     }
 }
 
@@ -139,8 +144,13 @@ impl std::fmt::Display for SearchNext {
 }
 
 impl JoshutoRunnable for SearchNext {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         search_with_func(context, view, Search::search);
+        Ok(())
     }
 }
 
@@ -165,7 +175,12 @@ impl std::fmt::Display for SearchPrev {
 }
 
 impl JoshutoRunnable for SearchPrev {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         search_with_func(context, view, Search::search_rev);
+        Ok(())
     }
 }

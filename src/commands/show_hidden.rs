@@ -1,5 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::preview;
 use crate::window::JoshutoView;
 
@@ -33,7 +34,11 @@ impl std::fmt::Display for ToggleHiddenFiles {
 }
 
 impl JoshutoRunnable for ToggleHiddenFiles {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         Self::toggle_hidden(context);
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab.reload_contents(&context.config_t.sort_option);
@@ -49,5 +54,6 @@ impl JoshutoRunnable for ToggleHiddenFiles {
             &context.config_t,
         );
         ncurses::doupdate();
+        Ok(())
     }
 }

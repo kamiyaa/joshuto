@@ -1,5 +1,6 @@
 use crate::commands::{CursorMoveInc, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::window::JoshutoView;
 
 #[derive(Debug, Clone)]
@@ -32,7 +33,11 @@ impl std::fmt::Display for SelectFiles {
 }
 
 impl JoshutoRunnable for SelectFiles {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         if self.toggle && !self.all {
             let mut selected = false;
 
@@ -41,8 +46,12 @@ impl JoshutoRunnable for SelectFiles {
                 selected = true;
             }
             if selected {
-                CursorMoveInc::new(1).execute(context, view);
+                CursorMoveInc::new(1).execute(context, view)
+            } else {
+                Ok(())
             }
+        } else {
+            Ok(())
         }
     }
 }

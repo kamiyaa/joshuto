@@ -3,6 +3,7 @@ use std::path;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::preview;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
@@ -34,11 +35,10 @@ impl RenameFile {
         context: &mut JoshutoContext,
         view: &JoshutoView,
         start_str: String,
-    ) {
+    ) -> Result<(), JoshutoError> {
         const PROMPT: &str = ":rename_file ";
         let (term_rows, term_cols) = ui::getmaxyx();
-        let user_input: Option<String>;
-        {
+        let user_input: Option<String> = {
             let textfield = JoshutoTextField::new(
                 1,
                 term_cols,
@@ -46,7 +46,7 @@ impl RenameFile {
                 PROMPT.to_string(),
             );
 
-            user_input = match self.method {
+            match self.method {
                 RenameFileMethod::Append => {
                     if let Some(ext) = start_str.rfind('.') {
                         textfield.readline_with_initial(&start_str[0..ext], &start_str[ext..])
@@ -56,16 +56,19 @@ impl RenameFile {
                 }
                 RenameFileMethod::Prepend => textfield.readline_with_initial("", &start_str),
                 RenameFileMethod::Overwrite => textfield.readline_with_initial("", ""),
-            };
-        }
+            }
+        };
 
         if let Some(s) = user_input {
             let mut new_path = path.parent().unwrap().to_path_buf();
 
             new_path.push(s);
             if new_path.exists() {
-                ui::wprint_err(&view.bot_win, "Error: File with name exists");
-                return;
+                let err = std::io::Error::new(
+                    std::io::ErrorKind::AlreadyExists,
+                    "Filename already exists",
+                );
+                return Err(JoshutoError::IO(err));
             }
             match fs::rename(&path, &new_path) {
                 Ok(_) => {
@@ -76,13 +79,14 @@ impl RenameFile {
                     curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
                 }
                 Err(e) => {
-                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
+                    return Err(JoshutoError::IO(e));
                 }
             }
         } else {
             let curr_tab = &context.tabs[context.curr_tab_index];
             curr_tab.refresh_file_status(&view.bot_win);
         }
+        Ok(())
     }
 }
 
@@ -95,7 +99,11 @@ impl std::fmt::Display for RenameFile {
 }
 
 impl JoshutoRunnable for RenameFile {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let mut path: Option<path::PathBuf> = None;
         let mut file_name: Option<String> = None;
 
@@ -108,14 +116,16 @@ impl JoshutoRunnable for RenameFile {
 
         if let Some(file_name) = file_name {
             if let Some(path) = path {
-                self.rename_file(&path, context, view, file_name);
+                let res = self.rename_file(&path, context, view, file_name);
                 preview::preview_file(
                     &mut context.tabs[context.curr_tab_index],
                     view,
                     &context.config_t,
                 );
                 ncurses::doupdate();
+                return res;
             }
         }
+        return Ok(());
     }
 }

@@ -1,6 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::ui;
+use crate::error::JoshutoError;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
@@ -14,16 +14,17 @@ impl Quit {
         "quit"
     }
 
-    pub fn quit(context: &mut JoshutoContext, view: &JoshutoView) {
+    pub fn quit(context: &mut JoshutoContext) -> Result<(), JoshutoError> {
         if !context.threads.is_empty() {
-            ui::wprint_err(
-                &view.bot_win,
-                "Error: operations running in background, use force_quit to quit",
+            let err = std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "operations running in background, use force_quit to quit",
             );
-            ncurses::doupdate();
-            return;
+            Err(JoshutoError::IO(err))
+        } else {
+            context.exit = true;
+            Ok(())
         }
-        context.exit = true;
     }
 }
 
@@ -36,8 +37,8 @@ impl std::fmt::Display for Quit {
 }
 
 impl JoshutoRunnable for Quit {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
-        Self::quit(context, view);
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
+        Self::quit(context)
     }
 }
 
@@ -66,7 +67,8 @@ impl std::fmt::Display for ForceQuit {
 }
 
 impl JoshutoRunnable for ForceQuit {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         Self::force_quit(context);
+        Ok(())
     }
 }

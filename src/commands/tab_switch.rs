@@ -2,6 +2,7 @@ use std::env;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::preview;
 use crate::ui;
 use crate::window::JoshutoView;
@@ -19,7 +20,11 @@ impl TabSwitch {
         "tab_switch"
     }
 
-    pub fn tab_switch(new_index: i32, context: &mut JoshutoContext, view: &JoshutoView) {
+    pub fn tab_switch(
+        new_index: i32,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         context.curr_tab_index = new_index as usize;
         let path = &context.curr_tab_ref().curr_path;
         match env::set_current_dir(path) {
@@ -37,8 +42,10 @@ impl TabSwitch {
                 ui::redraw_tab_view(&view.tab_win, &context);
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
                 preview::preview_file(curr_tab, view, &context.config_t);
+                ncurses::doupdate();
+                Ok(())
             }
-            Err(e) => ui::wprint_err(&view.left_win, e.to_string().as_str()),
+            Err(e) => Err(JoshutoError::IO(e)),
         }
     }
 }
@@ -52,7 +59,11 @@ impl std::fmt::Display for TabSwitch {
 }
 
 impl JoshutoRunnable for TabSwitch {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         let mut new_index = context.curr_tab_index as i32 + self.movement;
         let tab_len = context.tabs.len() as i32;
         while new_index < 0 {
@@ -61,7 +72,6 @@ impl JoshutoRunnable for TabSwitch {
         while new_index >= tab_len {
             new_index -= tab_len;
         }
-        Self::tab_switch(new_index, context, view);
-        ncurses::doupdate();
+        Self::tab_switch(new_index, context, view)
     }
 }

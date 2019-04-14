@@ -1,5 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::preview;
 use crate::ui;
 use crate::window::JoshutoView;
@@ -15,9 +16,12 @@ impl ParentDirectory {
         "parent_directory"
     }
 
-    pub fn parent_directory(context: &mut JoshutoContext, view: &JoshutoView) {
+    pub fn parent_directory(
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
         if !context.curr_tab_mut().curr_path.pop() {
-            return;
+            return Ok(());
         }
 
         match std::env::set_current_dir(&context.curr_tab_ref().curr_path) {
@@ -54,12 +58,13 @@ impl ParentDirectory {
                     &context.hostname,
                 );
                 preview::preview_file(curr_tab, view, &context.config_t);
+                ncurses::doupdate();
+                return Ok(());
             }
             Err(e) => {
-                ui::wprint_err(&view.bot_win, e.to_string().as_str());
+                return Err(JoshutoError::IO(e));
             }
         };
-        ncurses::doupdate();
     }
 }
 
@@ -72,7 +77,11 @@ impl std::fmt::Display for ParentDirectory {
 }
 
 impl JoshutoRunnable for ParentDirectory {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
-        Self::parent_directory(context, view);
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
+        Self::parent_directory(context, view)
     }
 }

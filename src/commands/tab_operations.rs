@@ -3,8 +3,8 @@ use std::path;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
-use crate::ui;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
@@ -18,13 +18,10 @@ impl NewTab {
         "new_tab"
     }
 
-    pub fn new_tab(context: &mut JoshutoContext, view: &JoshutoView) {
+    pub fn new_tab(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_path: path::PathBuf = match env::current_dir() {
             Ok(path) => path,
-            Err(e) => {
-                ui::wprint_err(&view.bot_win, e.to_string().as_str());
-                return;
-            }
+            Err(e) => return Err(JoshutoError::IO(e)),
         };
 
         match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
@@ -32,12 +29,10 @@ impl NewTab {
                 context.tabs.push(tab);
                 context.curr_tab_index = context.tabs.len() - 1;
 
-                TabSwitch::tab_switch(context.tabs.len() as i32 - 1, context, view);
+                TabSwitch::tab_switch(context.tabs.len() as i32 - 1, context, view)
             }
-            Err(e) => {
-                ui::wprint_err(&view.bot_win, e.to_string().as_str());
-            }
-        };
+            Err(e) => Err(JoshutoError::IO(e)),
+        }
     }
 }
 
@@ -50,9 +45,12 @@ impl std::fmt::Display for NewTab {
 }
 
 impl JoshutoRunnable for NewTab {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
-        Self::new_tab(context, view);
-        ncurses::doupdate();
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
+        Self::new_tab(context, view)
     }
 }
 
@@ -67,17 +65,16 @@ impl CloseTab {
         "close_tab"
     }
 
-    pub fn close_tab(context: &mut JoshutoContext, view: &JoshutoView) {
+    pub fn close_tab(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), JoshutoError> {
         if context.tabs.len() <= 1 {
-            Quit::quit(context, view);
-            return;
+            return Quit::quit(context);
         }
 
         let _ = context.tabs.remove(context.curr_tab_index);
         if context.curr_tab_index > 0 {
             context.curr_tab_index -= 1;
         }
-        TabSwitch::tab_switch(context.curr_tab_index as i32, context, view);
+        TabSwitch::tab_switch(context.curr_tab_index as i32, context, view)
     }
 }
 
@@ -90,8 +87,11 @@ impl std::fmt::Display for CloseTab {
 }
 
 impl JoshutoRunnable for CloseTab {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) {
-        Self::close_tab(context, view);
-        ncurses::doupdate();
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
+        Self::close_tab(context, view)
     }
 }

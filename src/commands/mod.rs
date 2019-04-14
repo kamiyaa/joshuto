@@ -41,6 +41,7 @@ use std::fmt;
 use std::path::PathBuf;
 
 use crate::context::JoshutoContext;
+use crate::error::JoshutoError;
 use crate::structs;
 use crate::window::JoshutoView;
 
@@ -51,7 +52,8 @@ pub enum CommandKeybind {
 }
 
 pub trait JoshutoRunnable {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView);
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView)
+        -> Result<(), JoshutoError>;
 }
 
 pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
