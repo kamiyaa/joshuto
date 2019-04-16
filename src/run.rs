@@ -23,10 +23,10 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
             ((term_rows - keymap_len as i32 - 2) as usize, 0),
         );
 
-        let mut display_vec: Vec<String> = Vec::with_capacity(keymap_len);
-        for (key, val) in keymap {
-            display_vec.push(format!("  {}\t{}", *key as u8 as char, val));
-        }
+        let mut display_vec: Vec<String> = keymap
+            .iter()
+            .map(|(k, v)| format!("  {}\t{}", *k as u8 as char, v))
+            .collect();
         display_vec.sort();
 
         win.move_to_top();
@@ -38,13 +38,13 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
     ncurses::doupdate();
 
     if ch == config::keymap::ESCAPE {
-        return None;
-    }
-
-    match keymap.get(&ch) {
-        Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(&m),
-        Some(CommandKeybind::SimpleKeybind(s)) => Some(s),
-        _ => None,
+        None
+    } else {
+        match keymap.get(&ch) {
+            Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(&m),
+            Some(CommandKeybind::SimpleKeybind(s)) => Some(s),
+            _ => None,
+        }
     }
 }
 
@@ -52,8 +52,7 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
 fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
     let thread_wait_duration: time::Duration = time::Duration::from_millis(100);
 
-    let mut i: usize = 0;
-    while i < context.threads.len() {
+    for i in 0..context.threads.len() {
         match &context.threads[i].recv_timeout(&thread_wait_duration) {
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
                 ncurses::werase(view.bot_win.win);
@@ -95,12 +94,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
                     }
                 };
             }
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
-                i += 1;
-            }
-            Ok(progress_info) => {
-                i += 1;
-            }
+            _ => {}
         }
     }
 }
@@ -126,7 +120,13 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
 
     let mut context = JoshutoContext::new(config_t);
     let mut view = JoshutoView::new(context.config_t.column_ratio);
-    commands::NewTab::new_tab(&mut context, &view);
+    match commands::NewTab::new_tab(&mut context, &view) {
+        Ok(_) => {}
+        Err(JoshutoError::IO(e)) => {
+            ui::wprint_err(&view.bot_win, e.to_string().as_str());
+            context.exit = true;
+        }
+    }
     preview::preview_file(
         &mut context.tabs[context.curr_tab_index],
         &view,
