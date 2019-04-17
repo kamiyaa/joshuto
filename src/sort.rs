@@ -30,7 +30,7 @@ impl SortOption {
                 } else {
                     natural_sort_case_insensitive
                 }
-            }
+            },
             SortType::SortMtime => mtime_sort,
         };
 
