@@ -1,4 +1,4 @@
-use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CursorMoveInc, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::structs::JoshutoDirEntry;
@@ -49,19 +49,21 @@ impl SetMode {
         }
         ncurses::doupdate();
 
-        if let Some(s) = user_input {
-            let mut mode: u32 = 0;
-            for (i, ch) in s.chars().enumerate() {
-                if ch == LIBC_PERMISSION_VALS[i].1 {
-                    let val: u32 = LIBC_PERMISSION_VALS[i].0.into();
-                    mode |= val;
+        match user_input {
+            Some(s) => {
+                let mut mode: u32 = 0;
+                for (i, ch) in s.chars().enumerate() {
+                    if ch == LIBC_PERMISSION_VALS[i].1 {
+                        let val: u32 = LIBC_PERMISSION_VALS[i].0.into();
+                        mode |= val;
+                    }
                 }
-            }
-            unix::set_mode(entry.path.as_path(), mode);
-            entry.metadata.permissions.set_mode(mode + (1 << 15));
-            return true;
+                unix::set_mode(entry.path.as_path(), mode);
+                entry.metadata.permissions.set_mode(mode + (1 << 15));
+                true
+            },
+            None => false,
         }
-        false
     }
 }
 
@@ -79,25 +81,21 @@ impl JoshutoRunnable for SetMode {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        let mut ok = false;
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            if let Some(s) = curr_tab.curr_list.as_mut() {
-                if let Some(file) = s.get_curr_mut() {
-                    let mode = file.metadata.permissions.mode();
-                    let mut mode_string = unix::stringify_mode(mode);
-                    mode_string.remove(0);
+        use std::os::unix::fs::PermissionsExt;
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        if let Some(s) = curr_tab.curr_list.as_mut() {
+            if let Some(file) = s.get_curr_mut() {
+                let mode = file.metadata.permissions.mode();
+                let mut mode_string = unix::stringify_mode(mode);
+                mode_string.remove(0);
 
-                    ok = self.set_mode(file, mode_string);
-                }
+                self.set_mode(file, mode_string);
+                CursorMoveInc::new(1).execute(context, view)
+            } else {
+                Ok(())
             }
+        } else {
+            Ok(())
         }
-        if ok {
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
-            curr_tab.refresh_file_status(&view.bot_win);
-        }
-        Ok(())
     }
 }
