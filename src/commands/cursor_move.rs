@@ -15,16 +15,19 @@ impl CursorMove {
                 None => {}
                 Some(index) => {
                     let dir_len = curr_list.contents.len();
+/*
+                    if index == dir_len - 1 {
+                        return;
+                    }
+*/
                     if new_index >= dir_len {
                         new_index = dir_len - 1;
-                        if index == dir_len - 1 {
-                            return;
-                        }
                     }
                     curr_list.index = Some(new_index);
                 }
             }
         }
+
         curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
         curr_tab.refresh_file_status(&view.bot_win);
         curr_tab.refresh_path_status(
