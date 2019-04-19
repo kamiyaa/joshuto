@@ -39,19 +39,13 @@ impl JoshutoRunnable for SelectFiles {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         if self.toggle && !self.all {
-            let mut selected = false;
-
             if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_mut() {
-                s.curr_toggle_select();
-                selected = true;
+                if let Some(s) = s.get_curr_mut() {
+                    s.selected = !s.selected;
+                    return CursorMoveInc::new(1).execute(context, view);
+                }
             }
-            if selected {
-                CursorMoveInc::new(1).execute(context, view)
-            } else {
-                Ok(())
-            }
-        } else {
-            Ok(())
         }
+        return Ok(());
     }
 }

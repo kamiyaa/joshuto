@@ -16,9 +16,9 @@ impl CursorMove {
                 Some(_) => {
                     let dir_len = curr_list.contents.len();
                     /*
-                                        if index == dir_len - 1 {
-                                            return;
-                                        }
+                    if index == dir_len - 1 {
+                        return;
+                    }
                     */
                     if new_index >= dir_len {
                         new_index = dir_len - 1;

@@ -167,7 +167,7 @@ impl JoshutoRunnable for PasteFiles {
         };
 
         if let Ok(s) = thread {
-            ncurses::timeout(-1);
+            ncurses::timeout(0);
             context.threads.push(s);
         }
         Ok(())
@@ -192,14 +192,14 @@ impl PasteFiles {
         let src_ino;
         let paths = SELECTED_FILES.lock().unwrap().take();
         match paths {
-            Some(s) => {
-                if s.len() == 0 {
+            Some(paths) => {
+                if paths.len() == 0 {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "no files selected",
                     ));
                 }
-                src_ino = s[0].metadata()?.st_dev();
+                src_ino = paths[0].metadata()?.st_dev();
 
                 let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
                 let tab_dest = context.curr_tab_index;
@@ -212,9 +212,9 @@ impl PasteFiles {
 
 
                 let handle = if dest_ino == src_ino {
-                        thread::spawn(move || fs_rename_thread(options, tx, destination, s))
+                        thread::spawn(move || fs_rename_thread(options, tx, destination, paths))
                     } else {
-                        thread::spawn(move || fs_cut_thread(options, tx, destination, s))
+                        thread::spawn(move || fs_cut_thread(options, tx, destination, paths))
                     };
 
                 let thread = FileOperationThread {
@@ -226,10 +226,10 @@ impl PasteFiles {
                 Ok(thread)
             }
             None => {
-                return Err(std::io::Error::new(
+                Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
                     "no files selected",
-                ));
+                ))
             }
         }
     }
@@ -248,15 +248,15 @@ impl PasteFiles {
 
         let paths = SELECTED_FILES.lock().unwrap().take();
         match paths {
-            Some(s) => {
-                if s.len() == 0 {
+            Some(paths) => {
+                if paths.len() == 0 {
                     Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "no files selected",
                     ))
                 } else {
                     let handle =
-                        thread::spawn(move || fs_copy_thread(options, tx, destination, s));
+                        thread::spawn(move || fs_copy_thread(options, tx, destination, paths));
 
                     let thread = FileOperationThread {
                         tab_src,
@@ -378,6 +378,8 @@ fn fs_cut_thread(options: fs_extra::dir::CopyOptions,
             std::fs::copy(&path, &destination)?;
             std::fs::remove_file(&path)?;
         }
+
+        destination.pop();
         progress_info.bytes_finished += 1;
         match tx.send(progress_info.clone()) {
             _ => {}
@@ -399,7 +401,7 @@ fn fs_copy_thread(
 
     let mut destination = dest;
 
-    for path in paths {
+    for path in &paths {
         let file_name = path.file_name().unwrap().to_os_string();
 
         if path.symlink_metadata()?.is_dir() {
@@ -449,6 +451,7 @@ fn fs_copy_thread(
             }
             std::fs::copy(&path, &destination)?;
         }
+        destination.pop();
         progress_info.bytes_finished += 1;
         match tx.send(progress_info.clone()) {
             _ => {}
