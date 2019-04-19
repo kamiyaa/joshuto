@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::time;
 
 use crate::commands;
-use crate::commands::{CommandKeybind, JoshutoCommand};
+use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand};
 use crate::config;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
@@ -48,51 +48,62 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
     }
 }
 
+fn join_thread(context: &mut JoshutoContext, thread: FileOperationThread, view: &JoshutoView) {
+    ncurses::werase(view.bot_win.win);
+
+    let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
+    match thread.handle.join() {
+        Err(e) => {
+            ui::wprint_err(&view.bot_win, format!("{:?}", e).as_str());
+            ncurses::doupdate();
+        },
+        Ok(_) => {
+            if tab_src < context.tabs.len() {
+                let dirty_tab = &mut context.tabs[tab_src];
+                dirty_tab.reload_contents(&context.config_t.sort_option);
+                if tab_src == context.curr_tab_index {
+                    dirty_tab.refresh(
+                        view,
+                        &context.config_t,
+                        &context.username,
+                        &context.hostname,
+                    );
+                    preview::preview_file(dirty_tab, view, &context.config_t);
+                }
+            }
+            if tab_dest != tab_src && tab_dest < context.tabs.len() {
+                let dirty_tab = &mut context.tabs[tab_dest];
+                dirty_tab.reload_contents(&context.config_t.sort_option);
+                if tab_src == context.curr_tab_index {
+                    dirty_tab.refresh(
+                        view,
+                        &context.config_t,
+                        &context.username,
+                        &context.hostname,
+                    );
+                    preview::preview_file(dirty_tab, view, &context.config_t);
+                }
+            }
+            ncurses::doupdate();
+        }
+    }
+}
+
 #[inline]
 fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
     let thread_wait_duration: time::Duration = time::Duration::from_millis(100);
 
     for i in 0..context.threads.len() {
         match &context.threads[i].recv_timeout(&thread_wait_duration) {
+            Ok(progress_info) => {
+                if progress_info.bytes_finished == progress_info.total_bytes {
+                    let thread = context.threads.swap_remove(i);
+                    join_thread(context, thread, view);
+                }
+            },
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
-                ncurses::werase(view.bot_win.win);
                 let thread = context.threads.swap_remove(i);
-                let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
-                match thread.handle.join() {
-                    Err(e) => {
-                        ui::wprint_err(&view.bot_win, format!("{:?}", e).as_str());
-                        ncurses::doupdate();
-                    }
-                    Ok(_) => {
-                        if tab_src < context.tabs.len() {
-                            let dirty_tab = &mut context.tabs[tab_src];
-                            dirty_tab.reload_contents(&context.config_t.sort_option);
-                            if tab_src == context.curr_tab_index {
-                                dirty_tab.refresh(
-                                    view,
-                                    &context.config_t,
-                                    &context.username,
-                                    &context.hostname,
-                                );
-                                preview::preview_file(dirty_tab, view, &context.config_t);
-                            }
-                        }
-                        if tab_dest != tab_src && tab_dest < context.tabs.len() {
-                            let dirty_tab = &mut context.tabs[tab_dest];
-                            dirty_tab.reload_contents(&context.config_t.sort_option);
-                            if tab_src == context.curr_tab_index {
-                                dirty_tab.refresh(
-                                    view,
-                                    &context.config_t,
-                                    &context.username,
-                                    &context.hostname,
-                                );
-                                preview::preview_file(dirty_tab, view, &context.config_t);
-                            }
-                        }
-                        ncurses::doupdate();
-                    }
-                };
+                join_thread(context, thread, view);
             }
             _ => {}
         }
