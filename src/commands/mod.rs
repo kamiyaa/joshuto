@@ -42,7 +42,6 @@ use std::path::PathBuf;
 
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::structs;
 use crate::window::JoshutoView;
 
 #[derive(Debug)]
@@ -236,26 +235,7 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
     }
 }
 
-pub fn collect_selected_paths(dirlist: &structs::JoshutoDirList) -> Option<Vec<PathBuf>> {
-    match dirlist.index {
-        Some(index) => {
-            let selected: Vec<PathBuf> = dirlist
-                .contents
-                .iter()
-                .filter(|entry| entry.selected)
-                .map(|entry| entry.path.clone())
-                .collect();
-            if !selected.is_empty() {
-                Some(selected)
-            } else {
-                Some(vec![dirlist.contents[index].path.clone()])
-            }
-        }
-        None => None,
-    }
-}
-
-#[allow(dead_code)]
+/*
 pub fn split_shell_style(line: &str) -> Vec<&str> {
     let mut args: Vec<&str> = Vec::new();
     let mut char_ind = line.char_indices();
@@ -289,3 +269,4 @@ pub fn split_shell_style(line: &str) -> Vec<&str> {
     }
     args
 }
+*/

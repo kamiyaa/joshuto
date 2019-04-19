@@ -13,13 +13,13 @@ impl CursorMove {
         if let Some(curr_list) = curr_tab.curr_list.as_mut() {
             match curr_list.index {
                 None => {}
-                Some(index) => {
+                Some(_) => {
                     let dir_len = curr_list.contents.len();
-/*
-                    if index == dir_len - 1 {
-                        return;
-                    }
-*/
+                    /*
+                                        if index == dir_len - 1 {
+                                            return;
+                                        }
+                    */
                     if new_index >= dir_len {
                         new_index = dir_len - 1;
                     }
