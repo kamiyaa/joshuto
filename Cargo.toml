@@ -1,6 +1,6 @@
 [package]
 name = "joshuto"
-version = "0.7.0"
+version = "0.7.1"
 authors = ["Jiayi Zhao <jeff.no.zhao@gmail.com>"]
 description = "Terminal file manager inspired by ranger"
 homepage = "https://github.com/kamiyaa/joshuto"
