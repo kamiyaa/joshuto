@@ -28,21 +28,26 @@ impl OpenFile {
     pub fn get_options<'a>(path: &Path) -> Vec<&'a mimetype::JoshutoMimetypeEntry> {
         let mut mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = Vec::new();
 
+        /* extensions have priority */
         if let Some(file_ext) = path.extension() {
             if let Some(file_ext) = file_ext.to_str() {
                 if let Some(s) = MIMETYPE_T.extension.get(file_ext) {
-                    for option in s {
-                        mimetype_options.push(&option);
-                    }
+                    mimetype_options.extend(s.iter());
                 }
             }
         }
-        let detective = mime_detective::MimeDetective::new().unwrap();
-        if let Ok(mime_type) = detective.detect_filepath(path) {
-            if let Some(s) = MIMETYPE_T.mimetype.get(mime_type.type_().as_str()) {
-                for option in s {
-                    mimetype_options.push(&option);
-                }
+        let mimetype_str = tree_magic::from_filepath(&path);
+
+        /* mime subtype have second priority */
+        if let Some(s) = MIMETYPE_T.mimetype.get(&mimetype_str) {
+            mimetype_options.extend(s.iter());
+        }
+
+        /* generic mime type have last priority */
+        if let Some(s) = mimetype_str.find('/') {
+            let mimetype_type = &mimetype_str[..s];
+            if let Some(s) = MIMETYPE_T.mimetype.get(mimetype_type) {
+                mimetype_options.extend(s.iter());
             }
         }
         mimetype_options
@@ -90,10 +95,10 @@ impl OpenFile {
 
         ncurses::savetty();
         ncurses::endwin();
-        if !mimetype_options.is_empty() {
-            unix::open_with_entry(paths, &mimetype_options[0]);
-        } else {
+        if mimetype_options.is_empty() {
             open::that(&paths[0]).unwrap();
+        } else {
+            unix::open_with_entry(paths, &mimetype_options[0]);
         }
         ncurses::resetty();
         ncurses::refresh();

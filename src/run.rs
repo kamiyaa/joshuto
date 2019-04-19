@@ -101,8 +101,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
             Ok(progress_info) => {
                 ui::draw_progress_bar(
                     &view.bot_win,
-                    progress_info.bytes_finished as f32 /
-                    progress_info.total_bytes as f32,
+                    progress_info.bytes_finished as f32 / progress_info.total_bytes as f32,
                 );
             }
             _ => {}
