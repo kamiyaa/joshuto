@@ -205,6 +205,10 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
         let file_size_string = file_size_to_string_detailed(file.metadata.len as f64);
         ncurses::waddstr(win, &file_size_string);
     }
+
+    ncurses::waddstr(win, "    ");
+    let mimetype_str = tree_magic::from_filepath(&file.path);
+    ncurses::waddstr(win, &mimetype_str);
 }
 
 pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {
