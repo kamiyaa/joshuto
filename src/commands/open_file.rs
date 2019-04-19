@@ -1,7 +1,7 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
@@ -138,7 +138,7 @@ impl JoshutoRunnable for OpenFile {
         } else {
             let paths: Option<Vec<PathBuf>> =
                 match context.tabs[context.curr_tab_index].curr_list.as_ref() {
-                    Some(s) => commands::collect_selected_paths(s),
+                    Some(s) => s.get_selected_paths(),
                     None => None,
                 };
             if let Some(paths) = paths {
@@ -239,7 +239,7 @@ impl std::fmt::Display for OpenFileWith {
 impl JoshutoRunnable for OpenFileWith {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-            if let Some(paths) = commands::collect_selected_paths(s) {
+            if let Some(paths) = s.get_selected_paths() {
                 Self::open_with(&paths);
             }
         }

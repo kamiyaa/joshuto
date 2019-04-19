@@ -1,7 +1,7 @@
 use std::fs;
 use std::path;
 
-use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::config::keymap;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
@@ -55,7 +55,7 @@ impl JoshutoRunnable for DeleteFiles {
         let ch: i32 = ncurses::getch();
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
             if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-                if let Some(paths) = commands::collect_selected_paths(s) {
+                if let Some(paths) = s.get_selected_paths() {
                     match Self::remove_files(paths) {
                         Ok(_) => ui::wprint_msg(&view.bot_win, "Deleted files"),
                         Err(e) => {
