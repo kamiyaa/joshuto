@@ -171,10 +171,10 @@ impl JoshutoDirList {
 
     pub fn get_selected_paths(&self) -> Option<Vec<PathBuf>> {
         let vec: Vec<PathBuf> = self.selected_entries().map(|e| e.path.clone()).collect();
-        if !vec.is_empty() {
-            Some(vec)
-        } else {
+        if vec.is_empty() {
             Some(vec![self.get_curr_ref()?.path.clone()])
+        } else {
+            Some(vec)
         }
     }
 
@@ -199,19 +199,6 @@ impl JoshutoDirList {
             Some(&self.contents[index])
         } else {
             None
-        }
-    }
-
-    pub fn curr_toggle_select(&mut self) {
-        if let Some(index) = self.index {
-            self.toggle_select(index);
-        }
-    }
-
-    fn toggle_select(&mut self, index: usize) {
-        if index < self.contents.len() {
-            let tmp_bool = !self.contents[index].selected;
-            self.contents[index].selected = tmp_bool;
         }
     }
 }

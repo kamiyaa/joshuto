@@ -117,7 +117,7 @@ impl JoshutoTab {
                 ncurses::waddstr(win.win, "  ");
                 ui::wprint_file_info(win.win, entry);
             }
-            ncurses::wnoutrefresh(win.win);
+            win.queue_for_refresh();
         }
     }
 
