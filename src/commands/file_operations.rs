@@ -182,7 +182,6 @@ impl PasteFiles {
         "paste_files"
     }
 
-    #[cfg(target_os = "linux")]
     fn cut_paste(
         &self,
         context: &mut JoshutoContext,
@@ -210,12 +209,15 @@ impl PasteFiles {
 
                 let (tx, rx) = mpsc::channel();
 
-
+                #[cfg(target_os = "linux")]
                 let handle = if dest_ino == src_ino {
                         thread::spawn(move || fs_rename_thread(options, tx, destination, paths))
                     } else {
                         thread::spawn(move || fs_cut_thread(options, tx, destination, paths))
                     };
+
+                #[cfg(not(target_os = "linux"))]
+                let handle = thread::spawn(move || fs_cut_thread(options, tx, destination, paths));
 
                 let thread = FileOperationThread {
                     tab_src,
