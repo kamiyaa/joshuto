@@ -55,3 +55,12 @@ Please create a pull request :)
 
 ## Features/Bugs
 Please create an issue :)
+
+## TODOs
+ - [x] Tab support
+ - [x] Asynch File IO (cut/copy/paste/delete/rename)
+ - [ ] Ctrl/Shift/Alt support
+ - [ ] File previews
+ - [ ] Tab autocomplete
+ - [ ] Bulk rename
+
