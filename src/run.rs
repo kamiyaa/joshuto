@@ -57,7 +57,7 @@ fn join_thread(context: &mut JoshutoContext, thread: FileOperationThread, view: 
         Err(e) => {
             ui::wprint_err(&view.bot_win, format!("{:?}", e).as_str());
             view.bot_win.queue_for_refresh();
-        },
+        }
         Ok(_) => {
             if tab_src < context.tabs.len() {
                 let dirty_tab = &mut context.tabs[tab_src];
@@ -97,6 +97,13 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
                 let thread = context.threads.swap_remove(i);
                 join_thread(context, thread, view);
                 ncurses::doupdate();
+            }
+            Ok(progress_info) => {
+                ui::draw_progress_bar(
+                    &view.bot_win,
+                    progress_info.bytes_finished as f32 /
+                    progress_info.total_bytes as f32,
+                );
             }
             _ => {}
         }
