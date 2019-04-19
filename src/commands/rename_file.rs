@@ -1,7 +1,7 @@
 use std::fs;
 use std::path;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CursorMove, JoshutoCommand, JoshutoRunnable, Search};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::preview;
@@ -116,7 +116,10 @@ impl JoshutoRunnable for RenameFile {
 
         if let Some(file_name) = file_name {
             if let Some(path) = path {
-                let res = self.rename_file(&path, context, view, file_name);
+                let res = self.rename_file(&path, context, view, file_name.clone());
+                if let Some(index) = Search::search(context.curr_tab_ref(), &file_name) {
+                    CursorMove::cursor_move(index, context, view);
+                }
                 preview::preview_file(
                     &mut context.tabs[context.curr_tab_index],
                     view,

@@ -182,165 +182,6 @@ impl PasteFiles {
         "paste_files"
     }
 
-    fn fs_rename_thread(
-        options: fs_extra::dir::CopyOptions,
-        tx: mpsc::Sender<ProgressInfo>,
-        dest: path::PathBuf,
-        paths: Vec<path::PathBuf>,
-    ) -> std::result::Result<(), std::io::Error> {
-        let mut progress_info = ProgressInfo {
-            bytes_finished: 1,
-            total_bytes: paths.len() as u64 + 1,
-        };
-
-        let mut destination = dest;
-
-        for path in paths {
-            let file_name = path.file_name().unwrap().to_os_string();
-
-            destination.push(file_name.clone());
-            if !options.skip_exist {
-                let mut i = 0;
-                while destination.exists() {
-                    destination.pop();
-
-                    let mut file_name = file_name.clone();
-                    file_name.push(&format!("_{}", i));
-
-                    destination.push(file_name);
-                    i += 1;
-                }
-            }
-            std::fs::rename(&path, &destination)?;
-            destination.pop();
-
-            progress_info.bytes_finished += 1;
-            match tx.send(progress_info.clone()) {
-                _ => {}
-            }
-        }
-        Ok(())
-    }
-
-    fn fs_copy_thread(
-        options: fs_extra::dir::CopyOptions,
-        tx: mpsc::Sender<ProgressInfo>,
-        dest: path::PathBuf,
-        paths: Vec<path::PathBuf>,
-    ) -> std::result::Result<(), std::io::Error> {
-        let mut progress_info = ProgressInfo {
-            bytes_finished: 1,
-            total_bytes: paths.len() as u64 + 1,
-        };
-
-        let mut destination = dest;
-
-        for path in paths {
-            let file_name = path.file_name().unwrap().to_os_string();
-
-            if path.symlink_metadata()?.is_dir() {
-                destination.push(file_name.clone());
-                if !options.skip_exist {
-                    let mut i = 0;
-                    while destination.exists() {
-                        destination.pop();
-
-                        let mut file_name = file_name.clone();
-                        file_name.push(&format!("_{}", i));
-
-                        destination.push(file_name);
-                        i += 1;
-                    }
-                }
-                std::fs::create_dir(&destination)?;
-                let path: Vec<path::PathBuf> = std::fs::read_dir(path)?
-                        .filter_map(|s| {
-                            match s {
-                                Ok(s) => Some(s.path()),
-                                _ => None
-                            }
-                        })
-                        .collect();
-
-                match fs_extra::copy_items(&path, &destination, &options) {
-                    Err(e) => {
-                        let err = std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
-                        return Err(err);
-                    }
-                    _ => {}
-                }
-            } else {
-                destination.push(file_name.clone());
-                if !options.skip_exist {
-                    let mut i = 0;
-                    while destination.exists() {
-                        destination.pop();
-
-                        let mut file_name = file_name.clone();
-                        file_name.push(&format!("_{}", i));
-
-                        destination.push(file_name);
-                        i += 1;
-                    }
-                }
-                std::fs::copy(&path, &destination)?;
-            }
-            progress_info.bytes_finished += 1;
-            match tx.send(progress_info.clone()) {
-                _ => {}
-            }
-        }
-        return Ok(());
-    }
-
-    fn same_fs_cut(
-        &self,
-        context: &mut JoshutoContext,
-        paths: Vec<path::PathBuf>,
-    ) -> Result<FileOperationThread, std::io::Error> {
-        let options = self.options.clone();
-
-        let (tx, rx) = mpsc::channel();
-
-        let tab_dest = context.curr_tab_index;
-        let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
-        let destination = context.tabs[tab_dest].curr_path.clone();
-
-        let handle = thread::spawn(move || Self::fs_rename_thread(options, tx, destination, paths));
-
-        let thread = FileOperationThread {
-            tab_src,
-            tab_dest,
-            handle,
-            recv: rx,
-        };
-        Ok(thread)
-    }
-
-    fn diff_fs_cut(
-        &self,
-        context: &mut JoshutoContext,
-        paths: Vec<path::PathBuf>,
-    ) -> Result<FileOperationThread, std::io::Error> {
-        let options = self.options.clone();
-
-        let (tx, rx) = mpsc::channel();
-
-        let tab_dest = context.curr_tab_index;
-        let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
-        let destination = context.tabs[tab_dest].curr_path.clone();
-
-        let handle = thread::spawn(move || Self::fs_rename_thread(options, tx, destination, paths));
-
-        let thread = FileOperationThread {
-            tab_src,
-            tab_dest,
-            handle,
-            recv: rx,
-        };
-        Ok(thread)
-    }
-
     #[cfg(target_os = "linux")]
     fn cut_paste(
         &self,
@@ -360,15 +201,29 @@ impl PasteFiles {
                 }
                 src_ino = s[0].metadata()?.st_dev();
 
+                let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
                 let tab_dest = context.curr_tab_index;
-                let destination = &context.tabs[tab_dest].curr_path;
-
+                let destination = context.tabs[tab_dest].curr_path.clone();
                 let dest_ino = destination.metadata()?.st_dev();
-                if dest_ino == src_ino {
-                    self.same_fs_cut(context, s)
-                } else {
-                    self.diff_fs_cut(context, s)
-                }
+
+                let options = self.options.clone();
+
+                let (tx, rx) = mpsc::channel();
+
+
+                let handle = if dest_ino == src_ino {
+                        thread::spawn(move || fs_rename_thread(options, tx, destination, s))
+                    } else {
+                        thread::spawn(move || fs_cut_thread(options, tx, destination, s))
+                    };
+
+                let thread = FileOperationThread {
+                    tab_src,
+                    tab_dest,
+                    handle,
+                    recv: rx,
+                };
+                Ok(thread)
             }
             None => {
                 return Err(std::io::Error::new(
@@ -401,7 +256,7 @@ impl PasteFiles {
                     ))
                 } else {
                     let handle =
-                        thread::spawn(move || Self::fs_copy_thread(options, tx, destination, s));
+                        thread::spawn(move || fs_copy_thread(options, tx, destination, s));
 
                     let thread = FileOperationThread {
                         tab_src,
@@ -418,4 +273,186 @@ impl PasteFiles {
             )),
         }
     }
+}
+
+fn fs_rename_thread(
+    options: fs_extra::dir::CopyOptions,
+    tx: mpsc::Sender<ProgressInfo>,
+    dest: path::PathBuf,
+    paths: Vec<path::PathBuf>,
+) -> std::result::Result<(), std::io::Error> {
+    let mut progress_info = ProgressInfo {
+        bytes_finished: 1,
+        total_bytes: paths.len() as u64 + 1,
+    };
+
+    let mut destination = dest;
+
+    for path in paths {
+        let file_name = path.file_name().unwrap().to_os_string();
+
+        destination.push(file_name.clone());
+        if !options.skip_exist {
+            let mut i = 0;
+            while destination.exists() {
+                destination.pop();
+
+                let mut file_name = file_name.clone();
+                file_name.push(&format!("_{}", i));
+
+                destination.push(file_name);
+                i += 1;
+            }
+        }
+        std::fs::rename(&path, &destination)?;
+        destination.pop();
+
+        progress_info.bytes_finished += 1;
+        match tx.send(progress_info.clone()) {
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn fs_cut_thread(options: fs_extra::dir::CopyOptions,
+    tx: mpsc::Sender<ProgressInfo>,
+    dest: path::PathBuf,
+    paths: Vec<path::PathBuf>,
+) -> std::result::Result<(), std::io::Error> {
+    let mut progress_info = ProgressInfo {
+        bytes_finished: 4,
+        total_bytes: paths.len() as u64 + 4,
+    };
+
+    let mut destination = dest;
+
+    for path in paths {
+        let file_name = path.file_name().unwrap().to_os_string();
+
+        if path.symlink_metadata()?.is_dir() {
+            destination.push(file_name.clone());
+            if !options.skip_exist {
+                let mut i = 0;
+                while destination.exists() {
+                    destination.pop();
+
+                    let mut file_name = file_name.clone();
+                    file_name.push(&format!("_{}", i));
+
+                    destination.push(file_name);
+                    i += 1;
+                }
+            }
+            std::fs::create_dir(&destination)?;
+            let path: Vec<path::PathBuf> = std::fs::read_dir(path)?
+                    .filter_map(|s| {
+                        match s {
+                            Ok(s) => Some(s.path()),
+                            _ => None
+                        }
+                    })
+                    .collect();
+
+            match fs_extra::move_items(&path, &destination, &options) {
+                Err(e) => {
+                    let err = std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
+                    return Err(err);
+                }
+                _ => {}
+            }
+        } else {
+            destination.push(file_name.clone());
+            if !options.skip_exist {
+                let mut i = 0;
+                while destination.exists() {
+                    destination.pop();
+
+                    let mut file_name = file_name.clone();
+                    file_name.push(&format!("_{}", i));
+
+                    destination.push(file_name);
+                    i += 1;
+                }
+            }
+            std::fs::copy(&path, &destination)?;
+            std::fs::remove_file(&path)?;
+        }
+        progress_info.bytes_finished += 1;
+        match tx.send(progress_info.clone()) {
+            _ => {}
+        }
+    }
+    return Ok(());
+}
+
+fn fs_copy_thread(
+    options: fs_extra::dir::CopyOptions,
+    tx: mpsc::Sender<ProgressInfo>,
+    dest: path::PathBuf,
+    paths: Vec<path::PathBuf>,
+) -> std::result::Result<(), std::io::Error> {
+    let mut progress_info = ProgressInfo {
+        bytes_finished: 1,
+        total_bytes: paths.len() as u64 + 1,
+    };
+
+    let mut destination = dest;
+
+    for path in paths {
+        let file_name = path.file_name().unwrap().to_os_string();
+
+        if path.symlink_metadata()?.is_dir() {
+            destination.push(file_name.clone());
+            if !options.skip_exist {
+                let mut i = 0;
+                while destination.exists() {
+                    destination.pop();
+
+                    let mut file_name = file_name.clone();
+                    file_name.push(&format!("_{}", i));
+
+                    destination.push(file_name);
+                    i += 1;
+                }
+            }
+            std::fs::create_dir(&destination)?;
+            let path: Vec<path::PathBuf> = std::fs::read_dir(path)?
+                    .filter_map(|s| {
+                        match s {
+                            Ok(s) => Some(s.path()),
+                            _ => None
+                        }
+                    })
+                    .collect();
+
+            match fs_extra::copy_items(&path, &destination, &options) {
+                Err(e) => {
+                    let err = std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
+                    return Err(err);
+                }
+                _ => {}
+            }
+        } else {
+            destination.push(file_name.clone());
+            if !options.skip_exist {
+                let mut i = 0;
+                while destination.exists() {
+                    destination.pop();
+
+                    let mut file_name = file_name.clone();
+                    file_name.push(&format!("_{}", i));
+
+                    destination.push(file_name);
+                    i += 1;
+                }
+            }
+            std::fs::copy(&path, &destination)?;
+        }
+        progress_info.bytes_finished += 1;
+        match tx.send(progress_info.clone()) {
+            _ => {}
+        }
+    }
+    return Ok(());
 }
