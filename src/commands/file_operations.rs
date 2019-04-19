@@ -296,14 +296,14 @@ fn fs_cut_thread(
             Err(_) => {
                 if path.symlink_metadata()?.is_dir() {
                     std::fs::create_dir(&destination)?;
-                    let path: Vec<path::PathBuf> = std::fs::read_dir(path)?
+                    let cpath: Vec<path::PathBuf> = std::fs::read_dir(&path)?
                         .filter_map(|s| match s {
                             Ok(s) => Some(s.path()),
                             _ => None,
                         })
                         .collect();
 
-                    match fs_extra::move_items(&path, &destination, &options) {
+                    match fs_extra::move_items(&cpath, &destination, &options) {
                         Err(e) => {
                             let err =
                                 std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
@@ -311,6 +311,7 @@ fn fs_cut_thread(
                         }
                         _ => {}
                     }
+                    std::fs::remove_dir_all(&path)?;
                 } else {
                     std::fs::copy(&path, &destination)?;
                     std::fs::remove_file(&path)?;
