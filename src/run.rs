@@ -50,12 +50,13 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
 
 fn join_thread(context: &mut JoshutoContext, thread: FileOperationThread, view: &JoshutoView) {
     ncurses::werase(view.bot_win.win);
+    ncurses::doupdate();
 
     let (tab_src, tab_dest) = (thread.tab_src, thread.tab_dest);
     match thread.handle.join() {
         Err(e) => {
             ui::wprint_err(&view.bot_win, format!("{:?}", e).as_str());
-            ncurses::doupdate();
+            view.bot_win.queue_for_refresh();
         },
         Ok(_) => {
             if tab_src < context.tabs.len() {
@@ -84,26 +85,18 @@ fn join_thread(context: &mut JoshutoContext, thread: FileOperationThread, view: 
                     preview::preview_file(dirty_tab, view, &context.config_t);
                 }
             }
-            ncurses::doupdate();
         }
     }
 }
 
-#[inline]
 fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) {
     let thread_wait_duration: time::Duration = time::Duration::from_millis(100);
-
     for i in 0..context.threads.len() {
         match &context.threads[i].recv_timeout(&thread_wait_duration) {
-            Ok(progress_info) => {
-                if progress_info.bytes_finished == progress_info.total_bytes {
-                    let thread = context.threads.swap_remove(i);
-                    join_thread(context, thread, view);
-                }
-            },
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
                 let thread = context.threads.swap_remove(i);
                 join_thread(context, thread, view);
+                ncurses::doupdate();
             }
             _ => {}
         }
