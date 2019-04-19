@@ -165,6 +165,19 @@ impl JoshutoDirList {
         Ok(())
     }
 
+    pub fn selected_entries<'a>(&'a self) -> impl Iterator<Item = &'a JoshutoDirEntry> {
+        self.contents.iter().filter(|entry| entry.selected)
+    }
+
+    pub fn get_selected_paths(&self) -> Option<Vec<PathBuf>> {
+        let vec: Vec<PathBuf> = self.selected_entries().map(|e| e.path.clone()).collect();
+        if !vec.is_empty() {
+            Some(vec)
+        } else {
+            Some(vec![self.get_curr_ref()?.path.clone()])
+        }
+    }
+
     pub fn get_curr_ref(&self) -> Option<&JoshutoDirEntry> {
         self.get_curr_ref_(self.index?)
     }

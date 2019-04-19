@@ -30,11 +30,15 @@ impl SortOption {
                 } else {
                     natural_sort_case_insensitive
                 }
-            },
+            }
             SortType::SortMtime => mtime_sort,
         };
 
-        let rev_cmp = if self.reverse { reverse_ordering } else { dummy_reverse };
+        let rev_cmp = if self.reverse {
+            reverse_ordering
+        } else {
+            dummy_reverse
+        };
         let dir_cmp = if self.directories_first {
             dir_first
         } else {

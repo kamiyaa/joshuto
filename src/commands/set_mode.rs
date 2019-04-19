@@ -61,7 +61,7 @@ impl SetMode {
                 unix::set_mode(entry.path.as_path(), mode);
                 entry.metadata.permissions.set_mode(mode + (1 << 15));
                 true
-            },
+            }
             None => false,
         }
     }
