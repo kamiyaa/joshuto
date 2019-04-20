@@ -3,6 +3,8 @@ use ncurses;
 use crate::structs;
 use crate::ui;
 
+const MIN_WIN_WIDTH: usize = 4;
+
 #[derive(Debug, Clone)]
 pub struct JoshutoPanel {
     pub win: ncurses::WINDOW,
@@ -95,7 +97,7 @@ impl JoshutoPanel {
         dirlist: &mut structs::JoshutoDirList,
         scroll_offset: usize,
     ) -> bool {
-        if self.cols < 8 {
+        if self.cols < MIN_WIN_WIDTH as i32 {
             return false;
         }
         let vec_len = dirlist.contents.len();

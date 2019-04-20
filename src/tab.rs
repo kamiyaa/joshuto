@@ -42,15 +42,15 @@ impl JoshutoTab {
         let mut list = self.curr_list.take();
         if let Some(ref mut s) = list {
             if s.path.exists() {
-                s.update_contents(sort_option).unwrap();
+                s.update_contents(sort_option);
             }
         };
         self.curr_list = list;
 
-        list = self.parent_list.take();
+        let mut list = self.parent_list.take();
         if let Some(ref mut s) = list {
             if s.path.exists() {
-                s.update_contents(sort_option).unwrap();
+                s.update_contents(sort_option);
             }
         };
         self.parent_list = list;

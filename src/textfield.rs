@@ -13,25 +13,82 @@ impl JoshutoTextField {
         let win = window::JoshutoPanel::new(rows, cols, coord);
         ncurses::keypad(win.win, true);
         ncurses::scrollok(win.win, true);
-
         JoshutoTextField { win, prompt }
     }
 
     pub fn readline_with_initial(&self, prefix: &str, suffix: &str) -> Option<String> {
-        let mut buf_vec: Vec<char> = Vec::with_capacity(prefix.len() + suffix.len());
-        let mut curs_x: i32 = self.prompt.len() as i32;
-        for ch in prefix.chars() {
-            let char_len = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
-            buf_vec.push(ch);
-            curs_x += char_len as i32;
-        }
-        let curr_index: usize = buf_vec.len();
-
-        for ch in suffix.chars() {
-            buf_vec.push(ch);
-        }
+        self.win.move_to_top();
         ncurses::timeout(-1);
-        self.readline_(buf_vec, curs_x, curr_index)
+
+        let completer = rustyline::completion::FilenameCompleter::new();
+
+        let win = self.win.win;
+        let prompt_len = self.prompt.len();
+        let coord = (0, self.win.coords.1 + prompt_len);
+        ncurses::wmove(win, self.win.coords.0 as i32, self.win.coords.1 as i32);
+        ncurses::waddstr(win, &self.prompt);
+
+        let mut line_buffer = rustyline::line_buffer::LineBuffer::with_capacity(self.win.cols as usize);
+
+        // ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_VISIBLE);
+        line_buffer.insert_str(0, &prefix);
+        let mut curr_pos = unicode_width::UnicodeWidthStr::width(line_buffer.as_str());
+        line_buffer.insert_str(line_buffer.len(), &suffix);
+        line_buffer.set_pos(curr_pos);
+
+        loop {
+            ncurses::wmove(win, coord.0, coord.1 as i32);
+            let line_str = line_buffer.as_str();
+            ncurses::waddstr(win, line_str);
+            ncurses::waddstr(win, "    ");
+
+            ncurses::mvwchgat(win, coord.0 as i32, (coord.1 + curr_pos) as i32, 1, ncurses::A_STANDOUT(), 0);
+
+            ncurses::wrefresh(win);
+
+            let ch = ncurses::wget_wch(win).unwrap();
+            let ch = match ch {
+                ncurses::WchResult::Char(s) => s as i32,
+                ncurses::WchResult::KeyCode(s) => s,
+            };
+
+            if ch == keymap::ESCAPE {
+                return None;
+            } else if ch == keymap::ENTER {
+                break;
+            } else if ch == ncurses::KEY_HOME {
+                line_buffer.move_home();
+                curr_pos = 0;
+            } else if ch == ncurses::KEY_END {
+                line_buffer.move_end();
+                curr_pos = unicode_width::UnicodeWidthStr::width(line_buffer.as_str());
+            } else if ch == ncurses::KEY_LEFT {
+                if line_buffer.move_backward(1) {
+                    curr_pos -= 1;
+                }
+            } else if ch == ncurses::KEY_RIGHT {
+                if line_buffer.move_forward(1) {
+                    curr_pos += 1;
+                }
+            } else if ch == keymap::BACKSPACE {
+                if line_buffer.backspace(1) {
+                    curr_pos -= 1;
+                }
+            } else if ch == ncurses::KEY_DC {
+                line_buffer.delete(1);
+            } else if let Some(ch) = std::char::from_u32(ch as u32) {
+                match line_buffer.insert(ch, 1) {
+                    Some(true) => curr_pos += 1,
+                    _ => {},
+                }
+            }
+        }
+        let lbstr = line_buffer.to_string();
+        if lbstr.len() == 0 {
+            None
+        } else {
+            Some(lbstr)
+        }
     }
 
     fn readline_(
@@ -41,9 +98,11 @@ impl JoshutoTextField {
         mut curr_index: usize,
     ) -> Option<String> {
         self.win.move_to_top();
+        let completer = rustyline::completion::FilenameCompleter::new();
 
         let prompt_len = self.prompt.len();
         let win = self.win.win;
+
         ncurses::wmove(win, self.win.rows - 1, 0);
         ncurses::waddstr(win, &self.prompt);
 
@@ -53,10 +112,6 @@ impl JoshutoTextField {
 
         loop {
             ncurses::wmove(win, coord.0, coord.1 as i32);
-            {
-                let str_ch: String = String::from_iter(&buffer);
-                ncurses::waddstr(win, &str_ch);
-            }
             ncurses::waddstr(win, "    ");
 
             ncurses::mvwchgat(win, coord.0 as i32, curs_x, 1, ncurses::A_STANDOUT(), 0);
@@ -72,6 +127,7 @@ impl JoshutoTextField {
                 return None;
             } else if ch == keymap::ENTER {
                 break;
+            } else if ch == keymap::TAB {
             } else if ch == ncurses::KEY_HOME {
                 if curr_index != 0 {
                     curs_x = coord.1 as i32;
@@ -131,8 +187,7 @@ impl JoshutoTextField {
                 } else if curr_index == 0 {
                     buffer.remove(curr_index);
                 }
-            } else {
-                let ch = std::char::from_u32(ch as u32).unwrap();
+            } else if let Some(ch) = std::char::from_u32(ch as u32) {
                 let char_len = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
 
                 buffer.insert(curr_index, ch);
@@ -141,7 +196,7 @@ impl JoshutoTextField {
                 curr_index += 1;
             }
         }
-        let user_str: String = buffer.iter().map(|ch| ch).collect();
+        let user_str: String = buffer.iter().collect();
 
         Some(user_str)
     }
