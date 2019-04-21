@@ -64,38 +64,24 @@ impl JoshutoTextField {
             } else if ch == ncurses::KEY_LEFT {
                 if line_buffer.move_backward(1) {
                     let pos = line_buffer.pos();
-                    curr_pos = 0;
-                    for (i, ch) in line_buffer.as_str().char_indices() {
-                        if i == pos {
-                            break;
-                        }
-                        curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
-                    }
+                    curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
                 }
             } else if ch == ncurses::KEY_RIGHT {
                 if line_buffer.move_forward(1) {
                     let pos = line_buffer.pos();
-                    curr_pos = 0;
-                    for (i, ch) in line_buffer.as_str().char_indices() {
-                        if i == pos {
-                            break;
-                        }
-                        curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
-                    }
+                    curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
                 }
             } else if ch == keymap::BACKSPACE {
                 if line_buffer.backspace(1) {
                     let pos = line_buffer.pos();
-                    curr_pos = 0;
-                    for (i, ch) in line_buffer.as_str().char_indices() {
-                        if i == pos {
-                            break;
-                        }
-                        curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
-                    }
+                    curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
                 }
             } else if ch == ncurses::KEY_DC {
                 line_buffer.delete(1);
+            } else if ch == ncurses::KEY_UP {
+
+            } else if ch == ncurses::KEY_DOWN {
+
             } else if let Some(ch) = std::char::from_u32(ch as u32) {
                 match line_buffer.insert(ch, 1) {
                     Some(_) => {
