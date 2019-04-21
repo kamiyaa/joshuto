@@ -1,5 +1,3 @@
-use std::iter::FromIterator;
-
 use crate::config::keymap;
 use crate::window;
 
@@ -37,7 +35,14 @@ impl JoshutoTextField {
             ncurses::mvwaddstr(win, coord.0, coord.1 as i32, line_buffer.as_str());
             ncurses::waddstr(win, "    ");
 
-            ncurses::mvwchgat(win, coord.0, (coord.1 + curr_pos) as i32, 1, ncurses::A_STANDOUT(), 0);
+            ncurses::mvwchgat(
+                win,
+                coord.0,
+                (coord.1 + curr_pos) as i32,
+                1,
+                ncurses::A_STANDOUT(),
+                0,
+            );
             ncurses::wrefresh(win);
 
             let ch = ncurses::wget_wch(win).unwrap();
@@ -96,9 +101,7 @@ impl JoshutoTextField {
                     Some(_) => {
                         curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
                     }
-                    None => {
-
-                    },
+                    None => {}
                 };
             }
         }
