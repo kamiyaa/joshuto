@@ -45,7 +45,7 @@ impl SortOption {
             dummy_dir_first
         };
 
-        move |f1, f2| dir_cmp(f1, f2).unwrap_or_else(|| rev_cmp(base_cmp(f1, f2)))
+        move |f1, f2| dir_cmp(f1, f2).then_with(|| rev_cmp(base_cmp(f1, f2)))
     }
 
     pub fn filter_func(&self) -> fn(&Result<fs::DirEntry, std::io::Error>) -> bool {
@@ -90,23 +90,20 @@ pub fn map_entry_default(
 const fn dummy_dir_first(
     _: &structs::JoshutoDirEntry,
     _: &structs::JoshutoDirEntry,
-) -> Option<cmp::Ordering> {
-    None
+) -> cmp::Ordering {
+    cmp::Ordering::Equal
 }
 
-fn dir_first(
-    f1: &structs::JoshutoDirEntry,
-    f2: &structs::JoshutoDirEntry,
-) -> Option<cmp::Ordering> {
+fn dir_first(f1: &structs::JoshutoDirEntry, f2: &structs::JoshutoDirEntry) -> cmp::Ordering {
     let f1_isdir = f1.path.is_dir();
     let f2_isdir = f2.path.is_dir();
 
     if f1_isdir && !f2_isdir {
-        Some(cmp::Ordering::Less)
+        cmp::Ordering::Less
     } else if !f1_isdir && f2_isdir {
-        Some(cmp::Ordering::Greater)
+        cmp::Ordering::Greater
     } else {
-        None
+        cmp::Ordering::Equal
     }
 }
 
@@ -115,11 +112,7 @@ const fn dummy_reverse(c: cmp::Ordering) -> cmp::Ordering {
 }
 
 fn reverse_ordering(c: cmp::Ordering) -> cmp::Ordering {
-    match c {
-        cmp::Ordering::Less => cmp::Ordering::Greater,
-        cmp::Ordering::Greater => cmp::Ordering::Less,
-        x => x,
-    }
+    c.reverse()
 }
 
 fn natural_sort_case_insensitive(
