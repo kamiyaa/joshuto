@@ -39,11 +39,9 @@ impl JoshutoPanel {
         }
     }
 
-    #[inline]
     pub fn move_to_top(&self) {
         ncurses::top_panel(self.panel);
     }
-    #[inline]
     pub fn queue_for_refresh(&self) {
         ncurses::wnoutrefresh(self.win);
     }

@@ -13,6 +13,10 @@ impl JoshutoTextField {
         JoshutoTextField { win, prompt }
     }
 
+    pub fn readline(&self) -> Option<String> {
+        self.readline_with_initial("", "")
+    }
+
     pub fn readline_with_initial(&self, prefix: &str, suffix: &str) -> Option<String> {
         self.win.move_to_top();
         ncurses::timeout(-1);

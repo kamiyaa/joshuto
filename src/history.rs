@@ -21,11 +21,15 @@ impl DirHistory {
             for curr in ancestors {
                 match structs::JoshutoDirList::new(curr.to_path_buf().clone(), sort_option) {
                     Ok(mut s) => {
-                        for (i, dirent) in s.contents.iter().enumerate() {
-                            if dirent.path == ancestor {
-                                s.index = Some(i);
-                                break;
+                        let index = s.contents.iter().enumerate().find_map(|(i, dir)| {
+                            if dir.path == ancestor {
+                                Some(i)
+                            } else {
+                                None
                             }
+                        });
+                        if let Some(i) = index {
+                            s.index = Some(i);
                         }
                         self.map.insert(curr.to_path_buf(), s);
                     }
@@ -65,7 +69,7 @@ impl DirHistory {
             Entry::Occupied(mut entry) => {
                 let dir_entry = entry.get_mut();
                 if dir_entry.need_update() {
-                    dir_entry.update_contents(&sort_option).unwrap();
+                    dir_entry.update_contents(&sort_option);
                 }
             }
             Entry::Vacant(entry) => {

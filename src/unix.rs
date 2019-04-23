@@ -6,18 +6,13 @@ use crate::config::mimetype;
 pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 
-    for val in LIBC_PERMISSION_VALS.iter() {
+    LIBC_PERMISSION_VALS.iter().any(|val| {
         let val: u32 = (*val).into();
-        if mode & val != 0 {
-            return true;
-        }
-    }
-    false
+        mode & val != 0
+    })
 }
 
 pub fn stringify_mode(mode: u32) -> String {
-    let mut mode_str: String = String::with_capacity(10);
-
     const LIBC_FILE_VALS: [(libc::mode_t, char); 7] = [
         (libc::S_IFREG, '-'),
         (libc::S_IFDIR, 'd'),
@@ -39,6 +34,7 @@ pub fn stringify_mode(mode: u32) -> String {
         (libc::S_IWOTH, 'w'),
         (libc::S_IXOTH, 'x'),
     ];
+    let mut mode_str: String = String::with_capacity(10);
 
     let mode_shifted = mode >> 9;
 
@@ -75,43 +71,39 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     let program = entry.program.clone();
 
     let mut command = process::Command::new(program);
-    if let Some(true) = entry.silent {
-        command.stdout(process::Stdio::null());
-        command.stderr(process::Stdio::null());
+    match entry.silent {
+        Some(true) => {
+            command.stdout(process::Stdio::null());
+            command.stderr(process::Stdio::null());
+        },
+        _ => {},
     }
+
     if let Some(args) = entry.args.as_ref() {
-        for arg in args {
-            command.arg(arg.clone());
-        }
+        command.args(args.iter().map(|arg| arg.clone()));
     }
-    for path in paths {
-        command.arg(path.as_os_str());
-    }
+    command.args(paths.iter().map(|path| path.as_os_str()));
 
     match command.spawn() {
         Ok(mut handle) => {
-            if let Some(true) = entry.fork {
-            } else {
-                match handle.wait() {
+            match entry.fork {
+                Some(true) => {}
+                _ => match handle.wait() {
                     Ok(_) => {}
                     Err(e) => eprintln!("{}", e),
-                }
+                },
             }
-        }
+        },
         Err(e) => eprintln!("{}", e),
-    }
+    };
 }
 
 pub fn open_with_args(paths: &[PathBuf], args: &[String]) {
     let program = args[0].clone();
 
     let mut command = process::Command::new(program);
-    for arg in &args[1..] {
-        command.arg(arg.clone());
-    }
-    for path in paths {
-        command.arg(path.as_os_str());
-    }
+    command.args(args[1..].iter().map(|arg| arg.clone()));
+    command.args(paths.iter().map(|path| path.as_os_str()));
 
     match command.spawn() {
         Ok(mut handle) => match handle.wait() {
