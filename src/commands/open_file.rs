@@ -61,13 +61,8 @@ impl OpenFile {
             return;
         }
 
-        {
-            let parent_list = curr_tab.parent_list.take();
-            curr_tab.history.put_back(parent_list);
-
-            let curr_list = curr_tab.curr_list.take();
-            curr_tab.parent_list = curr_list;
-        }
+        curr_tab.history.put_back(curr_tab.parent_list.take());
+        curr_tab.parent_list = curr_tab.curr_list.take();
 
         curr_tab.curr_list = match curr_tab
             .history
@@ -130,16 +125,22 @@ impl JoshutoRunnable for OpenFile {
         }
         if let Some(path) = path {
             Self::open_directory(&path, context, view);
-            {
-                let curr_tab = &mut context.tabs[context.curr_tab_index];
-                curr_tab.refresh(
-                    view,
-                    &context.config_t,
-                    &context.username,
-                    &context.hostname,
-                );
-                preview::preview_file(curr_tab, view, &context.config_t);
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
+            match curr_tab.curr_list {
+                Some(ref mut s) => {
+                    if s.need_update() {
+                        s.update_contents(&context.config_t.sort_option);
+                    }
+                }
+                None => {}
             }
+            curr_tab.refresh(
+                view,
+                &context.config_t,
+                &context.username,
+                &context.hostname,
+            );
+            preview::preview_file(curr_tab, view, &context.config_t);
         } else {
             let paths: Option<Vec<PathBuf>> =
                 match context.tabs[context.curr_tab_index].curr_list.as_ref() {
@@ -152,6 +153,22 @@ impl JoshutoRunnable for OpenFile {
                 let err = std::io::Error::new(std::io::ErrorKind::NotFound, "No files selected");
                 return Err(JoshutoError::IO(err));
             }
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
+            match curr_tab.curr_list {
+                Some(ref mut s) => {
+                    if s.need_update() {
+                        s.update_contents(&context.config_t.sort_option);
+                    }
+                }
+                None => {}
+            }
+            curr_tab.refresh(
+                view,
+                &context.config_t,
+                &context.username,
+                &context.hostname,
+            );
+            preview::preview_file(curr_tab, view, &context.config_t);
         }
         ncurses::doupdate();
         Ok(())

@@ -21,11 +21,11 @@ impl TabSwitch {
     }
 
     pub fn tab_switch(
-        new_index: i32,
+        new_index: usize,
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        context.curr_tab_index = new_index as usize;
+        context.curr_tab_index = new_index;
         let path = &context.curr_tab_ref().curr_path;
         match env::set_current_dir(path) {
             Ok(_) => {
@@ -72,6 +72,7 @@ impl JoshutoRunnable for TabSwitch {
         while new_index >= tab_len {
             new_index -= tab_len;
         }
+        let new_index = new_index as usize;
         Self::tab_switch(new_index, context, view)
     }
 }

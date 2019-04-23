@@ -43,7 +43,7 @@ impl JoshutoRunnable for NewDirectory {
                 (term_rows as usize - 1, 0),
                 PROMPT.to_string(),
             );
-            textfield.readline_with_initial("", "")
+            textfield.readline()
         };
 
         if let Some(user_input) = user_input {

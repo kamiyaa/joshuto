@@ -29,7 +29,7 @@ impl NewTab {
                 context.tabs.push(tab);
                 context.curr_tab_index = context.tabs.len() - 1;
 
-                TabSwitch::tab_switch(context.tabs.len() as i32 - 1, context, view)
+                TabSwitch::tab_switch(context.curr_tab_index, context, view)
             }
             Err(e) => Err(JoshutoError::IO(e)),
         }
@@ -74,7 +74,7 @@ impl CloseTab {
         if context.curr_tab_index > 0 {
             context.curr_tab_index -= 1;
         }
-        TabSwitch::tab_switch(context.curr_tab_index as i32, context, view)
+        TabSwitch::tab_switch(context.curr_tab_index, context, view)
     }
 }
 

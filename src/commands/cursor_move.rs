@@ -70,11 +70,8 @@ impl JoshutoRunnable for CursorMoveInc {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         let mut movement: Option<usize> = None;
-        {
-            let curr_tab = context.curr_tab_mut();
-            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-                movement = curr_list.index.map(|x| x + self.movement);
-            }
+        if let Some(curr_list) = context.curr_tab_mut().curr_list.as_ref() {
+            movement = curr_list.index.map(|x| x + self.movement);
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view)
@@ -112,17 +109,14 @@ impl JoshutoRunnable for CursorMoveDec {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         let mut movement: Option<usize> = None;
-        {
-            let curr_tab = context.curr_tab_mut();
-            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-                movement = curr_list.index.map(|x| {
-                    if x > self.movement {
-                        x - self.movement
-                    } else {
-                        0
-                    }
-                });
-            }
+        if let Some(curr_list) = context.curr_tab_mut().curr_list.as_ref() {
+            movement = curr_list.index.map(|x| {
+                if x > self.movement {
+                    x - self.movement
+                } else {
+                    0
+                }
+            });
         }
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
