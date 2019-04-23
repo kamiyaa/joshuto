@@ -75,8 +75,8 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
         Some(true) => {
             command.stdout(process::Stdio::null());
             command.stderr(process::Stdio::null());
-        },
-        _ => {},
+        }
+        _ => {}
     }
 
     if let Some(args) = entry.args.as_ref() {
@@ -85,14 +85,12 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     command.args(paths.iter().map(|path| path.as_os_str()));
 
     match command.spawn() {
-        Ok(mut handle) => {
-            match entry.fork {
-                Some(true) => {}
-                _ => match handle.wait() {
-                    Ok(_) => {}
-                    Err(e) => eprintln!("{}", e),
-                },
-            }
+        Ok(mut handle) => match entry.fork {
+            Some(true) => {}
+            _ => match handle.wait() {
+                Ok(_) => {}
+                Err(e) => eprintln!("{}", e),
+            },
         },
         Err(e) => eprintln!("{}", e),
     };
