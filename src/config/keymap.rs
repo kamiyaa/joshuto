@@ -32,12 +32,8 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
         if let Some(maps) = self.mapcommand {
             for mapcommand in maps {
                 match commands::from_args(mapcommand.command.as_str(), mapcommand.args.as_ref()) {
-                    Some(command) => {
-                        insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]);
-                    }
-                    None => {
-                        eprintln!("Unknown command: {}", mapcommand.command);
-                    }
+                    Some(command) => insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]),
+                    None => eprintln!("Unknown command: {}", mapcommand.command),
                 }
             }
         }
@@ -51,14 +47,16 @@ pub struct JoshutoKeymap {
 }
 
 impl JoshutoKeymap {
-    pub fn new() -> Self {
-        let keymaps = HashMap::new();
-        JoshutoKeymap { keymaps }
-    }
-
     pub fn get_config() -> JoshutoKeymap {
         parse_config_file::<JoshutoRawKeymap, JoshutoKeymap>(KEYMAP_FILE)
-            .unwrap_or_else(JoshutoKeymap::new)
+            .unwrap_or_else(JoshutoKeymap::default)
+    }
+}
+
+impl std::default::Default for JoshutoKeymap {
+    fn default() -> Self {
+        let keymaps = HashMap::new();
+        JoshutoKeymap { keymaps }
     }
 }
 

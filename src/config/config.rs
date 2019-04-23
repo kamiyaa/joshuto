@@ -22,19 +22,6 @@ pub struct JoshutoRawConfig {
     column_ratio: Option<[usize; 3]>,
 }
 
-impl JoshutoRawConfig {
-    #[allow(dead_code)]
-    pub fn new() -> Self {
-        JoshutoRawConfig {
-            scroll_offset: None,
-            tilde_in_titlebar: None,
-            sort_method: None,
-            sort_option: None,
-            column_ratio: None,
-        }
-    }
-}
-
 impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
     fn flatten(self) -> JoshutoConfig {
         let column_ratio = match self.column_ratio {
@@ -99,7 +86,14 @@ pub struct JoshutoConfig {
 }
 
 impl JoshutoConfig {
-    pub fn new() -> Self {
+    pub fn get_config() -> JoshutoConfig {
+        parse_config_file::<JoshutoRawConfig, JoshutoConfig>(CONFIG_FILE)
+            .unwrap_or_else(JoshutoConfig::default)
+    }
+}
+
+impl std::default::Default for JoshutoConfig {
+    fn default() -> Self {
         let sort_option = sort::SortOption {
             show_hidden: false,
             directories_first: true,
@@ -114,10 +108,5 @@ impl JoshutoConfig {
             sort_option,
             column_ratio: (1, 3, 4),
         }
-    }
-
-    pub fn get_config() -> JoshutoConfig {
-        parse_config_file::<JoshutoRawConfig, JoshutoConfig>(CONFIG_FILE)
-            .unwrap_or_else(JoshutoConfig::new)
     }
 }

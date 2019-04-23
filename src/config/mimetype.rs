@@ -42,16 +42,6 @@ pub struct JoshutoRawMimetype {
     extension: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
 }
 
-impl JoshutoRawMimetype {
-    #[allow(dead_code)]
-    pub fn new() -> Self {
-        JoshutoRawMimetype {
-            mimetype: None,
-            extension: None,
-        }
-    }
-}
-
 impl Flattenable<JoshutoMimetype> for JoshutoRawMimetype {
     fn flatten(self) -> JoshutoMimetype {
         let mimetype = self.mimetype.unwrap_or_default();
@@ -71,15 +61,17 @@ pub struct JoshutoMimetype {
 }
 
 impl JoshutoMimetype {
-    pub fn new() -> Self {
+    pub fn get_config() -> JoshutoMimetype {
+        parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
+            .unwrap_or_else(JoshutoMimetype::default)
+    }
+}
+
+impl std::default::Default for JoshutoMimetype {
+    fn default() -> Self {
         JoshutoMimetype {
             mimetype: HashMap::new(),
             extension: HashMap::new(),
         }
-    }
-
-    pub fn get_config() -> JoshutoMimetype {
-        parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
-            .unwrap_or_else(JoshutoMimetype::new)
     }
 }

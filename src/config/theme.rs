@@ -153,7 +153,14 @@ pub struct JoshutoTheme {
 }
 
 impl JoshutoTheme {
-    pub fn new() -> Self {
+    pub fn get_config() -> JoshutoTheme {
+        parse_config_file::<JoshutoRawTheme, JoshutoTheme>(crate::THEME_FILE)
+            .unwrap_or_else(JoshutoTheme::default)
+    }
+}
+
+impl std::default::Default for JoshutoTheme {
+    fn default() -> Self {
         let mut colorpair: Vec<JoshutoColorPair> = Vec::with_capacity(10);
         colorpair.push(JoshutoColorPair::new(2, 2, -1));
         colorpair.push(JoshutoColorPair::new(3, 3, -1));
@@ -219,10 +226,5 @@ impl JoshutoTheme {
             socket,
             ext: HashMap::new(),
         }
-    }
-
-    pub fn get_config() -> JoshutoTheme {
-        parse_config_file::<JoshutoRawTheme, JoshutoTheme>(crate::THEME_FILE)
-            .unwrap_or_else(JoshutoTheme::new)
     }
 }
