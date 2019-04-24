@@ -29,13 +29,13 @@ impl CursorMove {
         }
 
         curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
-        curr_tab.refresh_file_status(&view.bot_win);
         curr_tab.refresh_path_status(
             &view.top_win,
             &context.username,
             &context.hostname,
             context.config_t.tilde_in_titlebar,
         );
+        curr_tab.refresh_file_status(&view.bot_win);
         preview::preview_file(curr_tab, &view, &context.config_t);
         ncurses::doupdate();
     }

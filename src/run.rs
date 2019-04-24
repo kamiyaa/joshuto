@@ -1,12 +1,13 @@
 use std::collections::HashMap;
+use std::process;
 use std::time;
 
-use crate::commands;
 use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand};
 use crate::config;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::preview;
+use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::JoshutoPanel;
 use crate::window::JoshutoView;
@@ -79,7 +80,7 @@ fn join_thread(
             if tab_dest != tab_src && tab_dest < context.tabs.len() {
                 let dirty_tab = &mut context.tabs[tab_dest];
                 dirty_tab.reload_contents(&context.config_t.sort_option)?;
-                if tab_src == context.curr_tab_index {
+                if tab_dest == context.curr_tab_index {
                     dirty_tab.refresh(
                         view,
                         &context.config_t,
@@ -87,6 +88,7 @@ fn join_thread(
                         &context.hostname,
                     );
                     preview::preview_file(dirty_tab, view, &context.config_t);
+                    ncurses::doupdate();
                 }
             }
         }
@@ -131,24 +133,56 @@ fn resize_handler(context: &mut JoshutoContext, view: &JoshutoView) {
     ncurses::doupdate();
 }
 
+fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
+    match std::env::current_dir() {
+        Ok(curr_path) => match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
+            Ok(tab) => {
+                context.tabs.push(tab);
+                context.curr_tab_index = context.tabs.len() - 1;
+                {
+                    let curr_tab = &mut context.tabs[context.curr_tab_index];
+                    if let Some(s) = curr_tab.curr_list.as_mut() {
+                        if s.need_update() {
+                            s.update_contents(&context.config_t.sort_option);
+                        }
+                    }
+                    if let Some(s) = curr_tab.parent_list.as_mut() {
+                        if s.need_update() {
+                            s.update_contents(&context.config_t.sort_option);
+                        }
+                    }
+                    curr_tab.refresh(
+                        view,
+                        &context.config_t,
+                        &context.username,
+                        &context.hostname,
+                    );
+                }
+                ui::redraw_tab_view(&view.tab_win, &context);
+                let curr_tab = &mut context.tabs[context.curr_tab_index];
+                preview::preview_file(curr_tab, view, &context.config_t);
+                ncurses::doupdate();
+            }
+            Err(e) => {
+                ui::end_ncurses();
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        },
+        Err(e) => {
+            ui::end_ncurses();
+            eprintln!("{}", e);
+            process::exit(1);
+        }
+    }
+}
+
 pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
     ui::init_ncurses();
 
     let mut context = JoshutoContext::new(config_t);
     let mut view = JoshutoView::new(context.config_t.column_ratio);
-    match commands::NewTab::new_tab(&mut context, &view) {
-        Ok(_) => {}
-        Err(JoshutoError::IO(e)) => {
-            ui::wprint_err(&view.bot_win, e.to_string().as_str());
-            context.exit = true;
-        }
-    }
-    preview::preview_file(
-        &mut context.tabs[context.curr_tab_index],
-        &view,
-        &context.config_t,
-    );
-    ncurses::doupdate();
+    init_context(&mut context, &view);
 
     while !context.exit {
         if !context.threads.is_empty() {

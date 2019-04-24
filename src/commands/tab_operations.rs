@@ -1,4 +1,3 @@
-use std::env;
 use std::path;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
@@ -19,9 +18,13 @@ impl NewTab {
     }
 
     pub fn new_tab(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), JoshutoError> {
-        let curr_path: path::PathBuf = match env::current_dir() {
-            Ok(path) => path,
-            Err(e) => return Err(JoshutoError::IO(e)),
+        let curr_path: path::PathBuf = match dirs::home_dir() {
+            Some(path) => path,
+            None => {
+                let err =
+                    std::io::Error::new(std::io::ErrorKind::NotFound, "Cannot find home directory");
+                return Err(JoshutoError::IO(err));
+            }
         };
 
         match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
