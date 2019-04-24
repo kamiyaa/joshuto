@@ -129,7 +129,10 @@ impl JoshutoRunnable for OpenFile {
             match curr_tab.curr_list {
                 Some(ref mut s) => {
                     if s.need_update() {
-                        s.update_contents(&context.config_t.sort_option);
+                        match s.update_contents(&context.config_t.sort_option) {
+                            Err(e) => return Err(JoshutoError::IO(e)),
+                            _ => {}
+                        }
                     }
                 }
                 None => {}
@@ -157,7 +160,10 @@ impl JoshutoRunnable for OpenFile {
             match curr_tab.curr_list {
                 Some(ref mut s) => {
                     if s.need_update() {
-                        s.update_contents(&context.config_t.sort_option);
+                        match s.update_contents(&context.config_t.sort_option) {
+                            Err(e) => return Err(JoshutoError::IO(e)),
+                            _ => {}
+                        }
                     }
                 }
                 None => {}

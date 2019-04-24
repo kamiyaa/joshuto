@@ -121,19 +121,13 @@ fn natural_sort_case_insensitive(
 ) -> cmp::Ordering {
     let f1_name = f1.file_name_as_string.to_lowercase();
     let f2_name = f2.file_name_as_string.to_lowercase();
-    if f1_name <= f2_name {
-        cmp::Ordering::Less
-    } else {
-        cmp::Ordering::Greater
-    }
+    f1_name.partial_cmp(&f2_name).unwrap_or(cmp::Ordering::Less)
 }
 
 fn natural_sort(f1: &structs::JoshutoDirEntry, f2: &structs::JoshutoDirEntry) -> cmp::Ordering {
-    if f1.file_name <= f2.file_name {
-        cmp::Ordering::Less
-    } else {
-        cmp::Ordering::Greater
-    }
+    f1.file_name
+        .partial_cmp(&f2.file_name)
+        .unwrap_or(cmp::Ordering::Less)
 }
 
 fn mtime_sort(file1: &structs::JoshutoDirEntry, file2: &structs::JoshutoDirEntry) -> cmp::Ordering {

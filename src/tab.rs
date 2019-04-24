@@ -38,11 +38,14 @@ impl JoshutoTab {
         Ok(tab)
     }
 
-    pub fn reload_contents(&mut self, sort_option: &sort::SortOption) {
+    pub fn reload_contents(
+        &mut self,
+        sort_option: &sort::SortOption,
+    ) -> Result<(), std::io::Error> {
         let mut list = self.curr_list.take();
         if let Some(ref mut s) = list {
             if s.path.exists() {
-                s.update_contents(sort_option);
+                s.update_contents(sort_option)?;
             }
         };
         self.curr_list = list;
@@ -50,10 +53,11 @@ impl JoshutoTab {
         let mut list = self.parent_list.take();
         if let Some(ref mut s) = list {
             if s.path.exists() {
-                s.update_contents(sort_option);
+                s.update_contents(sort_option)?;
             }
         };
         self.parent_list = list;
+        Ok(())
     }
 
     pub fn refresh(

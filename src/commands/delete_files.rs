@@ -58,15 +58,16 @@ impl JoshutoRunnable for DeleteFiles {
                 if let Some(paths) = s.get_selected_paths() {
                     match Self::remove_files(paths) {
                         Ok(_) => ui::wprint_msg(&view.bot_win, "Deleted files"),
-                        Err(e) => {
-                            return Err(JoshutoError::IO(e));
-                        }
+                        Err(e) => return Err(JoshutoError::IO(e)),
                     }
                 }
             }
 
             let curr_tab = &mut context.tabs[context.curr_tab_index];
-            curr_tab.reload_contents(&context.config_t.sort_option);
+            match curr_tab.reload_contents(&context.config_t.sort_option) {
+                Err(e) => return Err(JoshutoError::IO(e)),
+                _ => {}
+            }
             curr_tab.refresh(
                 &view,
                 &context.config_t,

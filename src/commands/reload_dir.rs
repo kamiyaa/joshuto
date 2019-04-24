@@ -15,15 +15,16 @@ impl ReloadDirList {
         "reload_dir_list"
     }
 
-    pub fn reload(context: &mut JoshutoContext, view: &JoshutoView) {
+    pub fn reload(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.reload_contents(&context.config_t.sort_option);
+        curr_tab.reload_contents(&context.config_t.sort_option)?;
         curr_tab.refresh(
             view,
             &context.config_t,
             &context.username,
             &context.hostname,
         );
+        Ok(())
     }
 }
 
@@ -41,7 +42,10 @@ impl JoshutoRunnable for ReloadDirList {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        Self::reload(context, view);
+        match Self::reload(context, view) {
+            Ok(_) => {}
+            Err(e) => return Err(JoshutoError::IO(e)),
+        }
         preview::preview_file(
             &mut context.tabs[context.curr_tab_index],
             view,

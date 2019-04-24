@@ -1,7 +1,6 @@
-use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::preview;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
@@ -20,7 +19,12 @@ impl ToggleHiddenFiles {
 
         for tab in &mut context.tabs {
             tab.history.depecrate_all_entries();
-            tab.reload_contents(&context.config_t.sort_option);
+            if let Some(s) = tab.curr_list.as_mut() {
+                s.depreciate();
+            }
+            if let Some(s) = tab.parent_list.as_mut() {
+                s.depreciate();
+            }
         }
     }
 }
@@ -40,20 +44,6 @@ impl JoshutoRunnable for ToggleHiddenFiles {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         Self::toggle_hidden(context);
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.reload_contents(&context.config_t.sort_option);
-        curr_tab.refresh(
-            view,
-            &context.config_t,
-            &context.username,
-            &context.hostname,
-        );
-        preview::preview_file(
-            &mut context.tabs[context.curr_tab_index],
-            view,
-            &context.config_t,
-        );
-        ncurses::doupdate();
-        Ok(())
+        ReloadDirList::new().execute(context, view)
     }
 }

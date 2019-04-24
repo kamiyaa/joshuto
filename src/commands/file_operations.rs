@@ -319,9 +319,8 @@ fn fs_cut_thread(
             }
         }
         destination.pop();
-
         progress_info.bytes_finished += 1;
-        tx.send(progress_info.clone());
+        tx.send(progress_info.clone()).unwrap();
     }
     return Ok(());
 }
@@ -389,9 +388,7 @@ fn fs_copy_thread(
         }
         destination.pop();
         progress_info.bytes_finished += 1;
-        match tx.send(progress_info.clone()) {
-            _ => {}
-        }
+        tx.send(progress_info.clone()).unwrap();
     }
     return Ok(());
 }

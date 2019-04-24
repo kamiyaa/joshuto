@@ -24,29 +24,34 @@ impl TabSwitch {
         new_index: usize,
         context: &mut JoshutoContext,
         view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    ) -> Result<(), std::io::Error> {
         context.curr_tab_index = new_index;
         let path = &context.curr_tab_ref().curr_path;
-        match env::set_current_dir(path) {
-            Ok(_) => {
-                {
-                    let curr_tab = &mut context.tabs[context.curr_tab_index];
-                    curr_tab.reload_contents(&context.config_t.sort_option);
-                    curr_tab.refresh(
-                        view,
-                        &context.config_t,
-                        &context.username,
-                        &context.hostname,
-                    );
+        env::set_current_dir(path)?;
+        {
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
+            if let Some(s) = curr_tab.curr_list.as_mut() {
+                if s.need_update() {
+                    s.update_contents(&context.config_t.sort_option)?;
                 }
-                ui::redraw_tab_view(&view.tab_win, &context);
-                let curr_tab = &mut context.tabs[context.curr_tab_index];
-                preview::preview_file(curr_tab, view, &context.config_t);
-                ncurses::doupdate();
-                Ok(())
             }
-            Err(e) => Err(JoshutoError::IO(e)),
+            if let Some(s) = curr_tab.parent_list.as_mut() {
+                if s.need_update() {
+                    s.update_contents(&context.config_t.sort_option)?;
+                }
+            }
+            curr_tab.refresh(
+                view,
+                &context.config_t,
+                &context.username,
+                &context.hostname,
+            );
         }
+        ui::redraw_tab_view(&view.tab_win, &context);
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        preview::preview_file(curr_tab, view, &context.config_t);
+        ncurses::doupdate();
+        Ok(())
     }
 }
 
@@ -73,6 +78,9 @@ impl JoshutoRunnable for TabSwitch {
             new_index -= tab_len;
         }
         let new_index = new_index as usize;
-        Self::tab_switch(new_index, context, view)
+        match Self::tab_switch(new_index, context, view) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(JoshutoError::IO(e)),
+        }
     }
 }

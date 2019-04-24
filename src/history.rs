@@ -64,25 +64,18 @@ impl DirHistory {
         path: &Path,
         sort_option: &sort::SortOption,
     ) -> Result<&mut structs::JoshutoDirList, std::io::Error> {
-        let pathbuf = path.to_path_buf();
-        match self.map.entry(pathbuf.clone()) {
+        match self.map.entry(path.to_path_buf().clone()) {
             Entry::Occupied(mut entry) => {
                 let dir_entry = entry.get_mut();
                 if dir_entry.need_update() {
-                    dir_entry.update_contents(&sort_option);
+                    dir_entry.update_contents(&sort_option)?;
                 }
+                Ok(entry.into_mut())
             }
             Entry::Vacant(entry) => {
                 let s = structs::JoshutoDirList::new(path.to_path_buf(), &sort_option)?;
-                entry.insert(s);
+                Ok(entry.insert(s))
             }
-        };
-        match self.map.get_mut(&pathbuf) {
-            Some(s) => Ok(s),
-            None => Err(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                "Can't find file",
-            )),
         }
     }
 
@@ -95,6 +88,6 @@ impl DirHistory {
     pub fn depecrate_all_entries(&mut self) {
         self.map
             .iter_mut()
-            .for_each(|(_, v)| v.update_needed = true);
+            .for_each(|(_, v)| v.depreciate());
     }
 }

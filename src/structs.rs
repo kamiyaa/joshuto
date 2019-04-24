@@ -80,10 +80,10 @@ impl std::fmt::Debug for JoshutoDirEntry {
 pub struct JoshutoDirList {
     pub index: Option<usize>,
     pub path: PathBuf,
-    pub update_needed: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
     pub pagestate: JoshutoPageState,
+    outdated: bool,
 }
 
 impl JoshutoDirList {
@@ -100,7 +100,7 @@ impl JoshutoDirList {
         Ok(JoshutoDirList {
             index,
             path,
-            update_needed: false,
+            outdated: false,
             metadata,
             contents,
             pagestate,
@@ -120,8 +120,12 @@ impl JoshutoDirList {
         Ok(result_vec)
     }
 
+    pub fn depreciate(&mut self) {
+        self.outdated = true;
+    }
+
     pub fn need_update(&self) -> bool {
-        if self.update_needed {
+        if self.outdated {
             return true;
         }
         if let Ok(metadata) = std::fs::metadata(&self.path) {
@@ -129,16 +133,16 @@ impl JoshutoDirList {
                 return self.metadata.modified < modified;
             }
         }
-        true
+        false
     }
 
     pub fn update_contents(
         &mut self,
         sort_option: &sort::SortOption,
     ) -> Result<(), std::io::Error> {
-        let sort_func = sort_option.compare_func();
-        self.update_needed = false;
+        self.outdated = false;
 
+        let sort_func = sort_option.compare_func();
         let mut contents = Self::read_dir_list(&self.path, sort_option)?;
         contents.sort_by(&sort_func);
 

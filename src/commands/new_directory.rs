@@ -50,9 +50,12 @@ impl JoshutoRunnable for NewDirectory {
             let path = path::PathBuf::from(user_input);
 
             match std::fs::create_dir_all(&path) {
-                Ok(_) => ReloadDirList::reload(context, view),
+                Ok(_) => match ReloadDirList::reload(context, view) {
+                    Ok(_) => {}
+                    Err(e) => return Err(JoshutoError::IO(e)),
+                },
                 Err(e) => return Err(JoshutoError::IO(e)),
-            }
+            };
         }
         ncurses::doupdate();
         Ok(())

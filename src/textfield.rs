@@ -8,7 +8,6 @@ struct CompletionTracker {
     pub pos: usize,
     pub original: String,
     pub candidates: Vec<rustyline::completion::Pair>,
-    pub need_update: bool,
 }
 
 impl CompletionTracker {
@@ -18,7 +17,6 @@ impl CompletionTracker {
             pos,
             original,
             candidates,
-            need_update: false,
         }
     }
 }
@@ -63,6 +61,7 @@ impl JoshutoTextField {
             ncurses::mvwaddstr(win, coord.0, coord.1 as i32, line_buffer.as_str());
             ncurses::wclrtoeol(win);
 
+            /* draws cursor */
             ncurses::mvwchgat(
                 win,
                 coord.0,
@@ -86,51 +85,44 @@ impl JoshutoTextField {
             } else if ch == ncurses::KEY_HOME {
                 line_buffer.move_home();
                 curr_pos = 0;
-                if let Some(ref mut s) = completion_tracker {
-                    s.need_update = true;
-                }
+                completion_tracker.take();
             } else if ch == ncurses::KEY_END {
                 line_buffer.move_end();
                 curr_pos = unicode_width::UnicodeWidthStr::width(line_buffer.as_str());
-                if let Some(ref mut s) = completion_tracker {
-                    s.need_update = true;
-                }
+                completion_tracker.take();
             } else if ch == ncurses::KEY_LEFT {
                 if line_buffer.move_backward(1) {
                     let pos = line_buffer.pos();
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
-                    if let Some(ref mut s) = completion_tracker {
-                        s.need_update = true;
-                    }
+                    completion_tracker.take();
                 }
             } else if ch == ncurses::KEY_RIGHT {
                 if line_buffer.move_forward(1) {
                     let pos = line_buffer.pos();
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
-                    if let Some(ref mut s) = completion_tracker {
-                        s.need_update = true;
-                    }
+                    completion_tracker.take();
                 }
             } else if ch == keymap::BACKSPACE {
                 if line_buffer.backspace(1) {
                     let pos = line_buffer.pos();
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
-                    if let Some(ref mut s) = completion_tracker {
-                        s.need_update = true;
-                    }
+                    completion_tracker.take();
                 }
             } else if ch == ncurses::KEY_DC {
                 if let Some(_) = line_buffer.delete(1) {
-                    if let Some(ref mut s) = completion_tracker {
-                        s.need_update = true;
-                    }
+                    completion_tracker.take();
                 }
             } else if ch == 0x9 {
                 match completion_tracker {
                     None => {
                         if line_buffer.len() == line_buffer.pos() {
                             let res = completer.complete(line_buffer.as_str(), line_buffer.len());
-                            if let Ok((pos, candidates)) = res {
+                            if let Ok((pos, mut candidates)) = res {
+                                candidates.sort_by(|x, y| {
+                                    x.display()
+                                        .partial_cmp(y.display())
+                                        .unwrap_or(std::cmp::Ordering::Less)
+                                });
                                 let ct = CompletionTracker::new(
                                     pos,
                                     candidates,
@@ -140,34 +132,16 @@ impl JoshutoTextField {
                             }
                         }
                     }
-                    Some(ref mut s) => {
-                        if s.need_update {
-                            completion_tracker = None;
-                            if line_buffer.len() == line_buffer.pos() {
-                                let res =
-                                    completer.complete(line_buffer.as_str(), line_buffer.len());
-                                if let Ok((pos, candidates)) = res {
-                                    let ct = CompletionTracker::new(
-                                        pos,
-                                        candidates,
-                                        String::from(line_buffer.as_str()),
-                                    );
-                                    completion_tracker = Some(ct);
-                                }
-                            }
-                        }
-                    }
+                    _ => {}
                 }
                 match completion_tracker {
                     Some(ref mut s) => {
                         if s.index < s.candidates.len() {
                             let candidate = &s.candidates[s.index];
-                            line_buffer.kill_line();
-                            line_buffer.yank_pop(line_buffer.pos(), candidate.display());
+                            completer.update(&mut line_buffer, 0, candidate.display());
                             s.index += 1;
                         } else {
-                            line_buffer.kill_line();
-                            line_buffer.yank_pop(line_buffer.pos(), &s.original);
+                            completer.update(&mut line_buffer, 0, &s.original);
                             s.index = 0;
                         }
                     }
@@ -177,19 +151,14 @@ impl JoshutoTextField {
                     &line_buffer.as_str()[..line_buffer.pos()],
                 );
             } else if ch == ncurses::KEY_UP {
-
+                completion_tracker.take();
             } else if ch == ncurses::KEY_DOWN {
-
+                completion_tracker.take();
             } else if let Some(ch) = std::char::from_u32(ch as u32) {
-                match line_buffer.insert(ch, 1) {
-                    Some(_) => {
-                        curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
-                        if let Some(ref mut s) = completion_tracker {
-                            s.need_update = true;
-                        }
-                    }
-                    None => {}
-                };
+                if let Some(_) = line_buffer.insert(ch, 1) {
+                    curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
+                    completion_tracker.take();
+                }
             }
         }
         let lbstr = line_buffer.to_string();
