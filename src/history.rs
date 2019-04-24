@@ -86,8 +86,6 @@ impl DirHistory {
     }
 
     pub fn depecrate_all_entries(&mut self) {
-        self.map
-            .iter_mut()
-            .for_each(|(_, v)| v.depreciate());
+        self.map.iter_mut().for_each(|(_, v)| v.depreciate());
     }
 }

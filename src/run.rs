@@ -48,7 +48,11 @@ fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<
     }
 }
 
-fn join_thread(context: &mut JoshutoContext, thread: FileOperationThread, view: &JoshutoView) -> Result<(), std::io::Error> {
+fn join_thread(
+    context: &mut JoshutoContext,
+    thread: FileOperationThread,
+    view: &JoshutoView,
+) -> Result<(), std::io::Error> {
     ncurses::werase(view.bot_win.win);
     ncurses::doupdate();
 
