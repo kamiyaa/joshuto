@@ -42,10 +42,11 @@ impl JoshutoRunnable for ReloadDirList {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         match Self::reload(context, view) {
-            Ok(_) => {}
+            Ok(_) => {
+                ncurses::doupdate();
+                Ok(())
+            }
             Err(e) => return Err(JoshutoError::IO(e)),
         }
-        ncurses::doupdate();
-        Ok(())
     }
 }

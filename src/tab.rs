@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{hash_map::Entry, HashMap};
 use std::path::PathBuf;
 
 use crate::config;
@@ -38,6 +38,39 @@ impl JoshutoTab {
     ) -> Result<(), std::io::Error> {
         if self.curr_list.path.exists() {
             self.curr_list.update_contents(sort_option)?;
+        }
+        match self.curr_list.get_curr_ref() {
+            Some(s) => {
+                if s.path.is_dir() {
+                    match self.history.entry(s.path.clone().to_path_buf()) {
+                        Entry::Occupied(mut entry) => {
+                            let dirlist = entry.get_mut();
+                            if dirlist.need_update() {
+                                dirlist.update_contents(sort_option)?;
+                            }
+                        }
+                        Entry::Vacant(entry) => {
+                            let s = JoshutoDirList::new(s.path.clone().to_path_buf(), sort_option)?;
+                            entry.insert(s);
+                        }
+                    }
+                }
+            }
+            None => {}
+        };
+        if let Some(parent) = self.curr_list.path.parent() {
+            match self.history.entry(parent.clone().to_path_buf()) {
+                Entry::Occupied(mut entry) => {
+                    let dirlist = entry.get_mut();
+                    if dirlist.need_update() {
+                        dirlist.update_contents(sort_option)?;
+                    }
+                }
+                Entry::Vacant(entry) => {
+                    let s = JoshutoDirList::new(parent.clone().to_path_buf(), sort_option)?;
+                    entry.insert(s);
+                }
+            }
         }
         Ok(())
     }
