@@ -3,7 +3,6 @@ use std::env;
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::preview;
 use crate::ui;
 use crate::window::JoshutoView;
 
@@ -43,8 +42,6 @@ impl TabSwitch {
             );
         }
         ui::redraw_tab_view(&view.tab_win, &context);
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        preview::preview_file(curr_tab, view, &context.config_t);
         ncurses::doupdate();
         Ok(())
     }

@@ -1,10 +1,8 @@
-use std::fs;
 use std::path;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::preview;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
 use crate::window::JoshutoView;
@@ -76,6 +74,7 @@ impl RenameFile {
                 .curr_list
                 .update_contents(&context.config_t.sort_option)?;
             curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
+            curr_tab.refresh_preview(&view.right_win, &context.config_t);
         } else {
             let curr_tab = &context.tabs[context.curr_tab_index];
             curr_tab.refresh_file_status(&view.bot_win);
@@ -113,8 +112,6 @@ impl JoshutoRunnable for RenameFile {
                     Ok(_) => {},
                     Err(e) => return Err(JoshutoError::IO(e)),
                 }
-                let curr_tab = &mut context.tabs[context.curr_tab_index];
-                preview::preview_file(curr_tab, view, &context.config_t);
                 ncurses::doupdate();
             }
         }

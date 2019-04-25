@@ -5,7 +5,6 @@ use crate::config::mimetype;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::history::DirectoryHistory;
-use crate::preview;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
 use crate::unix;
@@ -77,7 +76,6 @@ impl OpenFile {
                 &context.username,
                 &context.hostname,
             );
-            preview::preview_file(curr_tab, view, &context.config_t);
         } else {
             let paths: Option<Vec<PathBuf>> = context.tabs[context.curr_tab_index]
                 .curr_list
@@ -101,7 +99,6 @@ impl OpenFile {
                 &context.username,
                 &context.hostname,
             );
-            preview::preview_file(curr_tab, view, &context.config_t);
         }
         ncurses::doupdate();
         Ok(())

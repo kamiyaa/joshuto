@@ -2,7 +2,6 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::history::DirectoryHistory;
-use crate::preview;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
@@ -41,7 +40,6 @@ impl ParentDirectory {
             &context.username,
             &context.hostname,
         );
-        preview::preview_file(curr_tab, view, &context.config_t);
         ncurses::doupdate();
         Ok(())
     }

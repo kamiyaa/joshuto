@@ -5,7 +5,6 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::config::keymap;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::preview;
 use crate::ui;
 use crate::window::JoshutoView;
 
@@ -62,7 +61,6 @@ impl DeleteFiles {
                 context.config_t.tilde_in_titlebar,
             );
         }
-        preview::preview_file(curr_tab, &view, &context.config_t);
         ncurses::doupdate();
         Ok(())
     }

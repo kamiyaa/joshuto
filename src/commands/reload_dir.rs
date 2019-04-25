@@ -1,7 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::preview;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
@@ -46,8 +45,6 @@ impl JoshutoRunnable for ReloadDirList {
             Ok(_) => {}
             Err(e) => return Err(JoshutoError::IO(e)),
         }
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        preview::preview_file(curr_tab, view, &context.config_t);
         ncurses::doupdate();
         Ok(())
     }

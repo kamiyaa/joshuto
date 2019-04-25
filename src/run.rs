@@ -6,7 +6,6 @@ use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand};
 use crate::config;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::preview;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::JoshutoPanel;
@@ -74,7 +73,6 @@ fn join_thread(
                         &context.username,
                         &context.hostname,
                     );
-                    preview::preview_file(dirty_tab, view, &context.config_t);
                 }
             }
             if tab_dest != tab_src && tab_dest < context.tabs.len() {
@@ -87,8 +85,6 @@ fn join_thread(
                         &context.username,
                         &context.hostname,
                     );
-                    preview::preview_file(dirty_tab, view, &context.config_t);
-                    ncurses::doupdate();
                 }
             }
         }
@@ -120,16 +116,8 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
 #[inline]
 fn resize_handler(context: &mut JoshutoContext, view: &JoshutoView) {
     ui::redraw_tab_view(&view.tab_win, &context);
-    {
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.refresh(
-            view,
-            &context.config_t,
-            &context.username,
-            &context.hostname,
-        );
-        preview::preview_file(curr_tab, view, &context.config_t);
-    }
+    let curr_tab = &mut context.tabs[context.curr_tab_index];
+    curr_tab.refresh(view, &context.config_t, &context.username, &context.hostname);
     ncurses::doupdate();
 }
 
@@ -139,18 +127,14 @@ fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
             Ok(tab) => {
                 context.tabs.push(tab);
                 context.curr_tab_index = context.tabs.len() - 1;
-                {
-                    let curr_tab = &mut context.tabs[context.curr_tab_index];
-                    curr_tab.refresh(
-                        view,
-                        &context.config_t,
-                        &context.username,
-                        &context.hostname,
-                    );
-                }
-                ui::redraw_tab_view(&view.tab_win, &context);
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
-                preview::preview_file(curr_tab, view, &context.config_t);
+                curr_tab.refresh(
+                    view,
+                    &context.config_t,
+                    &context.username,
+                    &context.hostname,
+                );
+                ui::redraw_tab_view(&view.tab_win, &context);
                 ncurses::doupdate();
             }
             Err(e) => {

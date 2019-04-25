@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use crate::config;
 use crate::history::DirectoryHistory;
+use crate::preview;
 use crate::sort;
 use crate::structs::JoshutoDirList;
 use crate::ui;
@@ -50,6 +51,7 @@ impl JoshutoTab {
     ) {
         self.refresh_curr(&views.mid_win, config_t.scroll_offset);
         self.refresh_parent(&views.left_win, config_t);
+        self.refresh_preview(&views.right_win, config_t);
         self.refresh_path_status(
             &views.top_win,
             username,
@@ -65,15 +67,11 @@ impl JoshutoTab {
     }
 
     pub fn refresh_parent(&mut self, win: &JoshutoPanel, config_t: &config::JoshutoConfig) {
-        if let Some(parent) = self.curr_list.path.parent() {
-            if let Ok(parent_list) = self
-                .history
-                .get_mut_or_create(&parent, &config_t.sort_option)
-            {
-                win.display_contents_detailed(parent_list, config_t.scroll_offset);
-                win.queue_for_refresh();
-            }
-        }
+        preview::preview_parent(self, win, config_t);
+    }
+
+    pub fn refresh_preview(&mut self, win: &JoshutoPanel, config_t: &config::JoshutoConfig) {
+        preview::preview_entry(self, win, config_t);
     }
 
     pub fn refresh_file_status(&self, win: &JoshutoPanel) {

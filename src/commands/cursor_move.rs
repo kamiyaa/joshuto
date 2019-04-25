@@ -1,7 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::preview;
 use crate::window::JoshutoView;
 
 pub struct CursorMove;
@@ -34,7 +33,7 @@ impl CursorMove {
             context.config_t.tilde_in_titlebar,
         );
         curr_tab.refresh_file_status(&view.bot_win);
-        preview::preview_file(curr_tab, &view, &context.config_t);
+        curr_tab.refresh_preview(&view.right_win, &context.config_t);
         ncurses::doupdate();
     }
 }

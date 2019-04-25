@@ -5,7 +5,6 @@ use crate::commands;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::history::DirectoryHistory;
-use crate::preview;
 use crate::window::JoshutoView;
 use commands::{JoshutoCommand, JoshutoRunnable};
 
@@ -73,11 +72,6 @@ impl JoshutoRunnable for ChangeDirectory {
             Ok(_) => {},
             Err(e) => return Err(JoshutoError::IO(e)),
         }
-        preview::preview_file(
-            &mut context.tabs[context.curr_tab_index],
-            &view,
-            &context.config_t,
-        );
         ncurses::doupdate();
         Ok(())
     }
