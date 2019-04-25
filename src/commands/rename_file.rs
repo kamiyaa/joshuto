@@ -109,7 +109,7 @@ impl JoshutoRunnable for RenameFile {
         if let Some(file_name) = file_name {
             if let Some(path) = path {
                 match self.rename_file(&path, context, view, file_name.clone()) {
-                    Ok(_) => {},
+                    Ok(_) => {}
                     Err(e) => return Err(JoshutoError::IO(e)),
                 }
                 ncurses::doupdate();

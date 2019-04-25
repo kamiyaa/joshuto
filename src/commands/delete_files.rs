@@ -32,7 +32,10 @@ impl DeleteFiles {
         Ok(())
     }
 
-    fn delete_files(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
+    fn delete_files(
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), std::io::Error> {
         ui::wprint_msg(&view.bot_win, "Delete selected files? (Y/n)");
         ncurses::timeout(-1);
         ncurses::doupdate();

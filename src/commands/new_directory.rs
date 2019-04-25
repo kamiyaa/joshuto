@@ -18,7 +18,10 @@ impl NewDirectory {
         "mkdir"
     }
 
-    fn new_directory(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
+    fn new_directory(
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), std::io::Error> {
         let (term_rows, term_cols) = ui::getmaxyx();
         const PROMPT: &str = ":mkdir ";
 

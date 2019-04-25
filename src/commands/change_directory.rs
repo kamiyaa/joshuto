@@ -69,7 +69,7 @@ impl JoshutoRunnable for ChangeDirectory {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         match Self::change_directory(&self.path, context, view) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => return Err(JoshutoError::IO(e)),
         }
         ncurses::doupdate();

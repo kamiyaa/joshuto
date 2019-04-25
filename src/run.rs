@@ -117,7 +117,12 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
 fn resize_handler(context: &mut JoshutoContext, view: &JoshutoView) {
     ui::redraw_tab_view(&view.tab_win, &context);
     let curr_tab = &mut context.tabs[context.curr_tab_index];
-    curr_tab.refresh(view, &context.config_t, &context.username, &context.hostname);
+    curr_tab.refresh(
+        view,
+        &context.config_t,
+        &context.username,
+        &context.hostname,
+    );
     ncurses::doupdate();
 }
 
