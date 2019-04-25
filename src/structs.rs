@@ -128,11 +128,6 @@ impl JoshutoDirList {
         if self.outdated {
             return true;
         }
-        if let Ok(metadata) = std::fs::metadata(&self.path) {
-            if let Ok(modified) = metadata.modified() {
-                return self.metadata.modified < modified;
-            }
-        }
         false
     }
 

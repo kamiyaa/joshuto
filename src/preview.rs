@@ -13,6 +13,9 @@ use crate::MIMETYPE_T;
 pub fn preview_parent(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &JoshutoConfig) {
     if let Some(path) = curr_tab.curr_path.parent() {
         preview_directory(&mut curr_tab.history, path, win, config_t);
+    } else {
+        ncurses::werase(win.win);
+        win.queue_for_refresh();
     }
 }
 
