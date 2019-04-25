@@ -1,10 +1,10 @@
-use std::env;
 use std::path::{Path, PathBuf};
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
+use crate::history::DirectoryHistory;
 use crate::preview;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
@@ -53,36 +53,76 @@ impl OpenFile {
         mimetype_options
     }
 
-    fn open_directory(path: &Path, context: &mut JoshutoContext, view: &JoshutoView) {
+    fn open(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
+        let mut path: Option<PathBuf> = None;
+        {
+            let curr_list = &context.tabs[context.curr_tab_index].curr_list;
+            if let Some(entry) = curr_list.get_curr_ref() {
+                if entry.path.is_dir() {
+                    path = Some(entry.path.clone());
+                }
+            }
+        }
+        if let Some(path) = path {
+            Self::open_directory(&path, context)?;
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
+            if curr_tab.curr_list.need_update() {
+                curr_tab
+                    .curr_list
+                    .update_contents(&context.config_t.sort_option)?;
+            }
+            curr_tab.refresh(
+                view,
+                &context.config_t,
+                &context.username,
+                &context.hostname,
+            );
+            preview::preview_file(curr_tab, view, &context.config_t);
+        } else {
+            let paths: Option<Vec<PathBuf>> = context.tabs[context.curr_tab_index]
+                .curr_list
+                .get_selected_paths();
+
+            if let Some(paths) = paths {
+                Self::open_file(&paths);
+            } else {
+                let err = std::io::Error::new(std::io::ErrorKind::NotFound, "No files selected");
+                return Err(err);
+            }
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
+            if curr_tab.curr_list.need_update() {
+                curr_tab
+                    .curr_list
+                    .update_contents(&context.config_t.sort_option)?;
+            }
+            curr_tab.refresh(
+                view,
+                &context.config_t,
+                &context.username,
+                &context.hostname,
+            );
+            preview::preview_file(curr_tab, view, &context.config_t);
+        }
+        ncurses::doupdate();
+        Ok(())
+    }
+
+    fn open_directory(path: &Path, context: &mut JoshutoContext) -> Result<(), std::io::Error> {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
 
-        if let Err(e) = env::set_current_dir(path) {
-            ui::wprint_err(&view.bot_win, format!("{}: {:?}", e, path).as_str());
-            return;
-        }
+        std::env::set_current_dir(path)?;
 
-        curr_tab.history.put_back(curr_tab.parent_list.take());
-        curr_tab.parent_list = curr_tab.curr_list.take();
-
-        curr_tab.curr_list = match curr_tab
+        let mut new_curr_list = curr_tab
             .history
-            .pop_or_create(&path, &context.config_t.sort_option)
-        {
-            Ok(s) => Some(s),
-            Err(e) => {
-                ui::wprint_err(&view.left_win, e.to_string().as_str());
-                None
-            }
-        };
+            .pop_or_create(path, &context.config_t.sort_option)?;
 
-        /* update curr_path */
-        match path.strip_prefix(curr_tab.curr_path.as_path()) {
-            Ok(s) => curr_tab.curr_path.push(s),
-            Err(e) => {
-                ui::wprint_err(&view.bot_win, e.to_string().as_str());
-                return;
-            }
-        }
+        std::mem::swap(&mut curr_tab.curr_list, &mut new_curr_list);
+        curr_tab
+            .history
+            .insert(new_curr_list.path.clone(), new_curr_list);
+
+        curr_tab.curr_path = path.clone().to_path_buf();
+        Ok(())
     }
 
     fn open_file(paths: &[PathBuf]) {
@@ -115,69 +155,10 @@ impl JoshutoRunnable for OpenFile {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        let mut path: Option<PathBuf> = None;
-        if let Some(curr_list) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-            if let Some(entry) = curr_list.get_curr_ref() {
-                if entry.path.is_dir() {
-                    path = Some(entry.path.clone());
-                }
-            }
+        match Self::open(context, view) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(JoshutoError::IO(e)),
         }
-        if let Some(path) = path {
-            Self::open_directory(&path, context, view);
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            match curr_tab.curr_list {
-                Some(ref mut s) => {
-                    if s.need_update() {
-                        match s.update_contents(&context.config_t.sort_option) {
-                            Err(e) => return Err(JoshutoError::IO(e)),
-                            _ => {}
-                        }
-                    }
-                }
-                None => {}
-            }
-            curr_tab.refresh(
-                view,
-                &context.config_t,
-                &context.username,
-                &context.hostname,
-            );
-            preview::preview_file(curr_tab, view, &context.config_t);
-        } else {
-            let paths: Option<Vec<PathBuf>> =
-                match context.tabs[context.curr_tab_index].curr_list.as_ref() {
-                    Some(s) => s.get_selected_paths(),
-                    None => None,
-                };
-            if let Some(paths) = paths {
-                Self::open_file(&paths);
-            } else {
-                let err = std::io::Error::new(std::io::ErrorKind::NotFound, "No files selected");
-                return Err(JoshutoError::IO(err));
-            }
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            match curr_tab.curr_list {
-                Some(ref mut s) => {
-                    if s.need_update() {
-                        match s.update_contents(&context.config_t.sort_option) {
-                            Err(e) => return Err(JoshutoError::IO(e)),
-                            _ => {}
-                        }
-                    }
-                }
-                None => {}
-            }
-            curr_tab.refresh(
-                view,
-                &context.config_t,
-                &context.username,
-                &context.hostname,
-            );
-            preview::preview_file(curr_tab, view, &context.config_t);
-        }
-        ncurses::doupdate();
-        Ok(())
     }
 }
 
@@ -266,10 +247,9 @@ impl std::fmt::Display for OpenFileWith {
 
 impl JoshutoRunnable for OpenFileWith {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
-        if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-            if let Some(paths) = s.get_selected_paths() {
-                Self::open_with(&paths);
-            }
+        let curr_list = &context.tabs[context.curr_tab_index].curr_list;
+        if let Some(paths) = curr_list.get_selected_paths() {
+            Self::open_with(&paths);
         }
         Ok(())
     }

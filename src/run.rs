@@ -141,16 +141,6 @@ fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
                 context.curr_tab_index = context.tabs.len() - 1;
                 {
                     let curr_tab = &mut context.tabs[context.curr_tab_index];
-                    if let Some(s) = curr_tab.curr_list.as_mut() {
-                        if s.need_update() {
-                            s.update_contents(&context.config_t.sort_option);
-                        }
-                    }
-                    if let Some(s) = curr_tab.parent_list.as_mut() {
-                        if s.need_update() {
-                            s.update_contents(&context.config_t.sort_option);
-                        }
-                    }
                     curr_tab.refresh(
                         view,
                         &context.config_t,

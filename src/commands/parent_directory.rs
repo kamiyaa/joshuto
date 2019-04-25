@@ -1,8 +1,8 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
+use crate::history::DirectoryHistory;
 use crate::preview;
-use crate::ui;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
@@ -19,52 +19,31 @@ impl ParentDirectory {
     pub fn parent_directory(
         context: &mut JoshutoContext,
         view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
-        if !context.curr_tab_mut().curr_path.pop() {
+    ) -> Result<(), std::io::Error> {
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        if !curr_tab.curr_path.pop() {
             return Ok(());
         }
+        std::env::set_current_dir(&curr_tab.curr_path)?;
 
-        match std::env::set_current_dir(&context.curr_tab_ref().curr_path) {
-            Ok(_) => {
-                let curr_tab = &mut context.tabs[context.curr_tab_index];
+        let mut new_curr_list = curr_tab
+            .history
+            .pop_or_create(&curr_tab.curr_path, &context.config_t.sort_option)?;
 
-                let curr_list = curr_tab.curr_list.take();
-                curr_tab.history.put_back(curr_list);
-                let parent_list = curr_tab.parent_list.take();
-                curr_tab.curr_list = parent_list;
+        std::mem::swap(&mut curr_tab.curr_list, &mut new_curr_list);
+        curr_tab
+            .history
+            .insert(new_curr_list.path.clone(), new_curr_list);
 
-                match curr_tab.curr_path.parent() {
-                    Some(parent) => {
-                        curr_tab.parent_list = match curr_tab
-                            .history
-                            .pop_or_create(&parent, &context.config_t.sort_option)
-                        {
-                            Ok(s) => Some(s),
-                            Err(e) => {
-                                ui::wprint_err(&view.left_win, e.to_string().as_str());
-                                None
-                            }
-                        };
-                    }
-                    None => {
-                        ncurses::werase(view.left_win.win);
-                        view.left_win.queue_for_refresh();
-                    }
-                }
-                curr_tab.refresh(
-                    view,
-                    &context.config_t,
-                    &context.username,
-                    &context.hostname,
-                );
-                preview::preview_file(curr_tab, view, &context.config_t);
-                ncurses::doupdate();
-                return Ok(());
-            }
-            Err(e) => {
-                return Err(JoshutoError::IO(e));
-            }
-        };
+        curr_tab.refresh(
+            view,
+            &context.config_t,
+            &context.username,
+            &context.hostname,
+        );
+        preview::preview_file(curr_tab, view, &context.config_t);
+        ncurses::doupdate();
+        Ok(())
     }
 }
 
@@ -82,6 +61,9 @@ impl JoshutoRunnable for ParentDirectory {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        Self::parent_directory(context, view)
+        match Self::parent_directory(context, view) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(JoshutoError::IO(e)),
+        }
     }
 }

@@ -32,6 +32,40 @@ impl DeleteFiles {
         }
         Ok(())
     }
+
+    fn delete_files(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
+        ui::wprint_msg(&view.bot_win, "Delete selected files? (Y/n)");
+        ncurses::timeout(-1);
+        ncurses::doupdate();
+
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        let ch: i32 = ncurses::getch();
+        if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
+            if let Some(paths) = curr_tab.curr_list.get_selected_paths() {
+                Self::remove_files(paths)?;
+                ui::wprint_msg(&view.bot_win, "Deleted files");
+            }
+
+            curr_tab.reload_contents(&context.config_t.sort_option)?;
+            curr_tab.refresh(
+                &view,
+                &context.config_t,
+                &context.username,
+                &context.hostname,
+            );
+        } else {
+            curr_tab.refresh_file_status(&view.bot_win);
+            curr_tab.refresh_path_status(
+                &view.top_win,
+                &context.username,
+                &context.hostname,
+                context.config_t.tilde_in_titlebar,
+            );
+        }
+        preview::preview_file(curr_tab, &view, &context.config_t);
+        ncurses::doupdate();
+        Ok(())
+    }
 }
 
 impl JoshutoCommand for DeleteFiles {}
@@ -48,45 +82,9 @@ impl JoshutoRunnable for DeleteFiles {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        ui::wprint_msg(&view.bot_win, "Delete selected files? (Y/n)");
-        ncurses::timeout(-1);
-        ncurses::doupdate();
-
-        let ch: i32 = ncurses::getch();
-        if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-            if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-                if let Some(paths) = s.get_selected_paths() {
-                    match Self::remove_files(paths) {
-                        Ok(_) => ui::wprint_msg(&view.bot_win, "Deleted files"),
-                        Err(e) => return Err(JoshutoError::IO(e)),
-                    }
-                }
-            }
-
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            match curr_tab.reload_contents(&context.config_t.sort_option) {
-                Err(e) => return Err(JoshutoError::IO(e)),
-                _ => {}
-            }
-            curr_tab.refresh(
-                &view,
-                &context.config_t,
-                &context.username,
-                &context.hostname,
-            );
-        } else {
-            let curr_tab = &context.tabs[context.curr_tab_index];
-            curr_tab.refresh_file_status(&view.bot_win);
-            curr_tab.refresh_path_status(
-                &view.top_win,
-                &context.username,
-                &context.hostname,
-                context.config_t.tilde_in_titlebar,
-            );
+        match Self::delete_files(context, view) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(JoshutoError::IO(e)),
         }
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        preview::preview_file(curr_tab, &view, &context.config_t);
-        ncurses::doupdate();
-        Ok(())
     }
 }

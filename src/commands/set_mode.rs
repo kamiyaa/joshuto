@@ -83,17 +83,13 @@ impl JoshutoRunnable for SetMode {
     ) -> Result<(), JoshutoError> {
         use std::os::unix::fs::PermissionsExt;
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        if let Some(s) = curr_tab.curr_list.as_mut() {
-            if let Some(file) = s.get_curr_mut() {
-                let mode = file.metadata.permissions.mode();
-                let mut mode_string = unix::stringify_mode(mode);
-                mode_string.remove(0);
+        if let Some(file) = curr_tab.curr_list.get_curr_mut() {
+            let mode = file.metadata.permissions.mode();
+            let mut mode_string = unix::stringify_mode(mode);
+            mode_string.remove(0);
 
-                self.set_mode(file, mode_string);
-                CursorMoveInc::new(1).execute(context, view)
-            } else {
-                Ok(())
-            }
+            self.set_mode(file, mode_string);
+            CursorMoveInc::new(1).execute(context, view)
         } else {
             Ok(())
         }

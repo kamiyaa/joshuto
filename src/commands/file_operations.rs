@@ -90,11 +90,9 @@ impl std::fmt::Display for CutFiles {
 impl JoshutoRunnable for CutFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_tab = context.curr_tab_ref();
-        if let Some(s) = curr_tab.curr_list.as_ref() {
-            if LocalState::repopulated_selected_files(s) {
-                LocalState::set_file_op(FileOp::Cut);
-                LocalState::set_tab_src(context.curr_tab_index);
-            }
+        if LocalState::repopulated_selected_files(&curr_tab.curr_list) {
+            LocalState::set_file_op(FileOp::Cut);
+            LocalState::set_tab_src(context.curr_tab_index);
         }
         Ok(())
     }
@@ -123,11 +121,9 @@ impl std::fmt::Display for CopyFiles {
 impl JoshutoRunnable for CopyFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_tab = context.curr_tab_ref();
-        if let Some(s) = curr_tab.curr_list.as_ref() {
-            if LocalState::repopulated_selected_files(s) {
-                LocalState::set_file_op(FileOp::Copy);
-                LocalState::set_tab_src(context.curr_tab_index);
-            }
+        if LocalState::repopulated_selected_files(&curr_tab.curr_list) {
+            LocalState::set_file_op(FileOp::Copy);
+            LocalState::set_tab_src(context.curr_tab_index);
         }
         Ok(())
     }

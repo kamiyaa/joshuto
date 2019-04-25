@@ -10,21 +10,19 @@ impl CursorMove {
     pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &JoshutoView) {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
 
-        if let Some(curr_list) = curr_tab.curr_list.as_mut() {
-            match curr_list.index {
-                None => {}
-                Some(_) => {
-                    let dir_len = curr_list.contents.len();
-                    /*
-                    if index == dir_len - 1 {
-                        return;
-                    }
-                    */
-                    if new_index >= dir_len {
-                        new_index = dir_len - 1;
-                    }
-                    curr_list.index = Some(new_index);
+        match curr_tab.curr_list.index {
+            None => {}
+            Some(_) => {
+                let dir_len = curr_tab.curr_list.contents.len();
+                /*
+                if index == dir_len - 1 {
+                    return;
                 }
+                */
+                if new_index >= dir_len {
+                    new_index = dir_len - 1;
+                }
+                curr_tab.curr_list.index = Some(new_index);
             }
         }
 
@@ -69,10 +67,10 @@ impl JoshutoRunnable for CursorMoveInc {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        let mut movement: Option<usize> = None;
-        if let Some(curr_list) = context.curr_tab_mut().curr_list.as_ref() {
-            movement = curr_list.index.map(|x| x + self.movement);
-        }
+        let movement: Option<usize> = {
+            let curr_list = &mut context.curr_tab_mut().curr_list;
+            curr_list.index.map(|idx| idx + self.movement)
+        };
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view)
         }
@@ -108,16 +106,13 @@ impl JoshutoRunnable for CursorMoveDec {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        let mut movement: Option<usize> = None;
-        if let Some(curr_list) = context.curr_tab_mut().curr_list.as_ref() {
-            movement = curr_list.index.map(|x| {
-                if x > self.movement {
-                    x - self.movement
-                } else {
-                    0
-                }
-            });
-        }
+        let movement: Option<usize> = context.curr_tab_mut().curr_list.index.map(|idx| {
+            if idx > self.movement {
+                idx - self.movement
+            } else {
+                0
+            }
+        });
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
         }
@@ -152,17 +147,12 @@ impl JoshutoRunnable for CursorMovePageUp {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
-            let curr_tab = context.curr_tab_mut();
-            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-                let half_page = view.mid_win.cols as usize / 2;
-                curr_list
-                    .index
-                    .map(|x| if x > half_page { x - half_page } else { 0 })
-            } else {
-                None
-            }
+            let curr_list = &mut context.curr_tab_mut().curr_list;
+            let half_page = view.mid_win.cols as usize / 2;
+            curr_list
+                .index
+                .map(|x| if x > half_page { x - half_page } else { 0 })
         };
-
         if let Some(s) = movement {
             CursorMove::cursor_move(s, context, view);
         }
@@ -197,20 +187,16 @@ impl JoshutoRunnable for CursorMovePageDown {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-                let dir_len = curr_list.contents.len();
-                let half_page = view.mid_win.cols as usize / 2;
-                curr_list.index.map(|x| {
-                    if x + half_page > dir_len - 1 {
-                        dir_len - 1
-                    } else {
-                        x + half_page
-                    }
-                })
-            } else {
-                None
-            }
+            let curr_list = &mut context.curr_tab_mut().curr_list;
+            let dir_len = curr_list.contents.len();
+            let half_page = view.mid_win.cols as usize / 2;
+            curr_list.index.map(|x| {
+                if x + half_page > dir_len - 1 {
+                    dir_len - 1
+                } else {
+                    x + half_page
+                }
+            })
         };
 
         if let Some(s) = movement {
@@ -247,15 +233,11 @@ impl JoshutoRunnable for CursorMoveHome {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
-            let curr_tab = context.curr_tab_mut();
-            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-                if curr_list.contents.len() == 0 {
-                    None
-                } else {
-                    Some(0)
-                }
-            } else {
+            let len = context.curr_tab_mut().curr_list.contents.len();
+            if len == 0 {
                 None
+            } else {
+                Some(0)
             }
         };
 
@@ -293,12 +275,11 @@ impl JoshutoRunnable for CursorMoveEnd {
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
         let movement: Option<usize> = {
-            let curr_tab = context.curr_tab_mut();
-            if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-                let dir_len = curr_list.contents.len();
-                Some(dir_len - 1)
-            } else {
+            let len = context.curr_tab_mut().curr_list.contents.len();
+            if len == 0 {
                 None
+            } else {
+                Some(len - 1)
             }
         };
 

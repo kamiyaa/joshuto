@@ -17,22 +17,8 @@ impl NewDirectory {
     pub const fn command() -> &'static str {
         "mkdir"
     }
-}
 
-impl JoshutoCommand for NewDirectory {}
-
-impl std::fmt::Display for NewDirectory {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(Self::command())
-    }
-}
-
-impl JoshutoRunnable for NewDirectory {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn new_directory(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
         let (term_rows, term_cols) = ui::getmaxyx();
         const PROMPT: &str = ":mkdir ";
 
@@ -49,15 +35,31 @@ impl JoshutoRunnable for NewDirectory {
         if let Some(user_input) = user_input {
             let path = path::PathBuf::from(user_input);
 
-            match std::fs::create_dir_all(&path) {
-                Ok(_) => match ReloadDirList::reload(context, view) {
-                    Ok(_) => {}
-                    Err(e) => return Err(JoshutoError::IO(e)),
-                },
-                Err(e) => return Err(JoshutoError::IO(e)),
-            };
+            std::fs::create_dir_all(&path)?;
+            ReloadDirList::reload(context, view)?;
         }
         ncurses::doupdate();
         Ok(())
+    }
+}
+
+impl JoshutoCommand for NewDirectory {}
+
+impl std::fmt::Display for NewDirectory {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str(Self::command())
+    }
+}
+
+impl JoshutoRunnable for NewDirectory {
+    fn execute(
+        &self,
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+    ) -> Result<(), JoshutoError> {
+        match Self::new_directory(context, view) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(JoshutoError::IO(e)),
+        }
     }
 }

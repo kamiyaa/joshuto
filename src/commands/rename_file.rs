@@ -35,7 +35,7 @@ impl RenameFile {
         context: &mut JoshutoContext,
         view: &JoshutoView,
         start_str: String,
-    ) -> Result<(), JoshutoError> {
+    ) -> Result<(), std::io::Error> {
         const PROMPT: &str = ":rename_file ";
         let (term_rows, term_cols) = ui::getmaxyx();
         let user_input: Option<String> = {
@@ -68,20 +68,14 @@ impl RenameFile {
                     std::io::ErrorKind::AlreadyExists,
                     "Filename already exists",
                 );
-                return Err(JoshutoError::IO(err));
+                return Err(err);
             }
-            match fs::rename(&path, &new_path) {
-                Ok(_) => {
-                    let curr_tab = &mut context.tabs[context.curr_tab_index];
-                    if let Some(ref mut s) = curr_tab.curr_list {
-                        s.update_contents(&context.config_t.sort_option).unwrap();
-                    }
-                    curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
-                }
-                Err(e) => {
-                    return Err(JoshutoError::IO(e));
-                }
-            }
+            std::fs::rename(&path, &new_path)?;
+            let curr_tab = &mut context.tabs[context.curr_tab_index];
+            curr_tab
+                .curr_list
+                .update_contents(&context.config_t.sort_option)?;
+            curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
         } else {
             let curr_tab = &context.tabs[context.curr_tab_index];
             curr_tab.refresh_file_status(&view.bot_win);
@@ -107,23 +101,21 @@ impl JoshutoRunnable for RenameFile {
         let mut path: Option<path::PathBuf> = None;
         let mut file_name: Option<String> = None;
 
-        if let Some(s) = context.tabs[context.curr_tab_index].curr_list.as_ref() {
-            if let Some(s) = s.get_curr_ref() {
-                path = Some(s.path.clone());
-                file_name = Some(s.file_name_as_string.clone());
-            }
+        let curr_list = &context.tabs[context.curr_tab_index].curr_list;
+        if let Some(s) = curr_list.get_curr_ref() {
+            path = Some(s.path.clone());
+            file_name = Some(s.file_name_as_string.clone());
         }
 
         if let Some(file_name) = file_name {
             if let Some(path) = path {
-                let res = self.rename_file(&path, context, view, file_name.clone());
-                preview::preview_file(
-                    &mut context.tabs[context.curr_tab_index],
-                    view,
-                    &context.config_t,
-                );
+                match self.rename_file(&path, context, view, file_name.clone()) {
+                    Ok(_) => {},
+                    Err(e) => return Err(JoshutoError::IO(e)),
+                }
+                let curr_tab = &mut context.tabs[context.curr_tab_index];
+                preview::preview_file(curr_tab, view, &context.config_t);
                 ncurses::doupdate();
-                return res;
             }
         }
         return Ok(());

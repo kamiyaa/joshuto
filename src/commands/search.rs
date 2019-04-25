@@ -24,44 +24,41 @@ impl Search {
         "search"
     }
     pub fn search(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
-        if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-            match curr_list.index {
-                Some(index) => {
-                    let offset = index + 1;
-                    let contents_len = curr_list.contents.len();
-                    for i in 0..contents_len {
-                        let file_name_lower = curr_list.contents[(offset + i) % contents_len]
-                            .file_name_as_string
-                            .to_lowercase();
-                        if file_name_lower.contains(pattern) {
-                            return Some((offset + i) % contents_len);
-                        }
+        let curr_list = &curr_tab.curr_list;
+        match curr_list.index {
+            Some(index) => {
+                let offset = index + 1;
+                let contents_len = curr_list.contents.len();
+                for i in 0..contents_len {
+                    let file_name_lower = curr_list.contents[(offset + i) % contents_len]
+                        .file_name_as_string
+                        .to_lowercase();
+                    if file_name_lower.contains(pattern) {
+                        return Some((offset + i) % contents_len);
                     }
-                    return None;
                 }
-                None => return None,
+                None
             }
+            None => None,
         }
-        return None;
     }
     pub fn search_rev(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
-        if let Some(curr_list) = curr_tab.curr_list.as_ref() {
-            match curr_list.index {
-                Some(offset) => {
-                    let contents_len = curr_list.contents.len();
-                    for i in (0..contents_len).rev() {
-                        let file_name_lower = curr_list.contents[(offset + i) % contents_len]
-                            .file_name_as_string
-                            .to_lowercase();
-                        if file_name_lower.contains(pattern) {
-                            return Some((offset + i) % contents_len);
-                        }
+        let curr_list = &curr_tab.curr_list;
+        match curr_list.index {
+            Some(offset) => {
+                let contents_len = curr_list.contents.len();
+                for i in (0..contents_len).rev() {
+                    let file_name_lower = curr_list.contents[(offset + i) % contents_len]
+                        .file_name_as_string
+                        .to_lowercase();
+                    if file_name_lower.contains(pattern) {
+                        return Some((offset + i) % contents_len);
                     }
                 }
-                None => return None,
+                None
             }
+            None => None,
         }
-        return None;
     }
 }
 

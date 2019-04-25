@@ -46,11 +46,8 @@ impl JoshutoRunnable for ReloadDirList {
             Ok(_) => {}
             Err(e) => return Err(JoshutoError::IO(e)),
         }
-        preview::preview_file(
-            &mut context.tabs[context.curr_tab_index],
-            view,
-            &context.config_t,
-        );
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        preview::preview_file(curr_tab, view, &context.config_t);
         ncurses::doupdate();
         Ok(())
     }

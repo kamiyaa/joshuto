@@ -1,6 +1,7 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
+use crate::history::DirectoryHistory;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
@@ -18,13 +19,8 @@ impl ToggleHiddenFiles {
         context.config_t.sort_option.show_hidden = opposite;
 
         for tab in &mut context.tabs {
-            tab.history.depecrate_all_entries();
-            if let Some(s) = tab.curr_list.as_mut() {
-                s.depreciate();
-            }
-            if let Some(s) = tab.parent_list.as_mut() {
-                s.depreciate();
-            }
+            tab.history.depreciate_all_entries();
+            tab.curr_list.depreciate();
         }
     }
 }
