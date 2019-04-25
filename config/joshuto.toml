@@ -10,6 +10,9 @@ scroll_offset = 6
 
 sort_type = "natural"
 
+show_preview = true
+max_preview_size = 2097152 # 2MB
+
 [sort_option]
 show_hidden = false
 case_sensitive = false

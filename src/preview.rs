@@ -1,11 +1,10 @@
 use std::collections::{hash_map::Entry, HashMap};
-use std::ffi::OsStr;
 use std::io::BufRead;
 use std::path;
 use std::process;
 
 use crate::config::JoshutoConfig;
-use crate::structs::{JoshutoDirEntry, JoshutoDirList};
+use crate::structs::JoshutoDirList;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::panel::JoshutoPanel;
@@ -55,10 +54,10 @@ fn preview_directory(
 
 fn preview_file(path: &path::Path, win: &JoshutoPanel) {
     match path.extension() {
-        Some(file_ext) => {
+        Some(_file_ext) => {
             let mimetype_str = tree_magic::from_filepath(&path);
             /* mime subtype have second priority */
-            if let Some(s) = MIMETYPE_T.mimetype.get(&mimetype_str) {}
+            if let Some(_s) = MIMETYPE_T.mimetype.get(&mimetype_str) {}
 
             /* generic mime type have last priority */
             if let Some(s) = mimetype_str.find('/') {
@@ -71,7 +70,7 @@ fn preview_file(path: &path::Path, win: &JoshutoPanel) {
         None => {
             let mimetype_str = tree_magic::from_filepath(&path);
             /* mime subtype have second priority */
-            if let Some(s) = MIMETYPE_T.mimetype.get(&mimetype_str) {}
+            if let Some(_s) = MIMETYPE_T.mimetype.get(&mimetype_str) {}
 
             /* generic mime type have last priority */
             if let Some(s) = mimetype_str.find('/') {

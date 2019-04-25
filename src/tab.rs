@@ -71,7 +71,9 @@ impl JoshutoTab {
     }
 
     pub fn refresh_preview(&mut self, win: &JoshutoPanel, config_t: &config::JoshutoConfig) {
-        preview::preview_entry(self, win, config_t);
+        if config_t.show_preview {
+            preview::preview_entry(self, win, config_t);
+        }
     }
 
     pub fn refresh_file_status(&self, win: &JoshutoPanel) {
