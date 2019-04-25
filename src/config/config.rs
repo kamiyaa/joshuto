@@ -17,6 +17,7 @@ pub struct SortRawOption {
 pub struct JoshutoRawConfig {
     scroll_offset: Option<usize>,
     tilde_in_titlebar: Option<bool>,
+    max_preview_size: Option<u64>,
     sort_method: Option<String>,
     sort_option: Option<SortRawOption>,
     column_ratio: Option<[usize; 3]>,
@@ -31,6 +32,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 
         let scroll_offset: usize = self.scroll_offset.unwrap_or(6);
         let tilde_in_titlebar: bool = self.tilde_in_titlebar.unwrap_or(true);
+        let max_preview_size: u64 = self.max_preview_size.unwrap_or(2 * 1024 * 1024);
 
         let sort_method: sort::SortType = match self.sort_method {
             Some(s) => match s.as_str() {
@@ -71,6 +73,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
         JoshutoConfig {
             scroll_offset,
             tilde_in_titlebar,
+            max_preview_size,
             column_ratio,
             sort_option,
         }
@@ -81,6 +84,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 pub struct JoshutoConfig {
     pub scroll_offset: usize,
     pub tilde_in_titlebar: bool,
+    pub max_preview_size: u64,
     pub sort_option: sort::SortOption,
     pub column_ratio: (usize, usize, usize),
 }
@@ -105,6 +109,7 @@ impl std::default::Default for JoshutoConfig {
         JoshutoConfig {
             scroll_offset: 6,
             tilde_in_titlebar: true,
+            max_preview_size: 2 * 1024 * 1024,
             sort_option,
             column_ratio: (1, 3, 4),
         }
