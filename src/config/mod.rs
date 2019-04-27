@@ -7,7 +7,7 @@ pub mod theme;
 pub use self::config::JoshutoConfig;
 pub use self::keymap::JoshutoKeymap;
 pub use self::mimetype::JoshutoMimetype;
-pub use self::preview::JoshutoPreview;
+pub use self::preview::{JoshutoPreview, JoshutoPreviewEntry};
 pub use self::theme::{JoshutoColorTheme, JoshutoTheme};
 
 use serde::de::DeserializeOwned;

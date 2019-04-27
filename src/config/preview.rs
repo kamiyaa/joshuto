@@ -12,43 +12,42 @@ pub struct JoshutoPreviewEntry {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawPreview {
-    pub mimetype: Option<HashMap<String, JoshutoPreviewEntry>>,
     pub extension: Option<HashMap<String, JoshutoPreviewEntry>>,
+    pub mimetype: Option<HashMap<String, JoshutoPreviewEntry>>,
 }
 
-impl JoshutoRawPreview {
-    #[allow(dead_code)]
-    pub fn new() -> Self {
+impl std::default::Default for JoshutoRawPreview {
+    fn default() -> Self {
         JoshutoRawPreview {
-            mimetype: None,
             extension: None,
+            mimetype: None,
         }
     }
 }
 
 impl Flattenable<JoshutoPreview> for JoshutoRawPreview {
     fn flatten(self) -> JoshutoPreview {
-        let mimetype = self.mimetype.unwrap_or_default();
         let extension = self.extension.unwrap_or_default();
+        let mimetype = self.mimetype.unwrap_or_default();
 
         JoshutoPreview {
-            mimetype,
             extension,
+            mimetype,
         }
     }
 }
 
 #[derive(Debug)]
 pub struct JoshutoPreview {
-    pub mimetype: HashMap<String, JoshutoPreviewEntry>,
     pub extension: HashMap<String, JoshutoPreviewEntry>,
+    pub mimetype: HashMap<String, JoshutoPreviewEntry>,
 }
 
 impl JoshutoPreview {
     pub fn new() -> Self {
         JoshutoPreview {
-            mimetype: HashMap::new(),
             extension: HashMap::new(),
+            mimetype: HashMap::new(),
         }
     }
 

@@ -3,12 +3,12 @@ use std::io::BufRead;
 use std::path;
 use std::process;
 
-use crate::config::JoshutoConfig;
+use crate::config::{JoshutoConfig, JoshutoPreviewEntry};
 use crate::structs::JoshutoDirList;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::panel::JoshutoPanel;
-use crate::MIMETYPE_T;
+use crate::PREVIEW_T;
 
 pub fn preview_parent(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &JoshutoConfig) {
     if let Some(path) = curr_tab.curr_path.parent() {
@@ -57,43 +57,46 @@ fn preview_directory(
 
 fn preview_file(path: &path::Path, win: &JoshutoPanel) {
     match path.extension() {
-        Some(_file_ext) => {
-            let mimetype_str = tree_magic::from_filepath(&path);
-            /* mime subtype have second priority */
-            if let Some(_s) = MIMETYPE_T.mimetype.get(&mimetype_str) {}
-
-            /* generic mime type have last priority */
-            if let Some(s) = mimetype_str.find('/') {
-                let mimetype_type = &mimetype_str[..s];
-                if mimetype_type == "text" {
-                    preview_text(path, win);
+        Some(file_ext) => {
+            if let Some(s) = PREVIEW_T.extension.get(file_ext.to_str().unwrap()) {
+                preview_with(path, win, &s);
+            } else {
+                let mimetype_str = tree_magic::from_filepath(&path);
+                if let Some(s) = PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
+                    preview_with(path, win, &s);
+                } else if let Some(ind) = mimetype_str.find('/') {
+                    let supertype = &mimetype_str[..ind];
+                    if supertype == "text" {
+                        preview_text(path, win);
+                    } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
+                        preview_with(path, win, &s);
+                    }
                 }
             }
         }
         None => {
             let mimetype_str = tree_magic::from_filepath(&path);
-            /* mime subtype have second priority */
-            if let Some(_s) = MIMETYPE_T.mimetype.get(&mimetype_str) {}
-
-            /* generic mime type have last priority */
-            if let Some(s) = mimetype_str.find('/') {
-                let mimetype_type = &mimetype_str[..s];
-                if mimetype_type == "text" {
+            if let Some(s) = PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
+                preview_with(path, win, &s);
+            } else if let Some(ind) = mimetype_str.find('/') {
+                let supertype = &mimetype_str[..ind];
+                if supertype == "text" {
                     preview_text(path, win);
+                } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
+                    preview_with(path, win, &s);
                 }
             }
         }
     }
 }
 
-fn preview_text(path: &path::Path, win: &JoshutoPanel) {
-    let mut command = process::Command::new("head");
-    command.arg("-n");
-    command.arg(win.cols.to_string());
-    command.arg(path.as_os_str());
-    command.stdin(std::process::Stdio::piped());
-    command.stdout(std::process::Stdio::piped());
-    command.stderr(std::process::Stdio::piped());
+fn preview_with(path: &path::Path, win: &JoshutoPanel, entry: &JoshutoPreviewEntry) {
+    let mut command = process::Command::new(&entry.program);
+    command.args(entry.args.as_ref().unwrap_or(&Vec::new()))
+        .arg(path.as_os_str())
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
 
     match command.spawn() {
         Ok(child) => {
@@ -112,7 +115,27 @@ fn preview_text(path: &path::Path, win: &JoshutoPanel) {
                 }
             }
         }
-        Err(e) => ui::wprint_err(win, e.to_string().as_str()),
+        Err(e) => {
+            eprintln!("{:?}", e);
+            ui::wprint_err(win, e.to_string().as_str());
+        }
     }
-    // bat joshuto.rs --terminal-width 20 --wrap=never --line-range 0:26 --style='numbers'
+}
+
+fn preview_text(path: &path::Path, win: &JoshutoPanel) {
+    match std::fs::File::open(path) {
+        Err(e) => ui::wprint_err(win, e.to_string().as_str()),
+        Ok(f) => {
+            let reader = std::io::BufReader::new(f);
+            for (i, line) in reader.lines().enumerate() {
+                if let Ok(line) = line {
+                    ncurses::mvwaddstr(win.win, i as i32, 0, &line);
+                    eprintln!("{}", line);
+                }
+                if i == win.rows as usize {
+                    break;
+                }
+            }
+        }
+    }
 }
