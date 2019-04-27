@@ -20,11 +20,11 @@ Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 ## Installation
 #### For single user
 ```
-~$ cargo install --force
+~$ cargo install --path=. --force
 ```
 #### System wide
 ```
-~# cargo install --root=/usr/local --force  # /usr also works
+~# cargo install --path=. --force --root=/usr/local     # /usr also works
 ```
 
 ## Usage
