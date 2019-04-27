@@ -130,9 +130,8 @@ fn preview_text(path: &path::Path, win: &JoshutoPanel) {
             for (i, line) in reader.lines().enumerate() {
                 if let Ok(line) = line {
                     ncurses::mvwaddstr(win.win, i as i32, 0, &line);
-                    eprintln!("{}", line);
                 }
-                if i == win.rows as usize {
+                if i >= win.rows as usize {
                     break;
                 }
             }
