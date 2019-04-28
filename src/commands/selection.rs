@@ -1,4 +1,4 @@
-use crate::commands::{CursorMoveInc, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::window::JoshutoView;
@@ -42,7 +42,7 @@ impl JoshutoRunnable for SelectFiles {
             let curr_list = &mut context.tabs[context.curr_tab_index].curr_list;
             if let Some(s) = curr_list.get_curr_mut() {
                 s.selected = !s.selected;
-                return CursorMoveInc::new(1).execute(context, view);
+                return CursorMoveDown::new(1).execute(context, view);
             }
         }
         return Ok(());

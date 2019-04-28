@@ -9,22 +9,22 @@ command = "reload_dir_list"
 
 [[mapcommand]]
 keys = [ "Up" ]
-command = "cursor_move"
-args = [ "-1" ]
+command = "cursor_move_up"
+args = [ "1" ]
 
 [[mapcommand]]
 keys = [ "k" ]
-command = "cursor_move"
-args = [ "-1" ]
+command = "cursor_move_up"
+args = [ "1" ]
 
 [[mapcommand]]
 keys = [ "Down" ]
-command = "cursor_move"
+command = "cursor_move_down"
 args = [ "1" ]
 
 [[mapcommand]]
 keys = [ "j" ]
-command = "cursor_move"
+command = "cursor_move_down"
 args = [ "1" ]
 
 [[mapcommand]]
@@ -140,6 +140,11 @@ command = "mkdir"
 
 
 [[mapcommand]]
+keys = [ "g", "P" ]
+command = "cd"
+args = [ "~/Pictures" ]
+
+[[mapcommand]]
 keys = [ "g", "r" ]
 command = "cd"
 args = [ "/" ]
@@ -158,6 +163,12 @@ args = [ "~/" ]
 keys = [ "g", "d" ]
 command = "cd"
 args = [ "~/Downloads" ]
+
+[[mapcommand]]
+keys = [ "g", "p" ]
+command = "cd"
+args = [ "~/Pictures" ]
+
 
 [[mapcommand]]
 keys = [ "/" ]
@@ -196,7 +207,7 @@ command = "set_mode"
 
 ## Features not yet implemented
 
-[[mapcommand]]
-keys = [ "b", "b" ]
-command = "bulk_rename"
+## [[mapcommand]]
+## keys = [ "b", "b" ]
+## command = "bulk_rename"
 

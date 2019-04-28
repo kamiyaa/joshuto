@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 
-use crate::commands::{CursorMove, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{cursor_move, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
@@ -95,7 +95,7 @@ impl JoshutoRunnable for Search {
 
             let index = Self::search(&context.tabs[context.curr_tab_index], &user_input);
             if let Some(index) = index {
-                CursorMove::cursor_move(index, context, view);
+                cursor_move::cursor_move(index, context, view);
             }
             let mut data = SEARCH_PATTERN.lock().unwrap();
             *data = Some(user_input);
@@ -114,7 +114,7 @@ fn search_with_func(
     if let Some(s) = (*data).as_ref() {
         let index = search_func(&context.tabs[context.curr_tab_index], s);
         if let Some(index) = index {
-            CursorMove::cursor_move(index, context, view);
+            cursor_move::cursor_move(index, context, view);
         }
         ncurses::doupdate();
     }

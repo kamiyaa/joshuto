@@ -1,4 +1,4 @@
-use crate::commands::{CursorMoveInc, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::structs::JoshutoDirEntry;
@@ -89,7 +89,7 @@ impl JoshutoRunnable for SetMode {
             mode_string.remove(0);
 
             self.set_mode(file, mode_string);
-            CursorMoveInc::new(1).execute(context, view)
+            CursorMoveDown::new(1).execute(context, view)
         } else {
             Ok(())
         }

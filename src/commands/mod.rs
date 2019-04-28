@@ -17,8 +17,8 @@ mod tab_switch;
 
 pub use self::change_directory::ChangeDirectory;
 pub use self::cursor_move::{
-    CursorMove, CursorMoveDec, CursorMoveEnd, CursorMoveHome, CursorMoveInc, CursorMovePageDown,
-    CursorMovePageUp,
+    CursorMoveDown, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
+    CursorMoveUp
 };
 pub use self::delete_files::DeleteFiles;
 pub use self::file_operations::{CopyFiles, CutFiles, FileOperationThread, PasteFiles};
@@ -92,12 +92,12 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
         }
         "close_tab" => Some(Box::new(self::CloseTab::new())),
         "copy_files" => Some(Box::new(self::CopyFiles::new())),
-        "cursor_move_inc" => {
+        "cursor_move_down" => {
             if let Some(args) = args {
                 if !args.is_empty() {
                     match args[0].parse::<usize>() {
                         Ok(s) => {
-                            return Some(Box::new(self::CursorMoveInc::new(s)));
+                            return Some(Box::new(self::CursorMoveUp::new(s)));
                         }
                         Err(e) => {
                             eprintln!("{}", e);
@@ -107,12 +107,12 @@ pub fn from_args(command: &str, args: Option<&Vec<String>>) -> Option<Box<Joshut
             }
             None
         }
-        "cursor_move_dec" => {
+        "cursor_move_up" => {
             if let Some(args) = args {
                 if !args.is_empty() {
                     match args[0].parse::<usize>() {
                         Ok(s) => {
-                            return Some(Box::new(self::CursorMoveDec::new(s)));
+                            return Some(Box::new(self::CursorMoveDown::new(s)));
                         }
                         Err(e) => {
                             eprintln!("{}", e);

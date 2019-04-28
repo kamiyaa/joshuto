@@ -3,64 +3,61 @@ use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::window::JoshutoView;
 
-pub struct CursorMove;
 
-impl CursorMove {
-    pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &JoshutoView) {
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
+pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &JoshutoView) {
+    let curr_tab = &mut context.tabs[context.curr_tab_index];
 
-        match curr_tab.curr_list.index {
-            None => {}
-            Some(_) => {
-                let dir_len = curr_tab.curr_list.contents.len();
-                /*
-                if index == dir_len - 1 {
-                    return;
-                }
-                */
-                if new_index >= dir_len {
-                    new_index = dir_len - 1;
-                }
-                curr_tab.curr_list.index = Some(new_index);
+    match curr_tab.curr_list.index {
+        None => {}
+        Some(_) => {
+            let dir_len = curr_tab.curr_list.contents.len();
+            /*
+            if index == dir_len - 1 {
+                return;
             }
+            */
+            if new_index >= dir_len {
+                new_index = dir_len - 1;
+            }
+            curr_tab.curr_list.index = Some(new_index);
         }
-
-        curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
-        curr_tab.refresh_path_status(
-            &view.top_win,
-            &context.username,
-            &context.hostname,
-            context.config_t.tilde_in_titlebar,
-        );
-        curr_tab.refresh_file_status(&view.bot_win);
-        curr_tab.refresh_preview(&view.right_win, &context.config_t);
-        ncurses::doupdate();
     }
+
+    curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
+    curr_tab.refresh_path_status(
+        &view.top_win,
+        &context.username,
+        &context.hostname,
+        context.config_t.tilde_in_titlebar,
+    );
+    curr_tab.refresh_file_status(&view.bot_win);
+    curr_tab.refresh_preview(&view.right_win, &context.config_t);
+    ncurses::doupdate();
 }
 
 #[derive(Clone, Debug)]
-pub struct CursorMoveInc {
+pub struct CursorMoveDown {
     movement: usize,
 }
 
-impl CursorMoveInc {
+impl CursorMoveDown {
     pub fn new(movement: usize) -> Self {
-        CursorMoveInc { movement }
+        CursorMoveDown { movement }
     }
     pub const fn command() -> &'static str {
-        "cursor_move_increment"
+        "cursor_move_up"
     }
 }
 
-impl JoshutoCommand for CursorMoveInc {}
+impl JoshutoCommand for CursorMoveDown {}
 
-impl std::fmt::Display for CursorMoveInc {
+impl std::fmt::Display for CursorMoveDown {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{} {}", Self::command(), self.movement)
     }
 }
 
-impl JoshutoRunnable for CursorMoveInc {
+impl JoshutoRunnable for CursorMoveDown {
     fn execute(
         &self,
         context: &mut JoshutoContext,
@@ -71,35 +68,35 @@ impl JoshutoRunnable for CursorMoveInc {
             curr_list.index.map(|idx| idx + self.movement)
         };
         if let Some(s) = movement {
-            CursorMove::cursor_move(s, context, view)
+            cursor_move(s, context, view)
         }
         Ok(())
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct CursorMoveDec {
+pub struct CursorMoveUp {
     movement: usize,
 }
 
-impl CursorMoveDec {
+impl CursorMoveUp {
     pub fn new(movement: usize) -> Self {
-        CursorMoveDec { movement }
+        CursorMoveUp { movement }
     }
     pub const fn command() -> &'static str {
-        "cursor_move_increment"
+        "cursor_move_down"
     }
 }
 
-impl JoshutoCommand for CursorMoveDec {}
+impl JoshutoCommand for CursorMoveUp {}
 
-impl std::fmt::Display for CursorMoveDec {
+impl std::fmt::Display for CursorMoveUp {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{} {}", Self::command(), self.movement)
     }
 }
 
-impl JoshutoRunnable for CursorMoveDec {
+impl JoshutoRunnable for CursorMoveUp {
     fn execute(
         &self,
         context: &mut JoshutoContext,
@@ -113,7 +110,7 @@ impl JoshutoRunnable for CursorMoveDec {
             }
         });
         if let Some(s) = movement {
-            CursorMove::cursor_move(s, context, view);
+            cursor_move(s, context, view);
         }
         Ok(())
     }
@@ -153,7 +150,7 @@ impl JoshutoRunnable for CursorMovePageUp {
                 .map(|x| if x > half_page { x - half_page } else { 0 })
         };
         if let Some(s) = movement {
-            CursorMove::cursor_move(s, context, view);
+            cursor_move(s, context, view);
         }
         Ok(())
     }
@@ -199,7 +196,7 @@ impl JoshutoRunnable for CursorMovePageDown {
         };
 
         if let Some(s) = movement {
-            CursorMove::cursor_move(s, context, view);
+            cursor_move(s, context, view);
         }
         Ok(())
     }
@@ -241,7 +238,7 @@ impl JoshutoRunnable for CursorMoveHome {
         };
 
         if let Some(s) = movement {
-            CursorMove::cursor_move(s, context, view);
+            cursor_move(s, context, view);
         }
         Ok(())
     }
@@ -283,7 +280,7 @@ impl JoshutoRunnable for CursorMoveEnd {
         };
 
         if let Some(s) = movement {
-            CursorMove::cursor_move(s, context, view);
+            cursor_move(s, context, view);
         }
         Ok(())
     }
