@@ -301,14 +301,15 @@ fn fs_cut_thread(
 
                     let handle = |process_info: fs_extra::TransitProcess| {
                         let progress_info = ProgressInfo {
-                                bytes_finished: process_info.copied_bytes,
-                                total_bytes: process_info.total_bytes,
-                            };
+                            bytes_finished: process_info.copied_bytes,
+                            total_bytes: process_info.total_bytes,
+                        };
                         tx.send(progress_info.clone()).unwrap();
                         fs_extra::dir::TransitProcessResult::ContinueOrAbort
                     };
 
-                    match fs_extra::move_items_with_progress(&cpath, &destination, &options, handle) {
+                    match fs_extra::move_items_with_progress(&cpath, &destination, &options, handle)
+                    {
                         Err(e) => {
                             let err =
                                 std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
@@ -370,9 +371,9 @@ fn fs_copy_thread(
 
             let handle = |process_info: fs_extra::TransitProcess| {
                 let progress_info = ProgressInfo {
-                        bytes_finished: process_info.copied_bytes,
-                        total_bytes: process_info.total_bytes,
-                    };
+                    bytes_finished: process_info.copied_bytes,
+                    total_bytes: process_info.total_bytes,
+                };
                 tx.send(progress_info.clone()).unwrap();
                 fs_extra::dir::TransitProcessResult::ContinueOrAbort
             };

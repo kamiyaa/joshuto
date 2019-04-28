@@ -32,8 +32,8 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
         if let Some(maps) = self.mapcommand {
             for mapcommand in maps {
                 match commands::from_args(mapcommand.command.as_str(), mapcommand.args.as_ref()) {
-                    Some(command) => insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]),
-                    None => eprintln!("Unknown command: {}", mapcommand.command),
+                    Ok(command) => insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]),
+                    Err(e) => eprintln!("{}", e),
                 }
             }
         }

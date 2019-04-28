@@ -3,7 +3,6 @@ use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::window::JoshutoView;
 
-
 pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &JoshutoView) {
     let curr_tab = &mut context.tabs[context.curr_tab_index];
 

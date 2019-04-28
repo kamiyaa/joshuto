@@ -193,9 +193,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
 
             match keymap_t.keymaps.get(&ch) {
                 Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
-                    Some(s) => {
-                        keycommand = s;
-                    }
+                    Some(s) => keycommand = s,
                     None => continue,
                 },
                 Some(CommandKeybind::SimpleKeybind(s)) => {
