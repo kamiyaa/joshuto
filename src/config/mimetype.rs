@@ -17,9 +17,7 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(self.program.as_str()).unwrap();
         if let Some(s) = self.args.as_ref() {
-            for arg in s {
-                write!(f, " {}", arg).unwrap();
-            }
+            s.iter().for_each(|arg| write!(f, " {}", arg).unwrap());
         }
         f.write_str("\t[").unwrap();
         if let Some(s) = self.fork {

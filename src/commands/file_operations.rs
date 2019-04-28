@@ -162,11 +162,14 @@ impl JoshutoRunnable for PasteFiles {
             FileOp::Cut => self.cut_paste(context),
         };
 
-        if let Ok(s) = thread {
-            ncurses::timeout(0);
-            context.threads.push(s);
+        match thread {
+            Ok(s) => {
+                ncurses::timeout(0);
+                context.threads.push(s);
+                Ok(())
+            }
+            Err(e) => Err(JoshutoError::IO(e)),
         }
-        Ok(())
     }
 }
 

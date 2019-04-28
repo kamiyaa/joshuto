@@ -168,7 +168,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
         if !context.threads.is_empty() {
             ncurses::timeout(0);
             match process_threads(&mut context, &view) {
-                Ok(()) => {},
+                Ok(()) => {}
                 Err(e) => ui::wprint_err(&view.bot_win, e.to_string().as_str()),
             }
             ncurses::doupdate();

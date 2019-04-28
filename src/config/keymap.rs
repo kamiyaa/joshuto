@@ -1,9 +1,8 @@
 use serde_derive::Deserialize;
-use std::collections::hash_map;
-use std::collections::HashMap;
+use std::collections::{hash_map::Entry, HashMap};
 use std::process::exit;
 
-use crate::commands;
+use crate::commands::{self, CommandKeybind, JoshutoCommand};
 use crate::config::{parse_config_file, Flattenable};
 use crate::KEYMAP_FILE;
 
@@ -28,7 +27,7 @@ struct JoshutoRawKeymap {
 
 impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
     fn flatten(self) -> JoshutoKeymap {
-        let mut keymaps: HashMap<i32, commands::CommandKeybind> = HashMap::new();
+        let mut keymaps: HashMap<i32, CommandKeybind> = HashMap::new();
         if let Some(maps) = self.mapcommand {
             for mapcommand in maps {
                 match commands::from_args(mapcommand.command.as_str(), mapcommand.args.as_ref()) {
@@ -43,7 +42,7 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
 
 #[derive(Debug)]
 pub struct JoshutoKeymap {
-    pub keymaps: HashMap<i32, commands::CommandKeybind>,
+    pub keymaps: HashMap<i32, CommandKeybind>,
 }
 
 impl JoshutoKeymap {
@@ -61,41 +60,44 @@ impl std::default::Default for JoshutoKeymap {
 }
 
 fn insert_keycommand(
-    map: &mut HashMap<i32, commands::CommandKeybind>,
-    keycommand: Box<commands::JoshutoCommand>,
+    map: &mut HashMap<i32, CommandKeybind>,
+    keycommand: Box<JoshutoCommand>,
     keys: &[String],
 ) {
-    if keys.len() == 1 {
-        if let Some(s) = key_to_i32(&keys[0]) {
-            match map.entry(s) {
-                hash_map::Entry::Occupied(_) => {
+    match keys.len() {
+        0 => {}
+        1 => match key_to_i32(&keys[0]) {
+            Some(s) => match map.entry(s) {
+                Entry::Occupied(_) => {
                     eprintln!("Error: Keybindings ambiguous");
                     exit(1);
                 }
-                hash_map::Entry::Vacant(entry) => {
-                    entry.insert(commands::CommandKeybind::SimpleKeybind(keycommand));
+                Entry::Vacant(entry) => {
+                    entry.insert(CommandKeybind::SimpleKeybind(keycommand));
                 }
-            }
-        } else {
-            eprintln!("Error: Failed to parse keycode: {}", keys[0]);
-        }
-    } else if let Some(s) = key_to_i32(&keys[0]) {
-        let mut new_map: HashMap<i32, commands::CommandKeybind>;
-        match map.remove(&s) {
-            Some(commands::CommandKeybind::CompositeKeybind(m)) => {
-                new_map = m;
-            }
-            Some(_) => {
-                eprintln!("Error: Keybindings ambiguous");
-                exit(1);
-            }
-            None => {
-                new_map = HashMap::new();
-            }
-        }
-        insert_keycommand(&mut new_map, keycommand, &keys[1..]);
-        let composite_command = commands::CommandKeybind::CompositeKeybind(new_map);
-        map.insert(s, composite_command);
+            },
+            None => eprintln!("Error: Failed to parse keycode: {}", keys[0]),
+        },
+        _ => match key_to_i32(&keys[0]) {
+            Some(s) => match map.entry(s) {
+                Entry::Occupied(mut entry) => match entry.get_mut() {
+                    CommandKeybind::CompositeKeybind(ref mut m) => {
+                        insert_keycommand(m, keycommand, &keys[1..])
+                    }
+                    _ => {
+                        eprintln!("Error: Keybindings ambiguous");
+                        exit(1);
+                    }
+                },
+                Entry::Vacant(entry) => {
+                    let mut new_map = HashMap::new();
+                    insert_keycommand(&mut new_map, keycommand, &keys[1..]);
+                    let composite_command = CommandKeybind::CompositeKeybind(new_map);
+                    entry.insert(composite_command);
+                }
+            },
+            None => eprintln!("Error: Failed to parse keycode: {}", keys[0]),
+        },
     }
 }
 
