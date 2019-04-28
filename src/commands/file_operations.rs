@@ -399,7 +399,15 @@ fn fs_copy_thread(
                     i += 1;
                 }
             }
-            std::fs::copy(&path, &destination)?;
+            let res = std::fs::copy(&path, &destination)?;
+            let mut prog_info = ProgressInfo {
+                bytes_finished: 0,
+                total_bytes: res,
+            };
+            while prog_info.bytes_finished < prog_info.total_bytes {
+                prog_info.bytes_finished += 4096;
+                tx.send(prog_info.clone()).unwrap();
+            }
         }
         destination.pop();
         progress_info.bytes_finished += 1;

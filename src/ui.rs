@@ -249,6 +249,7 @@ pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32) {
         ncurses::A_STANDOUT(),
         THEME_T.selection.colorpair,
     );
+    win.queue_for_refresh();
 }
 
 pub fn get_theme_attr(

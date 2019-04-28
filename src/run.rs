@@ -106,6 +106,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
                     &view.bot_win,
                     progress_info.bytes_finished as f32 / progress_info.total_bytes as f32,
                 );
+                ncurses::doupdate();
             }
             _ => {}
         }
@@ -167,12 +168,10 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
         if !context.threads.is_empty() {
             ncurses::timeout(0);
             match process_threads(&mut context, &view) {
-                Ok(()) => {}
-                Err(e) => {
-                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
-                    ncurses::doupdate();
-                }
+                Ok(()) => {},
+                Err(e) => ui::wprint_err(&view.bot_win, e.to_string().as_str()),
             }
+            ncurses::doupdate();
         } else {
             ncurses::timeout(-1);
         }

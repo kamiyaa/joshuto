@@ -92,7 +92,8 @@ fn preview_file(path: &path::Path, win: &JoshutoPanel) {
 
 fn preview_with(path: &path::Path, win: &JoshutoPanel, entry: &JoshutoPreviewEntry) {
     let mut command = process::Command::new(&entry.program);
-    command.args(entry.args.as_ref().unwrap_or(&Vec::new()))
+    command
+        .args(entry.args.as_ref().unwrap_or(&Vec::new()))
         .arg(path.as_os_str())
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
