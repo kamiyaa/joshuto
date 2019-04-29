@@ -1,3 +1,4 @@
+use crate::ui;
 use crate::window::JoshutoPanel;
 
 #[derive(Debug)]
@@ -15,11 +16,10 @@ impl JoshutoView {
     pub fn new(win_ratio: (usize, usize, usize)) -> Self {
         let sum_ratio: usize = win_ratio.0 + win_ratio.1 + win_ratio.2;
 
-        let mut term_rows: i32 = 0;
-        let mut term_cols: i32 = 0;
-        ncurses::getmaxyx(ncurses::stdscr(), &mut term_rows, &mut term_cols);
+        let (term_rows, term_cols) = ui::getmaxyx();
         let term_divide: i32 = term_cols / sum_ratio as i32;
 
+        /* window for tabs */
         let win_xy: (i32, i32) = (1, 10);
         let win_coord: (usize, usize) = (0, term_cols as usize - win_xy.1 as usize);
         let tab_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
@@ -28,16 +28,22 @@ impl JoshutoView {
         let win_coord: (usize, usize) = (0, 0);
         let top_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
+        let offset = 0;
+
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 1);
-        let win_coord: (usize, usize) = (1, 0);
+        let win_coord: (usize, usize) = (1, offset);
         let left_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
+        let offset = offset + win_ratio.0;
+
         let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.1 as i32) - 1);
-        let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.0);
+        let win_coord: (usize, usize) = (1, term_divide as usize * offset);
         let mid_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.2 as i32) - 1);
-        let win_coord: (usize, usize) = (1, term_divide as usize * win_ratio.2);
+        let offset = offset + win_ratio.1;
+
+        let win_xy: (i32, i32) = (term_rows - 2, term_cols - (term_divide * offset as i32) - 1);
+        let win_coord: (usize, usize) = (1, term_divide as usize * offset);
         let right_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
 
         let win_xy: (i32, i32) = (1, term_cols);
