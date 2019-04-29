@@ -306,12 +306,10 @@ pub fn get_theme_attr(
         attr |= ncurses::A_UNDERLINE();
     }
 
-    let mut prefix: (usize, &str) = (1, " ");
-    if let Some(ref p1) = theme.prefix {
-        if let Some(p2) = theme.prefixsize {
-            prefix = (p2, &p1);
-        }
-    }
+    let prefix = match theme.prefix.as_ref() {
+        Some((s, p)) => (*s, p.as_str()),
+        None => (1, " "),
+    };
 
     (prefix, attr, colorpair)
 }
