@@ -22,28 +22,32 @@ pub trait DirectoryHistory {
 impl DirectoryHistory for HashMap<PathBuf, JoshutoDirList> {
     fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) {
         let mut ancestors = pathbuf.ancestors();
-        if let Some(mut ancestor) = ancestors.next() {
-            for curr in ancestors {
-                match JoshutoDirList::new(curr.to_path_buf().clone(), sort_option) {
-                    Ok(mut s) => {
-                        let index = s.contents.iter().enumerate().find_map(|(i, dir)| {
-                            if dir.path == ancestor {
-                                Some(i)
-                            } else {
-                                None
+        match ancestors.next() {
+            None => {}
+            Some(mut ancestor) => {
+                for curr in ancestors {
+                    match JoshutoDirList::new(curr.to_path_buf().clone(), sort_option) {
+                        Ok(mut s) => {
+                            let index = s.contents.iter().enumerate().find_map(|(i, dir)| {
+                                if dir.path == ancestor {
+                                    Some(i)
+                                } else {
+                                    None
+                                }
+                            });
+                            if let Some(i) = index {
+                                s.index = Some(i);
                             }
-                        });
-                        if let Some(i) = index {
-                            s.index = Some(i);
+                            self.insert(curr.to_path_buf(), s);
                         }
-                        self.insert(curr.to_path_buf(), s);
+                        Err(e) => eprintln!("populate_to_root: {}", e),
                     }
-                    Err(e) => eprintln!("populate_to_root: {}", e),
-                };
-                ancestor = curr;
+                    ancestor = curr;
+                }
             }
         }
     }
+
     fn pop_or_create(
         &mut self,
         path: &Path,

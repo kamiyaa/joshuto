@@ -1,85 +1,13 @@
-use std::ffi;
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::time;
+use std::{fs, path};
 
 use crate::sort;
+use crate::structs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::window::JoshutoPageState;
-
-#[derive(Clone, Debug)]
-pub struct JoshutoMetadata {
-    pub len: u64,
-    pub modified: time::SystemTime,
-    pub permissions: fs::Permissions,
-    pub file_type: fs::FileType,
-}
-
-impl JoshutoMetadata {
-    pub fn from(metadata: &fs::Metadata) -> Result<Self, std::io::Error> {
-        let len = metadata.len();
-        let modified = metadata.modified()?;
-        let permissions = metadata.permissions();
-        let file_type = metadata.file_type();
-
-        Ok(JoshutoMetadata {
-            len,
-            modified,
-            permissions,
-            file_type,
-        })
-    }
-}
-
-#[derive(Clone)]
-pub struct JoshutoDirEntry {
-    pub file_name: ffi::OsString,
-    pub file_name_as_string: String,
-    pub path: PathBuf,
-    pub metadata: JoshutoMetadata,
-    pub selected: bool,
-    pub marked: bool,
-}
-
-impl JoshutoDirEntry {
-    pub fn from(direntry: &fs::DirEntry) -> Result<Self, std::io::Error> {
-        let file_name = direntry.file_name();
-        let file_name_as_string: String = match file_name.clone().into_string() {
-            Ok(s) => s,
-            Err(_) => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "Failed to get file_name",
-                ));
-            }
-        };
-        let path = direntry.path();
-
-        let metadata = direntry.metadata()?;
-        let metadata = JoshutoMetadata::from(&metadata)?;
-
-        let dir_entry = JoshutoDirEntry {
-            file_name,
-            file_name_as_string,
-            path,
-            metadata,
-            selected: false,
-            marked: false,
-        };
-        Ok(dir_entry)
-    }
-}
-
-impl std::fmt::Debug for JoshutoDirEntry {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "JoshutoDirEntry {{\n\tfile_name: {:?}, \n\tfile_name_as_string: {}, \n\tpath: {:?} \n}}",
-            self.file_name, self.file_name_as_string, self.path)
-    }
-}
 
 #[derive(Debug)]
 pub struct JoshutoDirList {
     pub index: Option<usize>,
-    pub path: PathBuf,
+    pub path: path::PathBuf,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
     pub pagestate: JoshutoPageState,
@@ -87,14 +15,16 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
-    pub fn new(path: PathBuf, sort_option: &sort::SortOption) -> Result<Self, std::io::Error> {
+    pub fn new(
+        path: path::PathBuf,
+        sort_option: &sort::SortOption,
+    ) -> Result<Self, std::io::Error> {
         let mut contents = Self::read_dir_list(path.as_path(), sort_option)?;
         contents.sort_by(&sort_option.compare_func());
 
         let index = if !contents.is_empty() { Some(0) } else { None };
 
-        let metadata = fs::metadata(&path)?;
-        let metadata = JoshutoMetadata::from(&metadata)?;
+        let metadata = JoshutoMetadata::from(&path)?;
         let pagestate = JoshutoPageState::new();
 
         Ok(JoshutoDirList {
@@ -108,7 +38,7 @@ impl JoshutoDirList {
     }
 
     fn read_dir_list(
-        path: &Path,
+        path: &path::Path,
         sort_option: &sort::SortOption,
     ) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
         let filter_func = sort_option.filter_func();
@@ -157,8 +87,7 @@ impl JoshutoDirList {
             };
         }
 
-        let metadata = std::fs::metadata(&self.path)?;
-        let metadata = JoshutoMetadata::from(&metadata)?;
+        let metadata = JoshutoMetadata::from(&self.path)?;
         self.metadata = metadata;
         self.contents = contents;
         Ok(())
@@ -168,8 +97,8 @@ impl JoshutoDirList {
         self.contents.iter().filter(|entry| entry.selected)
     }
 
-    pub fn get_selected_paths(&self) -> Option<Vec<PathBuf>> {
-        let vec: Vec<PathBuf> = self.selected_entries().map(|e| e.path.clone()).collect();
+    pub fn get_selected_paths(&self) -> Option<Vec<path::PathBuf>> {
+        let vec: Vec<path::PathBuf> = self.selected_entries().map(|e| e.path.clone()).collect();
         if vec.is_empty() {
             Some(vec![self.get_curr_ref()?.path.clone()])
         } else {
