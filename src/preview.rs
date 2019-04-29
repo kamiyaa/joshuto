@@ -4,7 +4,7 @@ use std::path;
 use std::process;
 
 use crate::config::{JoshutoConfig, JoshutoPreviewEntry};
-use crate::structs::JoshutoDirList;
+use crate::structs::{JoshutoDirEntry, JoshutoDirList};
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::panel::JoshutoPanel;
@@ -25,10 +25,14 @@ pub fn preview_entry(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &J
         Some(s) => {
             if s.path.is_dir() {
                 preview_directory(&mut curr_tab.history, s.path.as_path(), win, config_t);
-            } else if s.metadata.len <= config_t.max_preview_size {
-                preview_file(s.path.as_path(), win);
+            } else if s.metadata.file_type.is_file() {
+                if s.metadata.len <= config_t.max_preview_size {
+                    preview_file(s, win);
+                } else {
+                    ui::wprint_err(win, "File size exceeds max preview size");
+                }
             } else {
-                ui::wprint_err(win, "File size exceeds max preview size");
+                ui::wprint_err(win, "Not a regular file");
             }
         }
         None => {}
@@ -55,36 +59,44 @@ fn preview_directory(
     win.queue_for_refresh();
 }
 
-fn preview_file(path: &path::Path, win: &JoshutoPanel) {
+fn preview_file(entry: &JoshutoDirEntry, win: &JoshutoPanel) {
+    let path = &entry.path;
     match path.extension() {
-        Some(file_ext) => {
-            if let Some(s) = PREVIEW_T.extension.get(file_ext.to_str().unwrap()) {
-                preview_with(path, win, &s);
-            } else {
+        Some(file_ext) => match PREVIEW_T.extension.get(file_ext.to_str().unwrap()) {
+            Some(s) => preview_with(path, win, &s),
+            None => {
                 let mimetype_str = tree_magic::from_filepath(&path);
-                if let Some(s) = PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
-                    preview_with(path, win, &s);
-                } else if let Some(ind) = mimetype_str.find('/') {
-                    let supertype = &mimetype_str[..ind];
-                    if supertype == "text" {
-                        preview_text(path, win);
-                    } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
-                        preview_with(path, win, &s);
-                    }
+                match PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
+                    Some(s) => preview_with(path, win, &s),
+                    None => match mimetype_str.find('/') {
+                        Some(ind) => {
+                            let supertype = &mimetype_str[..ind];
+                            if supertype == "text" {
+                                preview_text(path, win);
+                            } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
+                                preview_with(path, win, &s);
+                            }
+                        }
+                        None => {}
+                    },
                 }
             }
-        }
+        },
         None => {
             let mimetype_str = tree_magic::from_filepath(&path);
-            if let Some(s) = PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
-                preview_with(path, win, &s);
-            } else if let Some(ind) = mimetype_str.find('/') {
-                let supertype = &mimetype_str[..ind];
-                if supertype == "text" {
-                    preview_text(path, win);
-                } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
-                    preview_with(path, win, &s);
-                }
+            match PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
+                Some(s) => preview_with(path, win, &s),
+                None => match mimetype_str.find('/') {
+                    Some(ind) => {
+                        let supertype = &mimetype_str[..ind];
+                        if supertype == "text" {
+                            preview_text(path, win);
+                        } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
+                            preview_with(path, win, &s);
+                        }
+                    }
+                    None => {}
+                },
             }
         }
     }
