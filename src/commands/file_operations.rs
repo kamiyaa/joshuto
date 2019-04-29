@@ -188,7 +188,7 @@ impl PasteFiles {
         let paths = SELECTED_FILES.lock().unwrap().take();
         match paths {
             Some(paths) => {
-                if paths.len() == 0 {
+                if paths.is_empty() {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "no files selected",
@@ -235,7 +235,7 @@ impl PasteFiles {
         let paths = SELECTED_FILES.lock().unwrap().take();
         match paths {
             Some(paths) => {
-                if paths.len() == 0 {
+                if paths.is_empty() {
                     Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "no files selected",
@@ -311,14 +311,10 @@ fn fs_cut_thread(
                         fs_extra::dir::TransitProcessResult::ContinueOrAbort
                     };
 
-                    match fs_extra::move_items_with_progress(&cpath, &destination, &options, handle)
-                    {
-                        Err(e) => {
-                            let err =
-                                std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
-                            return Err(err);
-                        }
-                        _ => {}
+                    if let Err(e) = fs_extra::move_items_with_progress(&cpath, &destination, &options, handle) {
+                        let err =
+                            std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
+                        return Err(err);
                     }
                     std::fs::remove_dir_all(&path)?;
                 } else {
@@ -331,7 +327,7 @@ fn fs_cut_thread(
         progress_info.bytes_finished += 1;
         tx.send(progress_info.clone()).unwrap();
     }
-    return Ok(());
+    Ok(())
 }
 
 fn fs_copy_thread(
@@ -381,12 +377,9 @@ fn fs_copy_thread(
                 fs_extra::dir::TransitProcessResult::ContinueOrAbort
             };
 
-            match fs_extra::copy_items_with_progress(&path, &destination, &options, handle) {
-                Err(e) => {
-                    let err = std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
-                    return Err(err);
-                }
-                _ => {}
+            if let Err(e) = fs_extra::copy_items_with_progress(&path, &destination, &options, handle) {
+                let err = std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
+                return Err(err);
             }
         } else {
             destination.push(file_name.clone());
@@ -416,5 +409,5 @@ fn fs_copy_thread(
         progress_info.bytes_finished += 1;
         tx.send(progress_info.clone()).unwrap();
     }
-    return Ok(());
+    Ok(())
 }

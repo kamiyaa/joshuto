@@ -21,22 +21,19 @@ pub fn preview_parent(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &
 
 pub fn preview_entry(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &JoshutoConfig) {
     ncurses::werase(win.win);
-    match curr_tab.curr_list.get_curr_ref() {
-        Some(s) => {
-            if s.path.is_dir() {
-                preview_directory(&mut curr_tab.history, s.path.as_path(), win, config_t);
-            } else if s.metadata.file_type.is_file() {
-                if s.metadata.len <= config_t.max_preview_size {
-                    preview_file(s, win);
-                } else {
-                    ui::wprint_err(win, "File size exceeds max preview size");
-                }
+    if let Some(s) = curr_tab.curr_list.get_curr_ref() {
+        if s.path.is_dir() {
+            preview_directory(&mut curr_tab.history, s.path.as_path(), win, config_t);
+        } else if s.metadata.file_type.is_file() {
+            if s.metadata.len <= config_t.max_preview_size {
+                preview_file(s, win);
             } else {
-                ui::wprint_err(win, "Not a regular file");
+                ui::wprint_err(win, "File size exceeds max preview size");
             }
+        } else {
+            ui::wprint_err(win, "Not a regular file");
         }
-        None => {}
-    };
+    }
     win.queue_for_refresh();
 }
 
@@ -46,12 +43,12 @@ fn preview_directory(
     win: &JoshutoPanel,
     config_t: &JoshutoConfig,
 ) {
-    match history.entry(path.clone().to_path_buf()) {
+    match history.entry(path.to_path_buf().clone()) {
         Entry::Occupied(mut entry) => {
             win.display_contents(entry.get_mut(), config_t.scroll_offset);
         }
         Entry::Vacant(entry) => {
-            if let Ok(s) = JoshutoDirList::new(path.clone().to_path_buf(), &config_t.sort_option) {
+            if let Ok(s) = JoshutoDirList::new(path.to_path_buf().clone(), &config_t.sort_option) {
                 win.display_contents(entry.insert(s), config_t.scroll_offset);
             }
         }
@@ -64,41 +61,39 @@ fn preview_file(entry: &JoshutoDirEntry, win: &JoshutoPanel) {
     match path.extension() {
         Some(file_ext) => match PREVIEW_T.extension.get(file_ext.to_str().unwrap()) {
             Some(s) => preview_with(path, win, &s),
-            None => {
-                let mimetype_str = tree_magic::from_filepath(&path);
-                match PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
+            None => {},
+/*
+            None => if let Some(mimetype) = tree_magic::from_filepath(&path) {
+                match PREVIEW_T.mimetype.get(mimetype.as_str()) {
                     Some(s) => preview_with(path, win, &s),
-                    None => match mimetype_str.find('/') {
-                        Some(ind) => {
-                            let supertype = &mimetype_str[..ind];
-                            if supertype == "text" {
-                                preview_text(path, win);
-                            } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
-                                preview_with(path, win, &s);
-                            }
-                        }
-                        None => {}
-                    },
-                }
-            }
-        },
-        None => {
-            let mimetype_str = tree_magic::from_filepath(&path);
-            match PREVIEW_T.mimetype.get(mimetype_str.as_str()) {
-                Some(s) => preview_with(path, win, &s),
-                None => match mimetype_str.find('/') {
-                    Some(ind) => {
-                        let supertype = &mimetype_str[..ind];
+                    None => if let Some(ind) = mimetype.find('/') {
+                        let supertype = &mimetype[..ind];
                         if supertype == "text" {
                             preview_text(path, win);
                         } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
                             preview_with(path, win, &s);
                         }
+                    },
+                }
+            }
+*/
+        },
+        None => {},
+/*
+        if let Some(mimetype) = tree_magic::from_filepath(&path) {
+            match PREVIEW_T.mimetype.get(mimetype.as_str()) {
+                Some(s) => preview_with(path, win, &s),
+                None => if let Some(ind) = mimetype.find('/') {
+                    let supertype = &mimetype[..ind];
+                    if supertype == "text" {
+                        preview_text(path, win);
+                    } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
+                        preview_with(path, win, &s);
                     }
-                    None => {}
                 },
             }
         }
+*/
     }
 }
 

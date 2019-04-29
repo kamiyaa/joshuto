@@ -93,7 +93,7 @@ impl JoshutoDirList {
         Ok(())
     }
 
-    pub fn selected_entries<'a>(&'a self) -> impl Iterator<Item = &'a JoshutoDirEntry> {
+    pub fn selected_entries(&self) -> impl Iterator<Item = &JoshutoDirEntry> {
         self.contents.iter().filter(|entry| entry.selected)
     }
 

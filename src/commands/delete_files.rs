@@ -41,20 +41,33 @@ impl DeleteFiles {
         ncurses::doupdate();
 
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        let ch: i32 = ncurses::getch();
+        let ch = ncurses::getch();
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-            if let Some(paths) = curr_tab.curr_list.get_selected_paths() {
-                Self::remove_files(paths)?;
-                ui::wprint_msg(&view.bot_win, "Deleted files");
-            }
+            ui::wprint_msg(&view.bot_win, "Are you sure? (Y/n)");
+            ncurses::doupdate();
+            let ch = ncurses::getch();
+            if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
+                if let Some(paths) = curr_tab.curr_list.get_selected_paths() {
+                    Self::remove_files(paths)?;
+                    ui::wprint_msg(&view.bot_win, "Deleted files");
+                }
 
-            curr_tab.reload_contents(&context.config_t.sort_option)?;
-            curr_tab.refresh(
-                &view,
-                &context.config_t,
-                &context.username,
-                &context.hostname,
-            );
+                curr_tab.reload_contents(&context.config_t.sort_option)?;
+                curr_tab.refresh(
+                    &view,
+                    &context.config_t,
+                    &context.username,
+                    &context.hostname,
+                );
+            } else {
+                curr_tab.refresh_file_status(&view.bot_win);
+                curr_tab.refresh_path_status(
+                    &view.top_win,
+                    &context.username,
+                    &context.hostname,
+                    context.config_t.tilde_in_titlebar,
+                );
+            }
         } else {
             curr_tab.refresh_file_status(&view.bot_win);
             curr_tab.refresh_path_status(

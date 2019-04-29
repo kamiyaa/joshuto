@@ -72,11 +72,10 @@ impl JoshutoPanel {
 
         let curr_index = dirlist.index.unwrap();
 
-        for i in start..end {
+        for (i, entry) in dir_contents.iter().enumerate().take(end).skip(start) {
             let coord: (i32, i32) = (i as i32 - start as i32, 0);
 
             ncurses::wmove(win.win, coord.0, coord.1);
-            let entry = &dir_contents[i];
 
             let mut attr: ncurses::attr_t = 0;
             if i == curr_index {

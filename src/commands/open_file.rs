@@ -35,20 +35,25 @@ impl OpenFile {
                 }
             }
         }
-        let mimetype_str = tree_magic::from_filepath(&path);
+/*
+        match tree_magic::from_filepath(&path) {
+            None => {},
+            Some(mimetype) => {
+                /* mime subtype have second priority */
+                if let Some(s) = MIMETYPE_T.mimetype.get(&mimetype) {
+                    mimetype_options.extend(s.iter());
+                }
 
-        /* mime subtype have second priority */
-        if let Some(s) = MIMETYPE_T.mimetype.get(&mimetype_str) {
-            mimetype_options.extend(s.iter());
-        }
-
-        /* generic mime type have last priority */
-        if let Some(s) = mimetype_str.find('/') {
-            let mimetype_type = &mimetype_str[..s];
-            if let Some(s) = MIMETYPE_T.mimetype.get(mimetype_type) {
-                mimetype_options.extend(s.iter());
+                /* generic mime type have last priority */
+                if let Some(s) = mimetype.find('/') {
+                    let mimetype_type = &mimetype[..s];
+                    if let Some(s) = MIMETYPE_T.mimetype.get(mimetype_type) {
+                        mimetype_options.extend(s.iter());
+                    }
+                }
             }
         }
+*/
         mimetype_options
     }
 
@@ -118,7 +123,7 @@ impl OpenFile {
             .history
             .insert(new_curr_list.path.clone(), new_curr_list);
 
-        curr_tab.curr_path = path.clone().to_path_buf();
+        curr_tab.curr_path = path.to_path_buf().clone();
         Ok(())
     }
 

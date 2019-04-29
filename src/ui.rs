@@ -194,7 +194,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
     ncurses::waddch(win, ' ' as ncurses::chtype);
 
     if file.path.is_dir() {
-        let is_link: u32 = libc::S_IFLNK.into();
+        let is_link: u32 = libc::S_IFLNK as u32;
         if mode >> 9 & is_link >> 9 == mode >> 9 {
             if let Ok(path) = fs::read_link(&file.path) {
                 ncurses::waddstr(win, " -> ");
@@ -206,9 +206,12 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
         ncurses::waddstr(win, &file_size_string);
     }
 
+/*
     ncurses::waddstr(win, "    ");
-    let mimetype_str = tree_magic::from_filepath(&file.path);
-    ncurses::waddstr(win, &mimetype_str);
+    if let Some(s) = tree_magic::from_filepath(&file.path) {
+        ncurses::waddstr(win, &s);
+    }
+*/
 }
 
 pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {

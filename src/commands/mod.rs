@@ -222,7 +222,7 @@ pub fn from_args(
             )),
         },
         "toggle_hidden" => Ok(Box::new(self::ToggleHiddenFiles::new())),
-        inp @ _ => Err(KeymapError::new(None, format!("Unknown command: {}", inp))),
+        inp => Err(KeymapError::new(None, format!("Unknown command: {}", inp))),
     }
 }
 

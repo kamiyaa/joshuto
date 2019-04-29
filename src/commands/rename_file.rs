@@ -115,6 +115,6 @@ impl JoshutoRunnable for RenameFile {
                 ncurses::doupdate();
             }
         }
-        return Ok(());
+        Ok(())
     }
 }

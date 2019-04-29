@@ -7,7 +7,7 @@ pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 
     LIBC_PERMISSION_VALS.iter().any(|val| {
-        let val: u32 = (*val).into();
+        let val: u32 = (*val) as u32;
         mode & val != 0
     })
 }
@@ -39,7 +39,7 @@ pub fn stringify_mode(mode: u32) -> String {
     let mode_shifted = mode >> 9;
 
     for (val, ch) in LIBC_FILE_VALS.iter() {
-        let val: u32 = (*val >> 9).into();
+        let val: u32 = (*val >> 9) as u32;
         if mode_shifted & val == mode_shifted {
             mode_str.push(*ch);
             break;
@@ -47,7 +47,7 @@ pub fn stringify_mode(mode: u32) -> String {
     }
 
     for (val, ch) in LIBC_PERMISSION_VALS.iter() {
-        let val: u32 = (*val).into();
+        let val: u32 = (*val) as u32;
         if mode & val != 0 {
             mode_str.push(*ch);
         } else {
@@ -71,16 +71,13 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     let program = entry.program.clone();
 
     let mut command = process::Command::new(program);
-    match entry.silent {
-        Some(true) => {
-            command.stdout(process::Stdio::null());
-            command.stderr(process::Stdio::null());
-        }
-        _ => {}
+    if let Some(true) = entry.silent {
+        command.stdout(process::Stdio::null());
+        command.stderr(process::Stdio::null());
     }
 
     if let Some(args) = entry.args.as_ref() {
-        command.args(args.iter().map(|arg| arg.clone()));
+        command.args(args.clone());
     }
     command.args(paths.iter().map(|path| path.as_os_str()));
 
@@ -100,7 +97,7 @@ pub fn open_with_args(paths: &[PathBuf], args: &[String]) {
     let program = args[0].clone();
 
     let mut command = process::Command::new(program);
-    command.args(args[1..].iter().map(|arg| arg.clone()));
+    command.args(args[1..].iter().cloned());
     command.args(paths.iter().map(|path| path.as_os_str()));
 
     match command.spawn() {

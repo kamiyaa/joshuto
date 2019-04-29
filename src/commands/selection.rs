@@ -45,6 +45,6 @@ impl JoshutoRunnable for SelectFiles {
                 return CursorMoveDown::new(1).execute(context, view);
             }
         }
-        return Ok(());
+        Ok(())
     }
 }

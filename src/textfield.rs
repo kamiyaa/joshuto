@@ -109,43 +109,36 @@ impl JoshutoTextField {
                     completion_tracker.take();
                 }
             } else if ch == ncurses::KEY_DC {
-                if let Some(_) = line_buffer.delete(1) {
+                if line_buffer.delete(1).is_some() {
                     completion_tracker.take();
                 }
             } else if ch == 0x9 {
-                match completion_tracker {
-                    None => {
-                        if line_buffer.len() == line_buffer.pos() {
-                            let res = completer.complete(line_buffer.as_str(), line_buffer.len());
-                            if let Ok((pos, mut candidates)) = res {
-                                candidates.sort_by(|x, y| {
-                                    x.display()
-                                        .partial_cmp(y.display())
-                                        .unwrap_or(std::cmp::Ordering::Less)
-                                });
-                                let ct = CompletionTracker::new(
-                                    pos,
-                                    candidates,
-                                    String::from(line_buffer.as_str()),
-                                );
-                                completion_tracker = Some(ct);
-                            }
-                        }
+                if completion_tracker.is_none() && line_buffer.len() == line_buffer.pos() {
+                    let res = completer.complete(line_buffer.as_str(), line_buffer.len());
+                    if let Ok((pos, mut candidates)) = res {
+                        candidates.sort_by(|x, y| {
+                            x.display()
+                                .partial_cmp(y.display())
+                                .unwrap_or(std::cmp::Ordering::Less)
+                        });
+                        let ct = CompletionTracker::new(
+                            pos,
+                            candidates,
+                            String::from(line_buffer.as_str()),
+                        );
+                        completion_tracker = Some(ct);
                     }
-                    _ => {}
                 }
-                match completion_tracker {
-                    Some(ref mut s) => {
-                        if s.index < s.candidates.len() {
-                            let candidate = &s.candidates[s.index];
-                            completer.update(&mut line_buffer, 0, candidate.display());
-                            s.index += 1;
-                        } else {
-                            completer.update(&mut line_buffer, 0, &s.original);
-                            s.index = 0;
-                        }
+
+                if let Some(ref mut s) = completion_tracker {
+                    if s.index < s.candidates.len() {
+                        let candidate = &s.candidates[s.index];
+                        completer.update(&mut line_buffer, 0, candidate.display());
+                        s.index += 1;
+                    } else {
+                        completer.update(&mut line_buffer, 0, &s.original);
+                        s.index = 0;
                     }
-                    None => {}
                 }
                 curr_pos = unicode_width::UnicodeWidthStr::width(
                     &line_buffer.as_str()[..line_buffer.pos()],
@@ -155,14 +148,14 @@ impl JoshutoTextField {
             } else if ch == ncurses::KEY_DOWN {
                 completion_tracker.take();
             } else if let Some(ch) = std::char::from_u32(ch as u32) {
-                if let Some(_) = line_buffer.insert(ch, 1) {
+                if line_buffer.insert(ch, 1).is_some() {
                     curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
                     completion_tracker.take();
                 }
             }
         }
         let lbstr = line_buffer.to_string();
-        if lbstr.len() == 0 {
+        if lbstr.is_empty() {
             None
         } else {
             Some(lbstr)

@@ -54,7 +54,7 @@ impl SetMode {
                 let mut mode: u32 = 0;
                 for (i, ch) in s.chars().enumerate() {
                     if ch == LIBC_PERMISSION_VALS[i].1 {
-                        let val: u32 = LIBC_PERMISSION_VALS[i].0.into();
+                        let val: u32 = LIBC_PERMISSION_VALS[i].0 as u32;
                         mode |= val;
                     }
                 }

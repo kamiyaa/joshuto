@@ -46,7 +46,7 @@ impl JoshutoRunnable for ReloadDirList {
                 ncurses::doupdate();
                 Ok(())
             }
-            Err(e) => return Err(JoshutoError::IO(e)),
+            Err(e) => Err(JoshutoError::IO(e)),
         }
     }
 }
