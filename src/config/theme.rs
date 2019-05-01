@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use crate::config::{parse_config_file, Flattenable};
+use super::{parse_config_file, ConfigStructure, Flattenable};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct JoshutoColorPair {
@@ -164,8 +164,8 @@ pub struct JoshutoTheme {
     pub ext: HashMap<String, JoshutoColorTheme>,
 }
 
-impl JoshutoTheme {
-    pub fn get_config() -> JoshutoTheme {
+impl ConfigStructure for JoshutoTheme {
+    fn get_config() -> Self {
         parse_config_file::<JoshutoRawTheme, JoshutoTheme>(crate::THEME_FILE)
             .unwrap_or_else(JoshutoTheme::default)
     }

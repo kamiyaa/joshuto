@@ -2,7 +2,7 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 
-use crate::config::{parse_config_file, Flattenable};
+use super::{parse_config_file, ConfigStructure, Flattenable};
 use crate::MIMETYPE_FILE;
 
 #[derive(Debug, Deserialize)]
@@ -68,11 +68,6 @@ pub struct JoshutoMimetype {
 }
 
 impl JoshutoMimetype {
-    pub fn get_config() -> JoshutoMimetype {
-        parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
-            .unwrap_or_else(JoshutoMimetype::default)
-    }
-
     pub fn get_entries_for_ext(&self, extension: &str) -> Vec<&JoshutoMimetypeEntry> {
         let mut vec = Vec::new();
         if let Some(entry_ids) = self.extension.get(extension) {
@@ -94,6 +89,13 @@ impl JoshutoMimetype {
             }
         }
         vec
+    }
+}
+
+impl ConfigStructure for JoshutoMimetype {
+    fn get_config() -> Self {
+        parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
+            .unwrap_or_else(JoshutoMimetype::default)
     }
 }
 

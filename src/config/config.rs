@@ -1,6 +1,6 @@
 use serde_derive::Deserialize;
 
-use crate::config::{parse_config_file, Flattenable};
+use super::{parse_config_file, ConfigStructure, Flattenable};
 use crate::sort;
 
 use crate::CONFIG_FILE;
@@ -93,8 +93,8 @@ pub struct JoshutoConfig {
     pub column_ratio: (usize, usize, usize),
 }
 
-impl JoshutoConfig {
-    pub fn get_config() -> JoshutoConfig {
+impl ConfigStructure for JoshutoConfig {
+    fn get_config() -> Self {
         parse_config_file::<JoshutoRawConfig, JoshutoConfig>(CONFIG_FILE)
             .unwrap_or_else(JoshutoConfig::default)
     }

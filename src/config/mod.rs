@@ -16,6 +16,10 @@ use std::path::{Path, PathBuf};
 
 use crate::CONFIG_HIERARCHY;
 
+pub trait ConfigStructure {
+    fn get_config() -> Self;
+}
+
 // implemented by config file implementations to turn a RawConfig into a Config
 trait Flattenable<T> {
     fn flatten(self) -> T;

@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use crate::config::{parse_config_file, Flattenable};
+use super::{parse_config_file, ConfigStructure, Flattenable};
 use crate::PREVIEW_FILE;
 
 #[derive(Debug, Deserialize)]
@@ -43,16 +43,19 @@ pub struct JoshutoPreview {
     pub mimetype: HashMap<String, JoshutoPreviewEntry>,
 }
 
-impl JoshutoPreview {
-    pub fn new() -> Self {
+impl ConfigStructure for JoshutoPreview {
+    fn get_config() -> Self {
+        parse_config_file::<JoshutoRawPreview, JoshutoPreview>(PREVIEW_FILE)
+            .unwrap_or_else(JoshutoPreview::default)
+    }
+}
+
+impl std::default::Default for JoshutoPreview {
+    fn default() -> Self {
         JoshutoPreview {
             extension: HashMap::new(),
             mimetype: HashMap::new(),
         }
     }
-
-    pub fn get_config() -> JoshutoPreview {
-        parse_config_file::<JoshutoRawPreview, JoshutoPreview>(PREVIEW_FILE)
-            .unwrap_or_else(JoshutoPreview::new)
-    }
 }
+

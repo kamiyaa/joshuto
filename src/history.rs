@@ -74,9 +74,11 @@ impl DirectoryHistory for HashMap<PathBuf, JoshutoDirList> {
         match self.entry(path.to_path_buf().clone()) {
             Entry::Occupied(mut entry) => {
                 let dir_entry = entry.get_mut();
+/*
                 if dir_entry.need_update() {
                     dir_entry.update_contents(&sort_option)?;
                 }
+*/
                 Ok(entry.into_mut())
             }
             Entry::Vacant(entry) => {

@@ -3,7 +3,7 @@ use std::process;
 use std::time;
 
 use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand};
-use crate::config;
+use crate::config::{self, JoshutoConfig, JoshutoKeymap};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
@@ -157,7 +157,7 @@ fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
     }
 }
 
-pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
+pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoKeymap) {
     ui::init_ncurses();
 
     let mut context = JoshutoContext::new(config_t);
@@ -190,7 +190,7 @@ pub fn run(config_t: config::JoshutoConfig, keymap_t: config::JoshutoKeymap) {
 
             let keycommand: &Box<JoshutoCommand>;
 
-            match keymap_t.keymaps.get(&ch) {
+            match keymap_t.get(&ch) {
                 Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
                     Some(s) => keycommand = s,
                     None => continue,

@@ -1,213 +1,183 @@
 [[mapcommand]]
-keys = [ "Q" ]
+keys = [ 81 ]
 command = "force_quit"
-
 [[mapcommand]]
-keys = [ "R" ]
+keys = [ 113 ]
+command = "close_tab"
+[[mapcommand]]
+keys = [ 82 ]
 command = "reload_dir_list"
 
 
 [[mapcommand]]
-keys = [ "Up" ]
+keys = [ 259 ]
+command = "cursor_move_up"
+args = [ "1" ]
+[[mapcommand]]
+keys = [ 107 ]
 command = "cursor_move_up"
 args = [ "1" ]
 
 [[mapcommand]]
-keys = [ "k" ]
-command = "cursor_move_up"
+keys = [ 258 ]
+command = "cursor_move_down"
 args = [ "1" ]
-
 [[mapcommand]]
-keys = [ "Down" ]
+keys = [ 106 ]
 command = "cursor_move_down"
 args = [ "1" ]
 
 [[mapcommand]]
-keys = [ "j" ]
-command = "cursor_move_down"
-args = [ "1" ]
-
+keys = [ 260 ]
+command = "parent_directory"
 [[mapcommand]]
-keys = [ "Left" ]
+keys = [ 104 ]
 command = "parent_directory"
 
 [[mapcommand]]
-keys = [ "h" ]
-command = "parent_directory"
-
+keys = [ 261 ]
+command = "open_file"
 [[mapcommand]]
-keys = [ "Right" ]
+keys = [ 108 ]
+command = "open_file"
+[[mapcommand]]
+keys = [ 10 ]
 command = "open_file"
 
 [[mapcommand]]
-keys = [ "l" ]
-command = "open_file"
-
-[[mapcommand]]
-keys = [ "Enter" ]
-command = "open_file"
-
-
-[[mapcommand]]
-keys = [ "Home" ]
+keys = [ 262 ]
 command = "cursor_move_home"
-
 [[mapcommand]]
-keys = [ "g", "g" ]
+keys = [ 103, 103 ]
 command = "cursor_move_home"
-
 [[mapcommand]]
-keys = [ "End" ]
+keys = [ 360 ]
 command = "cursor_move_end"
-
 [[mapcommand]]
-keys = [ "G" ]
+keys = [ 71 ]
 command = "cursor_move_end"
-
-
 [[mapcommand]]
-keys = [ "PageUp" ]
+keys = [ 338 ]
+command = "cursor_move_page_down"
+[[mapcommand]]
+keys = [ 339 ]
 command = "cursor_move_page_up"
 
-[[mapcommand]]
-keys = [ "PageDown" ]
-command = "cursor_move_page_down"
-
 
 [[mapcommand]]
-keys = [ "r" ]
+keys = [ 114 ]
 command = "open_file_with"
-
-
 [[mapcommand]]
-keys = [ "z", "h" ]
+keys = [ 122, 104 ]
 command = "toggle_hidden"
 
 
 [[mapcommand]]
-keys = [ "d", "d" ]
+keys = [ 100, 100 ]
 command = "cut_files"
-
 [[mapcommand]]
-keys = [ "y", "y" ]
+keys = [ 121, 121 ]
 command = "copy_files"
-
 [[mapcommand]]
-keys = [ "p", "p" ]
+keys = [ 112, 112 ]
 command = "paste_files"
-
 [[mapcommand]]
-keys = [ "p", "o" ]
+keys = [ 112, 111 ]
 command = "paste_files"
 args = [ "overwrite=true" ]
 
 [[mapcommand]]
-keys = [ "a" ]
+keys = [ 97 ]
 command = "rename_file"
 args = [ "append" ]
-
 [[mapcommand]]
-keys = [ "A" ]
+keys = [ 65 ]
 command = "rename_file"
 args = [ "prepend" ]
-
 [[mapcommand]]
-keys = [ "c", "w" ]
+keys = [ 99, 119 ]
 command = "rename_file"
 args = [ "overwrite" ]
 
 [[mapcommand]]
-keys = [ "d", "D" ]
+keys = [ 100, 68 ]
+command = "delete_files"
+[[mapcommand]]
+keys = [ 330 ]
 command = "delete_files"
 
-[[mapcommand]]
-keys = [ "Delete" ]
-command = "delete_files"
-
 
 [[mapcommand]]
-keys = [ "Space" ]
+keys = [ 32 ]
 command = "select_files"
 args = [ "toggle=true" ]
 
 [[mapcommand]]
-keys = [ "m", "k" ]
+keys = [ 109, 107 ]
+command = "mkdir"
+[[mapcommand]]
+keys = [ 59, 109, 107 ]
 command = "mkdir"
 
-[[mapcommand]]
-keys = [ ";", "m", "k" ]
-command = "mkdir"
-
 
 [[mapcommand]]
-keys = [ "g", "P" ]
+keys = [ 103, 80 ]
 command = "cd"
 args = [ "~/Pictures" ]
-
 [[mapcommand]]
-keys = [ "g", "r" ]
+keys = [ 103, 114 ]
 command = "cd"
 args = [ "/" ]
-
 [[mapcommand]]
-keys = [ "g", "e" ]
+keys = [ 103, 101 ]
 command = "cd"
 args = [ "/etc" ]
-
 [[mapcommand]]
-keys = [ "g", "h" ]
+keys = [ 103, 104 ]
 command = "cd"
 args = [ "~/" ]
-
 [[mapcommand]]
-keys = [ "g", "d" ]
+keys = [ 103, 100 ]
 command = "cd"
 args = [ "~/Downloads" ]
 
-[[mapcommand]]
-keys = [ "g", "p" ]
-command = "cd"
-args = [ "~/Pictures" ]
-
 
 [[mapcommand]]
-keys = [ "/" ]
+keys = [ 47 ]
 command = "search"
-
 [[mapcommand]]
-keys = [ "n" ]
+keys = [ 78 ]
+command = "search_prev"
+[[mapcommand]]
+keys = [ 110 ]
 command = "search_next"
 
-[[mapcommand]]
-keys = [ "N" ]
-command = "search_prev"
-
 
 [[mapcommand]]
-keys = [ "T" ]
+keys = [ 20 ]
 command = "new_tab"
 
 [[mapcommand]]
-keys = [ "q" ]
+keys = [ 23 ]
 command = "close_tab"
 
 [[mapcommand]]
-keys = [ "Tab" ]
+keys = [ 9 ]
 command = "tab_switch"
 args = [ "1" ]
 
 [[mapcommand]]
-keys = [ "ShiftTab" ]
+keys = [ 353 ]
 command = "tab_switch"
 args = [ "-1" ]
 
 [[mapcommand]]
-keys = [ "=" ]
+keys = [ 45 ]
 command = "set_mode"
 
 ## Features not yet implemented
 
-## [[mapcommand]]
-## keys = [ "b", "b" ]
-## command = "bulk_rename"
+[[mapcommand]]
+keys = [ 98, 98 ]
+command = "bulk_rename"
 

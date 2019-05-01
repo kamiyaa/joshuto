@@ -3,7 +3,7 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::process::exit;
 
 use crate::commands::{self, CommandKeybind, JoshutoCommand};
-use crate::config::{parse_config_file, Flattenable};
+use super::{parse_config_file, ConfigStructure, Flattenable};
 use crate::KEYMAP_FILE;
 
 pub const BACKSPACE: i32 = 0x7F;
@@ -15,7 +15,7 @@ pub const ESCAPE: i32 = 0x1B;
 
 #[derive(Debug, Deserialize)]
 struct JoshutoMapCommand {
-    pub keys: Vec<String>,
+    pub keys: Vec<i32>,
     pub command: String,
     pub args: Option<Vec<String>>,
 }
@@ -27,76 +27,63 @@ struct JoshutoRawKeymap {
 
 impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
     fn flatten(self) -> JoshutoKeymap {
-        let mut keymaps: HashMap<i32, CommandKeybind> = HashMap::new();
-        if let Some(maps) = self.mapcommand {
-            for mapcommand in maps {
-                match commands::from_args(mapcommand.command.as_str(), mapcommand.args.as_ref()) {
-                    Ok(command) => insert_keycommand(&mut keymaps, command, &mapcommand.keys[..]),
-                    Err(e) => eprintln!("{}", e),
-                }
+        match self.mapcommand {
+            None => JoshutoKeymap::new(),
+            Some(maps) => {
+                let mut keymaps = JoshutoKeymap::new();
+                maps.iter().for_each(|m| {
+                    match commands::from_args(m.command.as_str(), m.args.as_ref()) {
+                        Ok(command) => insert_keycommand(&mut keymaps, command, &m.keys[..]),
+                        Err(e) => eprintln!("{}", e),
+                    }
+                });
+                keymaps
             }
         }
-        JoshutoKeymap { keymaps }
     }
 }
 
-#[derive(Debug)]
-pub struct JoshutoKeymap {
-    pub keymaps: HashMap<i32, CommandKeybind>,
-}
+pub type JoshutoKeymap = HashMap<i32, CommandKeybind>;
 
-impl JoshutoKeymap {
-    pub fn get_config() -> JoshutoKeymap {
+impl ConfigStructure for JoshutoKeymap {
+    fn get_config() -> Self {
         parse_config_file::<JoshutoRawKeymap, JoshutoKeymap>(KEYMAP_FILE)
             .unwrap_or_else(JoshutoKeymap::default)
     }
 }
 
-impl std::default::Default for JoshutoKeymap {
-    fn default() -> Self {
-        let keymaps = HashMap::new();
-        JoshutoKeymap { keymaps }
-    }
-}
-
 fn insert_keycommand(
-    map: &mut HashMap<i32, CommandKeybind>,
+    map: &mut JoshutoKeymap,
     keycommand: Box<JoshutoCommand>,
-    keys: &[String],
+    keys: &[i32],
 ) {
     match keys.len() {
         0 => {}
-        1 => match key_to_i32(&keys[0]) {
-            Some(s) => match map.entry(s) {
-                Entry::Occupied(_) => {
+        1 => match map.entry(keys[0]) {
+            Entry::Occupied(_) => {
+                eprintln!("Error: Keybindings ambiguous");
+                exit(1);
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(CommandKeybind::SimpleKeybind(keycommand));
+            }
+        },
+        _ => match map.entry(keys[0]) {
+            Entry::Occupied(mut entry) => match entry.get_mut() {
+                CommandKeybind::CompositeKeybind(ref mut m) => {
+                    insert_keycommand(m, keycommand, &keys[1..])
+                }
+                _ => {
                     eprintln!("Error: Keybindings ambiguous");
                     exit(1);
                 }
-                Entry::Vacant(entry) => {
-                    entry.insert(CommandKeybind::SimpleKeybind(keycommand));
-                }
             },
-            None => eprintln!("Error: Failed to parse keycode: {}", keys[0]),
-        },
-        _ => match key_to_i32(&keys[0]) {
-            Some(s) => match map.entry(s) {
-                Entry::Occupied(mut entry) => match entry.get_mut() {
-                    CommandKeybind::CompositeKeybind(ref mut m) => {
-                        insert_keycommand(m, keycommand, &keys[1..])
-                    }
-                    _ => {
-                        eprintln!("Error: Keybindings ambiguous");
-                        exit(1);
-                    }
-                },
-                Entry::Vacant(entry) => {
-                    let mut new_map = HashMap::new();
-                    insert_keycommand(&mut new_map, keycommand, &keys[1..]);
-                    let composite_command = CommandKeybind::CompositeKeybind(new_map);
-                    entry.insert(composite_command);
-                }
-            },
-            None => eprintln!("Error: Failed to parse keycode: {}", keys[0]),
+            Entry::Vacant(entry) => {
+                let mut new_map = HashMap::new();
+                insert_keycommand(&mut new_map, keycommand, &keys[1..]);
+                let composite_command = CommandKeybind::CompositeKeybind(new_map);
+                entry.insert(composite_command);
+            }
         },
     }
 }

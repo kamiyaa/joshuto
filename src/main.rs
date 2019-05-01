@@ -17,7 +17,7 @@ use lazy_static::lazy_static;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-use config::{JoshutoConfig, JoshutoKeymap, JoshutoMimetype, JoshutoPreview, JoshutoTheme};
+use config::{ConfigStructure, JoshutoConfig, JoshutoKeymap, JoshutoMimetype, JoshutoPreview, JoshutoTheme};
 use run::run;
 
 const PROGRAM_NAME: &str = "joshuto";
