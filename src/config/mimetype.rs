@@ -7,6 +7,7 @@ use crate::MIMETYPE_FILE;
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
+    pub id: usize,
     pub program: String,
     pub args: Option<Vec<String>>,
     pub fork: Option<bool>,
@@ -36,26 +37,34 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawMimetype {
-    mimetype: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
-    extension: Option<HashMap<String, Vec<JoshutoMimetypeEntry>>>,
+    entry: Option<Vec<JoshutoMimetypeEntry>>,
+    extension: Option<HashMap<String, Vec<usize>>>,
+    mimetype: Option<HashMap<String, Vec<usize>>>,
 }
 
 impl Flattenable<JoshutoMimetype> for JoshutoRawMimetype {
     fn flatten(self) -> JoshutoMimetype {
-        let mimetype = self.mimetype.unwrap_or_default();
+        let entry_all = self.entry.unwrap_or_default();
+        let mut entries = HashMap::with_capacity(entry_all.len());
+        for entry in entry_all {
+            entries.insert(entry.id, entry);
+        }
         let extension = self.extension.unwrap_or_default();
+        let mimetype = self.mimetype.unwrap_or_default();
 
         JoshutoMimetype {
-            mimetype,
+            entries,
             extension,
+            mimetype,
         }
     }
 }
 
 #[derive(Debug)]
 pub struct JoshutoMimetype {
-    pub mimetype: HashMap<String, Vec<JoshutoMimetypeEntry>>,
-    pub extension: HashMap<String, Vec<JoshutoMimetypeEntry>>,
+    pub entries: HashMap<usize, JoshutoMimetypeEntry>,
+    pub extension: HashMap<String, Vec<usize>>,
+    pub mimetype: HashMap<String, Vec<usize>>,
 }
 
 impl JoshutoMimetype {
@@ -63,11 +72,35 @@ impl JoshutoMimetype {
         parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
             .unwrap_or_else(JoshutoMimetype::default)
     }
+
+    pub fn get_entries_for_ext(&self, extension: &str) -> Vec<&JoshutoMimetypeEntry> {
+        let mut vec = Vec::new();
+        if let Some(entry_ids) = self.extension.get(extension) {
+            for id in entry_ids {
+                if let Some(s) = self.entries.get(id) {
+                    vec.push(s);
+                }
+            }
+        }
+        vec
+    }
+    pub fn get_entries_for_mimetype(&self, mimetype: &str) -> Vec<&JoshutoMimetypeEntry> {
+        let mut vec = Vec::new();
+        if let Some(entry_ids) = self.mimetype.get(mimetype) {
+            for id in entry_ids {
+                if let Some(s) = self.entries.get(id) {
+                    vec.push(s);
+                }
+            }
+        }
+        vec
+    }
 }
 
 impl std::default::Default for JoshutoMimetype {
     fn default() -> Self {
         JoshutoMimetype {
+            entries: HashMap::new(),
             mimetype: HashMap::new(),
             extension: HashMap::new(),
         }

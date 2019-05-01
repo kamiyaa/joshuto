@@ -30,9 +30,8 @@ impl OpenFile {
         /* extensions have priority */
         if let Some(file_ext) = path.extension() {
             if let Some(file_ext) = file_ext.to_str() {
-                if let Some(s) = MIMETYPE_T.extension.get(file_ext) {
-                    mimetype_options.extend(s.iter());
-                }
+                let ext_entries = MIMETYPE_T.get_entries_for_ext(file_ext);
+                mimetype_options.extend(ext_entries);
             }
         }
 /*
