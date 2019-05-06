@@ -45,7 +45,7 @@ impl SetMode {
                 PROMPT.to_string(),
             );
 
-            user_input = textfield.readline_with_initial(&start_str, "");
+            user_input = textfield.readline_with_initial((&start_str, ""));
         }
         ncurses::doupdate();
 

@@ -47,13 +47,13 @@ impl RenameFile {
             match self.method {
                 RenameFileMethod::Append => {
                     if let Some(ext) = start_str.rfind('.') {
-                        textfield.readline_with_initial(&start_str[0..ext], &start_str[ext..])
+                        textfield.readline_with_initial((&start_str[0..ext], &start_str[ext..]))
                     } else {
-                        textfield.readline_with_initial(&start_str, "")
+                        textfield.readline_with_initial((&start_str, ""))
                     }
                 }
-                RenameFileMethod::Prepend => textfield.readline_with_initial("", &start_str),
-                RenameFileMethod::Overwrite => textfield.readline_with_initial("", ""),
+                RenameFileMethod::Prepend => textfield.readline_with_initial(("", &start_str)),
+                RenameFileMethod::Overwrite => textfield.readline(),
             }
         };
 

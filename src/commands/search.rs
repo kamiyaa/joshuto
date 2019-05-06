@@ -86,7 +86,7 @@ impl JoshutoRunnable for Search {
                 PROMPT.to_string(),
             );
 
-            textfield.readline_with_initial("", "")
+            textfield.readline()
         };
         ncurses::doupdate();
 

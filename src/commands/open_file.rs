@@ -206,7 +206,7 @@ impl OpenFileWith {
                 (term_rows as usize - 1, 0),
                 PROMPT.to_string(),
             );
-            user_input = textfield.readline_with_initial("", "");
+            user_input = textfield.readline();
         }
         ncurses::doupdate();
 

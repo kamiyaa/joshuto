@@ -41,24 +41,28 @@ impl DeleteFiles {
         ncurses::doupdate();
 
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        let ch = ncurses::getch();
+        let mut ch = ncurses::getch();
         if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-            ui::wprint_msg(&view.bot_win, "Are you sure? (Y/n)");
-            ncurses::doupdate();
-            let ch = ncurses::getch();
-            if ch == 'y' as i32 || ch == keymap::ENTER as i32 {
-                if let Some(paths) = curr_tab.curr_list.get_selected_paths() {
+            if let Some(paths) = curr_tab.curr_list.get_selected_paths() {
+                if paths.len() > 1 {
+                    ui::wprint_msg(&view.bot_win, "Are you sure? (y/N)");
+                    ncurses::doupdate();
+                    ch = ncurses::getch();
+                } else {
+                    ch = 'y' as i32;
+                }
+                if ch == 'y' as i32 {
                     Self::remove_files(paths)?;
                     ui::wprint_msg(&view.bot_win, "Deleted files");
-                }
 
-                curr_tab.reload_contents(&context.config_t.sort_option)?;
-                curr_tab.refresh(
-                    &view,
-                    &context.config_t,
-                    &context.username,
-                    &context.hostname,
-                );
+                    curr_tab.reload_contents(&context.config_t.sort_option)?;
+                    curr_tab.refresh(
+                        &view,
+                        &context.config_t,
+                        &context.username,
+                        &context.hostname,
+                    );
+                }
             } else {
                 curr_tab.refresh_file_status(&view.bot_win);
                 curr_tab.refresh_path_status(
