@@ -1,7 +1,7 @@
 use crate::config::keymap;
 use crate::window;
 
-use rustyline::completion::{Candidate, Completer};
+use rustyline::completion::{Candidate, Completer, FilenameCompleter};
 
 struct CompletionTracker {
     pub index: usize,
@@ -34,10 +34,10 @@ impl JoshutoTextField {
     }
 
     pub fn readline(&self) -> Option<String> {
-        self.readline_with_initial("", "")
+        self.readline_with_initial(("", ""))
     }
 
-    pub fn readline_with_initial(&self, prefix: &str, suffix: &str) -> Option<String> {
+    pub fn readline_with_initial(&self, initial: (&str, &str)) -> Option<String> {
         self.win.move_to_top();
         ncurses::timeout(-1);
         let win = self.win.win;
@@ -48,15 +48,15 @@ impl JoshutoTextField {
         ncurses::mvwaddstr(win, 0, 0, &self.prompt);
 
         let mut line_buffer = rustyline::line_buffer::LineBuffer::with_capacity(255);
+        let completer = FilenameCompleter::new();
 
-        line_buffer.insert_str(0, &prefix);
-        line_buffer.insert_str(line_buffer.len(), &suffix);
-        line_buffer.set_pos(prefix.as_bytes().len());
+        line_buffer.insert_str(0, &initial.0);
+        line_buffer.insert_str(line_buffer.len(), &initial.1);
+        line_buffer.set_pos(initial.0.as_bytes().len());
 
-        let completer = rustyline::completion::FilenameCompleter::new();
         let mut completion_tracker: Option<CompletionTracker> = None;
 
-        let mut curr_pos = unicode_width::UnicodeWidthStr::width(prefix);
+        let mut curr_pos = unicode_width::UnicodeWidthStr::width(initial.0);
         loop {
             ncurses::mvwaddstr(win, coord.0, coord.1 as i32, line_buffer.as_str());
             ncurses::wclrtoeol(win);
@@ -112,7 +112,7 @@ impl JoshutoTextField {
                 if line_buffer.delete(1).is_some() {
                     completion_tracker.take();
                 }
-            } else if ch == 0x9 {
+            } else if ch == keymap::TAB {
                 if completion_tracker.is_none() && line_buffer.len() == line_buffer.pos() {
                     let res = completer.complete(line_buffer.as_str(), line_buffer.len());
                     if let Ok((pos, mut candidates)) = res {
@@ -135,9 +135,6 @@ impl JoshutoTextField {
                         let candidate = &s.candidates[s.index];
                         completer.update(&mut line_buffer, 0, candidate.display());
                         s.index += 1;
-                    } else {
-                        completer.update(&mut line_buffer, 0, &s.original);
-                        s.index = 0;
                     }
                 }
                 curr_pos = unicode_width::UnicodeWidthStr::width(
