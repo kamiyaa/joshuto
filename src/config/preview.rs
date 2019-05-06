@@ -58,4 +58,3 @@ impl std::default::Default for JoshutoPreview {
         }
     }
 }
-

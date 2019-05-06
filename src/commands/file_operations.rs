@@ -311,9 +311,10 @@ fn fs_cut_thread(
                         fs_extra::dir::TransitProcessResult::ContinueOrAbort
                     };
 
-                    if let Err(e) = fs_extra::move_items_with_progress(&cpath, &destination, &options, handle) {
-                        let err =
-                            std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
+                    if let Err(e) =
+                        fs_extra::move_items_with_progress(&cpath, &destination, &options, handle)
+                    {
+                        let err = std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
                         return Err(err);
                     }
                     std::fs::remove_dir_all(&path)?;
@@ -377,7 +378,9 @@ fn fs_copy_thread(
                 fs_extra::dir::TransitProcessResult::ContinueOrAbort
             };
 
-            if let Err(e) = fs_extra::copy_items_with_progress(&path, &destination, &options, handle) {
+            if let Err(e) =
+                fs_extra::copy_items_with_progress(&path, &destination, &options, handle)
+            {
                 let err = std::io::Error::new(std::io::ErrorKind::Other, format!("{}", e));
                 return Err(err);
             }

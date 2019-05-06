@@ -73,11 +73,11 @@ impl DirectoryHistory for HashMap<PathBuf, JoshutoDirList> {
     ) -> Result<&mut JoshutoDirList, std::io::Error> {
         match self.entry(path.to_path_buf().clone()) {
             Entry::Occupied(entry) => {
-/*
-                if dir_entry.need_update() {
-                    dir_entry.update_contents(&sort_option)?;
-                }
-*/
+                /*
+                                if dir_entry.need_update() {
+                                    dir_entry.update_contents(&sort_option)?;
+                                }
+                */
                 Ok(entry.into_mut())
             }
             Entry::Vacant(entry) => {

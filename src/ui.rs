@@ -206,12 +206,12 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
         ncurses::waddstr(win, &file_size_string);
     }
 
-/*
-    ncurses::waddstr(win, "    ");
-    if let Some(s) = tree_magic::from_filepath(&file.path) {
-        ncurses::waddstr(win, &s);
-    }
-*/
+    /*
+        ncurses::waddstr(win, "    ");
+        if let Some(s) = tree_magic::from_filepath(&file.path) {
+            ncurses::waddstr(win, &s);
+        }
+    */
 }
 
 pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {

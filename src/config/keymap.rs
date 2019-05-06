@@ -2,8 +2,8 @@ use serde_derive::Deserialize;
 use std::collections::{hash_map::Entry, HashMap};
 use std::process::exit;
 
-use crate::commands::{self, CommandKeybind, JoshutoCommand};
 use super::{parse_config_file, ConfigStructure, Flattenable};
+use crate::commands::{self, CommandKeybind, JoshutoCommand};
 use crate::KEYMAP_FILE;
 
 pub const BACKSPACE: i32 = 0x7F;
@@ -52,11 +52,7 @@ impl ConfigStructure for JoshutoKeymap {
     }
 }
 
-fn insert_keycommand(
-    map: &mut JoshutoKeymap,
-    keycommand: Box<JoshutoCommand>,
-    keys: &[i32],
-) {
+fn insert_keycommand(map: &mut JoshutoKeymap, keycommand: Box<JoshutoCommand>, keys: &[i32]) {
     match keys.len() {
         0 => {}
         1 => match map.entry(keys[0]) {
