@@ -114,7 +114,7 @@ impl JoshutoTextField {
                 }
             } else if ch == keymap::TAB {
                 if completion_tracker.is_none() && line_buffer.len() == line_buffer.pos() {
-                    let res = completer.complete(line_buffer.as_str(), line_buffer.len());
+                    let res = completer.complete_path(line_buffer.as_str(), line_buffer.len());
                     if let Ok((pos, mut candidates)) = res {
                         candidates.sort_by(|x, y| {
                             x.display()

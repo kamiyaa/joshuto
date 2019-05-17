@@ -55,10 +55,7 @@ impl JoshutoDirList {
     }
 
     pub fn need_update(&self) -> bool {
-        if self.outdated {
-            return true;
-        }
-        false
+        self.outdated
     }
 
     pub fn update_contents(
