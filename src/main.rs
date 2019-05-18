@@ -49,13 +49,22 @@ lazy_static! {
 }
 
 #[derive(StructOpt, Debug)]
-pub struct Args {}
+pub struct Args {
+    #[structopt(short = "d", long = "debug")]
+    debug: bool,
+}
 
 fn main() {
-    let _ = Args::from_args();
+    let args = Args::from_args();
 
     let config = JoshutoConfig::get_config();
     let keymap = JoshutoKeymap::get_config();
+
+    if args.debug {
+        eprintln!("config: {:#?}", config);
+        eprintln!("theme config: {:#?}", *THEME_T);
+        eprintln!("mimetype config: {:#?}", *MIMETYPE_T);
+    }
 
     run(config, keymap);
 }
