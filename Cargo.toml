@@ -8,8 +8,9 @@ license = "LGPL-3"
 edition = "2018"
 
 [dependencies]
-chrono = "0.4.6"
-dirs = "1.0.5"
+alphanumeric-sort = "^1"
+chrono = "^0"
+dirs = "^1"
 fs_extra = "^1"
 lazy_static = "^1"
 libc = "^0.2"
