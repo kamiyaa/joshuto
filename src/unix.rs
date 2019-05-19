@@ -71,7 +71,7 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     let program = entry.program.clone();
 
     let mut command = process::Command::new(program);
-    if let Some(true) = entry.silent {
+    if entry.silent {
         command.stdout(process::Stdio::null());
         command.stderr(process::Stdio::null());
     }
@@ -82,13 +82,14 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     command.args(paths.iter().map(|path| path.as_os_str()));
 
     match command.spawn() {
-        Ok(mut handle) => match entry.fork {
-            Some(true) => {}
-            _ => match handle.wait() {
-                Ok(_) => {}
-                Err(e) => eprintln!("{}", e),
-            },
-        },
+        Ok(mut handle) => {
+            if entry.fork {
+                match handle.wait() {
+                    Ok(_) => {}
+                    Err(e) => eprintln!("{}", e),
+                }
+            }
+        }
         Err(e) => eprintln!("{}", e),
     };
 }

@@ -310,7 +310,7 @@ pub fn get_theme_attr(
     }
 
     let prefix = match theme.prefix.as_ref() {
-        Some((s, p)) => (*s, p.as_str()),
+        Some(p) => (p.size(), p.prefix()),
         None => (1, " "),
     };
 

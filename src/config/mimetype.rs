@@ -5,13 +5,17 @@ use std::fmt;
 use super::{parse_config_file, ConfigStructure, Flattenable};
 use crate::MIMETYPE_FILE;
 
+const fn default_false() -> bool { false }
+
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
     pub id: usize,
     pub program: String,
     pub args: Option<Vec<String>>,
-    pub fork: Option<bool>,
-    pub silent: Option<bool>,
+    #[serde(default = "default_false")]
+    pub fork: bool,
+    #[serde(default = "default_false")]
+    pub silent: bool,
 }
 
 impl std::fmt::Display for JoshutoMimetypeEntry {
@@ -21,15 +25,11 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
             s.iter().for_each(|arg| write!(f, " {}", arg).unwrap());
         }
         f.write_str("\t[").unwrap();
-        if let Some(s) = self.fork {
-            if s {
-                f.write_str("fork,").unwrap();
-            }
+        if self.fork {
+            f.write_str("fork,").unwrap();
         }
-        if let Some(s) = self.silent {
-            if s {
-                f.write_str("silent").unwrap();
-            }
+        if self.silent {
+            f.write_str("silent").unwrap();
         }
         f.write_str("]")
     }
@@ -37,25 +37,24 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoRawMimetype {
-    entry: Option<Vec<JoshutoMimetypeEntry>>,
-    extension: Option<HashMap<String, Vec<usize>>>,
-    mimetype: Option<HashMap<String, Vec<usize>>>,
+    #[serde(default)]
+    entry: Vec<JoshutoMimetypeEntry>,
+    #[serde(default)]
+    extension: HashMap<String, Vec<usize>>,
+    #[serde(default)]
+    mimetype: HashMap<String, Vec<usize>>,
 }
 
 impl Flattenable<JoshutoMimetype> for JoshutoRawMimetype {
     fn flatten(self) -> JoshutoMimetype {
-        let entry_all = self.entry.unwrap_or_default();
-        let mut entries = HashMap::with_capacity(entry_all.len());
-        for entry in entry_all {
+        let mut entries = HashMap::with_capacity(self.entry.len());
+        for entry in self.entry {
             entries.insert(entry.id, entry);
         }
-        let extension = self.extension.unwrap_or_default();
-        let mimetype = self.mimetype.unwrap_or_default();
-
         JoshutoMimetype {
             entries,
-            extension,
-            mimetype,
+            extension: self.extension,
+            mimetype: self.mimetype,
         }
     }
 }

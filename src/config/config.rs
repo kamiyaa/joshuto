@@ -5,78 +5,84 @@ use crate::sort;
 
 use crate::CONFIG_FILE;
 
+const fn default_true() -> bool { true }
+const fn default_false() -> bool { false }
+const fn default_scroll_offset() -> usize { 6 }
+const fn default_max_preview_size() -> u64 { 2 * 1024 * 1024 } // 2 MB
+const fn default_column_ratio() -> (usize, usize, usize) { (1, 3, 4) }
+
 #[derive(Clone, Debug, Deserialize)]
-pub struct SortRawOption {
-    pub show_hidden: Option<bool>,
-    pub directories_first: Option<bool>,
-    pub case_sensitive: Option<bool>,
-    pub reverse: Option<bool>,
+struct SortRawOption {
+    #[serde(default = "default_false")]
+    show_hidden: bool,
+    #[serde(default = "default_true")]
+    directories_first: bool,
+    #[serde(default = "default_false")]
+    case_sensitive: bool,
+    #[serde(default = "default_false")]
+    reverse: bool,
+}
+
+impl SortRawOption {
+    pub fn into_sort_option(self, sort_method: sort::SortType) -> sort::SortOption {
+        sort::SortOption {
+            show_hidden: self.show_hidden,
+            directories_first: self.directories_first,
+            case_sensitive: self.case_sensitive,
+            reverse: self.reverse,
+            sort_method,
+        }
+    }
+}
+
+impl std::default::Default for SortRawOption {
+    fn default() -> Self {
+        SortRawOption {
+            show_hidden: default_false(),
+            directories_first: default_true(),
+            case_sensitive: default_false(),
+            reverse: default_false(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct JoshutoRawConfig {
-    scroll_offset: Option<usize>,
-    tilde_in_titlebar: Option<bool>,
-    show_preview: Option<bool>,
-    max_preview_size: Option<u64>,
-    sort_method: Option<String>,
-    sort_option: Option<SortRawOption>,
+    #[serde(default = "default_scroll_offset")]
+    scroll_offset: usize,
+    #[serde(default = "default_true")]
+    tilde_in_titlebar: bool,
+    #[serde(default = "default_true")]
+    show_preview: bool,
+    #[serde(default = "default_max_preview_size")]
+    max_preview_size: u64,
     column_ratio: Option<[usize; 3]>,
+    sort_method: Option<String>,
+    #[serde(default)]
+    sort_option: SortRawOption,
 }
 
 impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
     fn flatten(self) -> JoshutoConfig {
         let column_ratio = match self.column_ratio {
             Some(s) => (s[0], s[1], s[2]),
-            None => (1, 3, 4),
+            _ => default_column_ratio(),
         };
 
-        let scroll_offset: usize = self.scroll_offset.unwrap_or(6);
-        let tilde_in_titlebar: bool = self.tilde_in_titlebar.unwrap_or(true);
-        let show_preview: bool = self.show_preview.unwrap_or(true);
-        let max_preview_size: u64 = self.max_preview_size.unwrap_or(2 * 1024 * 1024);
-
-        let sort_method: sort::SortType = match self.sort_method {
-            Some(s) => match s.as_str() {
-                "mtime" => sort::SortType::SortMtime,
-                _ => sort::SortType::SortNatural,
-            },
-            _ => sort::SortType::SortNatural,
-        };
-
-        let show_hidden: bool;
-        let case_sensitive: bool;
-        let reverse: bool;
-        let directories_first: bool;
-
-        match self.sort_option {
-            Some(s) => {
-                show_hidden = s.show_hidden.unwrap_or(false);
-                case_sensitive = s.case_sensitive.unwrap_or(false);
-                reverse = s.reverse.unwrap_or(false);
-                directories_first = s.directories_first.unwrap_or(true);
+        let sort_method = match self.sort_method {
+            Some(s) => match sort::SortType::parse(s.as_str()) {
+                Some(s) => s,
+                None => sort::SortType::Natural,
             }
-            None => {
-                show_hidden = false;
-                case_sensitive = false;
-                reverse = false;
-                directories_first = true;
-            }
-        }
-
-        let sort_option = sort::SortOption {
-            show_hidden,
-            directories_first,
-            case_sensitive,
-            reverse,
-            sort_method,
+            None => sort::SortType::Natural,
         };
+        let sort_option = self.sort_option.into_sort_option(sort_method);
 
         JoshutoConfig {
-            scroll_offset,
-            tilde_in_titlebar,
-            show_preview,
-            max_preview_size,
+            scroll_offset: self.scroll_offset,
+            tilde_in_titlebar: self.tilde_in_titlebar,
+            show_preview: self.show_preview,
+            max_preview_size: self.max_preview_size,
             column_ratio,
             sort_option,
         }
@@ -102,21 +108,15 @@ impl ConfigStructure for JoshutoConfig {
 
 impl std::default::Default for JoshutoConfig {
     fn default() -> Self {
-        let sort_option = sort::SortOption {
-            show_hidden: false,
-            directories_first: true,
-            case_sensitive: false,
-            reverse: false,
-            sort_method: sort::SortType::SortNatural,
-        };
+        let sort_option = sort::SortOption::default();
 
         JoshutoConfig {
-            scroll_offset: 6,
-            tilde_in_titlebar: true,
-            show_preview: true,
-            max_preview_size: 2 * 1024 * 1024,
+            scroll_offset: default_scroll_offset(),
+            tilde_in_titlebar: default_true(),
+            show_preview: default_true(),
+            max_preview_size: default_max_preview_size(),
             sort_option,
-            column_ratio: (1, 3, 4),
+            column_ratio: default_column_ratio(),
         }
     }
 }

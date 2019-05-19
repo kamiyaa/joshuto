@@ -61,3 +61,26 @@ where
     };
     Some(config.flatten())
 }
+
+// parses a config file into its appropriate format
+fn parse_config<T>(filename: &str) -> Option<T>
+where
+    T: DeserializeOwned
+{
+    let file_path = search_directories(filename, &CONFIG_HIERARCHY)?;
+    let file_contents = match fs::read_to_string(&file_path) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading {} file: {}", filename, e);
+            return None;
+        }
+    };
+
+    match toml::from_str::<T>(&file_contents) {
+        Ok(config) => Some(config),
+        Err(e) => {
+            eprintln!("Error parsing {} file: {}", filename, e);
+            None
+        }
+    }
+}

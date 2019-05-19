@@ -11,7 +11,7 @@ pub struct JoshutoPreviewEntry {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct JoshutoRawPreview {
+struct JoshutoRawPreview {
     pub extension: Option<HashMap<String, JoshutoPreviewEntry>>,
     pub mimetype: Option<HashMap<String, JoshutoPreviewEntry>>,
 }
