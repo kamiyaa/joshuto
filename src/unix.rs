@@ -83,7 +83,7 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
 
     match command.spawn() {
         Ok(mut handle) => {
-            if entry.fork {
+            if !entry.fork {
                 match handle.wait() {
                     Ok(_) => {}
                     Err(e) => eprintln!("{}", e),
