@@ -5,7 +5,9 @@ use std::fmt;
 use super::{parse_config_file, ConfigStructure, Flattenable};
 use crate::MIMETYPE_FILE;
 
-const fn default_false() -> bool { false }
+const fn default_false() -> bool {
+    false
+}
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
@@ -68,26 +70,23 @@ pub struct JoshutoMimetype {
 
 impl JoshutoMimetype {
     pub fn get_entries_for_ext(&self, extension: &str) -> Vec<&JoshutoMimetypeEntry> {
-        let mut vec = Vec::new();
-        if let Some(entry_ids) = self.extension.get(extension) {
-            for id in entry_ids {
-                if let Some(s) = self.entries.get(id) {
-                    vec.push(s);
-                }
-            }
-        }
-        vec
+        Self::get_entries(&self.extension, &self.entries, extension)
     }
     pub fn get_entries_for_mimetype(&self, mimetype: &str) -> Vec<&JoshutoMimetypeEntry> {
-        let mut vec = Vec::new();
-        if let Some(entry_ids) = self.mimetype.get(mimetype) {
-            for id in entry_ids {
-                if let Some(s) = self.entries.get(id) {
-                    vec.push(s);
-                }
-            }
+        Self::get_entries(&self.mimetype, &self.entries, mimetype)
+    }
+    fn get_entries<'a>(
+        map: &HashMap<String, Vec<usize>>,
+        entry_map: &'a HashMap<usize, JoshutoMimetypeEntry>,
+        key: &str,
+    ) -> Vec<&'a JoshutoMimetypeEntry> {
+        match map.get(key) {
+            Some(entry_ids) => entry_ids
+                .iter()
+                .filter_map(|id| entry_map.get(id))
+                .collect(),
+            None => Vec::new(),
         }
-        vec
     }
 }
 

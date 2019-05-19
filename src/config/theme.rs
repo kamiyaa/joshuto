@@ -3,9 +3,15 @@ use std::collections::HashMap;
 
 use super::{parse_config, ConfigStructure};
 
-const fn default_zero() -> i16 { 0 }
-const fn default_false() -> bool { false }
-const fn default_prefix() -> Option<JoshutoPrefix> { None }
+const fn default_zero() -> i16 {
+    0
+}
+const fn default_false() -> bool {
+    false
+}
+const fn default_prefix() -> Option<JoshutoPrefix> {
+    None
+}
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct JoshutoColorPair {
@@ -76,8 +82,7 @@ pub struct JoshutoTheme {
 
 impl ConfigStructure for JoshutoTheme {
     fn get_config() -> Self {
-        parse_config::<JoshutoTheme>(crate::THEME_FILE)
-            .unwrap_or_else(JoshutoTheme::default)
+        parse_config::<JoshutoTheme>(crate::THEME_FILE).unwrap_or_else(JoshutoTheme::default)
     }
 }
 

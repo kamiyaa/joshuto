@@ -65,7 +65,7 @@ where
 // parses a config file into its appropriate format
 fn parse_config<T>(filename: &str) -> Option<T>
 where
-    T: DeserializeOwned
+    T: DeserializeOwned,
 {
     let file_path = search_directories(filename, &CONFIG_HIERARCHY)?;
     let file_contents = match fs::read_to_string(&file_path) {

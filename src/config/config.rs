@@ -5,11 +5,21 @@ use crate::sort;
 
 use crate::CONFIG_FILE;
 
-const fn default_true() -> bool { true }
-const fn default_false() -> bool { false }
-const fn default_scroll_offset() -> usize { 6 }
-const fn default_max_preview_size() -> u64 { 2 * 1024 * 1024 } // 2 MB
-const fn default_column_ratio() -> (usize, usize, usize) { (1, 3, 4) }
+const fn default_true() -> bool {
+    true
+}
+const fn default_false() -> bool {
+    false
+}
+const fn default_scroll_offset() -> usize {
+    6
+}
+const fn default_max_preview_size() -> u64 {
+    2 * 1024 * 1024
+} // 2 MB
+const fn default_column_ratio() -> (usize, usize, usize) {
+    (1, 3, 4)
+}
 
 #[derive(Clone, Debug, Deserialize)]
 struct SortRawOption {
@@ -73,7 +83,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
             Some(s) => match sort::SortType::parse(s.as_str()) {
                 Some(s) => s,
                 None => sort::SortType::Natural,
-            }
+            },
             None => sort::SortType::Natural,
         };
         let sort_option = self.sort_option.into_sort_option(sort_method);
