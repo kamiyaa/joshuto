@@ -4,13 +4,28 @@ use std::time;
 
 use crate::structs;
 
-#[derive(Debug, Clone)]
+use alphanumeric_sort::compare_str;
+use serde_derive::Deserialize;
+
+#[derive(Clone, Debug, Deserialize)]
 pub enum SortType {
-    SortNatural,
-    SortMtime,
+    Lexical,
+    Mtime,
+    Natural,
 }
 
-#[derive(Debug, Clone)]
+impl SortType {
+    pub fn parse(s: &str) -> Option<Self> {
+        match s {
+            "mtime" => Some(SortType::Mtime),
+            "natural" => Some(SortType::Natural),
+            "lexical" => Some(SortType::Lexical),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct SortOption {
     pub show_hidden: bool,
     pub directories_first: bool,
@@ -24,14 +39,21 @@ impl SortOption {
         &self,
     ) -> impl Fn(&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering {
         let base_cmp = match self.sort_method {
-            SortType::SortNatural => {
+            SortType::Natural => {
                 if self.case_sensitive {
                     natural_sort
                 } else {
                     natural_sort_case_insensitive
                 }
             }
-            SortType::SortMtime => mtime_sort,
+            SortType::Lexical => {
+                if self.case_sensitive {
+                    natural_sort
+                } else {
+                    natural_sort_case_insensitive
+                }
+            }
+            SortType::Mtime => mtime_sort,
         };
 
         let rev_cmp = if self.reverse {
@@ -53,6 +75,18 @@ impl SortOption {
             no_filter
         } else {
             filter_hidden
+        }
+    }
+}
+
+impl std::default::Default for SortOption {
+    fn default() -> Self {
+        SortOption {
+            show_hidden: false,
+            directories_first: true,
+            case_sensitive: false,
+            reverse: false,
+            sort_method: SortType::Natural,
         }
     }
 }
@@ -121,13 +155,11 @@ fn natural_sort_case_insensitive(
 ) -> cmp::Ordering {
     let f1_name = f1.file_name_as_string.to_lowercase();
     let f2_name = f2.file_name_as_string.to_lowercase();
-    f1_name.partial_cmp(&f2_name).unwrap_or(cmp::Ordering::Less)
+    compare_str(&f1_name, &f2_name)
 }
 
 fn natural_sort(f1: &structs::JoshutoDirEntry, f2: &structs::JoshutoDirEntry) -> cmp::Ordering {
-    f1.file_name
-        .partial_cmp(&f2.file_name)
-        .unwrap_or(cmp::Ordering::Less)
+    compare_str(&f1.file_name_as_string, &f2.file_name_as_string)
 }
 
 fn mtime_sort(file1: &structs::JoshutoDirEntry, file2: &structs::JoshutoDirEntry) -> cmp::Ordering {
