@@ -57,6 +57,13 @@ impl DirectoryHistory for HashMap<PathBuf, JoshutoDirList> {
             Some(mut dir_entry) => {
                 if dir_entry.need_update() {
                     dir_entry.update_contents(&sort_option)?
+                } else {
+                    let metadata = std::fs::symlink_metadata(&dir_entry.path)?;
+
+                    let modified = metadata.modified()?;
+                    if modified > dir_entry.metadata.modified {
+                        dir_entry.update_contents(&sort_option)?
+                    }
                 }
                 Ok(dir_entry)
             }
