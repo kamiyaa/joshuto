@@ -17,29 +17,26 @@ pub const ESCAPE: i32 = 0x1B;
 struct JoshutoMapCommand {
     pub keys: Vec<i32>,
     pub command: String,
-    pub args: Option<Vec<String>>,
+    #[serde(default)]
+    pub args: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct JoshutoRawKeymap {
-    mapcommand: Option<Vec<JoshutoMapCommand>>,
+    #[serde(default)]
+    mapcommand: Vec<JoshutoMapCommand>,
 }
 
 impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
     fn flatten(self) -> JoshutoKeymap {
-        match self.mapcommand {
-            None => JoshutoKeymap::new(),
-            Some(maps) => {
-                let mut keymaps = JoshutoKeymap::new();
-                maps.iter().for_each(|m| {
-                    match commands::from_args(m.command.as_str(), m.args.as_ref()) {
-                        Ok(command) => insert_keycommand(&mut keymaps, command, &m.keys[..]),
-                        Err(e) => eprintln!("{}", e),
-                    }
-                });
-                keymaps
+        let mut keymaps = JoshutoKeymap::new();
+        self.mapcommand.iter().for_each(|m| {
+            match commands::from_args(m.command.as_str(), m.args.as_ref()) {
+                Ok(command) => insert_keycommand(&mut keymaps, command, &m.keys[..]),
+                Err(e) => eprintln!("{}", e),
             }
-        }
+        });
+        keymaps
     }
 }
 

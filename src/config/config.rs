@@ -8,28 +8,25 @@ use crate::CONFIG_FILE;
 const fn default_true() -> bool {
     true
 }
-const fn default_false() -> bool {
-    false
-}
 const fn default_scroll_offset() -> usize {
     6
 }
 const fn default_max_preview_size() -> u64 {
-    2 * 1024 * 1024
-} // 2 MB
+    2 * 1024 * 1024 // 2 MB
+}
 const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
 }
 
 #[derive(Clone, Debug, Deserialize)]
 struct SortRawOption {
-    #[serde(default = "default_false")]
+    #[serde(default)]
     show_hidden: bool,
     #[serde(default = "default_true")]
     directories_first: bool,
-    #[serde(default = "default_false")]
+    #[serde(default)]
     case_sensitive: bool,
-    #[serde(default = "default_false")]
+    #[serde(default)]
     reverse: bool,
 }
 
@@ -48,10 +45,10 @@ impl SortRawOption {
 impl std::default::Default for SortRawOption {
     fn default() -> Self {
         SortRawOption {
-            show_hidden: default_false(),
+            show_hidden: bool::default(),
             directories_first: default_true(),
-            case_sensitive: default_false(),
-            reverse: default_false(),
+            case_sensitive: bool::default(),
+            reverse: bool::default(),
         }
     }
 }
