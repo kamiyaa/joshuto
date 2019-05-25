@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::process;
 use std::time;
 
@@ -11,7 +10,7 @@ use crate::ui;
 use crate::window::JoshutoPanel;
 use crate::window::JoshutoView;
 
-fn recurse_get_keycommand(keymap: &HashMap<i32, CommandKeybind>) -> Option<&Box<JoshutoCommand>> {
+fn recurse_get_keycommand(keymap: &JoshutoKeymap) -> Option<&Box<JoshutoCommand>> {
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
 
@@ -188,7 +187,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoKeymap) {
                 continue;
             }
 
-            let keycommand: &Box<JoshutoCommand>;
+            let keycommand;
 
             match keymap_t.get(&ch) {
                 Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
@@ -207,6 +206,10 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoKeymap) {
             match keycommand.execute(&mut context, &view) {
                 Ok(()) => {}
                 Err(JoshutoError::IO(e)) => {
+                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
+                    ncurses::doupdate();
+                }
+                Err(JoshutoError::Keymap(e)) => {
                     ui::wprint_err(&view.bot_win, e.to_string().as_str());
                     ncurses::doupdate();
                 }
