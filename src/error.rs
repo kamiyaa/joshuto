@@ -1,5 +1,6 @@
 pub enum JoshutoError {
     IO(std::io::Error),
+    Keymap(KeymapError),
 }
 
 /*
