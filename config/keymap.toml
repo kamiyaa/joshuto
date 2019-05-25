@@ -1,9 +1,14 @@
 [[mapcommand]]
 keys = [ 81 ]
 command = "force_quit"
+
+[[mapcommand]]
+keys = [ 87 ]
+command = "close_tab"
 [[mapcommand]]
 keys = [ 113 ]
 command = "close_tab"
+
 [[mapcommand]]
 keys = [ 82 ]
 command = "reload_dir_list"
@@ -12,53 +17,63 @@ command = "reload_dir_list"
 [[mapcommand]]
 keys = [ 259 ]
 command = "cursor_move_up"
-args = [ "1" ]
+
 [[mapcommand]]
 keys = [ 107 ]
 command = "cursor_move_up"
-args = [ "1" ]
 
 [[mapcommand]]
 keys = [ 258 ]
 command = "cursor_move_down"
-args = [ "1" ]
+
 [[mapcommand]]
 keys = [ 106 ]
 command = "cursor_move_down"
-args = [ "1" ]
 
 [[mapcommand]]
 keys = [ 260 ]
-command = "parent_directory"
+command = "cd"
+args = ".."
+
 [[mapcommand]]
 keys = [ 104 ]
-command = "parent_directory"
+command = "cd"
+args = ".."
 
 [[mapcommand]]
 keys = [ 261 ]
 command = "open_file"
+
 [[mapcommand]]
 keys = [ 108 ]
 command = "open_file"
+
 [[mapcommand]]
 keys = [ 10 ]
 command = "open_file"
 
+
 [[mapcommand]]
 keys = [ 262 ]
 command = "cursor_move_home"
+
 [[mapcommand]]
 keys = [ 103, 103 ]
 command = "cursor_move_home"
+
 [[mapcommand]]
 keys = [ 360 ]
 command = "cursor_move_end"
+
 [[mapcommand]]
 keys = [ 71 ]
 command = "cursor_move_end"
+
+
 [[mapcommand]]
 keys = [ 338 ]
 command = "cursor_move_page_down"
+
 [[mapcommand]]
 keys = [ 339 ]
 command = "cursor_move_page_up"
@@ -67,6 +82,8 @@ command = "cursor_move_page_up"
 [[mapcommand]]
 keys = [ 114 ]
 command = "open_file_with"
+
+
 [[mapcommand]]
 keys = [ 122, 104 ]
 command = "toggle_hidden"
@@ -75,33 +92,38 @@ command = "toggle_hidden"
 [[mapcommand]]
 keys = [ 100, 100 ]
 command = "cut_files"
+
 [[mapcommand]]
 keys = [ 121, 121 ]
 command = "copy_files"
+
 [[mapcommand]]
 keys = [ 112, 112 ]
 command = "paste_files"
+
 [[mapcommand]]
 keys = [ 112, 111 ]
 command = "paste_files"
-args = [ "overwrite=true" ]
+args = "--overwrite"
 
 [[mapcommand]]
 keys = [ 97 ]
 command = "rename_file"
-args = [ "append" ]
+args = "append"
+
 [[mapcommand]]
 keys = [ 65 ]
 command = "rename_file"
-args = [ "prepend" ]
+args = "prepend"
+
 [[mapcommand]]
 keys = [ 99, 119 ]
 command = "rename_file"
-args = [ "overwrite" ]
 
 [[mapcommand]]
 keys = [ 100, 68 ]
 command = "delete_files"
+
 [[mapcommand]]
 keys = [ 330 ]
 command = "delete_files"
@@ -110,44 +132,54 @@ command = "delete_files"
 [[mapcommand]]
 keys = [ 32 ]
 command = "select_files"
-args = [ "toggle=true" ]
+args = "--toggle"
 
 [[mapcommand]]
 keys = [ 109, 107 ]
-command = "mkdir"
-[[mapcommand]]
-keys = [ 59, 109, 107 ]
-command = "mkdir"
-
+command = "console"
+args = "mkdir "
 
 [[mapcommand]]
-keys = [ 103, 80 ]
-command = "cd"
-args = [ "~/Pictures" ]
-[[mapcommand]]
-keys = [ 103, 114 ]
-command = "cd"
-args = [ "/" ]
-[[mapcommand]]
-keys = [ 103, 101 ]
-command = "cd"
-args = [ "/etc" ]
+keys = [ 59 ]
+command = "console"
+
 [[mapcommand]]
 keys = [ 103, 104 ]
 command = "cd"
-args = [ "~/" ]
+
+[[mapcommand]]
+keys = [ 103, 114 ]
+command = "cd"
+args = "/"
+
+[[mapcommand]]
+keys = [ 103, 101 ]
+command = "cd"
+args = "/etc"
+
 [[mapcommand]]
 keys = [ 103, 100 ]
 command = "cd"
-args = [ "~/Downloads" ]
+args = "~/Downloads"
 
+[[mapcommand]]
+keys = [ 103, 112 ]
+command = "cd"
+args = "~/pictures"
+
+[[mapcommand]]
+keys = [ 103, 118 ]
+command = "cd"
+args = "~/videos"
 
 [[mapcommand]]
 keys = [ 47 ]
 command = "search"
+
 [[mapcommand]]
 keys = [ 78 ]
 command = "search_prev"
+
 [[mapcommand]]
 keys = [ 110 ]
 command = "search_next"
@@ -155,6 +187,9 @@ command = "search_next"
 
 [[mapcommand]]
 keys = [ 20 ]
+command = "new_tab"
+[[mapcommand]]
+keys = [ 84 ]
 command = "new_tab"
 
 [[mapcommand]]
@@ -164,12 +199,12 @@ command = "close_tab"
 [[mapcommand]]
 keys = [ 9 ]
 command = "tab_switch"
-args = [ "1" ]
+args = "1"
 
 [[mapcommand]]
 keys = [ 353 ]
 command = "tab_switch"
-args = [ "-1" ]
+args = "-1"
 
 [[mapcommand]]
 keys = [ 45 ]
