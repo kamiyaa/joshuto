@@ -113,8 +113,8 @@ impl JoshutoTextField {
                     completion_tracker.take();
                 }
             } else if ch == keymap::TAB {
-                if completion_tracker.is_none() && line_buffer.len() == line_buffer.pos() {
-                    let res = completer.complete_path(line_buffer.as_str(), line_buffer.len());
+                if completion_tracker.is_none() {
+                    let res = completer.complete_path(line_buffer.as_str(), line_buffer.pos());
                     if let Ok((pos, mut candidates)) = res {
                         candidates.sort_by(|x, y| {
                             x.display()
@@ -133,7 +133,7 @@ impl JoshutoTextField {
                 if let Some(ref mut s) = completion_tracker {
                     if s.index < s.candidates.len() {
                         let candidate = &s.candidates[s.index];
-                        completer.update(&mut line_buffer, 0, candidate.display());
+                        completer.update(&mut line_buffer, s.pos, candidate.display());
                         s.index += 1;
                     }
                 }

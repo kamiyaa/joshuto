@@ -61,39 +61,37 @@ fn preview_file(entry: &JoshutoDirEntry, win: &JoshutoPanel) {
     match path.extension() {
         Some(file_ext) => match PREVIEW_T.extension.get(file_ext.to_str().unwrap()) {
             Some(s) => preview_with(path, win, &s),
-            None => {}
-            /*
-                        None => if let Some(mimetype) = tree_magic::from_filepath(&path) {
-                            match PREVIEW_T.mimetype.get(mimetype.as_str()) {
-                                Some(s) => preview_with(path, win, &s),
-                                None => if let Some(ind) = mimetype.find('/') {
-                                    let supertype = &mimetype[..ind];
-                                    if supertype == "text" {
-                                        preview_text(path, win);
-                                    } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
-                                        preview_with(path, win, &s);
-                                    }
-                                },
-                            }
-                        }
-            */
+            None => {} /*
+                                   None => if let Some(mimetype) = tree_magic::from_filepath(&path) {
+                                       match PREVIEW_T.mimetype.get(mimetype.as_str()) {
+                                           Some(s) => preview_with(path, win, &s),
+                                           None => if let Some(ind) = mimetype.find('/') {
+                                               let supertype = &mimetype[..ind];
+                                               if supertype == "text" {
+                                                   preview_text(path, win);
+                                               } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
+                                                   preview_with(path, win, &s);
+                                               }
+                                           },
+                                       }
+                                   }
+                       */
         },
-        None => {}
-        /*
-                if let Some(mimetype) = tree_magic::from_filepath(&path) {
-                    match PREVIEW_T.mimetype.get(mimetype.as_str()) {
-                        Some(s) => preview_with(path, win, &s),
-                        None => if let Some(ind) = mimetype.find('/') {
-                            let supertype = &mimetype[..ind];
-                            if supertype == "text" {
-                                preview_text(path, win);
-                            } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
-                                preview_with(path, win, &s);
-                            }
-                        },
-                    }
-                }
-        */
+        None => {} /*
+                           if let Some(mimetype) = tree_magic::from_filepath(&path) {
+                               match PREVIEW_T.mimetype.get(mimetype.as_str()) {
+                                   Some(s) => preview_with(path, win, &s),
+                                   None => if let Some(ind) = mimetype.find('/') {
+                                       let supertype = &mimetype[..ind];
+                                       if supertype == "text" {
+                                           preview_text(path, win);
+                                       } else if let Some(s) = PREVIEW_T.mimetype.get(supertype) {
+                                           preview_with(path, win, &s);
+                                       }
+                                   },
+                               }
+                           }
+                   */
     }
 }
 
