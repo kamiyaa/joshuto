@@ -3,16 +3,16 @@ use std::path;
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::textfield::JoshutoTextField;
-use crate::ui;
 use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
-pub struct NewDirectory;
+pub struct NewDirectory {
+    path: path::PathBuf,
+}
 
 impl NewDirectory {
-    pub fn new() -> Self {
-        NewDirectory
+    pub fn new(path: path::PathBuf) -> Self {
+        NewDirectory { path }
     }
     pub const fn command() -> &'static str {
         "mkdir"
@@ -21,26 +21,10 @@ impl NewDirectory {
     fn new_directory(
         context: &mut JoshutoContext,
         view: &JoshutoView,
+        path: &path::Path,
     ) -> Result<(), std::io::Error> {
-        let (term_rows, term_cols) = ui::getmaxyx();
-        const PROMPT: &str = ":mkdir ";
-
-        let user_input: Option<String> = {
-            let textfield = JoshutoTextField::new(
-                1,
-                term_cols,
-                (term_rows as usize - 1, 0),
-                PROMPT.to_string(),
-            );
-            textfield.readline()
-        };
-
-        if let Some(user_input) = user_input {
-            let path = path::PathBuf::from(user_input);
-
-            std::fs::create_dir_all(&path)?;
-            ReloadDirList::reload(context, view)?;
-        }
+        std::fs::create_dir_all(path)?;
+        ReloadDirList::reload(context, view)?;
         ncurses::doupdate();
         Ok(())
     }
@@ -60,7 +44,7 @@ impl JoshutoRunnable for NewDirectory {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        match Self::new_directory(context, view) {
+        match Self::new_directory(context, view, self.path.as_path()) {
             Ok(_) => Ok(()),
             Err(e) => Err(JoshutoError::IO(e)),
         }

@@ -8,7 +8,7 @@ pub struct Quit;
 
 impl Quit {
     pub fn new() -> Self {
-        Quit
+        Self::default()
     }
     pub const fn command() -> &'static str {
         "quit"
@@ -39,6 +39,12 @@ impl std::fmt::Display for Quit {
 impl JoshutoRunnable for Quit {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         Self::quit(context)
+    }
+}
+
+impl std::default::Default for Quit {
+    fn default() -> Self {
+        Quit
     }
 }
 
