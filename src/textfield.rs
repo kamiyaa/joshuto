@@ -1,17 +1,18 @@
 use crate::config::keymap;
 use crate::window;
 
-use rustyline::completion::{Candidate, Completer, FilenameCompleter};
+use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
+use rustyline::line_buffer;
 
 struct CompletionTracker {
     pub index: usize,
     pub pos: usize,
     pub original: String,
-    pub candidates: Vec<rustyline::completion::Pair>,
+    pub candidates: Vec<Pair>,
 }
 
 impl CompletionTracker {
-    pub fn new(pos: usize, candidates: Vec<rustyline::completion::Pair>, original: String) -> Self {
+    pub fn new(pos: usize, candidates: Vec<Pair>, original: String) -> Self {
         CompletionTracker {
             index: 0,
             pos,
@@ -47,7 +48,7 @@ impl JoshutoTextField {
 
         ncurses::mvwaddstr(win, 0, 0, &self.prompt);
 
-        let mut line_buffer = rustyline::line_buffer::LineBuffer::with_capacity(255);
+        let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
         let completer = FilenameCompleter::new();
 
         line_buffer.insert_str(0, &initial.0);
@@ -133,7 +134,7 @@ impl JoshutoTextField {
                 if let Some(ref mut s) = completion_tracker {
                     if s.index < s.candidates.len() {
                         let candidate = &s.candidates[s.index];
-                        completer.update(&mut line_buffer, s.pos, candidate.display());
+                        completer.update(&mut line_buffer, s.pos, candidate.replacement());
                         s.index += 1;
                     }
                 }
@@ -151,11 +152,12 @@ impl JoshutoTextField {
                 }
             }
         }
-        let lbstr = line_buffer.to_string();
-        if lbstr.is_empty() {
+        if line_buffer.as_str().is_empty() {
             None
         } else {
-            Some(lbstr)
+//            let strin = rustyline::completion::unescape(line_buffer.as_str(), ESCAPE_CHAR).into_owned();
+            let strin = line_buffer.to_string();
+            Some(strin)
         }
     }
 }
