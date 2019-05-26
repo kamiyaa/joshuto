@@ -22,13 +22,14 @@ impl JoshutoCommand for SelectFiles {}
 
 impl std::fmt::Display for SelectFiles {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{} toggle={} all={}",
-            Self::command(),
-            self.toggle,
-            self.all
-        )
+        f.write_str(Self::command()).unwrap();
+        if self.toggle {
+            f.write_str(" --toggle").unwrap();
+        }
+        if self.all {
+            f.write_str(" --all").unwrap();
+        }
+        f.write_str("")
     }
 }
 
@@ -38,11 +39,34 @@ impl JoshutoRunnable for SelectFiles {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        if self.toggle && !self.all {
-            let curr_list = &mut context.tabs[context.curr_tab_index].curr_list;
-            if let Some(s) = curr_list.get_curr_mut() {
-                s.selected = !s.selected;
-                return CursorMoveDown::new(1).execute(context, view);
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        if self.toggle {
+            if !self.all {
+                let curr_list = &mut curr_tab.curr_list;
+                if let Some(s) = curr_list.get_curr_mut() {
+                    s.selected = !s.selected;
+                    return CursorMoveDown::new(1).execute(context, view);
+                }
+            } else {
+                let curr_list = &mut curr_tab.curr_list;
+                for curr in &mut curr_list.contents {
+                    curr.selected = !curr.selected;
+                }
+                curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
+            }
+        } else {
+            if !self.all {
+                let curr_list = &mut curr_tab.curr_list;
+                if let Some(s) = curr_list.get_curr_mut() {
+                    s.selected = true;
+                    return CursorMoveDown::new(1).execute(context, view);
+                }
+            } else {
+                let curr_list = &mut curr_tab.curr_list;
+                for curr in &mut curr_list.contents {
+                    curr.selected = true;
+                }
+                curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
             }
         }
         Ok(())
