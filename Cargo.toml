@@ -43,8 +43,8 @@ version = "5.99.0"
 features = [ "extended_colors", "panel", "wide" ]
 
 [dependencies.wordexp]
-version = "0.1.0"
-path = "lib/wordexp-rs"
+version = "^0"
+# path = "lib/wordexp-rs"
 
 [features]
 default = []

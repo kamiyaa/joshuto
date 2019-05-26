@@ -86,10 +86,9 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
                 )),
             },
             ".." => Ok(Box::new(self::ParentDirectory::new())),
-            args => match wordexp::wordexp(args, 0) {
+            args => match wordexp::wordexp(args, wordexp::Wordexp::new(0), 0) {
                 Ok(mut exp_strs) => match exp_strs.next() {
                     Some(exp_str) => {
-                        eprintln!("exp: {}", exp_str);
                         Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(exp_str))))
                     }
                     None => Err(KeymapError::new(
@@ -135,7 +134,7 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
                 Some("mkdir"),
                 String::from("mkdir requires additional parameter"),
             )),
-            args => match wordexp::wordexp(args, 0) {
+            args => match wordexp::wordexp(args, wordexp::Wordexp::new(0), 0) {
                 Ok(mut exp_strs) => match exp_strs.next() {
                     Some(exp_str) => Ok(Box::new(self::NewDirectory::new(PathBuf::from(exp_str)))),
                     None => Err(KeymapError::new(
