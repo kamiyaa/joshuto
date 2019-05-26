@@ -32,29 +32,41 @@ impl RenameFile {
         path: &path::PathBuf,
         context: &mut JoshutoContext,
         view: &JoshutoView,
-        start_str: String,
+        initial: String,
     ) -> Result<(), std::io::Error> {
         const PROMPT: &str = ":rename_file ";
         let (term_rows, term_cols) = ui::getmaxyx();
         let user_input: Option<String> = {
+            let prefix: String;
+            let suffix: String;
+            match self.method {
+                RenameFileMethod::Append => {
+                    if let Some(ext) = initial.rfind('.') {
+                        prefix = String::from(&initial[0..ext]);
+                        suffix = String::from(&initial[ext..]);
+                    } else {
+                        prefix = initial;
+                        suffix = String::new();
+                    }
+                }
+                RenameFileMethod::Prepend => {
+                    prefix = String::new();
+                    suffix = initial;
+                }
+                RenameFileMethod::Overwrite => {
+                    prefix = String::new();
+                    suffix = String::new();
+                }
+            }
             let textfield = JoshutoTextField::new(
                 1,
                 term_cols,
                 (term_rows as usize - 1, 0),
                 PROMPT.to_string(),
+                prefix,
+                suffix,
             );
-
-            match self.method {
-                RenameFileMethod::Append => {
-                    if let Some(ext) = start_str.rfind('.') {
-                        textfield.readline_with_initial((&start_str[0..ext], &start_str[ext..]))
-                    } else {
-                        textfield.readline_with_initial((&start_str, ""))
-                    }
-                }
-                RenameFileMethod::Prepend => textfield.readline_with_initial(("", &start_str)),
-                RenameFileMethod::Overwrite => textfield.readline(),
-            }
+            textfield.readline()
         };
 
         if let Some(s) = user_input {

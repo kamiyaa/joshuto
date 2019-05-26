@@ -75,52 +75,62 @@ pub struct ProgressInfo {
     pub total_bytes: u64,
 }
 
-pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, KeymapError> {
+pub fn from_args(command: &str, args: &Vec<&str>) -> Result<Box<JoshutoCommand>, KeymapError> {
     match command {
-        "cd" => match args {
-            "" => match HOME_DIR.as_ref() {
+        "cd" => match args.len() {
+            0 => match HOME_DIR.as_ref() {
                 Some(s) => Ok(Box::new(self::ChangeDirectory::new(s.clone()))),
                 None => Err(KeymapError::new(
                     Some("cd"),
                     String::from("Cannot find home directory"),
                 )),
             },
-            ".." => Ok(Box::new(self::ParentDirectory::new())),
-            args => match wordexp::wordexp(args, wordexp::Wordexp::new(0), wordexp::WRDE_NOCMD) {
-                Ok(mut exp_strs) => match exp_strs.next() {
-                    Some(exp_str) => {
-                        Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(exp_str))))
-                    }
-                    None => Err(KeymapError::new(
-                        Some("cd"),
-                        format!("Failed to parse: {}", args),
-                    )),
-                },
-                Err(_) => Err(KeymapError::new(
-                    Some("cd"),
-                    format!("Failed to parse: {}", args),
-                )),
+            1 => match args[0] {
+                ".." => Ok(Box::new(self::ParentDirectory::new())),
+                arg => Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(arg)))),
             },
+            i => Err(KeymapError::new(
+                Some("cd"),
+                format!("Expected 1 argument, got {}", i),
+            )),
         },
         "close_tab" => Ok(Box::new(self::CloseTab::new())),
         "copy_files" => Ok(Box::new(self::CopyFiles::new())),
-        "console" => match args {
-            "" => Ok(Box::new(self::CommandLine::new(None))),
-            args => Ok(Box::new(self::CommandLine::new(Some(String::from(args))))),
+        "console" => match args.len() {
+            0 => Ok(Box::new(self::CommandLine::new(
+                String::new(),
+                String::new(),
+            ))),
+            1 => Ok(Box::new(self::CommandLine::new(
+                String::from(args[0]),
+                String::new(),
+            ))),
+            i => Err(KeymapError::new(
+                Some("console"),
+                format!("Expected 0 or 2 arguments, got {}", i),
+            )),
         },
-        "cursor_move_down" => match args {
-            "" => Ok(Box::new(self::CursorMoveDown::new(1))),
-            args => match args.parse::<usize>() {
+        "cursor_move_down" => match args.len() {
+            0 => Ok(Box::new(self::CursorMoveDown::new(1))),
+            1 => match args[0].parse::<usize>() {
                 Ok(s) => Ok(Box::new(self::CursorMoveDown::new(s))),
                 Err(e) => Err(KeymapError::new(Some("cursor_move_down"), e.to_string())),
             },
+            i => Err(KeymapError::new(
+                Some("cursor_move_down"),
+                format!("Expected 0 or 1 arguments, got {}", i),
+            )),
         },
-        "cursor_move_up" => match args {
-            "" => Ok(Box::new(self::CursorMoveUp::new(1))),
-            args => match args.parse::<usize>() {
+        "cursor_move_up" => match args.len() {
+            0 => Ok(Box::new(self::CursorMoveUp::new(1))),
+            1 => match args[0].parse::<usize>() {
                 Ok(s) => Ok(Box::new(self::CursorMoveUp::new(s))),
-                Err(e) => Err(KeymapError::new(Some("cursor_move_up"), e.to_string())),
+                Err(e) => Err(KeymapError::new(Some("cursor_move_down"), e.to_string())),
             },
+            i => Err(KeymapError::new(
+                Some("cursor_move_down"),
+                format!("Expected 0 or 1 arguments, got {}", i),
+            )),
         },
         "cursor_move_home" => Ok(Box::new(self::CursorMoveHome::new())),
         "cursor_move_end" => Ok(Box::new(self::CursorMoveEnd::new())),
@@ -129,32 +139,24 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
         "cut_files" => Ok(Box::new(self::CutFiles::new())),
         "delete_files" => Ok(Box::new(self::DeleteFiles::new())),
         "force_quit" => Ok(Box::new(self::ForceQuit::new())),
-        "mkdir" => match args {
-            "" => Err(KeymapError::new(
-                Some("mkdir"),
-                String::from("mkdir requires additional parameter"),
-            )),
-            args => match wordexp::wordexp(args, wordexp::Wordexp::new(0), wordexp::WRDE_NOCMD) {
-                Ok(mut exp_strs) => match exp_strs.next() {
-                    Some(exp_str) => Ok(Box::new(self::NewDirectory::new(PathBuf::from(exp_str)))),
-                    None => Err(KeymapError::new(
-                        Some("mkdir"),
-                        format!("Failed to parse: {}", args),
-                    )),
-                },
-                Err(_) => Err(KeymapError::new(
+        "mkdir" => {
+            if args.len() == 0 {
+                Err(KeymapError::new(
                     Some("mkdir"),
-                    format!("Failed to parse: {}", args),
-                )),
-            },
-        },
+                    String::from("mkdir requires additional parameter"),
+                ))
+            } else {
+                let paths: Vec<PathBuf> = args.iter().map(|s| PathBuf::from(s)).collect();
+                Ok(Box::new(self::NewDirectory::new(paths)))
+            }
+        }
         "new_tab" => Ok(Box::new(self::NewTab::new())),
         "open_file" => Ok(Box::new(self::OpenFile::new())),
         "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
         "paste_files" => {
             let mut options = fs_extra::dir::CopyOptions::new();
-            for arg in args.split_whitespace() {
-                match arg {
+            for arg in args {
+                match *arg {
                     "--overwrite" => options.overwrite = true,
                     "--skip_exist" => options.skip_exist = true,
                     _ => {
@@ -170,12 +172,20 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
         "quit" => Ok(Box::new(self::Quit::new())),
         "reload_dir_list" => Ok(Box::new(self::ReloadDirList::new())),
         "rename_file" => {
-            let method: RenameFileMethod = match args {
-                "prepend" => self::RenameFileMethod::Prepend,
-                "overwrite" => self::RenameFileMethod::Overwrite,
-                "append" => self::RenameFileMethod::Append,
-                _ => self::RenameFileMethod::Overwrite,
-            };
+            let mut method: RenameFileMethod = self::RenameFileMethod::Append;
+            for arg in args {
+                match *arg {
+                    "--prepend" => method = self::RenameFileMethod::Prepend,
+                    "--overwrite" => method = self::RenameFileMethod::Overwrite,
+                    "--append" => method = self::RenameFileMethod::Append,
+                    _ => {
+                        return Err(KeymapError::new(
+                            Some("rename_file"),
+                            format!("unknown option {}", arg),
+                        ));
+                    }
+                }
+            }
             Ok(Box::new(self::RenameFile::new(method)))
         }
         "search" => Ok(Box::new(self::Search::new())),
@@ -184,8 +194,8 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
         "select_files" => {
             let mut toggle = false;
             let mut all = false;
-            for arg in args.split_whitespace() {
-                match arg {
+            for arg in args {
+                match *arg {
                     "--toggle" => toggle = true,
                     "--all" => all = true,
                     _ => {
@@ -199,16 +209,19 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
             Ok(Box::new(self::SelectFiles::new(toggle, all)))
         }
         "set_mode" => Ok(Box::new(self::SetMode::new())),
-        "tab_switch" => match args {
-            "" => Err(KeymapError::new(
-                Some("tab_switch"),
-                String::from("No option provided"),
-            )),
-            args => match args.parse::<i32>() {
-                Ok(s) => Ok(Box::new(self::TabSwitch::new(s))),
-                Err(e) => Err(KeymapError::new(Some("tab_switch"), e.to_string())),
-            },
-        },
+        "tab_switch" => {
+            if args.len() == 1 {
+                match args[0].parse::<i32>() {
+                    Ok(s) => Ok(Box::new(self::TabSwitch::new(s))),
+                    Err(e) => Err(KeymapError::new(Some("tab_switch"), e.to_string())),
+                }
+            } else {
+                Err(KeymapError::new(
+                    Some("tab_switch"),
+                    String::from("No option provided"),
+                ))
+            }
+        }
         "toggle_hidden" => Ok(Box::new(self::ToggleHiddenFiles::new())),
         inp => Err(KeymapError::new(None, format!("Unknown command: {}", inp))),
     }

@@ -7,26 +7,15 @@ use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub struct NewDirectory {
-    path: path::PathBuf,
+    paths: Vec<path::PathBuf>,
 }
 
 impl NewDirectory {
-    pub fn new(path: path::PathBuf) -> Self {
-        NewDirectory { path }
+    pub fn new(paths: Vec<path::PathBuf>) -> Self {
+        NewDirectory { paths }
     }
     pub const fn command() -> &'static str {
         "mkdir"
-    }
-
-    fn new_directory(
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-        path: &path::Path,
-    ) -> Result<(), std::io::Error> {
-        std::fs::create_dir_all(path)?;
-        ReloadDirList::reload(context, view)?;
-        ncurses::doupdate();
-        Ok(())
     }
 }
 
@@ -44,9 +33,17 @@ impl JoshutoRunnable for NewDirectory {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        match Self::new_directory(context, view, self.path.as_path()) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(JoshutoError::IO(e)),
+        for path in &self.paths {
+            match std::fs::create_dir_all(path) {
+                Ok(_) => {}
+                Err(e) => return Err(JoshutoError::IO(e)),
+            }
         }
+        match ReloadDirList::reload(context, view) {
+            Ok(_) => {}
+            Err(e) => return Err(JoshutoError::IO(e)),
+        }
+        ncurses::doupdate();
+        Ok(())
     }
 }

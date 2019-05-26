@@ -30,23 +30,23 @@ impl SetMode {
         "set_mode"
     }
 
-    pub fn set_mode(&self, entry: &mut JoshutoDirEntry, start_str: String) -> bool {
+    pub fn set_mode(&self, entry: &mut JoshutoDirEntry, initial: String) -> bool {
         use std::os::unix::fs::PermissionsExt;
 
         const PROMPT: &str = ":set_mode ";
 
         let (term_rows, term_cols) = ui::getmaxyx();
-        let user_input: Option<String>;
-        {
+        let user_input: Option<String> = {
             let textfield = JoshutoTextField::new(
                 1,
                 term_cols,
                 (term_rows as usize - 1, 0),
                 PROMPT.to_string(),
+                initial,
+                String::new(),
             );
-
-            user_input = textfield.readline_with_initial((&start_str, ""));
-        }
+            textfield.readline()
+        };
         ncurses::doupdate();
 
         match user_input {

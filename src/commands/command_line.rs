@@ -7,21 +7,22 @@ use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub struct CommandLine {
-    prefix: Option<String>,
+    pub prefix: String,
+    pub suffix: String,
 }
 
 impl CommandLine {
-    pub fn new(prefix: Option<String>) -> Self {
-        CommandLine { prefix }
+    pub fn new(prefix: String, suffix: String) -> Self {
+        CommandLine { prefix, suffix }
     }
     pub const fn command() -> &'static str {
         "console"
     }
 
     pub fn readline(
+        &self,
         context: &mut JoshutoContext,
         view: &JoshutoView,
-        prefix: Option<&String>,
     ) -> Result<(), JoshutoError> {
         const PROMPT: &str = ":";
         let (term_rows, term_cols) = ui::getmaxyx();
@@ -31,11 +32,10 @@ impl CommandLine {
                 term_cols,
                 (term_rows as usize - 1, 0),
                 PROMPT.to_string(),
+                self.prefix.clone(),
+                self.suffix.clone(),
             );
-            match prefix {
-                Some(s) => textfield.readline_with_initial((s, "")),
-                None => textfield.readline(),
-            }
+            textfield.readline()
         };
 
         if let Some(s) = user_input {
@@ -44,12 +44,17 @@ impl CommandLine {
                 Some(ind) => {
                     let (command, xs) = trimmed.split_at(ind);
                     let xs = xs.trim_start();
-                    match commands::from_args(command, xs) {
+                    let wexp = wordexp::wordexp(xs, wordexp::Wordexp::new(0), 0);
+                    let args: Vec<&str> = match wexp.as_ref() {
+                        Ok(wexp) => wexp.iter().collect(),
+                        Err(_) => Vec::new(),
+                    };
+                    match commands::from_args(command, &args) {
                         Ok(s) => s.execute(context, view),
                         Err(e) => Err(JoshutoError::Keymap(e)),
                     }
                 }
-                None => match commands::from_args(trimmed, "") {
+                None => match commands::from_args(trimmed, &Vec::new()) {
                     Ok(s) => s.execute(context, view),
                     Err(e) => Err(JoshutoError::Keymap(e)),
                 },
@@ -58,16 +63,21 @@ impl CommandLine {
             Ok(())
         }
     }
+    pub fn readline_with(
+        context: &mut JoshutoContext,
+        view: &JoshutoView,
+        textfield: JoshutoTextField,
+    ) -> Result<(), JoshutoError> {
+        drop(textfield);
+        Ok(())
+    }
 }
 
 impl JoshutoCommand for CommandLine {}
 
 impl std::fmt::Display for CommandLine {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self.prefix.as_ref() {
-            Some(s) => write!(f, "{}: {}", Self::command(), s),
-            None => write!(f, "{}", Self::command()),
-        }
+        write!(f, "{}: {} {}", Self::command(), self.prefix, self.suffix)
     }
 }
 
@@ -77,7 +87,7 @@ impl JoshutoRunnable for CommandLine {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        let res = Self::readline(context, view, self.prefix.as_ref());
+        let res = self.readline(context, view);
         ncurses::doupdate();
         res
     }

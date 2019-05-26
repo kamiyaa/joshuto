@@ -25,20 +25,30 @@ impl CompletionTracker {
 pub struct JoshutoTextField {
     pub win: window::JoshutoPanel,
     pub prompt: String,
+    pub prefix: String,
+    pub suffix: String,
 }
 
 impl JoshutoTextField {
-    pub fn new(rows: i32, cols: i32, coord: (usize, usize), prompt: String) -> Self {
+    pub fn new(
+        rows: i32,
+        cols: i32,
+        coord: (usize, usize),
+        prompt: String,
+        prefix: String,
+        suffix: String,
+    ) -> Self {
         let win = window::JoshutoPanel::new(rows, cols, coord);
         ncurses::keypad(win.win, true);
-        JoshutoTextField { win, prompt }
+        JoshutoTextField {
+            win,
+            prompt,
+            prefix,
+            suffix,
+        }
     }
 
     pub fn readline(&self) -> Option<String> {
-        self.readline_with_initial(("", ""))
-    }
-
-    pub fn readline_with_initial(&self, initial: (&str, &str)) -> Option<String> {
         self.win.move_to_top();
         ncurses::timeout(-1);
         let win = self.win.win;
@@ -51,13 +61,13 @@ impl JoshutoTextField {
         let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
         let completer = FilenameCompleter::new();
 
-        line_buffer.insert_str(0, &initial.0);
-        line_buffer.insert_str(line_buffer.len(), &initial.1);
-        line_buffer.set_pos(initial.0.as_bytes().len());
+        line_buffer.insert_str(0, &self.prefix);
+        line_buffer.insert_str(line_buffer.len(), &self.suffix);
+        line_buffer.set_pos(self.prefix.as_bytes().len());
 
         let mut completion_tracker: Option<CompletionTracker> = None;
 
-        let mut curr_pos = unicode_width::UnicodeWidthStr::width(initial.0);
+        let mut curr_pos = unicode_width::UnicodeWidthStr::width(self.prefix.as_str());
         loop {
             ncurses::mvwaddstr(win, coord.0, coord.1 as i32, line_buffer.as_str());
             ncurses::wclrtoeol(win);
@@ -155,7 +165,7 @@ impl JoshutoTextField {
         if line_buffer.as_str().is_empty() {
             None
         } else {
-//            let strin = rustyline::completion::unescape(line_buffer.as_str(), ESCAPE_CHAR).into_owned();
+            //            let strin = rustyline::completion::unescape(line_buffer.as_str(), ESCAPE_CHAR).into_owned();
             let strin = line_buffer.to_string();
             Some(strin)
         }

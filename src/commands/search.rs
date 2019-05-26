@@ -84,6 +84,8 @@ impl JoshutoRunnable for Search {
                 term_cols,
                 (term_rows as usize - 1, 0),
                 PROMPT.to_string(),
+                String::new(),
+                String::new(),
             );
 
             textfield.readline()

@@ -205,6 +205,8 @@ impl OpenFileWith {
                 term_cols,
                 (term_rows as usize - 1, 0),
                 PROMPT.to_string(),
+                String::from(""),
+                String::from(""),
             );
             user_input = textfield.readline();
         }

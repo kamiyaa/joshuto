@@ -53,6 +53,7 @@ impl JoshutoRunnable for SelectFiles {
                     curr.selected = !curr.selected;
                 }
                 curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
+                ncurses::doupdate();
             }
         } else {
             if !self.all {
@@ -67,6 +68,7 @@ impl JoshutoRunnable for SelectFiles {
                     curr.selected = true;
                 }
                 curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
+                ncurses::doupdate();
             }
         }
         Ok(())
