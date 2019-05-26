@@ -6,6 +6,8 @@ use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
 use crate::window::JoshutoView;
 
+use crate::HOME_DIR;
+
 #[derive(Clone, Debug)]
 pub struct NewTab;
 
@@ -18,13 +20,9 @@ impl NewTab {
     }
 
     pub fn new_tab(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), JoshutoError> {
-        let curr_path: path::PathBuf = match dirs::home_dir() {
-            Some(path) => path,
-            None => {
-                let err =
-                    std::io::Error::new(std::io::ErrorKind::NotFound, "Cannot find home directory");
-                return Err(JoshutoError::IO(err));
-            }
+        let curr_path = match HOME_DIR.as_ref() {
+            Some(s) => s.clone(),
+            None => path::PathBuf::from("/"),
         };
 
         match JoshutoTab::new(curr_path, &context.config_t.sort_option) {

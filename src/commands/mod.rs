@@ -45,6 +45,8 @@ use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, KeymapError};
 use crate::window::JoshutoView;
 
+use crate::HOME_DIR;
+
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(Box<JoshutoCommand>),
@@ -76,8 +78,8 @@ pub struct ProgressInfo {
 pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, KeymapError> {
     match command {
         "cd" => match args {
-            "" => match dirs::home_dir() {
-                Some(s) => Ok(Box::new(self::ChangeDirectory::new(s))),
+            "" => match HOME_DIR.as_ref() {
+                Some(s) => Ok(Box::new(self::ChangeDirectory::new(s.clone()))),
                 None => Err(KeymapError::new(
                     Some("cd"),
                     String::from("Cannot find home directory"),
@@ -87,6 +89,7 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
             args => match wordexp::wordexp(args, 0) {
                 Ok(mut exp_strs) => match exp_strs.next() {
                     Some(exp_str) => {
+                        eprintln!("exp: {}", exp_str);
                         Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(exp_str))))
                     }
                     None => Err(KeymapError::new(
@@ -172,7 +175,7 @@ pub fn from_args(command: &str, args: &str) -> Result<Box<JoshutoCommand>, Keyma
                 "prepend" => self::RenameFileMethod::Prepend,
                 "overwrite" => self::RenameFileMethod::Overwrite,
                 "append" => self::RenameFileMethod::Append,
-                _ => self::RenameFileMethod::Append,
+                _ => self::RenameFileMethod::Overwrite,
             };
             Ok(Box::new(self::RenameFile::new(method)))
         }

@@ -46,6 +46,7 @@ lazy_static! {
     static ref THEME_T: JoshutoTheme = JoshutoTheme::get_config();
     static ref MIMETYPE_T: JoshutoMimetype = JoshutoMimetype::get_config();
     static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config();
+    static ref HOME_DIR: Option<PathBuf> = dirs::home_dir();
 }
 
 #[derive(StructOpt, Debug)]
