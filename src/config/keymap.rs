@@ -18,7 +18,7 @@ struct JoshutoMapCommand {
     pub keys: Vec<i32>,
     pub command: String,
     #[serde(default)]
-    pub args: String,
+    pub args: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -31,7 +31,8 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
     fn flatten(self) -> JoshutoKeymap {
         let mut keymaps = JoshutoKeymap::new();
         self.mapcommand.iter().for_each(|m| {
-            match commands::from_args(m.command.as_str(), m.args.as_ref()) {
+            let args: Vec<&str> = m.args.iter().map(|s| s.as_str()).collect();
+            match commands::from_args(m.command.as_str(), &args) {
                 Ok(command) => insert_keycommand(&mut keymaps, command, &m.keys[..]),
                 Err(e) => eprintln!("{}", e),
             }
