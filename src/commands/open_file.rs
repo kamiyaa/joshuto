@@ -200,14 +200,8 @@ impl OpenFileWith {
             ui::display_options(&display_win, &display_vec);
             ncurses::doupdate();
 
-            let textfield = JoshutoTextField::new(
-                1,
-                term_cols,
-                (term_rows as usize - 1, 0),
-                PROMPT.to_string(),
-                String::from(""),
-                String::from(""),
-            );
+            let textfield =
+                JoshutoTextField::new(1, term_cols, (term_rows as usize - 1, 0), PROMPT, "", "");
             user_input = textfield.readline();
         }
         ncurses::doupdate();

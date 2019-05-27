@@ -30,7 +30,7 @@ pub use self::parent_directory::ParentDirectory;
 pub use self::quit::ForceQuit;
 pub use self::quit::Quit;
 pub use self::reload_dir::ReloadDirList;
-pub use self::rename_file::{RenameFile, RenameFileMethod};
+pub use self::rename_file::{RenameFile, RenameFileAppend, RenameFilePrepend};
 pub use self::search::{Search, SearchNext, SearchPrev};
 pub use self::selection::SelectFiles;
 pub use self::set_mode::SetMode;
@@ -171,24 +171,25 @@ pub fn from_args(command: &str, args: &Vec<&str>) -> Result<Box<JoshutoCommand>,
         }
         "quit" => Ok(Box::new(self::Quit::new())),
         "reload_dir_list" => Ok(Box::new(self::ReloadDirList::new())),
-        "rename_file" => {
-            let mut method: RenameFileMethod = self::RenameFileMethod::Append;
-            for arg in args {
-                match *arg {
-                    "--prepend" => method = self::RenameFileMethod::Prepend,
-                    "--overwrite" => method = self::RenameFileMethod::Overwrite,
-                    "--append" => method = self::RenameFileMethod::Append,
-                    _ => {
-                        return Err(KeymapError::new(
-                            Some("rename_file"),
-                            format!("unknown option {}", arg),
-                        ));
-                    }
-                }
+        "rename" => match args.len() {
+            1 => {
+                let path: PathBuf = PathBuf::from(args[0]);
+                Ok(Box::new(self::RenameFile::new(path)))
             }
-            Ok(Box::new(self::RenameFile::new(method)))
-        }
-        "search" => Ok(Box::new(self::Search::new())),
+            i => Err(KeymapError::new(
+                Some("rename_file"),
+                format!("Expected 1, got {}", i),
+            )),
+        },
+        "rename_append" => Ok(Box::new(self::RenameFileAppend::new())),
+        "rename_prepend" => Ok(Box::new(self::RenameFilePrepend::new())),
+        "search" => match args.len() {
+            1 => Ok(Box::new(self::Search::new(args[0]))),
+            i => Err(KeymapError::new(
+                Some("search"),
+                format!("Expected 1, got {}", i),
+            )),
+        },
         "search_next" => Ok(Box::new(self::SearchNext::new())),
         "search_prev" => Ok(Box::new(self::SearchPrev::new())),
         "select_files" => {

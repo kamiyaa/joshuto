@@ -5,8 +5,6 @@ use crate::commands::{cursor_move, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
-use crate::textfield::JoshutoTextField;
-use crate::ui;
 use crate::window::JoshutoView;
 
 lazy_static! {
@@ -14,11 +12,13 @@ lazy_static! {
 }
 
 #[derive(Clone, Debug)]
-pub struct Search;
+pub struct Search {
+    pattern: String,
+}
 
 impl Search {
-    pub fn new() -> Self {
-        Search
+    pub fn new(pattern: &str) -> Self {
+        Search { pattern: pattern.to_lowercase() }
     }
     pub const fn command() -> &'static str {
         "search"
@@ -66,7 +66,7 @@ impl JoshutoCommand for Search {}
 
 impl std::fmt::Display for Search {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(Self::command())
+        write!(f, "{} {}", Self::command(), self.pattern)
     }
 }
 
@@ -76,33 +76,18 @@ impl JoshutoRunnable for Search {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        const PROMPT: &str = ":search ";
-        let (term_rows, term_cols) = ui::getmaxyx();
-        let user_input: Option<String> = {
-            let textfield = JoshutoTextField::new(
-                1,
-                term_cols,
-                (term_rows as usize - 1, 0),
-                PROMPT.to_string(),
-                String::new(),
-                String::new(),
-            );
-
-            textfield.readline()
-        };
-        ncurses::doupdate();
-
-        if let Some(user_input) = user_input {
-            let user_input = user_input.to_lowercase();
-
-            let index = Self::search(&context.tabs[context.curr_tab_index], &user_input);
-            if let Some(index) = index {
-                cursor_move::cursor_move(index, context, view);
-            }
-            let mut data = SEARCH_PATTERN.lock().unwrap();
-            *data = Some(user_input);
-            ncurses::doupdate();
+        let index = Self::search(&context.tabs[context.curr_tab_index], &self.pattern);
+        if let Some(index) = index {
+            cursor_move::cursor_move(index, context, view);
         }
+        let mut data = SEARCH_PATTERN.lock().unwrap();
+        match data.as_ref() {
+            Some(s) => if *s != self.pattern {
+                *data = Some(self.pattern.clone());
+            }
+            None => *data = Some(self.pattern.clone()),
+        }
+        ncurses::doupdate();
         Ok(())
     }
 }

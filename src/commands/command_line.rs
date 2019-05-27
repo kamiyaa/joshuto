@@ -31,9 +31,9 @@ impl CommandLine {
                 1,
                 term_cols,
                 (term_rows as usize - 1, 0),
-                PROMPT.to_string(),
-                self.prefix.clone(),
-                self.suffix.clone(),
+                PROMPT,
+                &self.prefix,
+                &self.suffix,
             );
             textfield.readline()
         };

@@ -41,9 +41,9 @@ impl SetMode {
                 1,
                 term_cols,
                 (term_rows as usize - 1, 0),
-                PROMPT.to_string(),
-                initial,
-                String::new(),
+                PROMPT,
+                &initial,
+                "",
             );
             textfield.readline()
         };
