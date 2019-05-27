@@ -22,21 +22,21 @@ impl CompletionTracker {
     }
 }
 
-pub struct JoshutoTextField {
+pub struct JoshutoTextField<'a> {
     pub win: window::JoshutoPanel,
-    pub prompt: String,
-    pub prefix: String,
-    pub suffix: String,
+    pub prompt: &'a str,
+    pub prefix: &'a str,
+    pub suffix: &'a str,
 }
 
-impl JoshutoTextField {
+impl<'a> JoshutoTextField<'a> {
     pub fn new(
         rows: i32,
         cols: i32,
         coord: (usize, usize),
-        prompt: String,
-        prefix: String,
-        suffix: String,
+        prompt: &'a str,
+        prefix: &'a str,
+        suffix: &'a str,
     ) -> Self {
         let win = window::JoshutoPanel::new(rows, cols, coord);
         ncurses::keypad(win.win, true);
@@ -61,13 +61,13 @@ impl JoshutoTextField {
         let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
         let completer = FilenameCompleter::new();
 
-        line_buffer.insert_str(0, &self.prefix);
-        line_buffer.insert_str(line_buffer.len(), &self.suffix);
+        line_buffer.insert_str(0, self.prefix);
+        line_buffer.insert_str(line_buffer.len(), self.suffix);
         line_buffer.set_pos(self.prefix.as_bytes().len());
 
         let mut completion_tracker: Option<CompletionTracker> = None;
 
-        let mut curr_pos = unicode_width::UnicodeWidthStr::width(self.prefix.as_str());
+        let mut curr_pos = unicode_width::UnicodeWidthStr::width(self.prefix);
         loop {
             ncurses::mvwaddstr(win, coord.0, coord.1 as i32, line_buffer.as_str());
             ncurses::wclrtoeol(win);
