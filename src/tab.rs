@@ -2,7 +2,7 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::path::PathBuf;
 
 use crate::config;
-use crate::history::DirectoryHistory;
+use crate::history::{DirectoryHistory, JoshutoHistory};
 use crate::preview;
 use crate::sort;
 use crate::structs::JoshutoDirList;
@@ -12,7 +12,7 @@ use crate::window::{JoshutoPanel, JoshutoView};
 use crate::THEME_T;
 
 pub struct JoshutoTab {
-    pub history: HashMap<PathBuf, JoshutoDirList>,
+    pub history: JoshutoHistory,
     pub curr_path: PathBuf,
     pub curr_list: JoshutoDirList,
 }
@@ -80,7 +80,7 @@ impl JoshutoTab {
         username: &str,
         hostname: &str,
     ) {
-        self.refresh_curr(&views.mid_win, config_t.scroll_offset);
+        self.refresh_curr(&views.mid_win);
         self.refresh_parent(&views.left_win, config_t);
         self.refresh_preview(&views.right_win, config_t);
         self.refresh_path_status(
@@ -92,8 +92,8 @@ impl JoshutoTab {
         self.refresh_file_status(&views.bot_win);
     }
 
-    pub fn refresh_curr(&mut self, win: &JoshutoPanel, scroll_offset: usize) {
-        win.display_contents_detailed(&mut self.curr_list, scroll_offset);
+    pub fn refresh_curr(&self, win: &JoshutoPanel) {
+        ui::display_contents(win, &self.curr_list, &ui::PRIMARY_DISPLAY_OPTION);
         win.queue_for_refresh();
     }
 

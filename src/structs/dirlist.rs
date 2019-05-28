@@ -2,6 +2,7 @@ use std::{fs, path};
 
 use crate::sort;
 use crate::structs::{JoshutoDirEntry, JoshutoMetadata};
+use crate::ui;
 use crate::window::JoshutoPageState;
 
 #[derive(Debug)]
@@ -19,13 +20,23 @@ impl JoshutoDirList {
         path: path::PathBuf,
         sort_option: &sort::SortOption,
     ) -> Result<Self, std::io::Error> {
-        let mut contents = Self::read_dir_list(path.as_path(), sort_option)?;
+        let mut contents = read_dir_list(path.as_path(), sort_option)?;
         contents.sort_by(&sort_option.compare_func());
 
-        let index = if !contents.is_empty() { Some(0) } else { None };
+        let index = if contents.is_empty() { None } else { Some(0) };
+
+        let contents_len = contents.len();
+        let (rows, _) = ui::getmaxyx();
+        let end = if rows < 2 {
+                0
+            } else if contents_len > rows as usize - 2 {
+                rows as usize - 2
+            } else {
+                contents_len
+            };
 
         let metadata = JoshutoMetadata::from(&path)?;
-        let pagestate = JoshutoPageState::new();
+        let pagestate = JoshutoPageState::new(end);
 
         Ok(JoshutoDirList {
             index,
@@ -35,19 +46,6 @@ impl JoshutoDirList {
             contents,
             pagestate,
         })
-    }
-
-    fn read_dir_list(
-        path: &path::Path,
-        sort_option: &sort::SortOption,
-    ) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
-        let filter_func = sort_option.filter_func();
-        let results: fs::ReadDir = fs::read_dir(path)?;
-        let result_vec: Vec<JoshutoDirEntry> = results
-            .filter(filter_func)
-            .filter_map(sort::map_entry_default)
-            .collect();
-        Ok(result_vec)
     }
 
     pub fn depreciate(&mut self) {
@@ -65,7 +63,7 @@ impl JoshutoDirList {
         self.outdated = false;
 
         let sort_func = sort_option.compare_func();
-        let mut contents = Self::read_dir_list(&self.path, sort_option)?;
+        let mut contents = read_dir_list(&self.path, sort_option)?;
         contents.sort_by(&sort_func);
 
         let contents_len = contents.len();
@@ -126,4 +124,19 @@ impl JoshutoDirList {
             None
         }
     }
+}
+
+
+
+fn read_dir_list(
+    path: &path::Path,
+    sort_option: &sort::SortOption,
+) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
+    let filter_func = sort_option.filter_func();
+    let results: fs::ReadDir = fs::read_dir(path)?;
+    let result_vec: Vec<JoshutoDirEntry> = results
+        .filter(filter_func)
+        .filter_map(sort::map_entry_default)
+        .collect();
+    Ok(result_vec)
 }

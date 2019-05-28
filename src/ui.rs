@@ -12,6 +12,15 @@ use crate::THEME_T;
 pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;
 
+const MIN_WIN_WIDTH: usize = 4;
+
+pub struct DisplayOptions {
+    detailed: bool,
+}
+
+pub const PRIMARY_DISPLAY_OPTION: DisplayOptions = DisplayOptions { detailed: true };
+pub const SECONDARY_DISPLAY_OPTION: DisplayOptions = DisplayOptions { detailed: false };
+
 pub fn init_ncurses() {
     ncurses::setlocale(ncurses::LcCategory::all, "");
 
@@ -54,7 +63,7 @@ pub fn getmaxyx() -> (i32, i32) {
     (term_rows, term_cols)
 }
 
-pub fn display_options(win: &window::JoshutoPanel, vals: &[String]) {
+pub fn display_menu(win: &window::JoshutoPanel, vals: &[String]) {
     ncurses::werase(win.win);
     ncurses::mvwhline(win.win, 0, 0, 0, win.cols);
 
@@ -128,7 +137,7 @@ fn wprint_file_name(
     ncurses::waddstr(win, "…");
 }
 
-pub fn wprint_entry(
+fn wprint_entry(
     win: &window::JoshutoPanel,
     file: &structs::JoshutoDirEntry,
     prefix: (usize, &str),
@@ -148,7 +157,7 @@ pub fn wprint_entry(
     );
 }
 
-pub fn wprint_entry_detailed(
+fn wprint_entry_detailed(
     win: &window::JoshutoPanel,
     file: &structs::JoshutoDirEntry,
     prefix: (usize, &str),
@@ -170,8 +179,46 @@ pub fn wprint_entry_detailed(
             ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
         }
     }
-
     wprint_file_name(win.win, &file.file_name_as_string, coord, space_avail);
+}
+
+pub fn display_contents(win: &window::JoshutoPanel,
+        dirlist: &structs::JoshutoDirList,
+        options: &DisplayOptions) {
+    if win.cols < MIN_WIN_WIDTH as i32 {
+        return;
+    }
+    let vec_len = dirlist.contents.len();
+    if vec_len == 0 {
+        wprint_empty(win, "empty");
+        return;
+    }
+    ncurses::werase(win.win);
+    ncurses::wmove(win.win, 0, 0);
+
+    let dir_contents = &dirlist.contents;
+    let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
+
+    let curr_index = dirlist.index.unwrap();
+
+    let draw_func = if options.detailed { wprint_entry_detailed } else { wprint_entry };
+
+    for (i, entry) in dir_contents.iter().enumerate().take(end).skip(start) {
+        let coord: (i32, i32) = (i as i32 - start as i32, 0);
+
+        ncurses::wmove(win.win, coord.0, coord.1);
+
+        let mut attr: ncurses::attr_t = 0;
+        if i == curr_index {
+            attr |= ncurses::A_STANDOUT();
+        }
+        let attrs = get_theme_attr(attr, entry);
+
+        draw_func(win, entry, attrs.0, coord);
+
+        ncurses::mvwchgat(win.win, coord.0, coord.1, -1, attrs.1, attrs.2);
+    }
+    win.queue_for_refresh();
 }
 
 pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {

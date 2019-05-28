@@ -19,7 +19,9 @@ pub trait DirectoryHistory {
     fn depreciate_all_entries(&mut self);
 }
 
-impl DirectoryHistory for HashMap<PathBuf, JoshutoDirList> {
+pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
+
+impl DirectoryHistory for JoshutoHistory {
     fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) {
         let mut ancestors = pathbuf.ancestors();
         match ancestors.next() {

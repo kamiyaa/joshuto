@@ -7,7 +7,7 @@ pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &Jo
     let curr_tab = &mut context.tabs[context.curr_tab_index];
 
     match curr_tab.curr_list.index {
-        None => {}
+        None => return,
         Some(_) => {
             let dir_len = curr_tab.curr_list.contents.len();
             /*
@@ -19,10 +19,15 @@ pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &Jo
                 new_index = dir_len - 1;
             }
             curr_tab.curr_list.index = Some(new_index);
+            curr_tab.curr_list.pagestate.update_page_state(
+                new_index,
+                view.mid_win.rows,
+                dir_len,
+                context.config_t.scroll_offset);
         }
     }
 
-    curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
+    curr_tab.refresh_curr(&view.mid_win);
     curr_tab.refresh_path_status(
         &view.top_win,
         &context.username,

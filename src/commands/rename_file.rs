@@ -45,7 +45,7 @@ impl RenameFile {
         curr_tab
             .curr_list
             .update_contents(&context.config_t.sort_option)?;
-        curr_tab.refresh_curr(&view.mid_win, context.config_t.scroll_offset);
+        curr_tab.refresh_curr(&view.mid_win);
         curr_tab.refresh_preview(&view.right_win, &context.config_t);
         Ok(())
     }

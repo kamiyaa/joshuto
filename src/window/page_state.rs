@@ -5,8 +5,8 @@ pub struct JoshutoPageState {
 }
 
 impl JoshutoPageState {
-    pub fn new() -> Self {
-        JoshutoPageState { start: 0, end: 0 }
+    pub fn new(end: usize) -> Self {
+        JoshutoPageState { start: 0, end }
     }
 
     pub fn update_page_state(

@@ -29,7 +29,7 @@ fn recurse_get_keycommand(keymap: &JoshutoKeymap) -> Option<&Box<JoshutoCommand>
         display_vec.sort();
 
         win.move_to_top();
-        ui::display_options(&win, &display_vec);
+        ui::display_menu(&win, &display_vec);
         ncurses::doupdate();
 
         ncurses::wgetch(win.win)

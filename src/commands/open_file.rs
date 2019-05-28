@@ -197,7 +197,7 @@ impl OpenFileWith {
             display_vec.sort();
 
             display_win.move_to_top();
-            ui::display_options(&display_win, &display_vec);
+            ui::display_menu(&display_win, &display_vec);
             ncurses::doupdate();
 
             let textfield =
