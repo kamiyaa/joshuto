@@ -1,9 +1,4 @@
-use ncurses;
-
-use crate::structs;
-use crate::ui;
-
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct JoshutoPanel {
     pub win: ncurses::WINDOW,
     pub panel: ncurses::PANEL,

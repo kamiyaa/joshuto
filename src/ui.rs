@@ -182,9 +182,11 @@ fn wprint_entry_detailed(
     wprint_file_name(win.win, &file.file_name_as_string, coord, space_avail);
 }
 
-pub fn display_contents(win: &window::JoshutoPanel,
-        dirlist: &structs::JoshutoDirList,
-        options: &DisplayOptions) {
+pub fn display_contents(
+    win: &window::JoshutoPanel,
+    dirlist: &structs::JoshutoDirList,
+    options: &DisplayOptions,
+) {
     if win.cols < MIN_WIN_WIDTH as i32 {
         return;
     }
@@ -201,7 +203,11 @@ pub fn display_contents(win: &window::JoshutoPanel,
 
     let curr_index = dirlist.index.unwrap();
 
-    let draw_func = if options.detailed { wprint_entry_detailed } else { wprint_entry };
+    let draw_func = if options.detailed {
+        wprint_entry_detailed
+    } else {
+        wprint_entry
+    };
 
     for (i, entry) in dir_contents.iter().enumerate().take(end).skip(start) {
         let coord: (i32, i32) = (i as i32 - start as i32, 0);

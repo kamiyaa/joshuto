@@ -28,12 +28,12 @@ impl JoshutoDirList {
         let contents_len = contents.len();
         let (rows, _) = ui::getmaxyx();
         let end = if rows < 2 {
-                0
-            } else if contents_len > rows as usize - 2 {
-                rows as usize - 2
-            } else {
-                contents_len
-            };
+            0
+        } else if contents_len > rows as usize - 2 {
+            rows as usize - 2
+        } else {
+            contents_len
+        };
 
         let metadata = JoshutoMetadata::from(&path)?;
         let pagestate = JoshutoPageState::new(end);
@@ -125,8 +125,6 @@ impl JoshutoDirList {
         }
     }
 }
-
-
 
 fn read_dir_list(
     path: &path::Path,

@@ -18,7 +18,9 @@ pub struct Search {
 
 impl Search {
     pub fn new(pattern: &str) -> Self {
-        Search { pattern: pattern.to_lowercase() }
+        Search {
+            pattern: pattern.to_lowercase(),
+        }
     }
     pub const fn command() -> &'static str {
         "search"
@@ -82,8 +84,10 @@ impl JoshutoRunnable for Search {
         }
         let mut data = SEARCH_PATTERN.lock().unwrap();
         match data.as_ref() {
-            Some(s) => if *s != self.pattern {
-                *data = Some(self.pattern.clone());
+            Some(s) => {
+                if *s != self.pattern {
+                    *data = Some(self.pattern.clone());
+                }
             }
             None => *data = Some(self.pattern.clone()),
         }

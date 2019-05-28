@@ -23,7 +23,8 @@ pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &Jo
                 new_index,
                 view.mid_win.rows,
                 dir_len,
-                context.config_t.scroll_offset);
+                context.config_t.scroll_offset,
+            );
         }
     }
 
