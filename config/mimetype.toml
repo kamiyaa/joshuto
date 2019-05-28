@@ -1,71 +1,76 @@
 [[entry]]
-id = 1
-program = "nano"
+id	= 1
+program	= "nano"
 
 [[entry]]
-id = 2
-program = "gedit"
-fork = true
-silent = true
+id	= 2
+program	= "gedit"
+fork	= true
+silent	= true
 
 [[entry]]
-id = 10
-program = "mpv"
-fork = true
-silent = true
+id	= 10
+program	= "mpv"
+fork	= true
+silent	= true
 
 [[entry]]
-id = 11
-program = "mpv"
+id	= 11
+program	= "mpv"
 
 [[entry]]
-id = 20
-program = "qimgv"
-fork = true
-silent = true
+id	= 20
+program	= "qimgv"
+fork	= true
+silent	= true
 
 [[entry]]
-id = 21
-program = "krita"
-fork = true
-silent = true
+id	= 21
+program	= "krita"
+fork	= true
+silent	= true
 
 [[entry]]
-id = 50
-program = "pdflatex"
+id	= 50
+program	= "pdflatex"
 
 [[entry]]
-id = 55
-program = "evince"
-fork = true
-silent = true
+id	= 55
+program	= "evince"
+fork	= true
+silent	= true
 
 [[entry]]
-id = 60
-program = "tar"
-args = [ "-xvzf" ]
+id	= 60
+program	= "tar"
+args	= [ "-xvzf" ]
 [[entry]]
-id = 61
-program = "tar"
-args = [ "-xvJf" ]
+id	= 61
+program	= "tar"
+args	= [ "-xvJf" ]
+[[entry]]
+id	= 62
+program	= "tar"
+args	= [ "-xvjf" ]
 
 [[entry]]
-id = 70
-program = "unrar"
-args = [ "e" ]
+id	= 70
+program	= "unrar"
+args	= [ "e" ]
 [[entry]]
-id = 80
-program = "unzip"
+id	= 80
+program	= "unzip"
 
 [[entry]]
-id = 100
-program = "libreoffice"
-fork = true
-silent = true
+id	= 100
+program	= "libreoffice"
+fork	= true
+silent	= true
 
 # specify which applications to use to open certain file types
 [extension]
 ## Image
+bmp	= [ 20, 21 ]
 gif	= [ 20, 21 ]
 jpg	= [ 20, 21 ]
 jpeg	= [ 20, 21 ]
@@ -85,28 +90,36 @@ wmv	= [ 10 ]
 
 # Text
 c	= [ 1, 2 ]
+conf	= [ 1, 2 ]
 cpp	= [ 1, 2 ]
-java	= [ 1, 2 ]
 css	= [ 1, 2 ]
+go	= [ 1, 2 ]
 hs	= [ 1, 2 ]
+html	= [ 1, 2 ]
+java	= [ 1, 2 ]
+js	= [ 1, 2 ]
+kt	= [ 1, 2 ]
 log	= [ 1, 2 ]
 md	= [ 1, 2 ]
 py	= [ 1, 2 ]
 rs	= [ 1, 2 ]
+sh	= [ 1, 2 ]
 toml	= [ 1, 2 ]
 xml	= [ 1, 2 ]
 
 tex	= [ 1, 50 ]
 
 # Archives
-rar = [ 70 ]
-gz = [ 60 ]
-xz = [ 61 ]
-zip = [ 80 ]
+bz2	= [ 62 ]
+gz	= [ 60 ]
+rar	= [ 70 ]
+xz	= [ 61 ]
+zip	= [ 80 ]
 
 # Misc
-odt = [ 100 ]
-pdf = [ 55 ]
+odt	= [ 100 ]
+odf	= [ 100 ]
+pdf	= [ 55 ]
 
 [mimetype]
 

@@ -43,8 +43,9 @@ bg = -1
 colorpair = 3
 bold = true
 underline = false
+[selection.prefix]
 prefix = "  "
-prefixsize = 2
+size = 2
 
 [executable]
 colorpair = 2
@@ -74,85 +75,61 @@ underline = false
 [ext]
 	[ext.jpg]
 	colorpair = 3
-	bold = false
-	underline = false
 
 	[ext.jpeg]
 	colorpair = 3
-	bold = false
-	underline = false
 
 	[ext.png]
 	colorpair = 3
-	bold = false
-	underline = false
 
 	[ext.svg]
 	colorpair = 6
-	bold = false
-	underline = false
 
 	[ext.gif]
 	colorpair = 6
-	bold = false
-	underline = false
 
 	[ext.wav]
 	colorpair = 5
-	bold = false
-	underline = false
 
 	[ext.flac]
 	colorpair = 5
-	bold = false
-	underline = false
 
 	[ext.mp3]
 	colorpair = 5
-	bold = false
-	underline = false
+
+	[ext.avi]
+	colorpair = 5
 
 	[ext.mp4]
 	colorpair = 5
-	bold = false
-	underline = false
 
 	[ext.mkv]
 	colorpair = 5
-	bold = false
-	underline = false
 
 	[ext.m4a]
 	colorpair = 5
-	bold = false
-	underline = false
+
+	[ext.ts]
+	colorpair = 5
 
 	[ext.webm]
 	colorpair = 5
-	bold = false
-	underline = false
 
 	[ext.wmv]
 	colorpair = 5
-	bold = false
-	underline = false
 
 	[ext.7z]
 	colorpair = 1
-	bold = false
-	underline = false
 
 	[ext.zip]
 	colorpair = 1
-	bold = false
-	underline = false
 
-	[ext."tar.gz"]
+	[ext.bz2]
 	colorpair = 1
-	bold = false
-	underline = false
+	[ext.gz]
+	colorpair = 1
+	[ext.xz]
+	colorpair = 1
 
 	[ext.rar]
 	colorpair = 1
-	bold = false
-	underline = false

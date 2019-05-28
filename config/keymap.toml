@@ -108,18 +108,16 @@ args = [ "--overwrite" ]
 
 [[mapcommand]]
 keys = [ 97 ]
-command = "rename_file"
-args = [ "--append" ]
+command = "rename_append"
 
 [[mapcommand]]
 keys = [ 65 ]
-command = "rename_file"
-args = [ "--prepend" ]
+command = "rename_prepend"
 
 [[mapcommand]]
 keys = [ 99, 119 ]
-command = "rename_file"
-args = [ "--overwrite" ]
+command = "console"
+args = [ "rename " ]
 
 [[mapcommand]]
 keys = [ 100, 68 ]
@@ -165,7 +163,8 @@ args = [ "/etc" ]
 
 [[mapcommand]]
 keys = [ 47 ]
-command = "search"
+command = "console"
+args = [ "search " ]
 
 [[mapcommand]]
 keys = [ 78 ]

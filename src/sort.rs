@@ -17,9 +17,9 @@ pub enum SortType {
 impl SortType {
     pub fn parse(s: &str) -> Option<Self> {
         match s {
+            "lexical" => Some(SortType::Lexical),
             "mtime" => Some(SortType::Mtime),
             "natural" => Some(SortType::Natural),
-            "lexical" => Some(SortType::Lexical),
             _ => None,
         }
     }
