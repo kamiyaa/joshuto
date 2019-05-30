@@ -34,25 +34,6 @@ impl OpenFile {
                 mimetype_options.extend(ext_entries);
             }
         }
-        /*
-        match tree_magic::from_filepath(&path) {
-            None => {},
-            Some(mimetype) => {
-                /* mime subtype have second priority */
-        if let Some(s) = MIMETYPE_T.mimetype.get(&mimetype) {
-        mimetype_options.extend(s.iter());
-        }
-
-        /* generic mime type have last priority */
-        if let Some(s) = mimetype.find('/') {
-        let mimetype_type = &mimetype[..s];
-        if let Some(s) = MIMETYPE_T.mimetype.get(mimetype_type) {
-        mimetype_options.extend(s.iter());
-        }
-        }
-        }
-        }
-         */
         mimetype_options
     }
 
@@ -74,12 +55,7 @@ impl OpenFile {
                     .curr_list
                     .update_contents(&context.config_t.sort_option)?;
             }
-            curr_tab.refresh(
-                view,
-                &context.config_t,
-                &context.username,
-                &context.hostname,
-            );
+            curr_tab.refresh(view, &context.config_t);
         } else {
             let paths: Option<Vec<PathBuf>> = context.tabs[context.curr_tab_index]
                 .curr_list
@@ -97,12 +73,7 @@ impl OpenFile {
                     .curr_list
                     .update_contents(&context.config_t.sort_option)?;
             }
-            curr_tab.refresh(
-                view,
-                &context.config_t,
-                &context.username,
-                &context.hostname,
-            );
+            curr_tab.refresh(view, &context.config_t);
         }
         ncurses::doupdate();
         Ok(())

@@ -44,12 +44,7 @@ impl ChangeDirectory {
             .history
             .insert(new_curr_list.path.clone(), new_curr_list);
 
-        curr_tab.refresh(
-            view,
-            &context.config_t,
-            &context.username,
-            &context.hostname,
-        );
+        curr_tab.refresh(view, &context.config_t);
         Ok(())
     }
 }

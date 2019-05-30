@@ -34,12 +34,7 @@ impl TabSwitch {
                     .curr_list
                     .update_contents(&context.config_t.sort_option)?;
             }
-            curr_tab.refresh(
-                view,
-                &context.config_t,
-                &context.username,
-                &context.hostname,
-            );
+            curr_tab.refresh(view, &context.config_t);
         }
         ui::redraw_tab_view(&view.tab_win, &context);
         ncurses::doupdate();

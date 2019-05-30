@@ -66,24 +66,14 @@ fn join_thread(
                 let dirty_tab = &mut context.tabs[tab_src];
                 dirty_tab.reload_contents(&context.config_t.sort_option)?;
                 if tab_src == context.curr_tab_index {
-                    dirty_tab.refresh(
-                        view,
-                        &context.config_t,
-                        &context.username,
-                        &context.hostname,
-                    );
+                    dirty_tab.refresh(view, &context.config_t);
                 }
             }
             if tab_dest != tab_src && tab_dest < context.tabs.len() {
                 let dirty_tab = &mut context.tabs[tab_dest];
                 dirty_tab.reload_contents(&context.config_t.sort_option)?;
                 if tab_dest == context.curr_tab_index {
-                    dirty_tab.refresh(
-                        view,
-                        &context.config_t,
-                        &context.username,
-                        &context.hostname,
-                    );
+                    dirty_tab.refresh(view, &context.config_t);
                 }
             }
         }
@@ -117,12 +107,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
 fn resize_handler(context: &mut JoshutoContext, view: &JoshutoView) {
     ui::redraw_tab_view(&view.tab_win, &context);
     let curr_tab = &mut context.tabs[context.curr_tab_index];
-    curr_tab.refresh(
-        view,
-        &context.config_t,
-        &context.username,
-        &context.hostname,
-    );
+    curr_tab.refresh(view, &context.config_t);
     ncurses::doupdate();
 }
 
@@ -133,12 +118,7 @@ fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
                 context.tabs.push(tab);
                 context.curr_tab_index = context.tabs.len() - 1;
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
-                curr_tab.refresh(
-                    view,
-                    &context.config_t,
-                    &context.username,
-                    &context.hostname,
-                );
+                curr_tab.refresh(view, &context.config_t);
                 ui::redraw_tab_view(&view.tab_win, &context);
                 ncurses::doupdate();
             }

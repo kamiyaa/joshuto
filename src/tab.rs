@@ -9,6 +9,8 @@ use crate::structs::JoshutoDirList;
 use crate::ui;
 use crate::window::{JoshutoPanel, JoshutoView};
 
+use crate::{HOSTNAME, USERNAME};
+
 use crate::THEME_T;
 
 pub struct JoshutoTab {
@@ -73,22 +75,11 @@ impl JoshutoTab {
         Ok(())
     }
 
-    pub fn refresh(
-        &mut self,
-        views: &JoshutoView,
-        config_t: &config::JoshutoConfig,
-        username: &str,
-        hostname: &str,
-    ) {
+    pub fn refresh(&mut self, views: &JoshutoView, config_t: &config::JoshutoConfig) {
         self.refresh_curr(&views.mid_win);
         self.refresh_parent(&views.left_win, config_t);
         self.refresh_preview(&views.right_win, config_t);
-        self.refresh_path_status(
-            &views.top_win,
-            username,
-            hostname,
-            config_t.tilde_in_titlebar,
-        );
+        self.refresh_path_status(&views.top_win, config_t.tilde_in_titlebar);
         self.refresh_file_status(&views.bot_win);
     }
 
@@ -126,26 +117,20 @@ impl JoshutoTab {
         win.queue_for_refresh();
     }
 
-    pub fn refresh_path_status(
-        &self,
-        win: &JoshutoPanel,
-        username: &str,
-        hostname: &str,
-        tilde_in_titlebar: bool,
-    ) {
+    pub fn refresh_path_status(&self, win: &JoshutoPanel, tilde_in_titlebar: bool) {
         let path_str: &str = self.curr_path.to_str().unwrap();
 
         ncurses::werase(win.win);
         ncurses::wattron(win.win, ncurses::A_BOLD());
-        ncurses::mvwaddstr(win.win, 0, 0, username);
+        ncurses::mvwaddstr(win.win, 0, 0, (*USERNAME).as_str());
         ncurses::waddstr(win.win, "@");
-        ncurses::waddstr(win.win, hostname);
+        ncurses::waddstr(win.win, (*HOSTNAME).as_str());
 
         ncurses::waddstr(win.win, " ");
 
         ncurses::wattron(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
         if tilde_in_titlebar {
-            let path_str = &path_str.replace(&format!("/home/{}", username), "~");
+            let path_str = &path_str.replace(&format!("/home/{}", (*USERNAME).as_str()), "~");
             ncurses::waddstr(win.win, path_str);
         } else {
             ncurses::waddstr(win.win, path_str);

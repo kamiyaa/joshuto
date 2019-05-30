@@ -56,31 +56,23 @@ impl DeleteFiles {
                     ui::wprint_msg(&view.bot_win, "Deleted files");
 
                     curr_tab.reload_contents(&context.config_t.sort_option)?;
-                    curr_tab.refresh(
-                        &view,
-                        &context.config_t,
-                        &context.username,
-                        &context.hostname,
-                    );
+
+                    if let Some(s) = curr_tab.curr_list.index {
+                        curr_tab.curr_list.pagestate.update_page_state(
+                            s,
+                            view.mid_win.rows,
+                            curr_tab.curr_list.contents.len(),
+                            context.config_t.scroll_offset,
+                        );
+                    }
+                    curr_tab.refresh_curr(&view.mid_win);
+                    curr_tab.refresh_parent(&view.left_win, &context.config_t);
+                    curr_tab.refresh_preview(&view.right_win, &context.config_t);
                 }
-            } else {
-                curr_tab.refresh_file_status(&view.bot_win);
-                curr_tab.refresh_path_status(
-                    &view.top_win,
-                    &context.username,
-                    &context.hostname,
-                    context.config_t.tilde_in_titlebar,
-                );
             }
-        } else {
-            curr_tab.refresh_file_status(&view.bot_win);
-            curr_tab.refresh_path_status(
-                &view.top_win,
-                &context.username,
-                &context.hostname,
-                context.config_t.tilde_in_titlebar,
-            );
         }
+        curr_tab.refresh_file_status(&view.bot_win);
+        curr_tab.refresh_path_status(&view.top_win, context.config_t.tilde_in_titlebar);
         ncurses::doupdate();
         Ok(())
     }

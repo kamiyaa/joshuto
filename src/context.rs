@@ -3,8 +3,6 @@ use crate::config;
 use crate::tab::JoshutoTab;
 
 pub struct JoshutoContext {
-    pub username: String,
-    pub hostname: String,
     pub threads: Vec<FileOperationThread>,
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
@@ -15,12 +13,7 @@ pub struct JoshutoContext {
 
 impl JoshutoContext {
     pub fn new(config_t: config::JoshutoConfig) -> Self {
-        let username: String = whoami::username();
-        let hostname: String = whoami::hostname();
-
         JoshutoContext {
-            username,
-            hostname,
             threads: Vec::new(),
             curr_tab_index: 0,
             tabs: Vec::new(),

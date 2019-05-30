@@ -16,13 +16,20 @@ impl ReloadDirList {
 
     pub fn reload(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.reload_contents(&context.config_t.sort_option)?;
-        curr_tab.refresh(
-            view,
-            &context.config_t,
-            &context.username,
-            &context.hostname,
-        );
+        let dir_len = curr_tab.curr_list.contents.len();
+        match curr_tab.curr_list.index {
+            None => {}
+            Some(s) => {
+                curr_tab.curr_list.pagestate.update_page_state(
+                    s,
+                    view.mid_win.rows,
+                    dir_len,
+                    context.config_t.scroll_offset,
+                );
+                curr_tab.reload_contents(&context.config_t.sort_option)?;
+                curr_tab.refresh(view, &context.config_t);
+            }
+        }
         Ok(())
     }
 }

@@ -47,6 +47,9 @@ lazy_static! {
     static ref MIMETYPE_T: JoshutoMimetype = JoshutoMimetype::get_config();
     static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config();
     static ref HOME_DIR: Option<PathBuf> = dirs::home_dir();
+
+    static ref USERNAME: String = whoami::username();
+    static ref HOSTNAME: String = whoami::hostname();
 }
 
 #[derive(StructOpt, Debug)]

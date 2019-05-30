@@ -29,12 +29,7 @@ pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &Jo
     }
 
     curr_tab.refresh_curr(&view.mid_win);
-    curr_tab.refresh_path_status(
-        &view.top_win,
-        &context.username,
-        &context.hostname,
-        context.config_t.tilde_in_titlebar,
-    );
+    curr_tab.refresh_path_status(&view.top_win, context.config_t.tilde_in_titlebar);
     curr_tab.refresh_file_status(&view.bot_win);
     curr_tab.refresh_preview(&view.right_win, &context.config_t);
     ncurses::doupdate();
