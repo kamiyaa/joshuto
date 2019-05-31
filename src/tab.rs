@@ -1,4 +1,3 @@
-use std::collections::{hash_map::Entry, HashMap};
 use std::path::PathBuf;
 
 use crate::config;
@@ -21,7 +20,7 @@ pub struct JoshutoTab {
 
 impl JoshutoTab {
     pub fn new(curr_path: PathBuf, sort_option: &sort::SortOption) -> Result<Self, std::io::Error> {
-        let mut history = HashMap::new();
+        let mut history = JoshutoHistory::new();
         history.populate_to_root(&curr_path, sort_option);
 
         let curr_list = history.pop_or_create(&curr_path, sort_option)?;
@@ -32,47 +31,6 @@ impl JoshutoTab {
             curr_list,
         };
         Ok(tab)
-    }
-
-    pub fn reload_contents(
-        &mut self,
-        sort_option: &sort::SortOption,
-    ) -> Result<(), std::io::Error> {
-        if self.curr_list.path.exists() {
-            self.curr_list.update_contents(sort_option)?;
-        }
-        if let Some(s) = self.curr_list.get_curr_ref() {
-            if s.path.is_dir() {
-                match self.history.entry(s.path.clone().to_path_buf()) {
-                    Entry::Occupied(mut entry) => {
-                        let dirlist = entry.get_mut();
-                        if dirlist.need_update() {
-                            dirlist.update_contents(sort_option)?;
-                        }
-                    }
-                    Entry::Vacant(entry) => {
-                        let s = JoshutoDirList::new(s.path.clone().to_path_buf(), sort_option)?;
-                        entry.insert(s);
-                    }
-                }
-            }
-        }
-
-        if let Some(parent) = self.curr_list.path.parent() {
-            match self.history.entry(parent.to_path_buf().clone()) {
-                Entry::Occupied(mut entry) => {
-                    let dirlist = entry.get_mut();
-                    if dirlist.need_update() {
-                        dirlist.update_contents(sort_option)?;
-                    }
-                }
-                Entry::Vacant(entry) => {
-                    let s = JoshutoDirList::new(parent.to_path_buf().clone(), sort_option)?;
-                    entry.insert(s);
-                }
-            }
-        }
-        Ok(())
     }
 
     pub fn refresh(&mut self, views: &JoshutoView, config_t: &config::JoshutoConfig) {

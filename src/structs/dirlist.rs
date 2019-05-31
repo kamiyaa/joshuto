@@ -9,10 +9,10 @@ use crate::window::JoshutoPageState;
 pub struct JoshutoDirList {
     pub index: Option<usize>,
     pub path: path::PathBuf,
+    pub outdated: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
     pub pagestate: JoshutoPageState,
-    outdated: bool,
 }
 
 impl JoshutoDirList {

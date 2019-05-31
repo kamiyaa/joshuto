@@ -1,7 +1,7 @@
 use std::fs;
 use std::path;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::config::keymap;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
@@ -54,26 +54,10 @@ impl DeleteFiles {
                 if ch == 'y' as i32 {
                     Self::remove_files(paths)?;
                     ui::wprint_msg(&view.bot_win, "Deleted files");
-
-                    curr_tab.reload_contents(&context.config_t.sort_option)?;
-
-                    if let Some(s) = curr_tab.curr_list.index {
-                        curr_tab.curr_list.pagestate.update_page_state(
-                            s,
-                            view.mid_win.rows,
-                            curr_tab.curr_list.contents.len(),
-                            context.config_t.scroll_offset,
-                        );
-                    }
-                    curr_tab.refresh_curr(&view.mid_win);
-                    curr_tab.refresh_parent(&view.left_win, &context.config_t);
-                    curr_tab.refresh_preview(&view.right_win, &context.config_t);
+                    ReloadDirList::reload(context.curr_tab_index, context, view)?;
                 }
             }
         }
-        curr_tab.refresh_file_status(&view.bot_win);
-        curr_tab.refresh_path_status(&view.top_win, context.config_t.tilde_in_titlebar);
-        ncurses::doupdate();
         Ok(())
     }
 }
@@ -92,7 +76,11 @@ impl JoshutoRunnable for DeleteFiles {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        match Self::delete_files(context, view) {
+        let res = Self::delete_files(context, view);
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        curr_tab.refresh(view, &context.config_t);
+        ncurses::doupdate();
+        match res {
             Ok(_) => Ok(()),
             Err(e) => Err(JoshutoError::IO(e)),
         }

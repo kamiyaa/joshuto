@@ -16,7 +16,7 @@ impl JoshutoPageState {
         vec_len: usize,
         offset: usize,
     ) {
-        if self.end != win_rows as usize + self.start {
+        if self.end != self.start + win_rows as usize {
             self.end = self.start + win_rows as usize;
         }
         if self.end > vec_len {

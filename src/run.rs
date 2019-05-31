@@ -1,7 +1,7 @@
 use std::process;
 use std::time;
 
-use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand};
+use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand, ReloadDirList};
 use crate::config::{self, JoshutoConfig, JoshutoKeymap};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
@@ -63,16 +63,16 @@ fn join_thread(
         }
         Ok(_) => {
             if tab_src < context.tabs.len() {
-                let dirty_tab = &mut context.tabs[tab_src];
-                dirty_tab.reload_contents(&context.config_t.sort_option)?;
+                ReloadDirList::reload(tab_src, context, view)?;
                 if tab_src == context.curr_tab_index {
+                    let dirty_tab = &mut context.tabs[tab_src];
                     dirty_tab.refresh(view, &context.config_t);
                 }
             }
             if tab_dest != tab_src && tab_dest < context.tabs.len() {
-                let dirty_tab = &mut context.tabs[tab_dest];
-                dirty_tab.reload_contents(&context.config_t.sort_option)?;
-                if tab_dest == context.curr_tab_index {
+                ReloadDirList::reload(tab_dest, context, view)?;
+                if tab_src == context.curr_tab_index {
+                    let dirty_tab = &mut context.tabs[tab_dest];
                     dirty_tab.refresh(view, &context.config_t);
                 }
             }

@@ -56,18 +56,18 @@ impl DirectoryHistory for JoshutoHistory {
         sort_option: &sort::SortOption,
     ) -> Result<JoshutoDirList, std::io::Error> {
         match self.remove(&path.to_path_buf()) {
-            Some(mut dir_entry) => {
-                if dir_entry.need_update() {
-                    dir_entry.update_contents(&sort_option)?
+            Some(mut dirlist) => {
+                if dirlist.need_update() {
+                    dirlist.update_contents(&sort_option)?
                 } else {
-                    let metadata = std::fs::symlink_metadata(&dir_entry.path)?;
+                    let metadata = std::fs::symlink_metadata(&dirlist.path)?;
 
                     let modified = metadata.modified()?;
-                    if modified > dir_entry.metadata.modified {
-                        dir_entry.update_contents(&sort_option)?
+                    if modified > dirlist.metadata.modified {
+                        dirlist.update_contents(&sort_option)?
                     }
                 }
-                Ok(dir_entry)
+                Ok(dirlist)
             }
             None => {
                 let path_clone = path.to_path_buf();
