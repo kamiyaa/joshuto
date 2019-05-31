@@ -60,7 +60,7 @@ pub fn stringify_mode(mode: u32) -> String {
 pub fn set_mode(path: &Path, mode: u32) {
     let os_path = path.as_os_str();
     if let Some(s) = os_path.to_str() {
-        let svec: Vec<i8> = s.bytes().map(|ch| ch as i8).collect();
+        let svec: Vec<libc::c_char> = s.bytes().map(|ch| ch as libc::c_char).collect();
         unsafe {
             libc::chmod(svec.as_ptr(), mode as libc::mode_t);
         }
