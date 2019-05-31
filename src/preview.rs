@@ -26,7 +26,7 @@ pub fn preview_entry(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &J
             preview_directory(&mut curr_tab.history, s.path.as_path(), win, config_t);
         } else if s.metadata.file_type.is_file() {
             if s.metadata.len <= config_t.max_preview_size {
-                preview_file(s, win);
+                // preview_file(s, win);
             } else {
                 ui::wprint_err(win, "File size exceeds max preview size");
             }
