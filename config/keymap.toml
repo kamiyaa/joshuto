@@ -1,3 +1,6 @@
+[keymaps]
+# backspace = 263
+
 [[mapcommand]]
 keys = [ 81 ]
 command = "force_quit"
