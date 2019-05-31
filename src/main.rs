@@ -18,7 +18,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 use config::{
-    ConfigStructure, JoshutoConfig, JoshutoKeymap, JoshutoMimetype, JoshutoPreview, JoshutoTheme,
+    ConfigStructure, JoshutoConfig, JoshutoCommandMapping, JoshutoKeyMapping, JoshutoMimetype, JoshutoPreview, JoshutoTheme,
 };
 use run::run;
 
@@ -46,8 +46,9 @@ lazy_static! {
     static ref THEME_T: JoshutoTheme = JoshutoTheme::get_config();
     static ref MIMETYPE_T: JoshutoMimetype = JoshutoMimetype::get_config();
     static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config();
-    static ref HOME_DIR: Option<PathBuf> = dirs::home_dir();
+    static ref KEYMAP_T: JoshutoKeyMapping = JoshutoKeyMapping::get_config();
 
+    static ref HOME_DIR: Option<PathBuf> = dirs::home_dir();
     static ref USERNAME: String = whoami::username();
     static ref HOSTNAME: String = whoami::hostname();
 }
@@ -62,7 +63,7 @@ fn main() {
     let args = Args::from_args();
 
     let config = JoshutoConfig::get_config();
-    let keymap = JoshutoKeymap::get_config();
+    let keymap = JoshutoCommandMapping::get_config();
 
     if args.debug {
         eprintln!("config: {:#?}", config);

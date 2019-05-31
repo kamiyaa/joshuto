@@ -2,7 +2,7 @@ use serde_derive::Deserialize;
 use std::collections::{hash_map::Entry, HashMap};
 use std::process::exit;
 
-use super::{parse_config_file, ConfigStructure, Flattenable};
+use super::{parse_config_file, parse_to_config_file, ConfigStructure, Flattenable};
 use crate::commands::{self, CommandKeybind, JoshutoCommand};
 use crate::KEYMAP_FILE;
 
@@ -13,6 +13,121 @@ pub const ESCAPE: i32 = 0x1B;
 
 /* #define KEY_ALT(x) KEY_F(60) + (x - 'A') */
 
+const fn default_up() -> i32 {
+    ncurses::KEY_UP
+}
+
+const fn default_down() -> i32 {
+    ncurses::KEY_DOWN
+}
+
+const fn default_left() -> i32 {
+    ncurses::KEY_LEFT
+}
+
+const fn default_right() -> i32 {
+    ncurses::KEY_RIGHT
+}
+
+const fn default_home() -> i32 {
+    ncurses::KEY_HOME
+}
+
+const fn default_end() -> i32 {
+    ncurses::KEY_END
+}
+
+const fn default_backspace() -> i32 {
+    BACKSPACE
+}
+
+const fn default_delete() -> i32 {
+    ncurses::KEY_DC
+}
+
+const fn default_enter() -> i32 {
+    ENTER
+}
+
+const fn default_escape() -> i32 {
+    ESCAPE
+}
+
+const fn default_tab() -> i32 {
+    TAB
+}
+
+#[derive(Debug, Deserialize)]
+struct JoshutoRawKeymapping {
+    #[serde(default)]
+    keymaps: JoshutoKeyMapping,
+    #[serde(skip)]
+    mapcommand: Vec<JoshutoMapCommand>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct JoshutoKeyMapping {
+    #[serde(default = "default_up")]
+    pub up: i32,
+    #[serde(default = "default_down")]
+    pub down: i32,
+    #[serde(default = "default_left")]
+    pub left: i32,
+    #[serde(default = "default_right")]
+    pub right: i32,
+    #[serde(default = "default_home")]
+    pub home: i32,
+    #[serde(default = "default_end")]
+    pub end: i32,
+/*
+    #[serde(default = "default_up")]
+    pub page_up: i32,
+    #[serde(default = "default_up")]
+    pub page_down: i32,
+*/
+    #[serde(default = "default_backspace")]
+    pub backspace: i32,
+    #[serde(default = "default_delete")]
+    pub delete: i32,
+    #[serde(default = "default_enter")]
+    pub enter: i32,
+    #[serde(default = "default_escape")]
+    pub escape: i32,
+    #[serde(default = "default_tab")]
+    pub tab: i32,
+}
+
+impl std::default::Default for JoshutoKeyMapping {
+    fn default() -> Self {
+        JoshutoKeyMapping {
+            up: default_up(),
+            down: default_down(),
+            left: default_left(),
+            right: default_right(),
+            home: default_home(),
+            end: default_end(),
+            backspace: default_backspace(),
+            delete: default_delete(),
+            enter: default_enter(),
+            escape: default_escape(),
+            tab: default_tab(),
+        }
+    }
+}
+
+impl Flattenable<JoshutoKeyMapping> for JoshutoRawKeymapping {
+    fn flatten(self) -> JoshutoKeyMapping {
+        self.keymaps
+    }
+}
+
+impl ConfigStructure for JoshutoKeyMapping {
+    fn get_config() -> Self {
+        parse_to_config_file::<JoshutoRawKeymapping, JoshutoKeyMapping>(KEYMAP_FILE)
+            .unwrap_or_else(JoshutoKeyMapping::default)
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct JoshutoMapCommand {
     pub keys: Vec<i32>,
@@ -22,14 +137,16 @@ struct JoshutoMapCommand {
 }
 
 #[derive(Debug, Deserialize)]
-struct JoshutoRawKeymap {
+struct JoshutoRawCommandMapping {
+    #[serde(skip)]
+    keymaps: JoshutoKeyMapping,
     #[serde(default)]
     mapcommand: Vec<JoshutoMapCommand>,
 }
 
-impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
-    fn flatten(self) -> JoshutoKeymap {
-        let mut keymaps = JoshutoKeymap::new();
+impl Flattenable<JoshutoCommandMapping> for JoshutoRawCommandMapping {
+    fn flatten(self) -> JoshutoCommandMapping {
+        let mut keymaps = JoshutoCommandMapping::new();
         self.mapcommand.iter().for_each(|m| {
             let args: Vec<&str> = m.args.iter().map(|s| s.as_str()).collect();
             match commands::from_args(m.command.as_str(), &args) {
@@ -41,16 +158,16 @@ impl Flattenable<JoshutoKeymap> for JoshutoRawKeymap {
     }
 }
 
-pub type JoshutoKeymap = HashMap<i32, CommandKeybind>;
+pub type JoshutoCommandMapping = HashMap<i32, CommandKeybind>;
 
-impl ConfigStructure for JoshutoKeymap {
+impl ConfigStructure for JoshutoCommandMapping {
     fn get_config() -> Self {
-        parse_config_file::<JoshutoRawKeymap, JoshutoKeymap>(KEYMAP_FILE)
-            .unwrap_or_else(JoshutoKeymap::default)
+        parse_to_config_file::<JoshutoRawCommandMapping, JoshutoCommandMapping>(KEYMAP_FILE)
+            .unwrap_or_else(JoshutoCommandMapping::default)
     }
 }
 
-fn insert_keycommand(map: &mut JoshutoKeymap, keycommand: Box<JoshutoCommand>, keys: &[i32]) {
+fn insert_keycommand(map: &mut JoshutoCommandMapping, keycommand: Box<JoshutoCommand>, keys: &[i32]) {
     match keys.len() {
         0 => {}
         1 => match map.entry(keys[0]) {

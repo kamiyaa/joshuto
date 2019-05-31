@@ -5,7 +5,7 @@ pub mod preview;
 pub mod theme;
 
 pub use self::config::JoshutoConfig;
-pub use self::keymap::JoshutoKeymap;
+pub use self::keymap::{JoshutoCommandMapping, JoshutoKeyMapping};
 pub use self::mimetype::JoshutoMimetype;
 pub use self::preview::{JoshutoPreview, JoshutoPreviewEntry};
 pub use self::theme::{JoshutoColorTheme, JoshutoTheme};
@@ -40,7 +40,7 @@ where
 }
 
 // parses a config file into its appropriate format
-fn parse_config_file<T, S>(filename: &str) -> Option<S>
+fn parse_to_config_file<T, S>(filename: &str) -> Option<S>
 where
     T: DeserializeOwned + Flattenable<S>,
 {
@@ -63,7 +63,7 @@ where
 }
 
 // parses a config file into its appropriate format
-fn parse_config<T>(filename: &str) -> Option<T>
+fn parse_config_file<T>(filename: &str) -> Option<T>
 where
     T: DeserializeOwned,
 {

@@ -2,7 +2,7 @@ use std::process;
 use std::time;
 
 use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand, ReloadDirList};
-use crate::config::{self, JoshutoConfig, JoshutoKeymap};
+use crate::config::{self, JoshutoConfig, JoshutoCommandMapping};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
@@ -10,7 +10,7 @@ use crate::ui;
 use crate::window::JoshutoPanel;
 use crate::window::JoshutoView;
 
-fn recurse_get_keycommand(keymap: &JoshutoKeymap) -> Option<&Box<JoshutoCommand>> {
+fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&Box<JoshutoCommand>> {
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
 
@@ -136,7 +136,7 @@ fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
     }
 }
 
-pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoKeymap) {
+pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
     ui::init_ncurses();
 
     let mut context = JoshutoContext::new(config_t);

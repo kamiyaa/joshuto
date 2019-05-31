@@ -1,4 +1,4 @@
-use crate::config::keymap;
+use crate::KEYMAP_T;
 use crate::window;
 
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
@@ -89,41 +89,41 @@ impl<'a> JoshutoTextField<'a> {
                 ncurses::WchResult::KeyCode(s) => s,
             };
 
-            if ch == keymap::ESCAPE {
+            if ch == KEYMAP_T.escape {
                 return None;
-            } else if ch == keymap::ENTER {
+            } else if ch == KEYMAP_T.enter {
                 break;
-            } else if ch == ncurses::KEY_HOME {
+            } else if ch == KEYMAP_T.home {
                 line_buffer.move_home();
                 curr_pos = 0;
                 completion_tracker.take();
-            } else if ch == ncurses::KEY_END {
+            } else if ch == KEYMAP_T.end {
                 line_buffer.move_end();
                 curr_pos = unicode_width::UnicodeWidthStr::width(line_buffer.as_str());
                 completion_tracker.take();
-            } else if ch == ncurses::KEY_LEFT {
+            } else if ch == KEYMAP_T.left {
                 if line_buffer.move_backward(1) {
                     let pos = line_buffer.pos();
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
                     completion_tracker.take();
                 }
-            } else if ch == ncurses::KEY_RIGHT {
+            } else if ch == KEYMAP_T.right {
                 if line_buffer.move_forward(1) {
                     let pos = line_buffer.pos();
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
                     completion_tracker.take();
                 }
-            } else if ch == keymap::BACKSPACE {
+            } else if ch == KEYMAP_T.backspace {
                 if line_buffer.backspace(1) {
                     let pos = line_buffer.pos();
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
                     completion_tracker.take();
                 }
-            } else if ch == ncurses::KEY_DC {
+            } else if ch == KEYMAP_T.delete {
                 if line_buffer.delete(1).is_some() {
                     completion_tracker.take();
                 }
-            } else if ch == keymap::TAB {
+            } else if ch == KEYMAP_T.tab {
                 if completion_tracker.is_none() {
                     let res = completer.complete_path(line_buffer.as_str(), line_buffer.pos());
                     if let Ok((pos, mut candidates)) = res {
@@ -151,9 +151,9 @@ impl<'a> JoshutoTextField<'a> {
                 curr_pos = unicode_width::UnicodeWidthStr::width(
                     &line_buffer.as_str()[..line_buffer.pos()],
                 );
-            } else if ch == ncurses::KEY_UP {
+            } else if ch == KEYMAP_T.up {
                 completion_tracker.take();
-            } else if ch == ncurses::KEY_DOWN {
+            } else if ch == KEYMAP_T.down {
                 completion_tracker.take();
             } else if let Some(ch) = std::char::from_u32(ch as u32) {
                 if line_buffer.insert(ch, 1).is_some() {

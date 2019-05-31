@@ -2,7 +2,7 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 
-use super::{parse_config_file, ConfigStructure, Flattenable};
+use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::MIMETYPE_FILE;
 
 const fn default_false() -> bool {
@@ -92,7 +92,7 @@ impl JoshutoMimetype {
 
 impl ConfigStructure for JoshutoMimetype {
     fn get_config() -> Self {
-        parse_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
+        parse_to_config_file::<JoshutoRawMimetype, JoshutoMimetype>(MIMETYPE_FILE)
             .unwrap_or_else(JoshutoMimetype::default)
     }
 }
