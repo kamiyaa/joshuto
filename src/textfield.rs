@@ -1,5 +1,5 @@
-use crate::KEYMAP_T;
 use crate::window;
+use crate::KEYMAP_T;
 
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
 use rustyline::line_buffer;

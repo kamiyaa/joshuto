@@ -2,7 +2,7 @@ use std::process;
 use std::time;
 
 use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand, ReloadDirList};
-use crate::config::{self, JoshutoConfig, JoshutoCommandMapping};
+use crate::config::{self, JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;

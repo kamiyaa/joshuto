@@ -18,7 +18,8 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 use config::{
-    ConfigStructure, JoshutoConfig, JoshutoCommandMapping, JoshutoKeyMapping, JoshutoMimetype, JoshutoPreview, JoshutoTheme,
+    ConfigStructure, JoshutoCommandMapping, JoshutoConfig, JoshutoKeyMapping, JoshutoMimetype,
+    JoshutoPreview, JoshutoTheme,
 };
 use run::run;
 

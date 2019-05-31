@@ -79,12 +79,12 @@ pub struct JoshutoKeyMapping {
     pub home: i32,
     #[serde(default = "default_end")]
     pub end: i32,
-/*
-    #[serde(default = "default_up")]
-    pub page_up: i32,
-    #[serde(default = "default_up")]
-    pub page_down: i32,
-*/
+    /*
+        #[serde(default = "default_up")]
+        pub page_up: i32,
+        #[serde(default = "default_up")]
+        pub page_down: i32,
+    */
     #[serde(default = "default_backspace")]
     pub backspace: i32,
     #[serde(default = "default_delete")]
@@ -167,7 +167,11 @@ impl ConfigStructure for JoshutoCommandMapping {
     }
 }
 
-fn insert_keycommand(map: &mut JoshutoCommandMapping, keycommand: Box<JoshutoCommand>, keys: &[i32]) {
+fn insert_keycommand(
+    map: &mut JoshutoCommandMapping,
+    keycommand: Box<JoshutoCommand>,
+    keys: &[i32],
+) {
     match keys.len() {
         0 => {}
         1 => match map.entry(keys[0]) {
@@ -190,7 +194,7 @@ fn insert_keycommand(map: &mut JoshutoCommandMapping, keycommand: Box<JoshutoCom
                 }
             },
             Entry::Vacant(entry) => {
-                let mut new_map = HashMap::new();
+                let mut new_map = JoshutoCommandMapping::new();
                 insert_keycommand(&mut new_map, keycommand, &keys[1..]);
                 let composite_command = CommandKeybind::CompositeKeybind(new_map);
                 entry.insert(composite_command);
