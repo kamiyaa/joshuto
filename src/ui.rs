@@ -198,8 +198,8 @@ pub fn display_contents(
     ncurses::werase(win.win);
     ncurses::wmove(win.win, 0, 0);
 
-    let dir_contents = &dirlist.contents;
     let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
+    let dir_contents = &dirlist.contents[start..end];
 
     let curr_index = dirlist.index.unwrap();
 
@@ -209,16 +209,17 @@ pub fn display_contents(
         wprint_entry
     };
 
-    for (i, entry) in dir_contents.iter().enumerate().take(end).skip(start) {
-        let coord: (i32, i32) = (i as i32 - start as i32, 0);
+    for (i, entry) in dir_contents.iter().enumerate() {
+        let coord: (i32, i32) = (i as i32, 0);
 
         ncurses::wmove(win.win, coord.0, coord.1);
 
-        let mut attr: ncurses::attr_t = 0;
-        if i == curr_index {
-            attr |= ncurses::A_STANDOUT();
-        }
-        let attrs = get_theme_attr(attr, entry);
+        let attrs: ncurses::attr_t = if i + start == curr_index {
+            ncurses::A_STANDOUT()
+        } else {
+            0
+        };
+        let attrs = get_theme_attr(attrs, entry);
 
         draw_func(win, entry, attrs.0, coord);
 
