@@ -2,13 +2,10 @@ use serde_derive::Deserialize;
 use std::collections::{hash_map::Entry, HashMap};
 use std::process::exit;
 
-use super::{parse_config_file, parse_to_config_file, ConfigStructure, Flattenable};
+use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::commands::{self, CommandKeybind, JoshutoCommand};
 use crate::KEYMAP_FILE;
 
-pub const BACKSPACE: i32 = 0x7F;
-pub const TAB: i32 = 0x9;
-pub const ENTER: i32 = 0xA;
 pub const ESCAPE: i32 = 0x1B;
 
 /* #define KEY_ALT(x) KEY_F(60) + (x - 'A') */
@@ -38,7 +35,7 @@ const fn default_end() -> i32 {
 }
 
 const fn default_backspace() -> i32 {
-    BACKSPACE
+    ncurses::KEY_BACKSPACE
 }
 
 const fn default_delete() -> i32 {
@@ -46,7 +43,7 @@ const fn default_delete() -> i32 {
 }
 
 const fn default_enter() -> i32 {
-    ENTER
+    '\n' as i32
 }
 
 const fn default_escape() -> i32 {
@@ -54,7 +51,7 @@ const fn default_escape() -> i32 {
 }
 
 const fn default_tab() -> i32 {
-    TAB
+    '\t' as i32
 }
 
 #[derive(Debug, Deserialize)]
