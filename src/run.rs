@@ -47,6 +47,19 @@ fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&Box<Joshuto
     }
 }
 
+fn reload_tab(
+    index: usize,
+    context: &mut JoshutoContext,
+    view: &JoshutoView,
+) -> Result<(), std::io::Error> {
+    ReloadDirList::reload(index, context, view)?;
+    if index == context.curr_tab_index {
+        let dirty_tab = &mut context.tabs[index];
+        dirty_tab.refresh(view, &context.config_t);
+    }
+    Ok(())
+}
+
 fn join_thread(
     context: &mut JoshutoContext,
     thread: FileOperationThread,
@@ -63,18 +76,10 @@ fn join_thread(
         }
         Ok(_) => {
             if tab_src < context.tabs.len() {
-                ReloadDirList::reload(tab_src, context, view)?;
-                if tab_src == context.curr_tab_index {
-                    let dirty_tab = &mut context.tabs[tab_src];
-                    dirty_tab.refresh(view, &context.config_t);
-                }
+                reload_tab(tab_src, context, view)?;
             }
             if tab_dest != tab_src && tab_dest < context.tabs.len() {
-                ReloadDirList::reload(tab_dest, context, view)?;
-                if tab_src == context.curr_tab_index {
-                    let dirty_tab = &mut context.tabs[tab_dest];
-                    dirty_tab.refresh(view, &context.config_t);
-                }
+                reload_tab(tab_dest, context, view)?;
             }
         }
     }
