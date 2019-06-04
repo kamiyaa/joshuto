@@ -2,7 +2,6 @@ use std::{fs, path};
 
 use crate::sort;
 use crate::structs::{JoshutoDirEntry, JoshutoMetadata};
-use crate::ui;
 use crate::window::JoshutoPageState;
 
 #[derive(Debug)]
@@ -25,18 +24,8 @@ impl JoshutoDirList {
 
         let index = if contents.is_empty() { None } else { Some(0) };
 
-        let contents_len = contents.len();
-        let (rows, _) = ui::getmaxyx();
-        let end = if rows < 2 {
-            0
-        } else if contents_len > rows as usize - 2 {
-            rows as usize - 2
-        } else {
-            contents_len
-        };
-
         let metadata = JoshutoMetadata::from(&path)?;
-        let pagestate = JoshutoPageState::new(end);
+        let pagestate = JoshutoPageState::new();
 
         Ok(JoshutoDirList {
             index,

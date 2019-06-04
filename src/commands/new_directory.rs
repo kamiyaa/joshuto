@@ -39,7 +39,7 @@ impl JoshutoRunnable for NewDirectory {
                 Err(e) => return Err(JoshutoError::IO(e)),
             }
         }
-        let res = ReloadDirList::reload(context.curr_tab_index, context, view);
+        let res = ReloadDirList::reload(context.curr_tab_index, context);
         match res {
             Ok(_) => {
                 let curr_tab = &mut context.tabs[context.curr_tab_index];

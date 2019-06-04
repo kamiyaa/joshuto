@@ -1,7 +1,7 @@
 use std::fs;
 use std::time;
 
-use crate::config::JoshutoColorTheme;
+use crate::config::{JoshutoColorTheme, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::structs;
 use crate::unix;
@@ -184,30 +184,37 @@ fn wprint_entry_detailed(
 
 pub fn display_contents(
     win: &window::JoshutoPanel,
-    dirlist: &structs::JoshutoDirList,
+    dirlist: &mut structs::JoshutoDirList,
+    config_t: &JoshutoConfig,
     options: &DisplayOptions,
 ) {
     if win.cols < MIN_WIN_WIDTH as i32 {
         return;
     }
-    let vec_len = dirlist.contents.len();
-    if vec_len == 0 {
+    let dir_len = dirlist.contents.len();
+    if dir_len == 0 {
         wprint_empty(win, "empty");
         return;
     }
-    ncurses::werase(win.win);
-    ncurses::wmove(win.win, 0, 0);
-
-    let dir_contents = &dirlist.contents;
-    let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
-
-    let curr_index = dirlist.index.unwrap();
-
     let draw_func = if options.detailed {
         wprint_entry_detailed
     } else {
         wprint_entry
     };
+
+    let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
+    let curr_index = dirlist.index.unwrap();
+
+    dirlist.pagestate.update_page_state(
+        curr_index,
+        win.rows,
+        dir_len,
+        config_t.scroll_offset,
+    );
+    let dir_contents = &dirlist.contents;
+
+    ncurses::werase(win.win);
+    ncurses::wmove(win.win, 0, 0);
 
     for (i, entry) in dir_contents.iter().enumerate().take(end).skip(start) {
         let coord: (i32, i32) = (i as i32 - start as i32, 0);

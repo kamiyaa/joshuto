@@ -55,7 +55,7 @@ impl DeleteFiles {
                 if ch == 'y' as i32 {
                     Self::remove_files(paths)?;
                     ui::wprint_msg(&view.bot_win, "Deleted files");
-                    ReloadDirList::reload(context.curr_tab_index, context, view)?;
+                    ReloadDirList::reload(context.curr_tab_index, context)?;
                 }
             }
         }

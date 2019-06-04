@@ -52,7 +52,7 @@ fn reload_tab(
     context: &mut JoshutoContext,
     view: &JoshutoView,
 ) -> Result<(), std::io::Error> {
-    ReloadDirList::reload(index, context, view)?;
+    ReloadDirList::reload(index, context)?;
     if index == context.curr_tab_index {
         let dirty_tab = &mut context.tabs[index];
         dirty_tab.refresh(view, &context.config_t);
@@ -94,6 +94,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
                 let thread = context.threads.swap_remove(i);
                 join_thread(context, thread, view)?;
                 ncurses::doupdate();
+                break;
             }
             Ok(progress_info) => {
                 ui::draw_progress_bar(

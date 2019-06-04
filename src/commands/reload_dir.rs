@@ -19,38 +19,19 @@ impl ReloadDirList {
 
     pub fn reload(
         index: usize,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
+        context: &mut JoshutoContext
     ) -> Result<(), std::io::Error> {
         let curr_tab = &mut context.tabs[index];
         let sort_option = &context.config_t.sort_option;
         curr_tab.curr_list.update_contents(sort_option)?;
-        if let Some(s) = curr_tab.curr_list.index {
-            let dir_len = curr_tab.curr_list.contents.len();
-            curr_tab.curr_list.pagestate.update_page_state(
-                s,
-                view.mid_win.rows,
-                dir_len,
-                context.config_t.scroll_offset,
-            );
-            curr_tab.curr_list.outdated = false;
-        }
+        curr_tab.curr_list.outdated = false;
 
         if let Some(parent) = curr_tab.curr_list.path.parent() {
             match curr_tab.history.entry(parent.to_path_buf().clone()) {
                 Entry::Occupied(mut entry) => {
                     let dirlist = entry.get_mut();
                     dirlist.update_contents(sort_option)?;
-                    if let Some(s) = dirlist.index {
-                        let dir_len = dirlist.contents.len();
-                        dirlist.pagestate.update_page_state(
-                            s,
-                            view.mid_win.rows,
-                            dir_len,
-                            context.config_t.scroll_offset,
-                        );
-                        dirlist.outdated = false;
-                    }
+                    dirlist.outdated = false;
                 }
                 Entry::Vacant(entry) => {
                     let s = JoshutoDirList::new(parent.to_path_buf().clone(), sort_option)?;
@@ -76,7 +57,7 @@ impl JoshutoRunnable for ReloadDirList {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> Result<(), JoshutoError> {
-        match Self::reload(context.curr_tab_index, context, view) {
+        match Self::reload(context.curr_tab_index, context) {
             Ok(_) => {
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
                 curr_tab.refresh(view, &context.config_t);
