@@ -198,6 +198,7 @@ pub fn display_contents(
         wprint_empty(win, "empty");
         return;
     }
+
     let draw_func = if options.detailed {
         wprint_entry_detailed
     } else {

@@ -155,7 +155,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
         if !context.threads.is_empty() {
             ncurses::timeout(0);
             match process_threads(&mut context, &view) {
-                Ok(()) => {}
+                Ok(_) => {}
                 Err(e) => ui::wprint_err(&view.bot_win, e.to_string().as_str()),
             }
             ncurses::doupdate();
