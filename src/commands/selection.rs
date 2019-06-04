@@ -52,7 +52,7 @@ impl JoshutoRunnable for SelectFiles {
                 for curr in &mut curr_list.contents {
                     curr.selected = !curr.selected;
                 }
-                curr_tab.refresh_curr(&view.mid_win);
+                curr_tab.refresh_curr(&view.mid_win, &context.config_t);
                 ncurses::doupdate();
             }
         } else {
@@ -67,7 +67,7 @@ impl JoshutoRunnable for SelectFiles {
                 for curr in &mut curr_list.contents {
                     curr.selected = true;
                 }
-                curr_tab.refresh_curr(&view.mid_win);
+                curr_tab.refresh_curr(&view.mid_win, &context.config_t);
                 ncurses::doupdate();
             }
         }

@@ -1,7 +1,7 @@
 use std::fs;
 use std::time;
 
-use crate::config::JoshutoColorTheme;
+use crate::config::{JoshutoColorTheme, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::structs;
 use crate::unix;
@@ -99,14 +99,14 @@ pub fn wprint_empty(win: &window::JoshutoPanel, msg: &str) {
 }
 
 fn wprint_file_name(
-    win: ncurses::WINDOW,
+    win: &window::JoshutoPanel,
     file_name: &str,
     coord: (i32, i32),
     mut space_avail: usize,
 ) {
     let name_visual_space = unicode_width::UnicodeWidthStr::width(file_name);
     if name_visual_space < space_avail {
-        ncurses::mvwaddstr(win, coord.0, coord.1, &file_name);
+        ncurses::mvwaddstr(win.win, coord.0, coord.1, &file_name);
         return;
     }
     if let Some(ext) = file_name.rfind('.') {
@@ -114,14 +114,16 @@ fn wprint_file_name(
         let ext_len = unicode_width::UnicodeWidthStr::width(extension);
         if space_avail > ext_len {
             space_avail -= ext_len;
-            ncurses::mvwaddstr(win, coord.0, space_avail as i32, &extension);
+            ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &extension);
         }
     }
-    if space_avail > 2 {
+    if space_avail < 2 {
+        return;
+    } else {
         space_avail -= 2;
     }
 
-    ncurses::wmove(win, coord.0, coord.1);
+    ncurses::wmove(win.win, coord.0, coord.1);
 
     let mut trim_index: usize = file_name.len();
 
@@ -133,8 +135,8 @@ fn wprint_file_name(
         }
         total += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(2);
     }
-    ncurses::waddstr(win, &file_name[..trim_index]);
-    ncurses::waddstr(win, "…");
+    ncurses::waddstr(win.win, &file_name[..trim_index]);
+    ncurses::waddstr(win.win, "…");
 }
 
 fn wprint_entry(
@@ -143,14 +145,14 @@ fn wprint_entry(
     prefix: (usize, &str),
     coord: (i32, i32),
 ) {
+    if win.cols <= prefix.0 as i32 {
+        return;
+    }
     ncurses::waddstr(win.win, prefix.1);
-    let space_avail = if win.cols >= prefix.0 as i32 {
-        win.cols as usize - prefix.0
-    } else {
-        0
-    };
+    let space_avail = win.cols as usize - prefix.0;
+
     wprint_file_name(
-        win.win,
+        &win,
         &file.file_name_as_string,
         (coord.0, coord.1 + prefix.0 as i32),
         space_avail,
@@ -163,13 +165,13 @@ fn wprint_entry_detailed(
     prefix: (usize, &str),
     coord: (i32, i32),
 ) {
+    if win.cols <= prefix.0 as i32 {
+        return;
+    }
     ncurses::waddstr(win.win, prefix.1);
+    let mut space_avail = win.cols as usize - prefix.0;
+
     let coord = (coord.0, coord.1 + prefix.0 as i32);
-    let mut space_avail = if win.cols >= prefix.0 as i32 {
-        win.cols as usize - prefix.0
-    } else {
-        0
-    };
 
     if file.path.is_dir() {
     } else {
@@ -179,45 +181,55 @@ fn wprint_entry_detailed(
             ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
         }
     }
-    wprint_file_name(win.win, &file.file_name_as_string, coord, space_avail);
+    wprint_file_name(win, &file.file_name_as_string, coord, space_avail);
 }
 
 pub fn display_contents(
     win: &window::JoshutoPanel,
-    dirlist: &structs::JoshutoDirList,
+    dirlist: &mut structs::JoshutoDirList,
+    config_t: &JoshutoConfig,
     options: &DisplayOptions,
 ) {
     if win.cols < MIN_WIN_WIDTH as i32 {
         return;
     }
-    let vec_len = dirlist.contents.len();
-    if vec_len == 0 {
+    let dir_len = dirlist.contents.len();
+    if dir_len == 0 {
         wprint_empty(win, "empty");
         return;
     }
-    ncurses::werase(win.win);
-    ncurses::wmove(win.win, 0, 0);
-
-    let dir_contents = &dirlist.contents;
-    let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
-
-    let curr_index = dirlist.index.unwrap();
-
     let draw_func = if options.detailed {
         wprint_entry_detailed
     } else {
         wprint_entry
     };
 
-    for (i, entry) in dir_contents.iter().enumerate().take(end).skip(start) {
-        let coord: (i32, i32) = (i as i32 - start as i32, 0);
+    let curr_index = dirlist.index.unwrap();
+    dirlist.pagestate.update_page_state(
+        curr_index,
+        win.rows,
+        dir_len,
+        config_t.scroll_offset,
+    );
+
+    let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
+    let dir_contents = &dirlist.contents[start..end];
+
+    ncurses::werase(win.win);
+    ncurses::wmove(win.win, 0, 0);
+
+    for (i, entry) in dir_contents.iter().enumerate() {
+        let coord: (i32, i32) = (i as i32, 0);
 
         ncurses::wmove(win.win, coord.0, coord.1);
 
         let mut attr: ncurses::attr_t = 0;
-        if i == curr_index {
-            attr |= ncurses::A_STANDOUT();
-        }
+        let attr = if i + start == curr_index {
+            ncurses::A_STANDOUT()
+        } else {
+            0
+        };
+
         let attrs = get_theme_attr(attr, entry);
 
         draw_func(win, entry, attrs.0, coord);
