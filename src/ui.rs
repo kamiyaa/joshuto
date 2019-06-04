@@ -153,7 +153,7 @@ fn wprint_entry(
 
     wprint_file_name(
         &win,
-        &file.file_name_as_string,
+        &file.file_name,
         (coord.0, coord.1 + prefix.0 as i32),
         space_avail,
     );
@@ -181,7 +181,7 @@ fn wprint_entry_detailed(
             ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
         }
     }
-    wprint_file_name(win, &file.file_name_as_string, coord, space_avail);
+    wprint_file_name(win, &file.file_name, coord, space_avail);
 }
 
 pub fn display_contents(
@@ -353,8 +353,8 @@ pub fn get_theme_attr(
         if unix::is_executable(mode) {
             theme = &THEME_T.executable;
             colorpair = THEME_T.executable.colorpair;
-        } else if let Some(ext) = entry.file_name_as_string.rfind('.') {
-            let extension: &str = &entry.file_name_as_string[ext + 1..];
+        } else if let Some(ext) = entry.file_name.rfind('.') {
+            let extension: &str = &entry.file_name[ext + 1..];
             if let Some(s) = THEME_T.ext.get(extension) {
                 theme = &s;
                 colorpair = theme.colorpair;

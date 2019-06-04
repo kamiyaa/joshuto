@@ -49,8 +49,6 @@ impl JoshutoDirList {
         &mut self,
         sort_option: &sort::SortOption,
     ) -> Result<(), std::io::Error> {
-        self.outdated = false;
-
         let sort_func = sort_option.compare_func();
         let mut contents = read_dir_list(&self.path, sort_option)?;
         contents.sort_by(&sort_func);
@@ -74,6 +72,8 @@ impl JoshutoDirList {
         let metadata = JoshutoMetadata::from(&self.path)?;
         self.metadata = metadata;
         self.contents = contents;
+        self.outdated = false;
+
         Ok(())
     }
 

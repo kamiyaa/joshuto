@@ -1,11 +1,10 @@
-use std::{ffi, fs, io, path};
+use std::{fs, io, path};
 
 use crate::structs::JoshutoMetadata;
 
 #[derive(Clone)]
 pub struct JoshutoDirEntry {
-    pub file_name: ffi::OsString,
-    pub file_name_as_string: String,
+    pub file_name: String,
     pub path: path::PathBuf,
     pub metadata: JoshutoMetadata,
     pub selected: bool,
@@ -14,22 +13,19 @@ pub struct JoshutoDirEntry {
 
 impl JoshutoDirEntry {
     pub fn from(direntry: &fs::DirEntry) -> Result<Self, io::Error> {
-        let file_name = direntry.file_name();
-        let file_name_as_string: String = match file_name.clone().into_string() {
+        let file_name = match direntry.file_name().into_string() {
             Ok(s) => s,
-            Err(_) => {
-                return Err(io::Error::new(
-                    io::ErrorKind::NotFound,
-                    "Failed to get file_name",
-                ));
-            }
+            Err(e) => return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        "Failed converting OsString to String",
+                    )),
         };
+
         let path = direntry.path();
         let metadata = JoshutoMetadata::from(&path)?;
 
         let dir_entry = JoshutoDirEntry {
             file_name,
-            file_name_as_string,
             path,
             metadata,
             selected: false,
@@ -41,7 +37,7 @@ impl JoshutoDirEntry {
 
 impl std::fmt::Debug for JoshutoDirEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "JoshutoDirEntry {{\n\tfile_name: {:?}, \n\tfile_name_as_string: {}, \n\tpath: {:?} \n}}",
-            self.file_name, self.file_name_as_string, self.path)
+        write!(f, "JoshutoDirEntry {{\n\tfile_name: {:?}, \n\tpath: {:?} \n}}",
+            self.file_name, self.path)
     }
 }

@@ -133,7 +133,7 @@ impl JoshutoRunnable for RenameFileAppend {
         let file_name = match curr_list.get_curr_ref() {
             Some(s) => {
                 let escaped = escape(
-                    s.file_name_as_string.clone(),
+                    s.file_name.clone(),
                     ESCAPE_CHAR,
                     &DEFAULT_BREAK_CHARS,
                     Quote::None,
@@ -194,7 +194,7 @@ impl JoshutoRunnable for RenameFilePrepend {
         let file_name = match curr_list.get_curr_ref() {
             Some(s) => {
                 let escaped = escape(
-                    s.file_name_as_string.clone(),
+                    s.file_name.clone(),
                     ESCAPE_CHAR,
                     &DEFAULT_BREAK_CHARS,
                     Quote::None,
