@@ -1,19 +1,19 @@
 use std::{fs, io, path};
 
-use crate::structs::JoshutoMetadata;
+use crate::io::JoshutoMetadata;
 
 #[derive(Clone)]
 pub struct JoshutoDirEntry {
-    pub file_name: String,
-    pub path: path::PathBuf,
+    name: String,
+    path: path::PathBuf,
     pub metadata: JoshutoMetadata,
-    pub selected: bool,
-    pub marked: bool,
+    selected: bool,
+    marked: bool,
 }
 
 impl JoshutoDirEntry {
     pub fn from(direntry: &fs::DirEntry) -> Result<Self, io::Error> {
-        let file_name = match direntry.file_name().into_string() {
+        let name = match direntry.file_name().into_string() {
             Ok(s) => s,
             Err(_) => {
                 return Err(std::io::Error::new(
@@ -27,13 +27,39 @@ impl JoshutoDirEntry {
         let metadata = JoshutoMetadata::from(&path)?;
 
         let dir_entry = JoshutoDirEntry {
-            file_name,
+            name,
             path,
             metadata,
             selected: false,
             marked: false,
         };
         Ok(dir_entry)
+    }
+
+    pub fn file_name(&self) -> &str {
+        self.name.as_str()
+    }
+
+    pub fn file_path(&self) -> &path::PathBuf {
+        &self.path
+    }
+
+    /*
+        pub fn is_marked(&self) -> bool {
+            self.marked
+        }
+
+        pub fn set_marked(&mut self, marked: bool) {
+            self.marked = marked;
+        }
+    */
+
+    pub fn is_selected(&self) -> bool {
+        self.selected
+    }
+
+    pub fn set_selected(&mut self, selected: bool) {
+        self.selected = selected;
     }
 }
 
@@ -42,7 +68,7 @@ impl std::fmt::Debug for JoshutoDirEntry {
         write!(
             f,
             "JoshutoDirEntry {{\n\tfile_name: {:?}, \n\tpath: {:?} \n}}",
-            self.file_name, self.path
+            self.name, self.path
         )
     }
 }

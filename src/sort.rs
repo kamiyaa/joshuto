@@ -2,7 +2,7 @@ use std::cmp;
 use std::fs;
 use std::time;
 
-use crate::structs;
+use crate::io::JoshutoDirEntry;
 
 use alphanumeric_sort::compare_str;
 use serde_derive::Deserialize;
@@ -35,9 +35,7 @@ pub struct SortOption {
 }
 
 impl SortOption {
-    pub fn compare_func(
-        &self,
-    ) -> impl Fn(&structs::JoshutoDirEntry, &structs::JoshutoDirEntry) -> std::cmp::Ordering {
+    pub fn compare_func(&self) -> impl Fn(&JoshutoDirEntry, &JoshutoDirEntry) -> cmp::Ordering {
         let base_cmp = match self.sort_method {
             SortType::Natural => {
                 if self.case_sensitive {
@@ -109,11 +107,9 @@ fn filter_hidden(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
     }
 }
 
-pub fn map_entry_default(
-    result: Result<fs::DirEntry, std::io::Error>,
-) -> Option<structs::JoshutoDirEntry> {
+pub fn map_entry_default(result: Result<fs::DirEntry, std::io::Error>) -> Option<JoshutoDirEntry> {
     match result {
-        Ok(direntry) => match structs::JoshutoDirEntry::from(&direntry) {
+        Ok(direntry) => match JoshutoDirEntry::from(&direntry) {
             Ok(s) => Some(s),
             Err(_) => None,
         },
@@ -121,16 +117,13 @@ pub fn map_entry_default(
     }
 }
 
-const fn dummy_dir_first(
-    _: &structs::JoshutoDirEntry,
-    _: &structs::JoshutoDirEntry,
-) -> cmp::Ordering {
+const fn dummy_dir_first(_: &JoshutoDirEntry, _: &JoshutoDirEntry) -> cmp::Ordering {
     cmp::Ordering::Equal
 }
 
-fn dir_first(f1: &structs::JoshutoDirEntry, f2: &structs::JoshutoDirEntry) -> cmp::Ordering {
-    let f1_isdir = f1.path.is_dir();
-    let f2_isdir = f2.path.is_dir();
+fn dir_first(f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
+    let f1_isdir = f1.file_path().is_dir();
+    let f2_isdir = f2.file_path().is_dir();
 
     if f1_isdir && !f2_isdir {
         cmp::Ordering::Less
@@ -149,26 +142,23 @@ fn reverse_ordering(c: cmp::Ordering) -> cmp::Ordering {
     c.reverse()
 }
 
-fn natural_sort_case_insensitive(
-    f1: &structs::JoshutoDirEntry,
-    f2: &structs::JoshutoDirEntry,
-) -> cmp::Ordering {
-    let f1_name = f1.file_name.to_lowercase();
-    let f2_name = f2.file_name.to_lowercase();
+fn natural_sort_case_insensitive(f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
+    let f1_name = f1.file_name().to_lowercase();
+    let f2_name = f2.file_name().to_lowercase();
     compare_str(&f1_name, &f2_name)
 }
 
-fn natural_sort(f1: &structs::JoshutoDirEntry, f2: &structs::JoshutoDirEntry) -> cmp::Ordering {
-    compare_str(&f1.file_name, &f2.file_name)
+fn natural_sort(f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
+    compare_str(f1.file_name(), f2.file_name())
 }
 
-fn mtime_sort(file1: &structs::JoshutoDirEntry, file2: &structs::JoshutoDirEntry) -> cmp::Ordering {
+fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
     fn compare(
-        file1: &structs::JoshutoDirEntry,
-        file2: &structs::JoshutoDirEntry,
+        file1: &JoshutoDirEntry,
+        file2: &JoshutoDirEntry,
     ) -> Result<cmp::Ordering, std::io::Error> {
-        let f1_meta: fs::Metadata = std::fs::metadata(&file1.path)?;
-        let f2_meta: fs::Metadata = std::fs::metadata(&file2.path)?;
+        let f1_meta: fs::Metadata = std::fs::metadata(file1.file_path())?;
+        let f2_meta: fs::Metadata = std::fs::metadata(file2.file_path())?;
 
         let f1_mtime: time::SystemTime = f1_meta.modified()?;
         let f2_mtime: time::SystemTime = f2_meta.modified()?;

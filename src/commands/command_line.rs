@@ -63,14 +63,6 @@ impl CommandLine {
             Ok(())
         }
     }
-    pub fn readline_with(
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-        textfield: JoshutoTextField,
-    ) -> Result<(), JoshutoError> {
-        drop(textfield);
-        Ok(())
-    }
 }
 
 impl JoshutoCommand for CommandLine {}

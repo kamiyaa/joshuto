@@ -42,8 +42,8 @@ impl OpenFile {
         {
             let curr_list = &context.tabs[context.curr_tab_index].curr_list;
             if let Some(entry) = curr_list.get_curr_ref() {
-                if entry.path.is_dir() {
-                    path = Some(entry.path.clone());
+                if entry.file_path().is_dir() {
+                    path = Some(entry.file_path().clone());
                 }
             }
         }

@@ -1,7 +1,7 @@
 use std::{fs, path};
 
+use crate::io::{JoshutoDirEntry, JoshutoMetadata};
 use crate::sort;
-use crate::structs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::window::JoshutoPageState;
 
 #[derive(Debug)]
@@ -78,13 +78,16 @@ impl JoshutoDirList {
     }
 
     pub fn selected_entries(&self) -> impl Iterator<Item = &JoshutoDirEntry> {
-        self.contents.iter().filter(|entry| entry.selected)
+        self.contents.iter().filter(|entry| entry.is_selected())
     }
 
     pub fn get_selected_paths(&self) -> Option<Vec<path::PathBuf>> {
-        let vec: Vec<path::PathBuf> = self.selected_entries().map(|e| e.path.clone()).collect();
+        let vec: Vec<path::PathBuf> = self
+            .selected_entries()
+            .map(|e| e.file_path().clone())
+            .collect();
         if vec.is_empty() {
-            Some(vec![self.get_curr_ref()?.path.clone()])
+            Some(vec![self.get_curr_ref()?.file_path().clone()])
         } else {
             Some(vec)
         }

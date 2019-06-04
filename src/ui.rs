@@ -3,7 +3,7 @@ use std::time;
 
 use crate::config::{JoshutoColorTheme, JoshutoConfig};
 use crate::context::JoshutoContext;
-use crate::structs;
+use crate::io::{JoshutoDirEntry, JoshutoDirList};
 use crate::unix;
 use crate::window;
 
@@ -15,7 +15,7 @@ pub const EMPTY_COLOR: i16 = 241;
 const MIN_WIN_WIDTH: usize = 4;
 
 pub struct DisplayOptions {
-    detailed: bool,
+    pub detailed: bool,
 }
 
 pub const PRIMARY_DISPLAY_OPTION: DisplayOptions = DisplayOptions { detailed: true };
@@ -32,12 +32,11 @@ pub fn init_ncurses() {
     ncurses::use_default_colors();
     ncurses::noecho();
     ncurses::set_escdelay(0);
+    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
     process_theme();
 
     ncurses::addstr("Loading...");
-    ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
-
     ncurses::refresh();
 }
 
@@ -81,12 +80,14 @@ pub fn wprint_msg(win: &window::JoshutoPanel, msg: &str) {
 }
 
 pub fn wprint_err(win: &window::JoshutoPanel, msg: &str) {
+    let attr = ncurses::A_BOLD() | ncurses::COLOR_PAIR(ERR_COLOR);
+
     ncurses::werase(win.win);
-    ncurses::wattron(win.win, ncurses::A_BOLD());
-    ncurses::wattron(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
+    ncurses::wattron(win.win, attr);
+
     ncurses::mvwaddstr(win.win, 0, 0, msg);
-    ncurses::wattroff(win.win, ncurses::COLOR_PAIR(ERR_COLOR));
-    ncurses::wattroff(win.win, ncurses::A_BOLD());
+
+    ncurses::wattroff(win.win, attr);
     ncurses::wnoutrefresh(win.win);
 }
 
@@ -141,7 +142,7 @@ fn wprint_file_name(
 
 fn wprint_entry(
     win: &window::JoshutoPanel,
-    file: &structs::JoshutoDirEntry,
+    file: &JoshutoDirEntry,
     prefix: (usize, &str),
     coord: (i32, i32),
 ) {
@@ -153,7 +154,7 @@ fn wprint_entry(
 
     wprint_file_name(
         &win,
-        &file.file_name,
+        file.file_name(),
         (coord.0, coord.1 + prefix.0 as i32),
         space_avail,
     );
@@ -161,7 +162,7 @@ fn wprint_entry(
 
 fn wprint_entry_detailed(
     win: &window::JoshutoPanel,
-    file: &structs::JoshutoDirEntry,
+    file: &JoshutoDirEntry,
     prefix: (usize, &str),
     coord: (i32, i32),
 ) {
@@ -173,7 +174,7 @@ fn wprint_entry_detailed(
 
     let coord = (coord.0, coord.1 + prefix.0 as i32);
 
-    if file.path.is_dir() {
+    if file.file_path().is_dir() {
     } else {
         let file_size_string = file_size_to_string(file.metadata.len as f64);
         if space_avail > file_size_string.len() {
@@ -181,12 +182,12 @@ fn wprint_entry_detailed(
             ncurses::mvwaddstr(win.win, coord.0, space_avail as i32, &file_size_string);
         }
     }
-    wprint_file_name(win, &file.file_name, coord, space_avail);
+    wprint_file_name(win, file.file_name(), coord, space_avail);
 }
 
 pub fn display_contents(
     win: &window::JoshutoPanel,
-    dirlist: &mut structs::JoshutoDirList,
+    dirlist: &mut JoshutoDirList,
     config_t: &JoshutoConfig,
     options: &DisplayOptions,
 ) {
@@ -236,7 +237,7 @@ pub fn display_contents(
     win.queue_for_refresh();
 }
 
-pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
+pub fn wprint_file_mode(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
     use std::os::unix::fs::PermissionsExt;
 
     let mode = file.metadata.permissions.mode();
@@ -246,7 +247,7 @@ pub fn wprint_file_mode(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
     ncurses::wattroff(win, ncurses::COLOR_PAIR(6));
 }
 
-pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
+pub fn wprint_file_info(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
     use std::os::unix::fs::PermissionsExt;
 
     let mode = file.metadata.permissions.mode();
@@ -255,10 +256,10 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
     ncurses::waddstr(win, &mtime_string);
     ncurses::waddch(win, ' ' as ncurses::chtype);
 
-    if file.path.is_dir() {
+    if file.file_path().is_dir() {
         let is_link: u32 = libc::S_IFLNK as u32;
         if mode >> 9 & is_link >> 9 == mode >> 9 {
-            if let Ok(path) = fs::read_link(&file.path) {
+            if let Ok(path) = fs::read_link(&file.file_path()) {
                 ncurses::waddstr(win, " -> ");
                 ncurses::waddstr(win, path.to_str().unwrap());
             }
@@ -270,7 +271,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &structs::JoshutoDirEntry) {
 
     /*
         ncurses::waddstr(win, "    ");
-        if let Some(s) = tree_magic::from_filepath(&file.path) {
+        if let Some(s) = tree_magic::from_filepath(&file.file_path()) {
             ncurses::waddstr(win, &s);
         }
     */
@@ -282,8 +283,7 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {
     if tab_len == 1 {
     } else if tab_len >= 6 {
         ncurses::wmove(win.win, 0, 0);
-        ncurses::wattron(win.win, ncurses::A_BOLD());
-        ncurses::wattron(win.win, ncurses::A_STANDOUT());
+        ncurses::wattron(win.win, ncurses::A_BOLD() | ncurses::A_STANDOUT());
         ncurses::waddstr(win.win, &format!("{}", context.curr_tab_index + 1));
         ncurses::wattroff(win.win, ncurses::A_STANDOUT());
         ncurses::waddstr(win.win, &format!(" {}", tab_len));
@@ -319,7 +319,7 @@ pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32) {
 
 pub fn get_theme_attr(
     mut attr: ncurses::attr_t,
-    entry: &structs::JoshutoDirEntry,
+    entry: &JoshutoDirEntry,
 ) -> ((usize, &str), ncurses::attr_t, i16) {
     use std::os::unix::fs::FileTypeExt;
     use std::os::unix::fs::PermissionsExt;
@@ -328,7 +328,7 @@ pub fn get_theme_attr(
     let colorpair: i16;
 
     let file_type = &entry.metadata.file_type;
-    if entry.selected {
+    if entry.is_selected() {
         theme = &THEME_T.selection;
         colorpair = THEME_T.selection.colorpair;
     } else if file_type.is_dir() {
@@ -349,8 +349,8 @@ pub fn get_theme_attr(
         if unix::is_executable(mode) {
             theme = &THEME_T.executable;
             colorpair = THEME_T.executable.colorpair;
-        } else if let Some(ext) = entry.file_name.rfind('.') {
-            let extension: &str = &entry.file_name[ext + 1..];
+        } else if let Some(ext) = entry.file_name().rfind('.') {
+            let extension: &str = &entry.file_name()[ext + 1..];
             if let Some(s) = THEME_T.ext.get(extension) {
                 theme = &s;
                 colorpair = theme.colorpair;

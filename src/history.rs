@@ -1,8 +1,8 @@
 use std::collections::{hash_map::Entry, HashMap};
 use std::path::{Path, PathBuf};
 
+use crate::io::JoshutoDirList;
 use crate::sort;
-use crate::structs::JoshutoDirList;
 
 pub trait DirectoryHistory {
     fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption);
@@ -31,7 +31,7 @@ impl DirectoryHistory for JoshutoHistory {
                     match JoshutoDirList::new(curr.to_path_buf().clone(), sort_option) {
                         Ok(mut s) => {
                             let index = s.contents.iter().enumerate().find_map(|(i, dir)| {
-                                if dir.path == ancestor {
+                                if dir.file_path() == ancestor {
                                     Some(i)
                                 } else {
                                     None

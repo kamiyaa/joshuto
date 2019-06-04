@@ -69,7 +69,7 @@ impl JoshutoRunnable for RenameFile {
 
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
         if let Some(s) = curr_list.get_curr_ref() {
-            path = Some(s.path.clone());
+            path = Some(s.file_path().clone());
         }
 
         if let Some(path) = path {
@@ -133,7 +133,7 @@ impl JoshutoRunnable for RenameFileAppend {
         let file_name = match curr_list.get_curr_ref() {
             Some(s) => {
                 let escaped = escape(
-                    s.file_name.clone(),
+                    String::from(s.file_name()),
                     ESCAPE_CHAR,
                     &DEFAULT_BREAK_CHARS,
                     Quote::None,
@@ -194,7 +194,7 @@ impl JoshutoRunnable for RenameFilePrepend {
         let file_name = match curr_list.get_curr_ref() {
             Some(s) => {
                 let escaped = escape(
-                    s.file_name.clone(),
+                    String::from(s.file_name()),
                     ESCAPE_CHAR,
                     &DEFAULT_BREAK_CHARS,
                     Quote::None,

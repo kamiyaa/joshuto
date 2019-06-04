@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 use crate::history::{DirectoryHistory, JoshutoHistory};
+use crate::io::JoshutoDirList;
 use crate::preview;
 use crate::sort;
-use crate::structs::JoshutoDirList;
 use crate::ui;
 use crate::window::{JoshutoPanel, JoshutoView};
 use crate::JoshutoConfig;
@@ -100,7 +100,7 @@ impl JoshutoTab {
         ncurses::waddstr(win.win, "/");
         ncurses::wattroff(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
         if let Some(entry) = self.curr_list.get_curr_ref() {
-            ncurses::waddstr(win.win, &entry.file_name);
+            ncurses::waddstr(win.win, &entry.file_name());
         }
         ncurses::wattroff(win.win, ncurses::A_BOLD());
         win.queue_for_refresh();
