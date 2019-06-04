@@ -38,9 +38,9 @@ pub use self::show_hidden::ToggleHiddenFiles;
 pub use self::tab_operations::{CloseTab, NewTab};
 pub use self::tab_switch::TabSwitch;
 
-use std::collections::HashMap;
 use std::path::PathBuf;
 
+use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, KeymapError};
 use crate::window::JoshutoView;
@@ -50,7 +50,7 @@ use crate::HOME_DIR;
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(Box<JoshutoCommand>),
-    CompositeKeybind(HashMap<i32, CommandKeybind>),
+    CompositeKeybind(JoshutoCommandMapping),
 }
 
 pub trait JoshutoRunnable {

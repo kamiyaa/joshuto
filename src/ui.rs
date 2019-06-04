@@ -206,12 +206,9 @@ pub fn display_contents(
     };
 
     let curr_index = dirlist.index.unwrap();
-    dirlist.pagestate.update_page_state(
-        curr_index,
-        win.rows,
-        dir_len,
-        config_t.scroll_offset,
-    );
+    dirlist
+        .pagestate
+        .update_page_state(curr_index, win.rows, dir_len, config_t.scroll_offset);
 
     let (start, end) = (dirlist.pagestate.start, dirlist.pagestate.end);
     let dir_contents = &dirlist.contents[start..end];
@@ -224,7 +221,6 @@ pub fn display_contents(
 
         ncurses::wmove(win.win, coord.0, coord.1);
 
-        let mut attr: ncurses::attr_t = 0;
         let attr = if i + start == curr_index {
             ncurses::A_STANDOUT()
         } else {

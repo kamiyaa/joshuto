@@ -17,10 +17,7 @@ impl ReloadDirList {
         "reload_dir_list"
     }
 
-    pub fn reload(
-        index: usize,
-        context: &mut JoshutoContext
-    ) -> Result<(), std::io::Error> {
+    pub fn reload(index: usize, context: &mut JoshutoContext) -> Result<(), std::io::Error> {
         let curr_tab = &mut context.tabs[index];
         let sort_option = &context.config_t.sort_option;
         curr_tab.curr_list.update_contents(sort_option)?;

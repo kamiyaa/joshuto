@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use crate::JoshutoConfig;
 use crate::history::{DirectoryHistory, JoshutoHistory};
 use crate::preview;
 use crate::sort;
 use crate::structs::JoshutoDirList;
 use crate::ui;
 use crate::window::{JoshutoPanel, JoshutoView};
+use crate::JoshutoConfig;
 
 use crate::{HOSTNAME, USERNAME};
 
@@ -44,7 +44,12 @@ impl JoshutoTab {
     }
 
     pub fn refresh_curr(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
-        ui::display_contents(win, &mut self.curr_list, config_t, &ui::PRIMARY_DISPLAY_OPTION);
+        ui::display_contents(
+            win,
+            &mut self.curr_list,
+            config_t,
+            &ui::PRIMARY_DISPLAY_OPTION,
+        );
     }
 
     pub fn refresh_parent(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {

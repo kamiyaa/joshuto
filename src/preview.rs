@@ -45,11 +45,21 @@ fn preview_directory(
 ) {
     match history.entry(path.to_path_buf().clone()) {
         Entry::Occupied(mut entry) => {
-            ui::display_contents(win, entry.get_mut(), config_t, &ui::SECONDARY_DISPLAY_OPTION);
+            ui::display_contents(
+                win,
+                entry.get_mut(),
+                config_t,
+                &ui::SECONDARY_DISPLAY_OPTION,
+            );
         }
         Entry::Vacant(entry) => {
             if let Ok(s) = JoshutoDirList::new(path.to_path_buf().clone(), &config_t.sort_option) {
-                ui::display_contents(win, entry.insert(s), config_t, &ui::SECONDARY_DISPLAY_OPTION);
+                ui::display_contents(
+                    win,
+                    entry.insert(s),
+                    config_t,
+                    &ui::SECONDARY_DISPLAY_OPTION,
+                );
             }
         }
     }
