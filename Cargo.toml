@@ -23,6 +23,7 @@ structopt = "0.2.14"
 text_io = "^0"
 toml = "^0"
 unicode-width = "^0"
+users = "^0"
 whoami = "^0"
 xdg = "^2"
 

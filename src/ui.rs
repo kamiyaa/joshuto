@@ -1,6 +1,9 @@
 use std::fs;
 use std::time;
 
+use users::UsersCache;
+use users::mock::{Groups, Users};
+
 use crate::config::{JoshutoColorTheme, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::io::{JoshutoDirEntry, JoshutoDirList};
@@ -238,6 +241,37 @@ pub fn display_contents(
     win.queue_for_refresh();
 }
 
+pub fn wprint_file_status(win: &window::JoshutoPanel, entry: &JoshutoDirEntry, index: usize, len: usize) {
+    wprint_file_mode(win.win, entry);
+
+    ncurses::waddch(win.win, ' ' as ncurses::chtype);
+    ncurses::waddstr(
+        win.win,
+        format!("{}/{} ", index + 1, len).as_str(),
+    );
+
+    let usercache: UsersCache = UsersCache::new();
+    match usercache.get_user_by_uid(entry.metadata.uid) {
+        Some(s) => match s.name().to_str() {
+            Some(name) => ncurses::waddstr(win.win, name),
+            None => ncurses::waddstr(win.win, "OsStr error"),
+        }
+        None => ncurses::waddstr(win.win, "unknown user"),
+    };
+    ncurses::waddch(win.win, ' ' as ncurses::chtype);
+    match usercache.get_group_by_gid(entry.metadata.gid) {
+        Some(s) => match s.name().to_str() {
+            Some(name) => ncurses::waddstr(win.win, name),
+            None => ncurses::waddstr(win.win, "OsStr error"),
+        }
+        None => ncurses::waddstr(win.win, "unknown user"),
+    };
+
+    ncurses::waddstr(win.win, "  ");
+    wprint_file_info(win.win, entry);
+    win.queue_for_refresh();
+}
+
 pub fn wprint_file_mode(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
     use std::os::unix::fs::PermissionsExt;
 
@@ -249,6 +283,8 @@ pub fn wprint_file_mode(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
 }
 
 pub fn wprint_file_info(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
+    #[cfg(unix)]
+    {
     use std::os::unix::fs::PermissionsExt;
 
     let mode = file.metadata.permissions.mode();
@@ -276,6 +312,7 @@ pub fn wprint_file_info(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
             ncurses::waddstr(win, &s);
         }
     */
+    }
 }
 
 pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {

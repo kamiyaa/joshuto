@@ -63,20 +63,11 @@ impl JoshutoTab {
     pub fn refresh_file_status(&self, win: &JoshutoPanel) {
         ncurses::werase(win.win);
         ncurses::wmove(win.win, 0, 0);
-
-        if let Some(entry) = self.curr_list.get_curr_ref() {
-            ui::wprint_file_mode(win.win, entry);
-            ncurses::waddstr(win.win, " ");
-            if let Some(index) = self.curr_list.index {
-                ncurses::waddstr(
-                    win.win,
-                    format!("{}/{} ", index + 1, self.curr_list.contents.len()).as_str(),
-                );
-            }
-            ncurses::waddstr(win.win, "  ");
-            ui::wprint_file_info(win.win, entry);
+        if let Some(index) = self.curr_list.index {
+            let entry = &self.curr_list.contents[index];
+            let len = self.curr_list.contents.len();
+            ui::wprint_file_status(win, entry, index, len);
         }
-        win.queue_for_refresh();
     }
 
     pub fn refresh_path_status(&self, win: &JoshutoPanel, tilde_in_titlebar: bool) {
