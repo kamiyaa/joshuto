@@ -107,16 +107,6 @@ fn filter_hidden(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
     }
 }
 
-pub fn map_entry_default(result: Result<fs::DirEntry, std::io::Error>) -> Option<JoshutoDirEntry> {
-    match result {
-        Ok(direntry) => match JoshutoDirEntry::from(&direntry) {
-            Ok(s) => Some(s),
-            Err(_) => None,
-        },
-        Err(_) => None,
-    }
-}
-
 const fn dummy_dir_first(_: &JoshutoDirEntry, _: &JoshutoDirEntry) -> cmp::Ordering {
     cmp::Ordering::Equal
 }

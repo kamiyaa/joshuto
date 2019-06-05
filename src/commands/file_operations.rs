@@ -34,13 +34,16 @@ impl LocalState {
     }
 
     pub fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
-        let mut data = SELECTED_FILES.lock().unwrap();
-        match dirlist.get_selected_paths() {
-            Some(s) => {
-                *data = Some(s);
-                true
-            }
-            None => false,
+        let selected: Vec<path::PathBuf> = dirlist
+            .selected_entries()
+            .map(|e| e.file_path().clone())
+            .collect();
+        if selected.is_empty() {
+            false
+        } else {
+            let mut data = SELECTED_FILES.lock().unwrap();
+            *data = Some(selected);
+            true
         }
     }
 }

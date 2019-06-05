@@ -20,8 +20,8 @@ impl DeleteFiles {
         "delete_files"
     }
 
-    pub fn remove_files(paths: Vec<path::PathBuf>) -> Result<(), std::io::Error> {
-        for path in &paths {
+    pub fn remove_files(paths: &[&path::PathBuf]) -> Result<(), std::io::Error> {
+        for path in paths {
             if let Ok(metadata) = fs::symlink_metadata(path) {
                 if metadata.is_dir() {
                     fs::remove_dir_all(&path)?;
@@ -53,7 +53,7 @@ impl DeleteFiles {
                     ch = 'y' as i32;
                 }
                 if ch == 'y' as i32 {
-                    Self::remove_files(paths)?;
+                    Self::remove_files(&paths)?;
                     ui::wprint_msg(&view.bot_win, "Deleted files");
                     ReloadDirList::reload(context.curr_tab_index, context)?;
                 }

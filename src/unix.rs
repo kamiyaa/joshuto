@@ -67,7 +67,7 @@ pub fn set_mode(path: &Path, mode: u32) {
     }
 }
 
-pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry) {
+pub fn open_with_entry(paths: &[&PathBuf], entry: &mimetype::JoshutoMimetypeEntry) {
     let program = entry.program.clone();
 
     let mut command = process::Command::new(program);
@@ -94,7 +94,7 @@ pub fn open_with_entry(paths: &[PathBuf], entry: &mimetype::JoshutoMimetypeEntry
     };
 }
 
-pub fn open_with_args(paths: &[PathBuf], args: &[String]) {
+pub fn open_with_args(paths: &[&PathBuf], args: &[String]) {
     let program = args[0].clone();
 
     let mut command = process::Command::new(program);

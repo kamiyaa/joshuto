@@ -57,9 +57,8 @@ impl OpenFile {
             }
             curr_tab.refresh(view, &context.config_t);
         } else {
-            let paths: Option<Vec<PathBuf>> = context.tabs[context.curr_tab_index]
-                .curr_list
-                .get_selected_paths();
+            let curr_tab = &context.tabs[context.curr_tab_index];
+            let paths: Option<Vec<&PathBuf>> = curr_tab.curr_list.get_selected_paths();
 
             if let Some(paths) = paths {
                 Self::open_file(&paths);
@@ -80,10 +79,9 @@ impl OpenFile {
     }
 
     fn open_directory(path: &Path, context: &mut JoshutoContext) -> Result<(), std::io::Error> {
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-
         std::env::set_current_dir(path)?;
 
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
         let mut new_curr_list = curr_tab
             .history
             .pop_or_create(path, &context.config_t.sort_option)?;
@@ -97,7 +95,7 @@ impl OpenFile {
         Ok(())
     }
 
-    fn open_file(paths: &[PathBuf]) {
+    fn open_file(paths: &[&PathBuf]) {
         let mimetype_options = Self::get_options(&paths[0]);
 
         ncurses::savetty();
@@ -145,7 +143,7 @@ impl OpenFileWith {
         "open_file_with"
     }
 
-    pub fn open_with(paths: &[PathBuf]) {
+    pub fn open_with(paths: &[&PathBuf]) {
         const PROMPT: &str = ":open_with ";
 
         let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> =
@@ -186,7 +184,7 @@ impl OpenFileWith {
                     if s < mimetype_options.len() {
                         ncurses::savetty();
                         ncurses::endwin();
-                        unix::open_with_entry(&paths, &mimetype_options[s]);
+                        unix::open_with_entry(paths, &mimetype_options[s]);
                         ncurses::resetty();
                         ncurses::refresh();
                     }
@@ -196,7 +194,7 @@ impl OpenFileWith {
                         user_input.split_whitespace().map(String::from).collect();
                     ncurses::savetty();
                     ncurses::endwin();
-                    unix::open_with_args(&paths, &args);
+                    unix::open_with_args(paths, &args);
                     ncurses::resetty();
                     ncurses::refresh();
                 }

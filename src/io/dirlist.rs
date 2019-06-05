@@ -85,13 +85,10 @@ impl JoshutoDirList {
         self.contents.iter().filter(|entry| entry.is_selected())
     }
 
-    pub fn get_selected_paths(&self) -> Option<Vec<path::PathBuf>> {
-        let vec: Vec<path::PathBuf> = self
-            .selected_entries()
-            .map(|e| e.file_path().clone())
-            .collect();
+    pub fn get_selected_paths(&self) -> Option<Vec<&path::PathBuf>> {
+        let vec: Vec<&path::PathBuf> = self.selected_entries().map(|e| e.file_path()).collect();
         if vec.is_empty() {
-            Some(vec![self.get_curr_ref()?.file_path().clone()])
+            Some(vec![self.get_curr_ref()?.file_path()])
         } else {
             Some(vec)
         }
@@ -127,10 +124,19 @@ fn read_dir_list(
     sort_option: &sort::SortOption,
 ) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
     let filter_func = sort_option.filter_func();
-    let results: fs::ReadDir = fs::read_dir(path)?;
-    let result_vec: Vec<JoshutoDirEntry> = results
+    let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
         .filter(filter_func)
-        .filter_map(sort::map_entry_default)
+        .filter_map(map_entry_default)
         .collect();
-    Ok(result_vec)
+    Ok(results)
+}
+
+fn map_entry_default(result: Result<fs::DirEntry, std::io::Error>) -> Option<JoshutoDirEntry> {
+    match result {
+        Ok(direntry) => match JoshutoDirEntry::from(&direntry) {
+            Ok(s) => Some(s),
+            Err(_) => None,
+        },
+        Err(_) => None,
+    }
 }
