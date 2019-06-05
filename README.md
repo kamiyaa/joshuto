@@ -58,9 +58,10 @@ Please create an issue :)
 
 ## TODOs
  - [x] Tab support
- - [x] Asynch File IO (cut/copy/paste/delete/rename)
- - [ ] Ctrl/Shift/Alt support
- - [ ] File previews
- - [ ] Tab autocomplete
+ - [x] Ctrl/Shift/Alt support
+ - [ ] Asynch File IO (cut/copy/paste/delete/rename) (in progress)
+ - [ ] Built-in command line (in progress)
+ - [ ] File previews (in progress)
+ - [ ] Tab autocomplete (in progress)
  - [ ] Bulk rename
 
