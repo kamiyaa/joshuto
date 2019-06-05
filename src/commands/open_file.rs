@@ -58,14 +58,13 @@ impl OpenFile {
             curr_tab.refresh(view, &context.config_t);
         } else {
             let curr_tab = &context.tabs[context.curr_tab_index];
-            let paths: Option<Vec<&PathBuf>> = curr_tab.curr_list.get_selected_paths();
+            let paths = curr_tab.curr_list.get_selected_paths();
 
-            if let Some(paths) = paths {
-                Self::open_file(&paths);
-            } else {
+            if paths.is_empty() {
                 let err = std::io::Error::new(std::io::ErrorKind::NotFound, "No files selected");
                 return Err(err);
             }
+            Self::open_file(&paths);
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             if curr_tab.curr_list.need_update() {
                 curr_tab
@@ -214,9 +213,8 @@ impl std::fmt::Display for OpenFileWith {
 impl JoshutoRunnable for OpenFileWith {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
-        if let Some(paths) = curr_list.get_selected_paths() {
-            Self::open_with(&paths);
-        }
+        let paths = curr_list.get_selected_paths();
+        Self::open_with(&paths);
         Ok(())
     }
 }

@@ -1,8 +1,8 @@
 use std::fs;
 use std::time;
 
-use users::UsersCache;
 use users::mock::{Groups, Users};
+use users::UsersCache;
 
 use crate::config::{JoshutoColorTheme, JoshutoConfig};
 use crate::context::JoshutoContext;
@@ -241,21 +241,23 @@ pub fn display_contents(
     win.queue_for_refresh();
 }
 
-pub fn wprint_file_status(win: &window::JoshutoPanel, entry: &JoshutoDirEntry, index: usize, len: usize) {
+pub fn wprint_file_status(
+    win: &window::JoshutoPanel,
+    entry: &JoshutoDirEntry,
+    index: usize,
+    len: usize,
+) {
     wprint_file_mode(win.win, entry);
 
     ncurses::waddch(win.win, ' ' as ncurses::chtype);
-    ncurses::waddstr(
-        win.win,
-        format!("{}/{} ", index + 1, len).as_str(),
-    );
+    ncurses::waddstr(win.win, format!("{}/{} ", index + 1, len).as_str());
 
     let usercache: UsersCache = UsersCache::new();
     match usercache.get_user_by_uid(entry.metadata.uid) {
         Some(s) => match s.name().to_str() {
             Some(name) => ncurses::waddstr(win.win, name),
             None => ncurses::waddstr(win.win, "OsStr error"),
-        }
+        },
         None => ncurses::waddstr(win.win, "unknown user"),
     };
     ncurses::waddch(win.win, ' ' as ncurses::chtype);
@@ -263,7 +265,7 @@ pub fn wprint_file_status(win: &window::JoshutoPanel, entry: &JoshutoDirEntry, i
         Some(s) => match s.name().to_str() {
             Some(name) => ncurses::waddstr(win.win, name),
             None => ncurses::waddstr(win.win, "OsStr error"),
-        }
+        },
         None => ncurses::waddstr(win.win, "unknown user"),
     };
 
@@ -285,33 +287,33 @@ pub fn wprint_file_mode(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
 pub fn wprint_file_info(win: ncurses::WINDOW, file: &JoshutoDirEntry) {
     #[cfg(unix)]
     {
-    use std::os::unix::fs::PermissionsExt;
+        use std::os::unix::fs::PermissionsExt;
 
-    let mode = file.metadata.permissions.mode();
+        let mode = file.metadata.permissions.mode();
 
-    let mtime_string = file_mtime_to_string(file.metadata.modified);
-    ncurses::waddstr(win, &mtime_string);
-    ncurses::waddch(win, ' ' as ncurses::chtype);
+        let mtime_string = file_mtime_to_string(file.metadata.modified);
+        ncurses::waddstr(win, &mtime_string);
+        ncurses::waddch(win, ' ' as ncurses::chtype);
 
-    if file.file_path().is_dir() {
-        let is_link: u32 = libc::S_IFLNK as u32;
-        if mode >> 9 & is_link >> 9 == mode >> 9 {
-            if let Ok(path) = fs::read_link(&file.file_path()) {
-                ncurses::waddstr(win, " -> ");
-                ncurses::waddstr(win, path.to_str().unwrap());
+        if file.file_path().is_dir() {
+            let is_link: u32 = libc::S_IFLNK as u32;
+            if mode >> 9 & is_link >> 9 == mode >> 9 {
+                if let Ok(path) = fs::read_link(&file.file_path()) {
+                    ncurses::waddstr(win, " -> ");
+                    ncurses::waddstr(win, path.to_str().unwrap());
+                }
             }
+        } else {
+            let file_size_string = file_size_to_string_detailed(file.metadata.len as f64);
+            ncurses::waddstr(win, &file_size_string);
         }
-    } else {
-        let file_size_string = file_size_to_string_detailed(file.metadata.len as f64);
-        ncurses::waddstr(win, &file_size_string);
-    }
 
-    /*
-        ncurses::waddstr(win, "    ");
-        if let Some(s) = tree_magic::from_filepath(&file.file_path()) {
-            ncurses::waddstr(win, &s);
-        }
-    */
+        /*
+            ncurses::waddstr(win, "    ");
+            if let Some(s) = tree_magic::from_filepath(&file.file_path()) {
+                ncurses::waddstr(win, &s);
+            }
+        */
     }
 }
 

@@ -33,17 +33,19 @@ impl LocalState {
         TAB_SRC.store(tab_index, atomic::Ordering::Release);
     }
 
-    pub fn repopulated_selected_files(dirlist: &JoshutoDirList) -> bool {
-        let selected: Vec<path::PathBuf> = dirlist
-            .selected_entries()
-            .map(|e| e.file_path().clone())
-            .collect();
+    pub fn repopulated_selected_files(dirlist: &JoshutoDirList) -> Result<(), std::io::Error> {
+        let selected = dirlist.get_selected_paths();
         if selected.is_empty() {
-            false
+            Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "no files selected",
+            ))
         } else {
+            let selected_clone: Vec<path::PathBuf> =
+                selected.iter().map(|p| (*p).clone()).collect();
             let mut data = SELECTED_FILES.lock().unwrap();
-            *data = Some(selected);
-            true
+            *data = Some(selected_clone);
+            Ok(())
         }
     }
 }
@@ -93,11 +95,14 @@ impl std::fmt::Display for CutFiles {
 impl JoshutoRunnable for CutFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_tab = context.curr_tab_ref();
-        if LocalState::repopulated_selected_files(&curr_tab.curr_list) {
-            LocalState::set_file_op(FileOp::Cut);
-            LocalState::set_tab_src(context.curr_tab_index);
+        match LocalState::repopulated_selected_files(&curr_tab.curr_list) {
+            Ok(_) => {
+                LocalState::set_file_op(FileOp::Cut);
+                LocalState::set_tab_src(context.curr_tab_index);
+                Ok(())
+            }
+            Err(e) => Err(JoshutoError::IO(e)),
         }
-        Ok(())
     }
 }
 
@@ -124,11 +129,14 @@ impl std::fmt::Display for CopyFiles {
 impl JoshutoRunnable for CopyFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
         let curr_tab = context.curr_tab_ref();
-        if LocalState::repopulated_selected_files(&curr_tab.curr_list) {
-            LocalState::set_file_op(FileOp::Copy);
-            LocalState::set_tab_src(context.curr_tab_index);
+        match LocalState::repopulated_selected_files(&curr_tab.curr_list) {
+            Ok(_) => {
+                LocalState::set_file_op(FileOp::Copy);
+                LocalState::set_tab_src(context.curr_tab_index);
+                Ok(())
+            }
+            Err(e) => Err(JoshutoError::IO(e)),
         }
-        Ok(())
     }
 }
 

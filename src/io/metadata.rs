@@ -23,6 +23,7 @@ impl JoshutoMetadata {
         let modified = metadata.modified()?;
         let permissions = metadata.permissions();
         let file_type = metadata.file_type();
+
         #[cfg(unix)]
         let uid = metadata.uid();
         #[cfg(unix)]
