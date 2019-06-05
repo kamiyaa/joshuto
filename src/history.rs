@@ -60,7 +60,7 @@ impl DirectoryHistory for JoshutoHistory {
                 if dirlist.need_update() {
                     dirlist.update_contents(&sort_option)?
                 } else {
-                    let metadata = std::fs::symlink_metadata(&dirlist.path)?;
+                    let metadata = std::fs::symlink_metadata(dirlist.file_path())?;
 
                     let modified = metadata.modified()?;
                     if modified > dirlist.metadata.modified {

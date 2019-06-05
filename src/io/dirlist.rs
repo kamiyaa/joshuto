@@ -7,8 +7,8 @@ use crate::window::JoshutoPageState;
 #[derive(Debug)]
 pub struct JoshutoDirList {
     pub index: Option<usize>,
-    pub path: path::PathBuf,
-    pub outdated: bool,
+    path: path::PathBuf,
+    outdated: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
     pub pagestate: JoshutoPageState,
@@ -43,6 +43,10 @@ impl JoshutoDirList {
 
     pub fn need_update(&self) -> bool {
         self.outdated
+    }
+
+    pub fn file_path(&self) -> &path::PathBuf {
+        &self.path
     }
 
     pub fn update_contents(

@@ -75,7 +75,7 @@ pub struct ProgressInfo {
     pub total_bytes: u64,
 }
 
-pub fn from_args(command: &str, args: &Vec<&str>) -> Result<Box<JoshutoCommand>, KeymapError> {
+pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, KeymapError> {
     match command {
         "cd" => match args.len() {
             0 => match HOME_DIR.as_ref() {
@@ -140,13 +140,13 @@ pub fn from_args(command: &str, args: &Vec<&str>) -> Result<Box<JoshutoCommand>,
         "delete_files" => Ok(Box::new(self::DeleteFiles::new())),
         "force_quit" => Ok(Box::new(self::ForceQuit::new())),
         "mkdir" => {
-            if args.len() == 0 {
+            if args.is_empty() {
                 Err(KeymapError::new(
                     Some("mkdir"),
                     String::from("mkdir requires additional parameter"),
                 ))
             } else {
-                let paths: Vec<PathBuf> = args.iter().map(|s| PathBuf::from(s)).collect();
+                let paths: Vec<PathBuf> = args.iter().map(PathBuf::from).collect();
                 Ok(Box::new(self::NewDirectory::new(paths)))
             }
         }

@@ -10,7 +10,7 @@ use crate::ui;
 use crate::window::JoshutoPanel;
 use crate::window::JoshutoView;
 
-fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&Box<JoshutoCommand>> {
+fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&JoshutoCommand> {
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
 
@@ -41,7 +41,7 @@ fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&Box<Joshuto
     } else {
         match keymap.get(&ch) {
             Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(&m),
-            Some(CommandKeybind::SimpleKeybind(s)) => Some(s),
+            Some(CommandKeybind::SimpleKeybind(s)) => Some(s.as_ref()),
             _ => None,
         }
     }
@@ -183,7 +183,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                     None => continue,
                 },
                 Some(CommandKeybind::SimpleKeybind(s)) => {
-                    keycommand = s;
+                    keycommand = s.as_ref();
                 }
                 None => {
                     ui::wprint_err(&view.bot_win, &format!("Unknown keycode: {}", ch));

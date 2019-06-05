@@ -32,7 +32,7 @@ impl ParentDirectory {
         std::mem::swap(&mut curr_tab.curr_list, &mut new_curr_list);
         curr_tab
             .history
-            .insert(new_curr_list.path.clone(), new_curr_list);
+            .insert(new_curr_list.file_path().clone(), new_curr_list);
 
         curr_tab.refresh(view, &context.config_t);
         ncurses::doupdate();

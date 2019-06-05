@@ -21,14 +21,12 @@ impl ReloadDirList {
         let curr_tab = &mut context.tabs[index];
         let sort_option = &context.config_t.sort_option;
         curr_tab.curr_list.update_contents(sort_option)?;
-        curr_tab.curr_list.outdated = false;
 
-        if let Some(parent) = curr_tab.curr_list.path.parent() {
+        if let Some(parent) = curr_tab.curr_list.file_path().parent() {
             match curr_tab.history.entry(parent.to_path_buf().clone()) {
                 Entry::Occupied(mut entry) => {
                     let dirlist = entry.get_mut();
                     dirlist.update_contents(sort_option)?;
-                    dirlist.outdated = false;
                 }
                 Entry::Vacant(entry) => {
                     let s = JoshutoDirList::new(parent.to_path_buf().clone(), sort_option)?;

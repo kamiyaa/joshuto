@@ -145,7 +145,7 @@ impl Flattenable<JoshutoCommandMapping> for JoshutoRawCommandMapping {
     fn flatten(self) -> JoshutoCommandMapping {
         let mut keymaps = JoshutoCommandMapping::new();
         self.mapcommand.iter().for_each(|m| {
-            let args: Vec<&str> = m.args.iter().map(|s| s.as_str()).collect();
+            let args: Vec<&str> = m.args.iter().map(String::as_str).collect();
             match commands::from_args(m.command.as_str(), &args) {
                 Ok(command) => insert_keycommand(&mut keymaps, command, &m.keys[..]),
                 Err(e) => eprintln!("{}", e),

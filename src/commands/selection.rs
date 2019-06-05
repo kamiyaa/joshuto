@@ -45,7 +45,7 @@ impl JoshutoRunnable for SelectFiles {
                 let curr_list = &mut curr_tab.curr_list;
                 if let Some(s) = curr_list.get_curr_mut() {
                     s.set_selected(!s.is_selected());
-                    return CursorMoveDown::new(1).execute(context, view);
+                    CursorMoveDown::new(1).execute(context, view)?;
                 }
             } else {
                 let curr_list = &mut curr_tab.curr_list;
@@ -55,21 +55,19 @@ impl JoshutoRunnable for SelectFiles {
                 curr_tab.refresh_curr(&view.mid_win, &context.config_t);
                 ncurses::doupdate();
             }
-        } else {
-            if !self.all {
-                let curr_list = &mut curr_tab.curr_list;
-                if let Some(s) = curr_list.get_curr_mut() {
-                    s.set_selected(true);
-                    return CursorMoveDown::new(1).execute(context, view);
-                }
-            } else {
-                let curr_list = &mut curr_tab.curr_list;
-                for curr in &mut curr_list.contents {
-                    curr.set_selected(true);
-                }
-                curr_tab.refresh_curr(&view.mid_win, &context.config_t);
-                ncurses::doupdate();
+        } else if !self.all {
+            let curr_list = &mut curr_tab.curr_list;
+            if let Some(s) = curr_list.get_curr_mut() {
+                s.set_selected(true);
+                CursorMoveDown::new(1).execute(context, view)?;
             }
+        } else {
+            let curr_list = &mut curr_tab.curr_list;
+            for curr in &mut curr_list.contents {
+                curr.set_selected(true);
+            }
+            curr_tab.refresh_curr(&view.mid_win, &context.config_t);
+            ncurses::doupdate();
         }
         Ok(())
     }
