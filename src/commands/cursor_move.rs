@@ -19,16 +19,10 @@ pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &Jo
                 new_index = dir_len - 1;
             }
             curr_tab.curr_list.index = Some(new_index);
-            curr_tab.curr_list.pagestate.update_page_state(
-                new_index,
-                view.mid_win.rows,
-                dir_len,
-                context.config_t.scroll_offset,
-            );
         }
     }
 
-    curr_tab.refresh_curr(&view.mid_win);
+    curr_tab.refresh_curr(&view.mid_win, &context.config_t);
     curr_tab.refresh_path_status(&view.top_win, context.config_t.tilde_in_titlebar);
     curr_tab.refresh_file_status(&view.bot_win);
     curr_tab.refresh_preview(&view.right_win, &context.config_t);

@@ -4,7 +4,7 @@ use std::path;
 use std::process;
 
 use crate::config::{JoshutoConfig, JoshutoPreviewEntry};
-use crate::structs::{JoshutoDirEntry, JoshutoDirList};
+use crate::io::{JoshutoDirEntry, JoshutoDirList};
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::panel::JoshutoPanel;
@@ -22,8 +22,13 @@ pub fn preview_parent(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &
 pub fn preview_entry(curr_tab: &mut JoshutoTab, win: &JoshutoPanel, config_t: &JoshutoConfig) {
     ncurses::werase(win.win);
     if let Some(s) = curr_tab.curr_list.get_curr_ref() {
-        if s.path.is_dir() {
-            preview_directory(&mut curr_tab.history, s.path.as_path(), win, config_t);
+        if s.file_path().is_dir() {
+            preview_directory(
+                &mut curr_tab.history,
+                s.file_path().as_path(),
+                win,
+                config_t,
+            );
         } else if s.metadata.file_type.is_file() {
             if s.metadata.len <= config_t.max_preview_size {
                 // preview_file(s, win);
@@ -45,11 +50,21 @@ fn preview_directory(
 ) {
     match history.entry(path.to_path_buf().clone()) {
         Entry::Occupied(mut entry) => {
-            ui::display_contents(win, entry.get_mut(), &ui::SECONDARY_DISPLAY_OPTION);
+            ui::display_contents(
+                win,
+                entry.get_mut(),
+                config_t,
+                &ui::SECONDARY_DISPLAY_OPTION,
+            );
         }
         Entry::Vacant(entry) => {
             if let Ok(s) = JoshutoDirList::new(path.to_path_buf().clone(), &config_t.sort_option) {
-                ui::display_contents(win, entry.insert(s), &ui::SECONDARY_DISPLAY_OPTION);
+                ui::display_contents(
+                    win,
+                    entry.insert(s),
+                    config_t,
+                    &ui::SECONDARY_DISPLAY_OPTION,
+                );
             }
         }
     }
@@ -57,7 +72,7 @@ fn preview_directory(
 }
 
 fn preview_file(entry: &JoshutoDirEntry, win: &JoshutoPanel) {
-    let path = &entry.path;
+    let path = entry.file_path();
     match path.extension() {
         Some(file_ext) => match PREVIEW_T.extension.get(file_ext.to_str().unwrap()) {
             Some(s) => preview_with(path, win, &s),

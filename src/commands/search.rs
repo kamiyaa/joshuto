@@ -33,7 +33,7 @@ impl Search {
                 let contents_len = curr_list.contents.len();
                 for i in 0..contents_len {
                     let file_name_lower = curr_list.contents[(offset + i) % contents_len]
-                        .file_name_as_string
+                        .file_name()
                         .to_lowercase();
                     if file_name_lower.contains(pattern) {
                         return Some((offset + i) % contents_len);
@@ -51,7 +51,7 @@ impl Search {
                 let contents_len = curr_list.contents.len();
                 for i in (0..contents_len).rev() {
                     let file_name_lower = curr_list.contents[(offset + i) % contents_len]
-                        .file_name_as_string
+                        .file_name()
                         .to_lowercase();
                     if file_name_lower.contains(pattern) {
                         return Some((offset + i) % contents_len);

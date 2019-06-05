@@ -44,30 +44,30 @@ impl JoshutoRunnable for SelectFiles {
             if !self.all {
                 let curr_list = &mut curr_tab.curr_list;
                 if let Some(s) = curr_list.get_curr_mut() {
-                    s.selected = !s.selected;
+                    s.set_selected(!s.is_selected());
                     return CursorMoveDown::new(1).execute(context, view);
                 }
             } else {
                 let curr_list = &mut curr_tab.curr_list;
                 for curr in &mut curr_list.contents {
-                    curr.selected = !curr.selected;
+                    curr.set_selected(!curr.is_selected());
                 }
-                curr_tab.refresh_curr(&view.mid_win);
+                curr_tab.refresh_curr(&view.mid_win, &context.config_t);
                 ncurses::doupdate();
             }
         } else {
             if !self.all {
                 let curr_list = &mut curr_tab.curr_list;
                 if let Some(s) = curr_list.get_curr_mut() {
-                    s.selected = true;
+                    s.set_selected(true);
                     return CursorMoveDown::new(1).execute(context, view);
                 }
             } else {
                 let curr_list = &mut curr_tab.curr_list;
                 for curr in &mut curr_list.contents {
-                    curr.selected = true;
+                    curr.set_selected(true);
                 }
-                curr_tab.refresh_curr(&view.mid_win);
+                curr_tab.refresh_curr(&view.mid_win, &context.config_t);
                 ncurses::doupdate();
             }
         }

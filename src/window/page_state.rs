@@ -5,10 +5,6 @@ pub struct JoshutoPageState {
 }
 
 impl JoshutoPageState {
-    pub fn new(end: usize) -> Self {
-        JoshutoPageState { start: 0, end }
-    }
-
     pub fn update_page_state(
         &mut self,
         index: usize,
@@ -56,6 +52,15 @@ impl JoshutoPageState {
             } else {
                 self.start + win_rows as usize
             };
+        }
+    }
+}
+
+impl std::default::Default for JoshutoPageState {
+    fn default() -> Self {
+        JoshutoPageState {
+            start: usize::default(),
+            end: usize::default(),
         }
     }
 }

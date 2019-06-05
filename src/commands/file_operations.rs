@@ -7,7 +7,7 @@ use std::time;
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ProgressInfo};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::structs::JoshutoDirList;
+use crate::io::JoshutoDirList;
 use crate::window::JoshutoView;
 
 lazy_static! {

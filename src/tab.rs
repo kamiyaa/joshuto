@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use crate::config;
 use crate::history::{DirectoryHistory, JoshutoHistory};
+use crate::io::JoshutoDirList;
 use crate::preview;
 use crate::sort;
-use crate::structs::JoshutoDirList;
 use crate::ui;
 use crate::window::{JoshutoPanel, JoshutoView};
+use crate::JoshutoConfig;
 
 use crate::{HOSTNAME, USERNAME};
 
@@ -33,27 +33,31 @@ impl JoshutoTab {
         Ok(tab)
     }
 
-    pub fn refresh(&mut self, views: &JoshutoView, config_t: &config::JoshutoConfig) {
-        self.refresh_curr(&views.mid_win);
+    pub fn refresh(&mut self, views: &JoshutoView, config_t: &JoshutoConfig) {
+        self.refresh_curr(&views.mid_win, config_t);
         self.refresh_parent(&views.left_win, config_t);
-        self.refresh_preview(&views.right_win, config_t);
+        if config_t.show_preview {
+            self.refresh_preview(&views.right_win, config_t);
+        }
         self.refresh_path_status(&views.top_win, config_t.tilde_in_titlebar);
         self.refresh_file_status(&views.bot_win);
     }
 
-    pub fn refresh_curr(&self, win: &JoshutoPanel) {
-        ui::display_contents(win, &self.curr_list, &ui::PRIMARY_DISPLAY_OPTION);
-        win.queue_for_refresh();
+    pub fn refresh_curr(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
+        ui::display_contents(
+            win,
+            &mut self.curr_list,
+            config_t,
+            &ui::PRIMARY_DISPLAY_OPTION,
+        );
     }
 
-    pub fn refresh_parent(&mut self, win: &JoshutoPanel, config_t: &config::JoshutoConfig) {
+    pub fn refresh_parent(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
         preview::preview_parent(self, win, config_t);
     }
 
-    pub fn refresh_preview(&mut self, win: &JoshutoPanel, config_t: &config::JoshutoConfig) {
-        if config_t.show_preview {
-            preview::preview_entry(self, win, config_t);
-        }
+    pub fn refresh_preview(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
+        preview::preview_entry(self, win, config_t);
     }
 
     pub fn refresh_file_status(&self, win: &JoshutoPanel) {
@@ -96,7 +100,7 @@ impl JoshutoTab {
         ncurses::waddstr(win.win, "/");
         ncurses::wattroff(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
         if let Some(entry) = self.curr_list.get_curr_ref() {
-            ncurses::waddstr(win.win, &entry.file_name_as_string);
+            ncurses::waddstr(win.win, &entry.file_name());
         }
         ncurses::wattroff(win.win, ncurses::A_BOLD());
         win.queue_for_refresh();

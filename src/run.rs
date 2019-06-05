@@ -52,7 +52,7 @@ fn reload_tab(
     context: &mut JoshutoContext,
     view: &JoshutoView,
 ) -> Result<(), std::io::Error> {
-    ReloadDirList::reload(index, context, view)?;
+    ReloadDirList::reload(index, context)?;
     if index == context.curr_tab_index {
         let dirty_tab = &mut context.tabs[index];
         dirty_tab.refresh(view, &context.config_t);
@@ -94,6 +94,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
                 let thread = context.threads.swap_remove(i);
                 join_thread(context, thread, view)?;
                 ncurses::doupdate();
+                break;
             }
             Ok(progress_info) => {
                 ui::draw_progress_bar(
@@ -111,6 +112,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
 #[inline]
 fn resize_handler(context: &mut JoshutoContext, view: &JoshutoView) {
     ui::redraw_tab_view(&view.tab_win, &context);
+
     let curr_tab = &mut context.tabs[context.curr_tab_index];
     curr_tab.refresh(view, &context.config_t);
     ncurses::doupdate();
@@ -122,9 +124,10 @@ fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
             Ok(tab) => {
                 context.tabs.push(tab);
                 context.curr_tab_index = context.tabs.len() - 1;
+
+                ui::redraw_tab_view(&view.tab_win, &context);
                 let curr_tab = &mut context.tabs[context.curr_tab_index];
                 curr_tab.refresh(view, &context.config_t);
-                ui::redraw_tab_view(&view.tab_win, &context);
                 ncurses::doupdate();
             }
             Err(e) => {
@@ -152,7 +155,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
         if !context.threads.is_empty() {
             ncurses::timeout(0);
             match process_threads(&mut context, &view) {
-                Ok(()) => {}
+                Ok(_) => {}
                 Err(e) => ui::wprint_err(&view.bot_win, e.to_string().as_str()),
             }
             ncurses::doupdate();

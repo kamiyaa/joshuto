@@ -6,7 +6,7 @@ use std::time;
 
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable, ProgressInfo};
 use crate::context::JoshutoContext;
-use crate::structs::JoshutoDirList;
+use crate::io::JoshutoDirList;
 use crate::window::JoshutoView;
 
 pub struct PasteFiles {

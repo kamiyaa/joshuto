@@ -1,7 +1,7 @@
 use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::structs::JoshutoDirEntry;
+use crate::io::JoshutoDirEntry;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
 use crate::unix;
@@ -58,7 +58,7 @@ impl SetMode {
                         mode |= val;
                     }
                 }
-                unix::set_mode(entry.path.as_path(), mode);
+                unix::set_mode(entry.file_path().as_path(), mode);
                 entry.metadata.permissions.set_mode(mode + (1 << 15));
                 true
             }
