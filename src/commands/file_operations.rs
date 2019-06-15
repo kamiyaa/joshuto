@@ -50,6 +50,20 @@ impl LocalState {
     }
 }
 
+fn rename_filename_conflict(path: &mut path::PathBuf) {
+    let file_name = path.file_name().unwrap().to_os_string();
+    for i in 0.. {
+        if !path.exists() {
+            break;
+        }
+        path.pop();
+
+        let mut file_name = file_name.clone();
+        file_name.push(&format!("_{}", i));
+        path.push(file_name);
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct CopyOptions {
     pub overwrite: bool,
@@ -175,7 +189,6 @@ impl JoshutoRunnable for PasteFiles {
 
         match thread {
             Ok(s) => {
-                ncurses::timeout(0);
                 context.threads.push(s);
                 Ok(())
             }
@@ -290,16 +303,7 @@ fn fs_cut_thread(
 
         destination.push(file_name.clone());
         if !options.skip_exist {
-            let mut i = 0;
-            while destination.exists() {
-                destination.pop();
-
-                let mut file_name = file_name.clone();
-                file_name.push(&format!("_{}", i));
-
-                destination.push(file_name);
-                i += 1;
-            }
+            rename_filename_conflict(&mut destination);
         }
         match std::fs::rename(&path, &destination) {
             Ok(_) => {}
@@ -361,16 +365,7 @@ fn fs_copy_thread(
         if path.symlink_metadata()?.is_dir() {
             destination.push(file_name.clone());
             if !options.skip_exist {
-                let mut i = 0;
-                while destination.exists() {
-                    destination.pop();
-
-                    let mut file_name = file_name.clone();
-                    file_name.push(&format!("_{}", i));
-
-                    destination.push(file_name);
-                    i += 1;
-                }
+                rename_filename_conflict(&mut destination);
             }
             std::fs::create_dir(&destination)?;
             let path: Vec<path::PathBuf> = std::fs::read_dir(path)?
@@ -398,16 +393,7 @@ fn fs_copy_thread(
         } else {
             destination.push(file_name.clone());
             if !options.skip_exist {
-                let mut i = 0;
-                while destination.exists() {
-                    destination.pop();
-
-                    let mut file_name = file_name.clone();
-                    file_name.push(&format!("_{}", i));
-
-                    destination.push(file_name);
-                    i += 1;
-                }
+                rename_filename_conflict(&mut destination);
             }
             let res = std::fs::copy(&path, &destination)?;
             let mut prog_info = ProgressInfo {

@@ -215,7 +215,6 @@ impl JoshutoRunnable for PasteFiles {
         };
 
         if let Ok(s) = thread {
-            ncurses::timeout(-1);
             context.threads.push(s);
         }
     }
