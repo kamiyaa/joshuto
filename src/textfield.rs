@@ -115,11 +115,7 @@ impl<'a> JoshutoTextField<'a> {
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
                     completion_tracker.take();
                 }
-            } else if ch == ncurses::KEY_BACKSPACE
-                || ch == 127
-                || ch == 9
-                || ch == KEYMAP_T.backspace
-            {
+            } else if ch == KEYMAP_T.backspace {
                 if line_buffer.backspace(1) {
                     let pos = line_buffer.pos();
                     curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
