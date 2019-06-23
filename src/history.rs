@@ -1,7 +1,7 @@
 use std::collections::{hash_map::Entry, HashMap};
 use std::path::{Path, PathBuf};
 
-use crate::io::JoshutoDirList;
+use crate::fs::JoshutoDirList;
 use crate::sort;
 
 pub trait DirectoryHistory {

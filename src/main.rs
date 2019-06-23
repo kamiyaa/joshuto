@@ -3,7 +3,7 @@ mod config;
 mod context;
 mod error;
 mod history;
-mod io;
+mod fs;
 mod preview;
 mod run;
 mod sort;

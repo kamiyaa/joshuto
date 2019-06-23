@@ -1,7 +1,7 @@
 use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::io::JoshutoDirEntry;
+use crate::fs::JoshutoDirEntry;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
 use crate::unix;

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::history::{DirectoryHistory, JoshutoHistory};
-use crate::io::JoshutoDirList;
+use crate::fs::JoshutoDirList;
 use crate::preview;
 use crate::sort;
 use crate::ui;

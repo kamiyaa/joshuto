@@ -2,7 +2,7 @@ use std::cmp;
 use std::fs;
 use std::time;
 
-use crate::io::JoshutoDirEntry;
+use crate::fs::JoshutoDirEntry;
 
 use alphanumeric_sort::compare_str;
 use serde_derive::Deserialize;

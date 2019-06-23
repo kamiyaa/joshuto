@@ -6,7 +6,7 @@ use users::UsersCache;
 
 use crate::config::{JoshutoColorTheme, JoshutoConfig};
 use crate::context::JoshutoContext;
-use crate::io::{JoshutoDirEntry, JoshutoDirList};
+use crate::fs::{JoshutoDirEntry, JoshutoDirList};
 use crate::unix;
 use crate::window;
 

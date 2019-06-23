@@ -1,7 +1,7 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::io::JoshutoDirList;
+use crate::fs::JoshutoDirList;
 use crate::window::JoshutoView;
 
 use std::collections::hash_map::Entry;

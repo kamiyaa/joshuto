@@ -1,6 +1,6 @@
 use std::{fs, io, path};
 
-use crate::io::JoshutoMetadata;
+use crate::fs::JoshutoMetadata;
 
 #[derive(Clone)]
 pub struct JoshutoDirEntry {

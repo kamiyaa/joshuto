@@ -1,6 +1,6 @@
 use std::{fs, path};
 
-use crate::io::{JoshutoDirEntry, JoshutoMetadata};
+use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::sort;
 use crate::window::JoshutoPageState;
 

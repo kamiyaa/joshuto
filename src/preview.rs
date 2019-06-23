@@ -4,7 +4,7 @@ use std::path;
 use std::process;
 
 use crate::config::{JoshutoConfig, JoshutoPreviewEntry};
-use crate::io::{JoshutoDirEntry, JoshutoDirList};
+use crate::fs::{JoshutoDirEntry, JoshutoDirList};
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::panel::JoshutoPanel;
