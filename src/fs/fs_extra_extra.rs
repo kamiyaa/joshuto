@@ -31,10 +31,12 @@ where
         for item in paths {
             sum += match fs_extra::dir::get_size(item) {
                 Ok(s) => s,
-                Err(e) => return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("{}", e),
-                )),
+                Err(e) => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        format!("{}", e),
+                    ));
+                }
             }
         }
         sum
@@ -80,13 +82,22 @@ where
                         info_process.state = info.state;
                         let result = progress_handler(info_process.clone());
                         match result {
-                            fs_extra::dir::TransitProcessResult::OverwriteAll => options.overwrite = true,
-                            fs_extra::dir::TransitProcessResult::SkipAll => options.skip_exist = true,
+                            fs_extra::dir::TransitProcessResult::OverwriteAll => {
+                                options.overwrite = true
+                            }
+                            fs_extra::dir::TransitProcessResult::SkipAll => {
+                                options.skip_exist = true
+                            }
                             _ => {}
                         }
                         result
                     };
-                    match fs_extra::dir::copy_with_progress(&entry_path, &destination, &dir_options, dir_handler) {
+                    match fs_extra::dir::copy_with_progress(
+                        &entry_path,
+                        &destination,
+                        &dir_options,
+                        dir_handler,
+                    ) {
                         Ok(s) => result += s,
                         Err(e) => {
                             return Err(std::io::Error::new(
@@ -103,7 +114,12 @@ where
                         info_process.file_bytes_copied = info.copied_bytes;
                         progress_handler(info_process.clone());
                     };
-                    match fs_extra::file::copy_with_progress(&entry_path, &destination, &file_options, file_handler) {
+                    match fs_extra::file::copy_with_progress(
+                        &entry_path,
+                        &destination,
+                        &file_options,
+                        file_handler,
+                    ) {
                         Ok(s) => result += s,
                         Err(e) => {
                             return Err(std::io::Error::new(
@@ -122,10 +138,14 @@ where
                 progress_handler(info_process.clone());
             };
 
-            match fs_extra::file::copy_with_progress(path, &destination, &file_options, file_handler) {
+            match fs_extra::file::copy_with_progress(
+                path,
+                &destination,
+                &file_options,
+                file_handler,
+            ) {
                 Ok(s) => result += s,
                 Err(e) => {
-                    eprintln!("{}", e);
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         format!("{}", e),
@@ -154,10 +174,12 @@ where
         for item in paths {
             sum += match fs_extra::dir::get_size(item) {
                 Ok(s) => s,
-                Err(e) => return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("{}", e),
-                )),
+                Err(e) => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        format!("{}", e),
+                    ));
+                }
             }
         }
         sum
@@ -220,13 +242,22 @@ where
                         info_process.state = info.state;
                         let result = progress_handler(info_process.clone());
                         match result {
-                            fs_extra::dir::TransitProcessResult::OverwriteAll => options.overwrite = true,
-                            fs_extra::dir::TransitProcessResult::SkipAll => options.skip_exist = true,
+                            fs_extra::dir::TransitProcessResult::OverwriteAll => {
+                                options.overwrite = true
+                            }
+                            fs_extra::dir::TransitProcessResult::SkipAll => {
+                                options.skip_exist = true
+                            }
                             _ => {}
                         }
                         result
                     };
-                    match fs_extra::dir::move_dir_with_progress(&entry_path, &destination, &dir_options, dir_handler) {
+                    match fs_extra::dir::move_dir_with_progress(
+                        &entry_path,
+                        &destination,
+                        &dir_options,
+                        dir_handler,
+                    ) {
                         Ok(s) => result += s,
                         Err(e) => {
                             return Err(std::io::Error::new(
@@ -243,10 +274,14 @@ where
                         info_process.file_bytes_copied = info.copied_bytes;
                         progress_handler(info_process.clone());
                     };
-                    match fs_extra::file::move_file_with_progress(&entry_path, &destination, &file_options, file_handler) {
+                    match fs_extra::file::move_file_with_progress(
+                        &entry_path,
+                        &destination,
+                        &file_options,
+                        file_handler,
+                    ) {
                         Ok(s) => result += s,
                         Err(e) => {
-                            eprintln!("{}", e);
                             return Err(std::io::Error::new(
                                 std::io::ErrorKind::Other,
                                 format!("{}", e),
@@ -265,7 +300,12 @@ where
                 progress_handler(info_process.clone());
             };
 
-            match fs_extra::file::move_file_with_progress(path, &destination, &file_options, handler) {
+            match fs_extra::file::move_file_with_progress(
+                path,
+                &destination,
+                &file_options,
+                handler,
+            ) {
                 Ok(s) => result += s,
                 Err(e) => {
                     eprintln!("{}", e);

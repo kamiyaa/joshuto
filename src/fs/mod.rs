@@ -1,7 +1,7 @@
 mod dirlist;
 mod entry;
-mod metadata;
 pub mod fs_extra_extra;
+mod metadata;
 
 pub use self::dirlist::JoshutoDirList;
 pub use self::entry::JoshutoDirEntry;

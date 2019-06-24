@@ -344,7 +344,10 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn show_fs_operation_progress(win: &window::JoshutoPanel, process_info: &fs_extra::TransitProcess) {
+pub fn show_fs_operation_progress(
+    win: &window::JoshutoPanel,
+    process_info: &fs_extra::TransitProcess,
+) {
     let percentage: f64 = process_info.copied_bytes as f64 / process_info.total_bytes as f64;
 
     let cols: i32 = (win.cols as f64 * percentage) as i32;

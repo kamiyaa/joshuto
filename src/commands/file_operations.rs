@@ -7,7 +7,7 @@ use std::time;
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::fs::{JoshutoDirList, fs_extra_extra};
+use crate::fs::{fs_extra_extra, JoshutoDirList};
 use crate::window::JoshutoView;
 
 lazy_static! {
@@ -210,15 +210,20 @@ impl PasteFiles {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "no files selected",
-                    ))
+                    ));
                 }
 
                 let handle = thread::spawn(move || {
-                    let progress_handle = |process_info: fs_extra::TransitProcess|  {
+                    let progress_handle = |process_info: fs_extra::TransitProcess| {
                         tx.send(process_info);
                         fs_extra::dir::TransitProcessResult::ContinueOrAbort
                     };
-                    fs_extra_extra::fs_cut_with_progress(&paths, &destination, options.clone(), progress_handle)
+                    fs_extra_extra::fs_cut_with_progress(
+                        &paths,
+                        &destination,
+                        options.clone(),
+                        progress_handle,
+                    )
                 });
 
                 let thread = FileOperationThread {
@@ -255,15 +260,20 @@ impl PasteFiles {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "no files selected",
-                    ))
+                    ));
                 }
 
                 let handle = thread::spawn(move || {
-                    let progress_handle = |process_info: fs_extra::TransitProcess|  {
+                    let progress_handle = |process_info: fs_extra::TransitProcess| {
                         tx.send(process_info);
                         fs_extra::dir::TransitProcessResult::ContinueOrAbort
                     };
-                    fs_extra_extra::fs_copy_with_progress(&paths, &destination, options.clone(), progress_handle)
+                    fs_extra_extra::fs_copy_with_progress(
+                        &paths,
+                        &destination,
+                        options.clone(),
+                        progress_handle,
+                    )
                 });
 
                 let thread = FileOperationThread {

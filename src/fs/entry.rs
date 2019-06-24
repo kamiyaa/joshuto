@@ -19,7 +19,7 @@ impl JoshutoDirEntry {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
                     "Failed converting OsString to String",
-                ))
+                ));
             }
         };
 
