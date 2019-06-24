@@ -149,6 +149,7 @@ pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, Ke
         "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
         "paste_files" => {
             let mut options = fs_extra::dir::CopyOptions::new();
+            options.buffer_size = 1024 * 1024 * 4;
             for arg in args {
                 match *arg {
                     "--overwrite" => options.overwrite = true,

@@ -16,7 +16,7 @@ fn rename_filename_conflict(mut path: path::PathBuf) -> path::PathBuf {
 }
 
 pub fn fs_copy_with_progress<P, Q, F>(
-    paths: &Vec<P>,
+    paths: &[P],
     to: Q,
     mut options: fs_extra::dir::CopyOptions,
     mut progress_handler: F,
@@ -80,6 +80,7 @@ where
                     let dir_handler = |info: fs_extra::dir::TransitProcess| {
                         info_process.copied_bytes = result + info.copied_bytes;
                         info_process.state = info.state;
+                        info_process.file_name = info.file_name;
                         let result = progress_handler(info_process.clone());
                         match result {
                             fs_extra::dir::TransitProcessResult::OverwriteAll => {
@@ -159,7 +160,7 @@ where
 }
 
 pub fn fs_cut_with_progress<P, Q, F>(
-    paths: &Vec<P>,
+    paths: &[P],
     to: Q,
     mut options: fs_extra::dir::CopyOptions,
     mut progress_handler: F,

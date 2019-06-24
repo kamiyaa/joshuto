@@ -10,12 +10,12 @@ pub trait DirectoryHistory {
         &mut self,
         path: &Path,
         sort_option: &sort::SortOption,
-    ) -> Result<JoshutoDirList, std::io::Error>;
+    ) -> std::io::Result<JoshutoDirList>;
     fn get_mut_or_create(
         &mut self,
         path: &Path,
         sort_option: &sort::SortOption,
-    ) -> Result<&mut JoshutoDirList, std::io::Error>;
+    ) -> std::io::Result<&mut JoshutoDirList>;
     fn depreciate_all_entries(&mut self);
 }
 
@@ -54,7 +54,7 @@ impl DirectoryHistory for JoshutoHistory {
         &mut self,
         path: &Path,
         sort_option: &sort::SortOption,
-    ) -> Result<JoshutoDirList, std::io::Error> {
+    ) -> std::io::Result<JoshutoDirList> {
         match self.remove(&path.to_path_buf()) {
             Some(mut dirlist) => {
                 if dirlist.need_update() {
@@ -79,7 +79,7 @@ impl DirectoryHistory for JoshutoHistory {
         &mut self,
         path: &Path,
         sort_option: &sort::SortOption,
-    ) -> Result<&mut JoshutoDirList, std::io::Error> {
+    ) -> std::io::Result<&mut JoshutoDirList> {
         match self.entry(path.to_path_buf().clone()) {
             Entry::Occupied(entry) => {
                 /*

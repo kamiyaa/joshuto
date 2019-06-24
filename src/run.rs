@@ -51,7 +51,7 @@ fn reload_tab(
     index: usize,
     context: &mut JoshutoContext,
     view: &JoshutoView,
-) -> Result<(), std::io::Error> {
+) -> std::io::Result<()> {
     ReloadDirList::reload(index, context)?;
     if index == context.curr_tab_index {
         let dirty_tab = &mut context.tabs[index];
@@ -86,7 +86,7 @@ fn join_thread(
     Ok(())
 }
 
-fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(), std::io::Error> {
+fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> std::io::Result<()> {
     let thread_wait_duration: time::Duration = time::Duration::from_millis(100);
     for i in 0..context.threads.len() {
         match &context.threads[i].recv_timeout(&thread_wait_duration) {

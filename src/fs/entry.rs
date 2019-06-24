@@ -1,4 +1,4 @@
-use std::{fs, io, path};
+use std::{fs, path};
 
 use crate::fs::JoshutoMetadata;
 
@@ -12,7 +12,7 @@ pub struct JoshutoDirEntry {
 }
 
 impl JoshutoDirEntry {
-    pub fn from(direntry: &fs::DirEntry) -> Result<Self, io::Error> {
+    pub fn from(direntry: &fs::DirEntry) -> std::io::Result<Self> {
         let name = match direntry.file_name().into_string() {
             Ok(s) => s,
             Err(_) => {

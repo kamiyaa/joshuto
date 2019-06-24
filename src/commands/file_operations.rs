@@ -33,7 +33,7 @@ impl LocalState {
         TAB_SRC.store(tab_index, atomic::Ordering::Release);
     }
 
-    pub fn repopulated_selected_files(dirlist: &JoshutoDirList) -> Result<(), std::io::Error> {
+    pub fn repopulated_selected_files(dirlist: &JoshutoDirList) -> std::io::Result<()> {
         let selected = dirlist.get_selected_paths();
         if selected.is_empty() {
             Err(std::io::Error::new(
@@ -48,12 +48,6 @@ impl LocalState {
             Ok(())
         }
     }
-}
-
-#[derive(Clone, Debug)]
-pub struct CopyOptions {
-    pub overwrite: bool,
-    pub skip_exist: bool,
 }
 
 pub struct FileOperationThread<T, Q> {

@@ -23,7 +23,7 @@ impl TabSwitch {
         new_index: usize,
         context: &mut JoshutoContext,
         view: &JoshutoView,
-    ) -> Result<(), std::io::Error> {
+    ) -> std::io::Result<()> {
         context.curr_tab_index = new_index;
         let path = &context.curr_tab_ref().curr_path;
         env::set_current_dir(path)?;

@@ -1,4 +1,4 @@
-use std::{fs, io, path, time};
+use std::{fs, path, time};
 
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
@@ -13,7 +13,7 @@ pub struct JoshutoMetadata {
 }
 
 impl JoshutoMetadata {
-    pub fn from(path: &path::Path) -> Result<Self, io::Error> {
+    pub fn from(path: &path::Path) -> std::io::Result<Self> {
         #[cfg(unix)]
         use std::os::unix::fs::MetadataExt;
 

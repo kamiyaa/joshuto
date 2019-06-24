@@ -350,7 +350,7 @@ pub fn show_fs_operation_progress(
 ) {
     let percentage: f64 = process_info.copied_bytes as f64 / process_info.total_bytes as f64;
 
-    let cols: i32 = (win.cols as f64 * percentage) as i32;
+    let cols: i32 = (f64::from(win.cols) * percentage) as i32;
     ncurses::mvwchgat(
         win.win,
         0,

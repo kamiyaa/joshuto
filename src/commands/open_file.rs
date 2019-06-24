@@ -77,7 +77,7 @@ impl OpenFile {
         Ok(())
     }
 
-    fn open_directory(path: &Path, context: &mut JoshutoContext) -> Result<(), std::io::Error> {
+    fn open_directory(path: &Path, context: &mut JoshutoContext) -> std::io::Result<()> {
         std::env::set_current_dir(path)?;
 
         let curr_tab = &mut context.tabs[context.curr_tab_index];

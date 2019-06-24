@@ -20,7 +20,7 @@ impl DeleteFiles {
         "delete_files"
     }
 
-    pub fn remove_files(paths: &[&path::PathBuf]) -> Result<(), std::io::Error> {
+    pub fn remove_files(paths: &[&path::PathBuf]) -> std::io::Result<()> {
         for path in paths {
             if let Ok(metadata) = fs::symlink_metadata(path) {
                 if metadata.is_dir() {
@@ -33,10 +33,7 @@ impl DeleteFiles {
         Ok(())
     }
 
-    fn delete_files(
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), std::io::Error> {
+    fn delete_files(context: &mut JoshutoContext, view: &JoshutoView) -> std::io::Result<()> {
         ui::wprint_msg(&view.bot_win, "Delete selected files? (Y/n)");
         ncurses::timeout(-1);
         ncurses::doupdate();

@@ -15,10 +15,7 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
-    pub fn new(
-        path: path::PathBuf,
-        sort_option: &sort::SortOption,
-    ) -> Result<Self, std::io::Error> {
+    pub fn new(path: path::PathBuf, sort_option: &sort::SortOption) -> std::io::Result<Self> {
         let mut contents = read_dir_list(path.as_path(), sort_option)?;
         contents.sort_by(&sort_option.compare_func());
 
@@ -49,10 +46,7 @@ impl JoshutoDirList {
         &self.path
     }
 
-    pub fn update_contents(
-        &mut self,
-        sort_option: &sort::SortOption,
-    ) -> Result<(), std::io::Error> {
+    pub fn update_contents(&mut self, sort_option: &sort::SortOption) -> std::io::Result<()> {
         let sort_func = sort_option.compare_func();
         let mut contents = read_dir_list(&self.path, sort_option)?;
         contents.sort_by(&sort_func);
@@ -125,7 +119,7 @@ impl JoshutoDirList {
 fn read_dir_list(
     path: &path::Path,
     sort_option: &sort::SortOption,
-) -> Result<Vec<JoshutoDirEntry>, std::io::Error> {
+) -> std::io::Result<Vec<JoshutoDirEntry>> {
     let filter_func = sort_option.filter_func();
     let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
         .filter(filter_func)
@@ -134,7 +128,7 @@ fn read_dir_list(
     Ok(results)
 }
 
-fn map_entry_default(result: Result<fs::DirEntry, std::io::Error>) -> Option<JoshutoDirEntry> {
+fn map_entry_default(result: std::io::Result<fs::DirEntry>) -> Option<JoshutoDirEntry> {
     match result {
         Ok(direntry) => match JoshutoDirEntry::from(&direntry) {
             Ok(s) => Some(s),
