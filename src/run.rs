@@ -62,9 +62,9 @@ fn reload_tab(
 
 fn join_thread(
     context: &mut JoshutoContext,
-    thread: FileOperationThread,
+    thread: FileOperationThread<u64, fs_extra::TransitProcess>,
     view: &JoshutoView,
-) -> Result<(), std::io::Error> {
+) -> std::io::Result<()> {
     ncurses::werase(view.bot_win.win);
     ncurses::doupdate();
 
@@ -97,10 +97,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> Result<(
                 break;
             }
             Ok(progress_info) => {
-                ui::draw_progress_bar(
-                    &view.bot_win,
-                    progress_info.bytes_finished as f32 / progress_info.total_bytes as f32,
-                );
+                ui::show_fs_operation_progress(&view.bot_win, &progress_info);
                 ncurses::doupdate();
             }
             _ => {}

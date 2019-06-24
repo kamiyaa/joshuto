@@ -4,10 +4,10 @@ use std::sync::{atomic, mpsc, Mutex};
 use std::thread;
 use std::time;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable, ProgressInfo};
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoError;
-use crate::fs::JoshutoDirList;
+use crate::fs::{JoshutoDirList, fs_extra_extra};
 use crate::window::JoshutoView;
 
 lazy_static! {
@@ -50,38 +50,24 @@ impl LocalState {
     }
 }
 
-fn rename_filename_conflict(path: &mut path::PathBuf) {
-    let file_name = path.file_name().unwrap().to_os_string();
-    for i in 0.. {
-        if !path.exists() {
-            break;
-        }
-        path.pop();
-
-        let mut file_name = file_name.clone();
-        file_name.push(&format!("_{}", i));
-        path.push(file_name);
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct CopyOptions {
     pub overwrite: bool,
     pub skip_exist: bool,
 }
 
-pub struct FileOperationThread {
+pub struct FileOperationThread<T, Q> {
     pub tab_src: usize,
     pub tab_dest: usize,
-    pub handle: thread::JoinHandle<Result<(), std::io::Error>>,
-    pub recv: mpsc::Receiver<ProgressInfo>,
+    pub handle: thread::JoinHandle<std::io::Result<T>>,
+    pub recv: mpsc::Receiver<Q>,
 }
 
-impl FileOperationThread {
+impl<T, Q> FileOperationThread<T, Q> {
     pub fn recv_timeout(
         &self,
         wait_duration: &time::Duration,
-    ) -> Result<ProgressInfo, mpsc::RecvTimeoutError> {
+    ) -> Result<Q, mpsc::RecvTimeoutError> {
         self.recv.recv_timeout(*wait_duration)
     }
 }
@@ -208,7 +194,7 @@ impl PasteFiles {
     fn cut_paste(
         &self,
         context: &mut JoshutoContext,
-    ) -> Result<FileOperationThread, std::io::Error> {
+    ) -> std::io::Result<FileOperationThread<u64, fs_extra::TransitProcess>> {
         let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
         let tab_dest = context.curr_tab_index;
         let destination = context.tabs[tab_dest].curr_path.clone();
@@ -224,10 +210,16 @@ impl PasteFiles {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "no files selected",
-                    ));
+                    ))
                 }
 
-                let handle = thread::spawn(move || fs_cut_thread(options, tx, destination, paths));
+                let handle = thread::spawn(move || {
+                    let progress_handle = |process_info: fs_extra::TransitProcess|  {
+                        tx.send(process_info);
+                        fs_extra::dir::TransitProcessResult::ContinueOrAbort
+                    };
+                    fs_extra_extra::fs_cut_with_progress(&paths, &destination, options.clone(), progress_handle)
+                });
 
                 let thread = FileOperationThread {
                     tab_src,
@@ -247,7 +239,7 @@ impl PasteFiles {
     fn copy_paste(
         &self,
         context: &mut JoshutoContext,
-    ) -> Result<FileOperationThread, std::io::Error> {
+    ) -> std::io::Result<FileOperationThread<u64, fs_extra::TransitProcess>> {
         let tab_dest = context.curr_tab_index;
         let destination = context.tabs[tab_dest].curr_path.clone();
 
@@ -266,8 +258,13 @@ impl PasteFiles {
                     ))
                 }
 
-                let handle =
-                    thread::spawn(move || fs_copy_thread(options, tx, destination, paths));
+                let handle = thread::spawn(move || {
+                    let progress_handle = |process_info: fs_extra::TransitProcess|  {
+                        tx.send(process_info);
+                        fs_extra::dir::TransitProcessResult::ContinueOrAbort
+                    };
+                    fs_extra_extra::fs_copy_with_progress(&paths, &destination, options.clone(), progress_handle)
+                });
 
                 let thread = FileOperationThread {
                     tab_src,

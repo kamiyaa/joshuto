@@ -3,7 +3,7 @@ use crate::config;
 use crate::tab::JoshutoTab;
 
 pub struct JoshutoContext {
-    pub threads: Vec<FileOperationThread>,
+    pub threads: Vec<FileOperationThread<u64, fs_extra::TransitProcess>>,
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
     pub exit: bool,

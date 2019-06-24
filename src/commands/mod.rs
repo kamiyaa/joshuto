@@ -69,12 +69,6 @@ impl std::fmt::Display for CommandKeybind {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct ProgressInfo {
-    pub bytes_finished: u64,
-    pub total_bytes: u64,
-}
-
 pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, KeymapError> {
     match command {
         "cd" => match args.len() {
