@@ -33,7 +33,7 @@ impl RenameFile {
         path: &path::PathBuf,
         context: &mut JoshutoContext,
         view: &JoshutoView,
-    ) -> Result<(), std::io::Error> {
+    ) -> std::io::Result<()> {
         let new_path = &self.path;
         if new_path.exists() {
             let err =

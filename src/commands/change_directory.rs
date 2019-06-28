@@ -33,7 +33,7 @@ impl ChangeDirectory {
 
         curr_tab
             .history
-            .populate_to_root(&curr_tab.curr_path, &context.config_t.sort_option);
+            .populate_to_root(&curr_tab.curr_path, &context.config_t.sort_option)?;
 
         let mut new_curr_list = curr_tab
             .history

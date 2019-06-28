@@ -5,7 +5,7 @@ use crate::fs::JoshutoDirList;
 use crate::sort;
 
 pub trait DirectoryHistory {
-    fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption);
+    fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) -> std::io::Result<()>;
     fn pop_or_create(
         &mut self,
         path: &Path,
@@ -22,32 +22,29 @@ pub trait DirectoryHistory {
 pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
 
 impl DirectoryHistory for JoshutoHistory {
-    fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) {
+    fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) -> std::io::Result<()> {
         let mut ancestors = pathbuf.ancestors();
         match ancestors.next() {
             None => {}
             Some(mut ancestor) => {
                 for curr in ancestors {
-                    match JoshutoDirList::new(curr.to_path_buf().clone(), sort_option) {
-                        Ok(mut s) => {
-                            let index = s.contents.iter().enumerate().find_map(|(i, dir)| {
-                                if dir.file_path() == ancestor {
-                                    Some(i)
-                                } else {
-                                    None
-                                }
-                            });
-                            if let Some(i) = index {
-                                s.index = Some(i);
-                            }
-                            self.insert(curr.to_path_buf(), s);
+                    let mut dirlist = JoshutoDirList::new(curr.to_path_buf().clone(), sort_option)?;
+                    let index = dirlist.contents.iter().enumerate().find_map(|(i, dir)| {
+                        if dir.file_path() == ancestor {
+                            Some(i)
+                        } else {
+                            None
                         }
-                        Err(e) => eprintln!("populate_to_root: {}", e),
+                    });
+                    if let Some(i) = index {
+                        dirlist.index = Some(i);
                     }
+                    self.insert(curr.to_path_buf(), dirlist);
                     ancestor = curr;
                 }
             }
         }
+        Ok(())
     }
 
     fn pop_or_create(

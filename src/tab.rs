@@ -19,9 +19,9 @@ pub struct JoshutoTab {
 }
 
 impl JoshutoTab {
-    pub fn new(curr_path: PathBuf, sort_option: &sort::SortOption) -> Result<Self, std::io::Error> {
+    pub fn new(curr_path: PathBuf, sort_option: &sort::SortOption) -> std::io::Result<Self> {
         let mut history = JoshutoHistory::new();
-        history.populate_to_root(&curr_path, sort_option);
+        history.populate_to_root(&curr_path, sort_option)?;
 
         let curr_list = history.pop_or_create(&curr_path, sort_option)?;
 
