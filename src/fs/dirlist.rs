@@ -52,6 +52,7 @@ impl JoshutoDirList {
         contents.sort_by(&sort_func);
 
         let contents_len = contents.len();
+        /* update the index */
         if contents_len == 0 {
             self.index = None;
         } else {

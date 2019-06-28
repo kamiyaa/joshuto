@@ -2,7 +2,7 @@ use std::{fs, path};
 
 use crate::fs::JoshutoMetadata;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
     name: String,
     path: path::PathBuf,
@@ -60,15 +60,5 @@ impl JoshutoDirEntry {
 
     pub fn set_selected(&mut self, selected: bool) {
         self.selected = selected;
-    }
-}
-
-impl std::fmt::Debug for JoshutoDirEntry {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(
-            f,
-            "JoshutoDirEntry {{\n\tfile_name: {:?}, \n\tpath: {:?} \n}}",
-            self.name, self.path
-        )
     }
 }

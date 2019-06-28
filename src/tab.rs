@@ -8,7 +8,7 @@ use crate::ui;
 use crate::window::{JoshutoPanel, JoshutoView};
 use crate::JoshutoConfig;
 
-use crate::{HOSTNAME, USERNAME};
+use crate::{HOME_DIR, HOSTNAME, USERNAME};
 
 use crate::THEME_T;
 
@@ -82,14 +82,24 @@ impl JoshutoTab {
         ncurses::waddstr(win.win, " ");
 
         ncurses::wattron(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
+        /* shorten $HOME to ~/ */
         if tilde_in_titlebar {
-            let path_str = &path_str.replace(&format!("/home/{}", (*USERNAME).as_str()), "~");
-            ncurses::waddstr(win.win, path_str);
+            if let Some(s) = (*HOME_DIR).as_ref() {
+                if let Some(s) = s.as_os_str().to_str() {
+                    let path_str = &path_str.replace(s, "~");
+                    ncurses::waddstr(win.win, path_str);
+                }
+            }
         } else {
             ncurses::waddstr(win.win, path_str);
         }
-        ncurses::waddstr(win.win, "/");
+        /* do not print extra '/' if we are at the root directory */
+        if let Some(_) = self.curr_path.parent() {
+            ncurses::waddstr(win.win, "/");
+        }
+
         ncurses::wattroff(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
+        /* print currently selected item */
         if let Some(entry) = self.curr_list.get_curr_ref() {
             ncurses::waddstr(win.win, &entry.file_name());
         }
