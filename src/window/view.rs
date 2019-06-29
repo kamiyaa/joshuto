@@ -17,38 +17,45 @@ impl JoshutoView {
         let sum_ratio: usize = win_ratio.0 + win_ratio.1 + win_ratio.2;
 
         let (term_rows, term_cols) = ui::getmaxyx();
-        let term_divide: i32 = term_cols / sum_ratio as i32;
+        let term_divide: f64 = term_cols as f64 / sum_ratio as f64;
 
         /* window for tabs */
-        let win_xy: (i32, i32) = (1, 10);
-        let win_coord: (usize, usize) = (0, term_cols as usize - win_xy.1 as usize);
-        let tab_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+        let win_rows = 1;
+        let win_cols = 10;
+        let win_coord: (usize, usize) = (0, term_cols as usize - win_cols as usize);
+        let tab_win = JoshutoPanel::new(win_rows, win_cols, win_coord);
 
-        let win_xy: (i32, i32) = (1, term_cols - tab_win.cols);
+        /* rows, cols */
+        let win_rows = 1;
+        let win_cols = term_cols - tab_win.cols;
         let win_coord: (usize, usize) = (0, 0);
-        let top_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+        let top_win = JoshutoPanel::new(win_rows, win_cols, win_coord);
 
-        let offset = 0;
+        let offset: i32 = 0;
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.0 as i32) - 1);
-        let win_coord: (usize, usize) = (1, offset);
-        let left_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+        let win_rows = term_rows - 2;
+        let win_cols = (term_divide * win_ratio.0 as f64) as i32 - 1;
+        let win_coord: (usize, usize) = (1, offset as usize);
+        let left_win = JoshutoPanel::new(win_rows, win_cols, win_coord);
 
-        let offset = offset + win_ratio.0;
+        let offset = offset + win_cols + 1;
 
-        let win_xy: (i32, i32) = (term_rows - 2, (term_divide * win_ratio.1 as i32) - 1);
-        let win_coord: (usize, usize) = (1, term_divide as usize * offset);
-        let mid_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+        let win_rows = term_rows - 2;
+        let win_cols = (term_divide * win_ratio.1 as f64) as i32 - 1;
+        let win_coord: (usize, usize) = (1, offset as usize);
+        let mid_win = JoshutoPanel::new(win_rows, win_cols, win_coord);
 
-        let offset = offset + win_ratio.1;
+        let offset = offset + win_cols + 1;
 
-        let win_xy: (i32, i32) = (term_rows - 2, term_cols - (term_divide * offset as i32) - 1);
-        let win_coord: (usize, usize) = (1, term_divide as usize * offset);
-        let right_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+        let win_rows = term_rows - 2;
+        let win_cols = term_cols - offset;
+        let win_coord: (usize, usize) = (1, offset as usize);
+        let right_win = JoshutoPanel::new(win_rows, win_cols, win_coord);
 
-        let win_xy: (i32, i32) = (1, term_cols);
+        let win_rows = 1;
+        let win_cols = term_cols;
         let win_coord: (usize, usize) = (term_rows as usize - 1, 0);
-        let bot_win = JoshutoPanel::new(win_xy.0, win_xy.1, win_coord);
+        let bot_win = JoshutoPanel::new(win_rows, win_cols, win_coord);
 
         JoshutoView {
             top_win,

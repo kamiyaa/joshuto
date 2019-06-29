@@ -76,10 +76,7 @@ pub fn open_with_entry(paths: &[&PathBuf], entry: &mimetype::JoshutoMimetypeEntr
         command.stderr(process::Stdio::null());
     }
 
-    let args = entry.get_args();
-    if args.len() > 0 {
-        command.args(args);
-    }
+    command.args(entry.get_args());
     command.args(paths.iter().map(|path| path.as_os_str()));
 
     match command.spawn() {
