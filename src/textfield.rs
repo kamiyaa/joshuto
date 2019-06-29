@@ -154,9 +154,9 @@ impl<'a> JoshutoTextField<'a> {
                     &line_buffer.as_str()[..line_buffer.pos()],
                 );
             } else if ch == KEYMAP_T.up {
-                unimplemented!();
+                // TODO
             } else if ch == KEYMAP_T.down {
-                unimplemented!();
+                // TODO
             } else if let Some(ch) = std::char::from_u32(ch as u32) {
                 if line_buffer.insert(ch, 1).is_some() {
                     curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
