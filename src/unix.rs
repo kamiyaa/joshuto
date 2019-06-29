@@ -68,22 +68,23 @@ pub fn set_mode(path: &Path, mode: u32) {
 }
 
 pub fn open_with_entry(paths: &[&PathBuf], entry: &mimetype::JoshutoMimetypeEntry) {
-    let program = entry.program.clone();
+    let program = String::from(entry.get_command());
 
     let mut command = process::Command::new(program);
-    if entry.silent {
+    if entry.get_silent() {
         command.stdout(process::Stdio::null());
         command.stderr(process::Stdio::null());
     }
 
-    if let Some(args) = entry.args.as_ref() {
-        command.args(args.clone());
+    let args = entry.get_args();
+    if args.len() > 0 {
+        command.args(args);
     }
     command.args(paths.iter().map(|path| path.as_os_str()));
 
     match command.spawn() {
         Ok(mut handle) => {
-            if !entry.fork {
+            if !entry.get_fork() {
                 match handle.wait() {
                     Ok(_) => {}
                     Err(e) => eprintln!("{}", e),

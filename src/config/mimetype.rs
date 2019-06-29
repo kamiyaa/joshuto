@@ -11,26 +11,48 @@ const fn default_false() -> bool {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
-    pub id: usize,
-    pub program: String,
-    pub args: Option<Vec<String>>,
+    id: usize,
+    command: String,
+    #[serde(default)]
+    args: Vec<String>,
     #[serde(default = "default_false")]
-    pub fork: bool,
+    fork: bool,
     #[serde(default = "default_false")]
-    pub silent: bool,
+    silent: bool,
+}
+
+impl JoshutoMimetypeEntry {
+    pub fn get_id(&self) -> usize {
+        self.id
+    }
+
+    pub fn get_command(&self) -> &str {
+        &self.command
+    }
+
+    pub fn get_args(&self) -> &[String] {
+        &self.args
+    }
+
+    pub fn get_fork(&self) -> bool {
+        self.fork
+    }
+
+    pub fn get_silent(&self) -> bool {
+        self.silent
+    }
 }
 
 impl std::fmt::Display for JoshutoMimetypeEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(self.program.as_str()).unwrap();
-        if let Some(s) = self.args.as_ref() {
-            s.iter().for_each(|arg| write!(f, " {}", arg).unwrap());
-        }
+        f.write_str(self.get_command()).unwrap();
+        self.get_args().iter().for_each(|arg| write!(f, " {}", arg).unwrap());
+
         f.write_str("\t[").unwrap();
-        if self.fork {
+        if self.get_fork() {
             f.write_str("fork,").unwrap();
         }
-        if self.silent {
+        if self.get_silent() {
             f.write_str("silent").unwrap();
         }
         f.write_str("]")
@@ -51,7 +73,7 @@ impl Flattenable<JoshutoMimetype> for JoshutoRawMimetype {
     fn flatten(self) -> JoshutoMimetype {
         let mut entries = HashMap::with_capacity(self.entry.len());
         for entry in self.entry {
-            entries.insert(entry.id, entry);
+            entries.insert(entry.get_id(), entry);
         }
         JoshutoMimetype {
             entries,
