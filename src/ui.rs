@@ -250,7 +250,7 @@ pub fn wprint_file_status(
     wprint_file_mode(win.win, entry);
 
     ncurses::waddch(win.win, ' ' as ncurses::chtype);
-    ncurses::waddstr(win.win, format!("{}/{} ", index + 1, len).as_str());
+    ncurses::waddstr(win.win, &format!("{}/{} ", index + 1, len));
 
     let usercache: UsersCache = UsersCache::new();
     match usercache.get_user_by_uid(entry.metadata.uid) {

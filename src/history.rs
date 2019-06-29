@@ -5,7 +5,11 @@ use crate::fs::JoshutoDirList;
 use crate::sort;
 
 pub trait DirectoryHistory {
-    fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) -> std::io::Result<()>;
+    fn populate_to_root(
+        &mut self,
+        pathbuf: &PathBuf,
+        sort_option: &sort::SortOption,
+    ) -> std::io::Result<()>;
     fn pop_or_create(
         &mut self,
         path: &Path,
@@ -22,7 +26,11 @@ pub trait DirectoryHistory {
 pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
 
 impl DirectoryHistory for JoshutoHistory {
-    fn populate_to_root(&mut self, pathbuf: &PathBuf, sort_option: &sort::SortOption) -> std::io::Result<()> {
+    fn populate_to_root(
+        &mut self,
+        pathbuf: &PathBuf,
+        sort_option: &sort::SortOption,
+    ) -> std::io::Result<()> {
         let mut ancestors = pathbuf.ancestors();
         match ancestors.next() {
             None => {}

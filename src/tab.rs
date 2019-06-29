@@ -39,7 +39,7 @@ impl JoshutoTab {
         if config_t.show_preview {
             self.refresh_preview(&views.right_win, config_t);
         }
-        self.refresh_path_status(&views.top_win, config_t.tilde_in_titlebar);
+        self.refresh_path_status(&views.top_win, config_t);
         self.refresh_file_status(&views.bot_win);
     }
 
@@ -70,7 +70,7 @@ impl JoshutoTab {
         }
     }
 
-    pub fn refresh_path_status(&self, win: &JoshutoPanel, tilde_in_titlebar: bool) {
+    pub fn refresh_path_status(&self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
         let path_str: &str = self.curr_path.to_str().unwrap();
 
         ncurses::werase(win.win);
@@ -83,7 +83,7 @@ impl JoshutoTab {
 
         ncurses::wattron(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
         /* shorten $HOME to ~/ */
-        if tilde_in_titlebar {
+        if config_t.tilde_in_titlebar {
             if let Some(s) = (*HOME_DIR).as_ref() {
                 if let Some(s) = s.as_os_str().to_str() {
                     let path_str = &path_str.replace(s, "~");

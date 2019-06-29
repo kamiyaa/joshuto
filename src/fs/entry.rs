@@ -26,14 +26,13 @@ impl JoshutoDirEntry {
         let path = direntry.path();
         let metadata = JoshutoMetadata::from(&path)?;
 
-        let dir_entry = JoshutoDirEntry {
+        Ok(JoshutoDirEntry {
             name,
             path,
             metadata,
             selected: false,
             marked: false,
-        };
-        Ok(dir_entry)
+        })
     }
 
     pub fn file_name(&self) -> &str {
