@@ -1,69 +1,73 @@
 [[entry]]
 id	= 1
-program	= "nano"
+commands	= "nano"
 
 [[entry]]
 id	= 2
-program	= "gedit"
+commands	= "gedit"
 fork	= true
 silent	= true
 
 [[entry]]
+id	= 3
+commands	= "bat"
+
+[[entry]]
 id	= 10
-program	= "mpv"
+commands	= "mpv"
 fork	= true
 silent	= true
 
 [[entry]]
 id	= 11
-program	= "mpv"
+commands	= "mpv"
 
 [[entry]]
 id	= 20
-program	= "qimgv"
+commands	= "qimgv"
 fork	= true
 silent	= true
 
 [[entry]]
 id	= 21
-program	= "krita"
+commands	= "krita"
 fork	= true
 silent	= true
 
 [[entry]]
 id	= 50
-program	= "pdflatex"
+commands	= "pdflatex"
 
 [[entry]]
 id	= 55
-program	= "evince"
+commands	= "evince"
 fork	= true
 silent	= true
 
 [[entry]]
 id	= 60
-program	= "tar"
+commands	= "tar"
 args	= [ "-xvzf" ]
 [[entry]]
 id	= 61
-program	= "tar"
+commands	= "tar"
 args	= [ "-xvJf" ]
 [[entry]]
 id	= 62
-program	= "tar"
+commands	= "tar"
 args	= [ "-xvjf" ]
 
 [[entry]]
 id	= 70
-program	= "unrar"
+commands	= "unrar"
 args	= [ "e" ]
 [[entry]]
 id	= 80
-program	= "unzip"
+commands	= "unzip"
 
 [[entry]]
 id	= 100
-program	= "libreoffice"
+commands	= "libreoffice"
 fork	= true
 silent	= true
 
@@ -90,28 +94,29 @@ webm	= [ 10 ]
 wmv	= [ 10 ]
 
 # Text
-build	= [ 1, 2 ]
-c	= [ 1, 2 ]
-cmake	= [ 1, 2 ]
-conf	= [ 1, 2 ]
-cpp	= [ 1, 2 ]
-css	= [ 1, 2 ]
-go	= [ 1, 2 ]
-hpp	= [ 1, 2 ]
-hs	= [ 1, 2 ]
-html	= [ 1, 2 ]
-ini	= [ 1, 2 ]
-java	= [ 1, 2 ]
-js	= [ 1, 2 ]
-kt	= [ 1, 2 ]
-log	= [ 1, 2 ]
-md	= [ 1, 2 ]
-ninja	= [ 1, 2 ]
-py	= [ 1, 2 ]
-rs	= [ 1, 2 ]
-sh	= [ 1, 2 ]
-toml	= [ 1, 2 ]
-xml	= [ 1, 2 ]
+build	= [ 1, 2, 3 ]
+c	= [ 1, 2, 3 ]
+cmake	= [ 1, 2, 3 ]
+conf	= [ 1, 2, 3 ]
+cpp	= [ 1, 2, 3 ]
+css	= [ 1, 2, 3 ]
+go	= [ 1, 2, 3 ]
+h	= [ 1, 2, 3 ]
+hpp	= [ 1, 2, 3 ]
+hs	= [ 1, 2, 3 ]
+html	= [ 1, 2, 3 ]
+ini	= [ 1, 2, 3 ]
+java	= [ 1, 2, 3 ]
+js	= [ 1, 2, 3 ]
+kt	= [ 1, 2, 3 ]
+log	= [ 1, 2, 3 ]
+md	= [ 1, 2, 3 ]
+ninja	= [ 1, 2, 3 ]
+py	= [ 1, 2, 3 ]
+rs	= [ 1, 2, 3 ]
+sh	= [ 1, 2, 3 ]
+toml	= [ 1, 2, 3 ]
+xml	= [ 1, 2, 3 ]
 
 tex	= [ 1, 50 ]
 
@@ -129,7 +134,7 @@ pdf	= [ 55 ]
 
 [mimetype]
 
-text	= [ 1, 2 ]
+text	= [ 1, 2, 3 ]
 audio	= [ 11 ]
 video	= [ 10 ]
 image	= [ 20, 21 ]
