@@ -30,20 +30,20 @@ impl BulkRename {
             )),
         };
 
-        let curr_tab = &context.tabs[context.curr_tab_index];
-
-        let paths = curr_tab.curr_list.get_selected_paths();
+        /* generate a random file name to write to */
         let mut rand_str = String::with_capacity(PREFIX.len() + 10);
         rand_str.push_str(PREFIX);
-
         rand::thread_rng()
             .sample_iter(&rand::distributions::Alphanumeric)
             .take(10)
             .for_each(|ch| rand_str.push(ch));
 
+        /* create this file in a temporary folder */
         let mut file_path = path::PathBuf::from("/tmp");
         file_path.push(rand_str);
 
+        let curr_tab = &context.tabs[context.curr_tab_index];
+        let paths = curr_tab.curr_list.get_selected_paths();
         {
             let mut file = std::fs::File::create(&file_path)?;
             for path in &paths {
@@ -57,12 +57,17 @@ impl BulkRename {
         let mut command = process::Command::new(editor);
         command.arg(&file_path);
 
+        let time = std::time::SystemTime::now();
         /* exit curses and launch program */
         {
             ncurses::savetty();
             ncurses::endwin();
             let mut handle = command.spawn()?;
             handle.wait()?;
+        }
+        let metadata = std::fs::metadata(&file_path)?;
+        if time >= metadata.modified()? {
+            return Ok(());
         }
 
         let mut paths_renamed: Vec<path::PathBuf> = Vec::with_capacity(paths.len());
@@ -80,6 +85,12 @@ impl BulkRename {
                 paths_renamed.push(path);
             }
         }
+        if paths_renamed.len() < paths.len() {
+            return Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidInput,
+                String::from("Not enough input given"),
+            ));
+        }
 
         for (p, q) in paths.iter().zip(paths_renamed.iter()) {
             println!("{:?} -> {:?}", p, q);
@@ -94,9 +105,19 @@ impl BulkRename {
         let user_input_trimmed = user_input.trim();
         if user_input_trimmed == "y" || user_input_trimmed == "yes" {
             for (p, q) in paths.iter().zip(paths_renamed.iter()) {
-                std::fs::rename(p, q)?;
+                let mut command = process::Command::new("mv");
+                command.arg("-iv");
+                command.arg("--");
+                command.arg(p);
+                command.arg(q);
+                let mut handle = command.spawn()?;
+                handle.wait()?;
             }
         }
+        print!("Press ENTER to continue");
+        std::io::stdout().flush()?;
+        std::io::stdin().read_line(&mut user_input)?;
+
         std::fs::remove_file(file_path)?;
 
         /* restore ncurses */
