@@ -2,7 +2,7 @@ use std::env;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::{JoshutoError, JoshutoResult};
+use crate::error::JoshutoResult;
 use crate::ui;
 use crate::window::JoshutoView;
 
@@ -61,9 +61,7 @@ impl JoshutoRunnable for TabSwitch {
             new_index -= tab_len;
         }
         let new_index = new_index as usize;
-        match Self::tab_switch(new_index, context, view) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(JoshutoError::from(e)),
-        }
+        Self::tab_switch(new_index, context, view)?;
+        Ok(())
     }
 }

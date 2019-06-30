@@ -25,7 +25,7 @@ impl ChangeDirectory {
         path: &path::PathBuf,
         context: &mut JoshutoContext,
         view: &JoshutoView,
-    ) -> Result<(), std::io::Error> {
+    ) -> std::io::Result<()> {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
 
         std::env::set_current_dir(path.as_path())?;

@@ -1,6 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::{JoshutoError, JoshutoResult};
+use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::window::JoshutoView;
 
@@ -50,9 +50,7 @@ impl std::fmt::Display for ParentDirectory {
 
 impl JoshutoRunnable for ParentDirectory {
     fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        match Self::parent_directory(context, view) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(JoshutoError::from(e)),
-        }
+        Self::parent_directory(context, view)?;
+        Ok(())
     }
 }

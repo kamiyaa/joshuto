@@ -2,7 +2,7 @@ use std::path;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
 use crate::context::JoshutoContext;
-use crate::error::{JoshutoError, JoshutoResult};
+use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
 use crate::window::JoshutoView;
 
@@ -29,10 +29,8 @@ impl NewTab {
         let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
         context.tabs.push(tab);
         context.curr_tab_index = context.tabs.len() - 1;
-        match TabSwitch::tab_switch(context.curr_tab_index, context, view) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(JoshutoError::from(e)),
-        }
+        TabSwitch::tab_switch(context.curr_tab_index, context, view)?;
+        Ok(())
     }
 }
 
@@ -70,10 +68,8 @@ impl CloseTab {
         if context.curr_tab_index > 0 {
             context.curr_tab_index -= 1;
         }
-        match TabSwitch::tab_switch(context.curr_tab_index, context, view) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(JoshutoError::from(e)),
-        }
+        TabSwitch::tab_switch(context.curr_tab_index, context, view)?;
+        Ok(())
     }
 }
 
