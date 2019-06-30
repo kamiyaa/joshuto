@@ -3,7 +3,7 @@ use std::path;
 use crate::commands;
 
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::window::JoshutoView;
 use commands::{JoshutoCommand, JoshutoRunnable};
@@ -58,15 +58,8 @@ impl std::fmt::Display for ChangeDirectory {
 }
 
 impl JoshutoRunnable for ChangeDirectory {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
-        match Self::change_directory(&self.path, context, view) {
-            Ok(_) => {}
-            Err(e) => return Err(JoshutoError::IO(e)),
-        }
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+        Self::change_directory(&self.path, context, view)?;
         ncurses::doupdate();
         Ok(())
     }

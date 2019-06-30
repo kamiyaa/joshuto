@@ -4,7 +4,6 @@ use std::time;
 use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand, ReloadDirList};
 use crate::config::{self, JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::window::JoshutoPanel;
@@ -97,7 +96,7 @@ fn process_threads(context: &mut JoshutoContext, view: &JoshutoView) -> std::io:
                 break;
             }
             Ok(progress_info) => {
-                ui::show_fs_operation_progress(&view.bot_win, &progress_info);
+                ui::draw_fs_operation_progress(&view.bot_win, &progress_info);
                 ncurses::doupdate();
             }
             _ => {}
@@ -190,12 +189,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
             }
             match keycommand.execute(&mut context, &view) {
                 Ok(()) => {}
-                Err(JoshutoError::IO(e)) => {
-                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
-                    ncurses::doupdate();
-                }
-                Err(JoshutoError::Keymap(e)) => {
-                    ui::wprint_err(&view.bot_win, e.to_string().as_str());
+                Err(e) => {
+                    ui::wprint_err(&view.bot_win, e.cause());
                     ncurses::doupdate();
                 }
             }

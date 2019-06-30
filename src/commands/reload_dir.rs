@@ -1,6 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::fs::JoshutoDirList;
 use crate::window::JoshutoView;
 
@@ -47,19 +47,11 @@ impl std::fmt::Display for ReloadDirList {
 }
 
 impl JoshutoRunnable for ReloadDirList {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
-        match Self::reload(context.curr_tab_index, context) {
-            Ok(_) => {
-                let curr_tab = &mut context.tabs[context.curr_tab_index];
-                curr_tab.refresh(view, &context.config_t);
-                ncurses::doupdate();
-                Ok(())
-            }
-            Err(e) => Err(JoshutoError::IO(e)),
-        }
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+        Self::reload(context.curr_tab_index, context)?;
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        curr_tab.refresh(view, &context.config_t);
+        ncurses::doupdate();
+        Ok(())
     }
 }

@@ -3,7 +3,7 @@ use std::path;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::ui;
 use crate::window::JoshutoView;
 
@@ -74,18 +74,11 @@ impl std::fmt::Display for DeleteFiles {
 }
 
 impl JoshutoRunnable for DeleteFiles {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
-        let res = Self::delete_files(context, view);
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+        Self::delete_files(context, view)?;
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab.refresh(view, &context.config_t);
         ncurses::doupdate();
-        match res {
-            Ok(_) => Ok(()),
-            Err(e) => Err(JoshutoError::IO(e)),
-        }
+        Ok(())
     }
 }

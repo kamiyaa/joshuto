@@ -1,6 +1,6 @@
 use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::fs::JoshutoDirEntry;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
@@ -76,11 +76,7 @@ impl std::fmt::Display for SetMode {
 }
 
 impl JoshutoRunnable for SetMode {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         use std::os::unix::fs::PermissionsExt;
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         if let Some(file) = curr_tab.curr_list.get_curr_mut() {

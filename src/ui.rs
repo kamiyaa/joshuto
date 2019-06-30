@@ -344,26 +344,13 @@ pub fn redraw_tab_view(win: &window::JoshutoPanel, context: &JoshutoContext) {
     ncurses::wnoutrefresh(win.win);
 }
 
-pub fn show_fs_operation_progress(
+pub fn draw_fs_operation_progress(
     win: &window::JoshutoPanel,
     process_info: &fs_extra::TransitProcess,
 ) {
     let percentage: f64 = process_info.copied_bytes as f64 / process_info.total_bytes as f64;
 
     let cols: i32 = (f64::from(win.cols) * percentage) as i32;
-    ncurses::mvwchgat(
-        win.win,
-        0,
-        0,
-        cols,
-        ncurses::A_STANDOUT(),
-        THEME_T.selection.colorpair,
-    );
-    win.queue_for_refresh();
-}
-
-pub fn draw_progress_bar(win: &window::JoshutoPanel, percentage: f32) {
-    let cols: i32 = (win.cols as f32 * percentage) as i32;
     ncurses::mvwchgat(
         win.win,
         0,

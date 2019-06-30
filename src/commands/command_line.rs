@@ -1,6 +1,6 @@
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
 use crate::window::JoshutoView;
@@ -19,11 +19,7 @@ impl CommandLine {
         "console"
     }
 
-    pub fn readline(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    pub fn readline(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         const PROMPT: &str = ":";
         let (term_rows, term_cols) = ui::getmaxyx();
         let user_input: Option<String> = {
@@ -49,15 +45,9 @@ impl CommandLine {
                         Ok(wexp) => wexp.iter().collect(),
                         Err(_) => Vec::new(),
                     };
-                    match commands::from_args(command, &args) {
-                        Ok(s) => s.execute(context, view),
-                        Err(e) => Err(JoshutoError::Keymap(e)),
-                    }
+                    commands::from_args(command, &args)?.execute(context, view)
                 }
-                None => match commands::from_args(trimmed, &Vec::new()) {
-                    Ok(s) => s.execute(context, view),
-                    Err(e) => Err(JoshutoError::Keymap(e)),
-                },
+                None => commands::from_args(trimmed, &Vec::new())?.execute(context, view),
             }
         } else {
             Ok(())
@@ -74,11 +64,7 @@ impl std::fmt::Display for CommandLine {
 }
 
 impl JoshutoRunnable for CommandLine {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let res = self.readline(context, view);
         ncurses::doupdate();
         res

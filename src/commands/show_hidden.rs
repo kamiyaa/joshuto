@@ -1,6 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::window::JoshutoView;
 
@@ -34,11 +34,7 @@ impl std::fmt::Display for ToggleHiddenFiles {
 }
 
 impl JoshutoRunnable for ToggleHiddenFiles {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         Self::toggle_hidden(context);
         ReloadDirList::new().execute(context, view)
     }
