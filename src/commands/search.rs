@@ -3,7 +3,7 @@ use std::sync::Mutex;
 
 use crate::commands::{cursor_move, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
 use crate::window::JoshutoView;
 
@@ -73,11 +73,7 @@ impl std::fmt::Display for Search {
 }
 
 impl JoshutoRunnable for Search {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let index = Self::search(&context.tabs[context.curr_tab_index], &self.pattern);
         if let Some(index) = index {
             cursor_move::cursor_move(index, context, view);
@@ -132,11 +128,7 @@ impl std::fmt::Display for SearchNext {
 }
 
 impl JoshutoRunnable for SearchNext {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         search_with_func(context, view, Search::search);
         Ok(())
     }
@@ -163,11 +155,7 @@ impl std::fmt::Display for SearchPrev {
 }
 
 impl JoshutoRunnable for SearchPrev {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         search_with_func(context, view, Search::search_rev);
         Ok(())
     }

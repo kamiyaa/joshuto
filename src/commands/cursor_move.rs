@@ -1,6 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::window::JoshutoView;
 
 pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &JoshutoView) {
@@ -49,11 +49,7 @@ impl std::fmt::Display for CursorMoveDown {
 }
 
 impl JoshutoRunnable for CursorMoveDown {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let movement: Option<usize> = {
             let curr_list = &mut context.curr_tab_mut().curr_list;
             curr_list.index.map(|idx| idx + self.movement)
@@ -88,11 +84,7 @@ impl std::fmt::Display for CursorMoveUp {
 }
 
 impl JoshutoRunnable for CursorMoveUp {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let movement: Option<usize> = context.curr_tab_mut().curr_list.index.map(|idx| {
             if idx > self.movement {
                 idx - self.movement
@@ -128,11 +120,7 @@ impl std::fmt::Display for CursorMovePageUp {
 }
 
 impl JoshutoRunnable for CursorMovePageUp {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let movement: Option<usize> = {
             let curr_list = &mut context.curr_tab_mut().curr_list;
             let half_page = view.mid_win.cols as usize / 2;
@@ -168,11 +156,7 @@ impl std::fmt::Display for CursorMovePageDown {
 }
 
 impl JoshutoRunnable for CursorMovePageDown {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let movement: Option<usize> = {
             let curr_list = &mut context.curr_tab_mut().curr_list;
             let dir_len = curr_list.contents.len();
@@ -214,11 +198,7 @@ impl std::fmt::Display for CursorMoveHome {
 }
 
 impl JoshutoRunnable for CursorMoveHome {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let movement: Option<usize> = {
             let len = context.curr_tab_mut().curr_list.contents.len();
             if len == 0 {
@@ -256,11 +236,7 @@ impl std::fmt::Display for CursorMoveEnd {
 }
 
 impl JoshutoRunnable for CursorMoveEnd {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let movement: Option<usize> = {
             let len = context.curr_tab_mut().curr_list.contents.len();
             if len == 0 {

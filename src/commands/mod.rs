@@ -42,7 +42,7 @@ use std::path::PathBuf;
 
 use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
-use crate::error::{JoshutoError, KeymapError};
+use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::window::JoshutoView;
 
 use crate::HOME_DIR;
@@ -54,8 +54,7 @@ pub enum CommandKeybind {
 }
 
 pub trait JoshutoRunnable {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView)
-        -> Result<(), JoshutoError>;
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()>;
 }
 
 pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
@@ -69,23 +68,23 @@ impl std::fmt::Display for CommandKeybind {
     }
 }
 
-pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, KeymapError> {
+pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoCommand>> {
     match command {
         "cd" => match args.len() {
             0 => match HOME_DIR.as_ref() {
                 Some(s) => Ok(Box::new(self::ChangeDirectory::new(s.clone()))),
-                None => Err(KeymapError::new(
-                    Some("cd"),
-                    String::from("Cannot find home directory"),
+                None => Err(JoshutoError::new(
+                    JoshutoErrorKind::EnvVarNotFound,
+                    format!("{}: Cannot find home directory", command),
                 )),
             },
             1 => match args[0] {
                 ".." => Ok(Box::new(self::ParentDirectory::new())),
                 arg => Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(arg)))),
             },
-            i => Err(KeymapError::new(
-                Some("cd"),
-                format!("Expected 1 argument, got {}", i),
+            i => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: Expected 1 argument, got {}", command, i),
             )),
         },
         "close_tab" => Ok(Box::new(self::CloseTab::new())),
@@ -99,31 +98,37 @@ pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, Ke
                 String::from(args[0]),
                 String::new(),
             ))),
-            i => Err(KeymapError::new(
-                Some("console"),
-                format!("Expected 0 or 2 arguments, got {}", i),
+            i => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: Expected 0 or 2 arguments, got {}", command, i),
             )),
         },
         "cursor_move_down" => match args.len() {
             0 => Ok(Box::new(self::CursorMoveDown::new(1))),
             1 => match args[0].parse::<usize>() {
                 Ok(s) => Ok(Box::new(self::CursorMoveDown::new(s))),
-                Err(e) => Err(KeymapError::new(Some("cursor_move_down"), e.to_string())),
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::ParseError,
+                    e.to_string(),
+                )),
             },
-            i => Err(KeymapError::new(
-                Some("cursor_move_down"),
-                format!("Expected 0 or 1 arguments, got {}", i),
+            i => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: Expected 0 or 1 arguments, got {}", command, i),
             )),
         },
         "cursor_move_up" => match args.len() {
             0 => Ok(Box::new(self::CursorMoveUp::new(1))),
             1 => match args[0].parse::<usize>() {
                 Ok(s) => Ok(Box::new(self::CursorMoveUp::new(s))),
-                Err(e) => Err(KeymapError::new(Some("cursor_move_down"), e.to_string())),
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::ParseError,
+                    format!("{}: {}", command, e.to_string()),
+                )),
             },
-            i => Err(KeymapError::new(
-                Some("cursor_move_down"),
-                format!("Expected 0 or 1 arguments, got {}", i),
+            i => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: Expected 0 or 1 arguments, got {}", command, i),
             )),
         },
         "cursor_move_home" => Ok(Box::new(self::CursorMoveHome::new())),
@@ -135,9 +140,9 @@ pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, Ke
         "force_quit" => Ok(Box::new(self::ForceQuit::new())),
         "mkdir" => {
             if args.is_empty() {
-                Err(KeymapError::new(
-                    Some("mkdir"),
-                    String::from("mkdir requires additional parameter"),
+                Err(JoshutoError::new(
+                    JoshutoErrorKind::IOInvalidData,
+                    format!("{}: missing additional parameter", command),
                 ))
             } else {
                 let paths: Vec<PathBuf> = args.iter().map(PathBuf::from).collect();
@@ -155,9 +160,9 @@ pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, Ke
                     "--overwrite" => options.overwrite = true,
                     "--skip_exist" => options.skip_exist = true,
                     _ => {
-                        return Err(KeymapError::new(
-                            Some("paste_files"),
-                            format!("unknown option {}", arg),
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::IOInvalidData,
+                            format!("{}: unknown option {}", command, arg),
                         ));
                     }
                 }
@@ -171,18 +176,18 @@ pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, Ke
                 let path: PathBuf = PathBuf::from(args[0]);
                 Ok(Box::new(self::RenameFile::new(path)))
             }
-            i => Err(KeymapError::new(
-                Some("rename_file"),
-                format!("Expected 1, got {}", i),
+            i => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("rename_file: Expected 1, got {}", i),
             )),
         },
         "rename_append" => Ok(Box::new(self::RenameFileAppend::new())),
         "rename_prepend" => Ok(Box::new(self::RenameFilePrepend::new())),
         "search" => match args.len() {
             1 => Ok(Box::new(self::Search::new(args[0]))),
-            i => Err(KeymapError::new(
-                Some("search"),
-                format!("Expected 1, got {}", i),
+            i => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: Expected 1, got {}", command, i),
             )),
         },
         "search_next" => Ok(Box::new(self::SearchNext::new())),
@@ -195,9 +200,9 @@ pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, Ke
                     "--toggle" => toggle = true,
                     "--all" => all = true,
                     _ => {
-                        return Err(KeymapError::new(
-                            Some("select_files"),
-                            format!("unknown option {}", arg),
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::IOInvalidData,
+                            format!("{}: unknown option {}", command, arg),
                         ));
                     }
                 }
@@ -209,17 +214,23 @@ pub fn from_args(command: &str, args: &[&str]) -> Result<Box<JoshutoCommand>, Ke
             if args.len() == 1 {
                 match args[0].parse::<i32>() {
                     Ok(s) => Ok(Box::new(self::TabSwitch::new(s))),
-                    Err(e) => Err(KeymapError::new(Some("tab_switch"), e.to_string())),
+                    Err(e) => Err(JoshutoError::new(
+                        JoshutoErrorKind::IOInvalidData,
+                        format!("{}: {}", command, e.to_string()),
+                    )),
                 }
             } else {
-                Err(KeymapError::new(
-                    Some("tab_switch"),
-                    String::from("No option provided"),
+                Err(JoshutoError::new(
+                    JoshutoErrorKind::IOInvalidData,
+                    format!("{}: {}", command, "No option provided"),
                 ))
             }
         }
         "toggle_hidden" => Ok(Box::new(self::ToggleHiddenFiles::new())),
-        inp => Err(KeymapError::new(None, format!("Unknown command: {}", inp))),
+        inp => Err(JoshutoError::new(
+            JoshutoErrorKind::UnknownCommand,
+            format!("{}: {}", "Unknown command", inp),
+        )),
     }
 }
 

@@ -2,7 +2,7 @@ use std::path;
 
 use crate::commands::{CommandLine, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::window::JoshutoView;
 
 use rustyline::completion::{escape, Quote};
@@ -60,11 +60,7 @@ impl std::fmt::Display for RenameFile {
 }
 
 impl JoshutoRunnable for RenameFile {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let mut path: Option<path::PathBuf> = None;
 
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
@@ -73,10 +69,7 @@ impl JoshutoRunnable for RenameFile {
         }
 
         if let Some(path) = path {
-            match self.rename_file(&path, context, view) {
-                Ok(_) => {}
-                Err(e) => return Err(JoshutoError::IO(e)),
-            }
+            self.rename_file(&path, context, view)?;
             ncurses::doupdate();
         }
         Ok(())
@@ -99,7 +92,7 @@ impl RenameFileAppend {
         context: &mut JoshutoContext,
         view: &JoshutoView,
         file_name: String,
-    ) -> Result<(), JoshutoError> {
+    ) -> JoshutoResult<()> {
         let prefix;
         let suffix;
         if let Some(ext) = file_name.rfind('.') {
@@ -124,11 +117,7 @@ impl std::fmt::Display for RenameFileAppend {
 }
 
 impl JoshutoRunnable for RenameFileAppend {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
         let file_name = match curr_list.get_curr_ref() {
             Some(s) => {
@@ -167,7 +156,7 @@ impl RenameFilePrepend {
         context: &mut JoshutoContext,
         view: &JoshutoView,
         file_name: String,
-    ) -> Result<(), JoshutoError> {
+    ) -> JoshutoResult<()> {
         let prefix = String::from("rename ");
         let suffix = file_name;
 
@@ -185,11 +174,7 @@ impl std::fmt::Display for RenameFilePrepend {
 }
 
 impl JoshutoRunnable for RenameFilePrepend {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
         let file_name = match curr_list.get_curr_ref() {
             Some(s) => {

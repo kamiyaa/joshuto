@@ -6,7 +6,7 @@ use std::time;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::JoshutoResult;
 use crate::fs::{fs_extra_extra, JoshutoDirList};
 use crate::window::JoshutoView;
 
@@ -87,16 +87,12 @@ impl std::fmt::Display for CutFiles {
 }
 
 impl JoshutoRunnable for CutFiles {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
         let curr_tab = context.curr_tab_ref();
-        match LocalState::repopulated_selected_files(&curr_tab.curr_list) {
-            Ok(_) => {
-                LocalState::set_file_op(FileOp::Cut);
-                LocalState::set_tab_src(context.curr_tab_index);
-                Ok(())
-            }
-            Err(e) => Err(JoshutoError::IO(e)),
-        }
+        LocalState::repopulated_selected_files(&curr_tab.curr_list)?;
+        LocalState::set_file_op(FileOp::Cut);
+        LocalState::set_tab_src(context.curr_tab_index);
+        Ok(())
     }
 }
 
@@ -121,16 +117,12 @@ impl std::fmt::Display for CopyFiles {
 }
 
 impl JoshutoRunnable for CopyFiles {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
         let curr_tab = context.curr_tab_ref();
-        match LocalState::repopulated_selected_files(&curr_tab.curr_list) {
-            Ok(_) => {
-                LocalState::set_file_op(FileOp::Copy);
-                LocalState::set_tab_src(context.curr_tab_index);
-                Ok(())
-            }
-            Err(e) => Err(JoshutoError::IO(e)),
-        }
+        LocalState::repopulated_selected_files(&curr_tab.curr_list)?;
+        LocalState::set_file_op(FileOp::Copy);
+        LocalState::set_tab_src(context.curr_tab_index);
+        Ok(())
     }
 }
 
@@ -159,21 +151,16 @@ impl std::fmt::Debug for PasteFiles {
 }
 
 impl JoshutoRunnable for PasteFiles {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
         let file_operation = FILE_OPERATION.lock().unwrap();
 
         let thread = match *file_operation {
             FileOp::Copy => self.copy_paste(context),
             FileOp::Cut => self.cut_paste(context),
-        };
+        }?;
 
-        match thread {
-            Ok(s) => {
-                context.threads.push(s);
-                Ok(())
-            }
-            Err(e) => Err(JoshutoError::IO(e)),
-        }
+        context.threads.push(thread);
+        Ok(())
     }
 }
 

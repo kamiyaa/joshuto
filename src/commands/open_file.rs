@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype;
 use crate::context::JoshutoContext;
-use crate::error::JoshutoError;
+use crate::error::{JoshutoError, JoshutoResult};
 use crate::history::DirectoryHistory;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
@@ -119,14 +119,10 @@ impl std::fmt::Display for OpenFile {
 }
 
 impl JoshutoRunnable for OpenFile {
-    fn execute(
-        &self,
-        context: &mut JoshutoContext,
-        view: &JoshutoView,
-    ) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         match Self::open(context, view) {
             Ok(_) => Ok(()),
-            Err(e) => Err(JoshutoError::IO(e)),
+            Err(e) => Err(JoshutoError::from(e)),
         }
     }
 }
@@ -211,7 +207,7 @@ impl std::fmt::Display for OpenFileWith {
 }
 
 impl JoshutoRunnable for OpenFileWith {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> Result<(), JoshutoError> {
+    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
         let paths = curr_list.get_selected_paths();
         Self::open_with(&paths);

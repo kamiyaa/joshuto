@@ -46,7 +46,9 @@ impl JoshutoMimetypeEntry {
 impl std::fmt::Display for JoshutoMimetypeEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(self.get_command()).unwrap();
-        self.get_args().iter().for_each(|arg| write!(f, " {}", arg).unwrap());
+        self.get_args()
+            .iter()
+            .for_each(|arg| write!(f, " {}", arg).unwrap());
 
         f.write_str("\t[").unwrap();
         if self.get_fork() {

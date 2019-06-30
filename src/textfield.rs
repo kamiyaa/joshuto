@@ -1,8 +1,6 @@
 use crate::window;
 use crate::KEYMAP_T;
 
-use std::unimplemented;
-
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
 use rustyline::line_buffer;
 
