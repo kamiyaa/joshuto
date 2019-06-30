@@ -1,3 +1,4 @@
+mod bulk_rename;
 mod change_directory;
 mod command_line;
 mod cursor_move;
@@ -16,6 +17,7 @@ mod show_hidden;
 mod tab_operations;
 mod tab_switch;
 
+pub use self::bulk_rename::BulkRename;
 pub use self::change_directory::ChangeDirectory;
 pub use self::command_line::CommandLine;
 pub use self::cursor_move::{
@@ -70,11 +72,12 @@ impl std::fmt::Display for CommandKeybind {
 
 pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoCommand>> {
     match command {
+        "bulk_rename" => Ok(Box::new(self::BulkRename::new())),
         "cd" => match args.len() {
             0 => match HOME_DIR.as_ref() {
                 Some(s) => Ok(Box::new(self::ChangeDirectory::new(s.clone()))),
                 None => Err(JoshutoError::new(
-                    JoshutoErrorKind::EnvVarNotFound,
+                    JoshutoErrorKind::EnvVarNotPresent,
                     format!("{}: Cannot find home directory", command),
                 )),
             },

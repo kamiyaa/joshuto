@@ -22,7 +22,12 @@ pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &Jo
         }
     }
 
-    curr_tab.refresh(&view, &context.config_t);
+    curr_tab.refresh_curr(&view.mid_win, &context.config_t);
+    if context.config_t.show_preview {
+        curr_tab.refresh_preview(&view.right_win, &context.config_t);
+    }
+    curr_tab.refresh_path_status(&view.top_win, &context.config_t);
+    curr_tab.refresh_file_status(&view.bot_win);
     ncurses::doupdate();
 }
 

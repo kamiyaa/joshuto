@@ -24,7 +24,7 @@ pub enum JoshutoErrorKind {
     IOUnexpectedEof,
 
     // environment variable not found
-    EnvVarNotFound,
+    EnvVarNotPresent,
 
     ParseError,
     UnknownCommand,

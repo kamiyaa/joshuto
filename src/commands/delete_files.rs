@@ -77,7 +77,12 @@ impl JoshutoRunnable for DeleteFiles {
     fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         Self::delete_files(context, view)?;
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.refresh(view, &context.config_t);
+        curr_tab.refresh_curr(&view.mid_win, &context.config_t);
+        if context.config_t.show_preview {
+            curr_tab.refresh_preview(&view.right_win, &context.config_t);
+        }
+        curr_tab.refresh_path_status(&view.top_win, &context.config_t);
+        curr_tab.refresh_file_status(&view.bot_win);
         ncurses::doupdate();
         Ok(())
     }
