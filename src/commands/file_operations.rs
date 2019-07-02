@@ -176,99 +176,76 @@ impl PasteFiles {
         &self,
         context: &mut JoshutoContext,
     ) -> std::io::Result<FileOperationThread<u64, fs_extra::TransitProcess>> {
+        let paths =
+            SELECTED_FILES.lock().unwrap().take().ok_or_else(|| {
+                std::io::Error::new(std::io::ErrorKind::Other, "no files selected")
+            })?;
+        if paths.is_empty() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "no files selected",
+            ));
+        }
+
         let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
         let tab_dest = context.curr_tab_index;
         let destination = context.tabs[tab_dest].curr_path.clone();
 
         let options = self.options.clone();
-
         let (tx, rx) = mpsc::channel();
 
-        let paths = SELECTED_FILES.lock().unwrap().take();
-        match paths {
-            Some(paths) => {
-                if paths.is_empty() {
-                    return Err(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        "no files selected",
-                    ));
-                }
+        let handle = thread::spawn(move || {
+            let progress_handle = |process_info: fs_extra::TransitProcess| {
+                tx.send(process_info);
+                fs_extra::dir::TransitProcessResult::ContinueOrAbort
+            };
+            fs_extra_extra::fs_cut_with_progress(&paths, &destination, options, progress_handle)
+        });
 
-                let handle = thread::spawn(move || {
-                    let progress_handle = |process_info: fs_extra::TransitProcess| {
-                        tx.send(process_info);
-                        fs_extra::dir::TransitProcessResult::ContinueOrAbort
-                    };
-                    fs_extra_extra::fs_cut_with_progress(
-                        &paths,
-                        &destination,
-                        options.clone(),
-                        progress_handle,
-                    )
-                });
-
-                let thread = FileOperationThread {
-                    tab_src,
-                    tab_dest,
-                    handle,
-                    recv: rx,
-                };
-                Ok(thread)
-            }
-            None => Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "no files selected",
-            )),
-        }
+        let thread = FileOperationThread {
+            tab_src,
+            tab_dest,
+            handle,
+            recv: rx,
+        };
+        Ok(thread)
     }
 
     fn copy_paste(
         &self,
         context: &mut JoshutoContext,
     ) -> std::io::Result<FileOperationThread<u64, fs_extra::TransitProcess>> {
+        let paths =
+            SELECTED_FILES.lock().unwrap().take().ok_or_else(|| {
+                std::io::Error::new(std::io::ErrorKind::Other, "no files selected")
+            })?;
+        if paths.is_empty() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "no files selected",
+            ));
+        }
+
+        let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
         let tab_dest = context.curr_tab_index;
         let destination = context.tabs[tab_dest].curr_path.clone();
 
-        let tab_src = TAB_SRC.load(atomic::Ordering::SeqCst);
         let options = self.options.clone();
-
         let (tx, rx) = mpsc::channel();
+        let handle = thread::spawn(move || {
+            let progress_handle = |process_info: fs_extra::TransitProcess| {
+                tx.send(process_info);
+                fs_extra::dir::TransitProcessResult::ContinueOrAbort
+            };
+            fs_extra_extra::fs_copy_with_progress(&paths, &destination, options, progress_handle)
+        });
 
-        let paths = SELECTED_FILES.lock().unwrap().take();
-        match paths {
-            Some(paths) => {
-                if paths.is_empty() {
-                    return Err(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        "no files selected",
-                    ));
-                }
-
-                let handle = thread::spawn(move || {
-                    let progress_handle = |process_info: fs_extra::TransitProcess| {
-                        tx.send(process_info);
-                        fs_extra::dir::TransitProcessResult::ContinueOrAbort
-                    };
-                    fs_extra_extra::fs_copy_with_progress(
-                        &paths,
-                        &destination,
-                        options.clone(),
-                        progress_handle,
-                    )
-                });
-
-                let thread = FileOperationThread {
-                    tab_src,
-                    tab_dest,
-                    handle,
-                    recv: rx,
-                };
-                Ok(thread)
-            }
-            None => Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "no files selected",
-            )),
-        }
+        let thread = FileOperationThread {
+            tab_src,
+            tab_dest,
+            handle,
+            recv: rx,
+        };
+        Ok(thread)
     }
 }
