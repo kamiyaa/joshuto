@@ -1,23 +1,26 @@
 use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
-use crate::sort;
+use crate::sort::SortOption;
 use crate::window::JoshutoPageState;
 
 #[derive(Debug)]
 pub struct JoshutoDirList {
     pub index: Option<usize>,
     path: path::PathBuf,
-    outdated: bool,
+    content_outdated: bool,
+    order_outdated: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
     pub pagestate: JoshutoPageState,
 }
 
 impl JoshutoDirList {
-    pub fn new(path: path::PathBuf, sort_option: &sort::SortOption) -> std::io::Result<Self> {
-        let mut contents = read_dir_list(path.as_path(), sort_option)?;
-        contents.sort_by(&sort_option.compare_func());
+    pub fn new(path: path::PathBuf, sort_option: &SortOption) -> std::io::Result<Self> {
+        let filter_func = sort_option.filter_func();
+        let mut contents = read_dir_list(path.as_path(), filter_func)?;
+        let compare_func = sort_option.compare_func();
+        contents.sort_by(compare_func);
 
         let index = if contents.is_empty() { None } else { Some(0) };
 
@@ -27,29 +30,38 @@ impl JoshutoDirList {
         Ok(JoshutoDirList {
             index,
             path,
-            outdated: false,
+            content_outdated: false,
+            order_outdated: false,
             metadata,
             contents,
             pagestate,
         })
     }
 
+    pub fn sort<F>(&mut self, sort_func: F)
+    where
+        F: Fn(&JoshutoDirEntry, &JoshutoDirEntry) -> std::cmp::Ordering,
+    {
+        self.contents.sort_by(sort_func);
+    }
+
     pub fn depreciate(&mut self) {
-        self.outdated = true;
+        self.content_outdated = true;
     }
 
     pub fn need_update(&self) -> bool {
-        self.outdated
+        self.content_outdated
     }
 
     pub fn file_path(&self) -> &path::PathBuf {
         &self.path
     }
 
-    pub fn update_contents(&mut self, sort_option: &sort::SortOption) -> std::io::Result<()> {
+    pub fn reload_contents(&mut self, sort_option: &SortOption) -> std::io::Result<()> {
+        let filter_func = sort_option.filter_func();
+        let mut contents = read_dir_list(&self.path, filter_func)?;
         let sort_func = sort_option.compare_func();
-        let mut contents = read_dir_list(&self.path, sort_option)?;
-        contents.sort_by(&sort_func);
+        contents.sort_by(sort_func);
 
         let contents_len = contents.len();
         /* update the index */
@@ -71,7 +83,7 @@ impl JoshutoDirList {
         let metadata = JoshutoMetadata::from(&self.path)?;
         self.metadata = metadata;
         self.contents = contents;
-        self.outdated = false;
+        self.content_outdated = false;
 
         Ok(())
     }
@@ -117,11 +129,10 @@ impl JoshutoDirList {
     }
 }
 
-fn read_dir_list(
-    path: &path::Path,
-    sort_option: &sort::SortOption,
-) -> std::io::Result<Vec<JoshutoDirEntry>> {
-    let filter_func = sort_option.filter_func();
+fn read_dir_list<F>(path: &path::Path, filter_func: F) -> std::io::Result<Vec<JoshutoDirEntry>>
+where
+    F: Fn(&Result<fs::DirEntry, std::io::Error>) -> bool,
+{
     let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
         .filter(filter_func)
         .filter_map(map_entry_default)

@@ -63,13 +63,13 @@ impl DirectoryHistory for JoshutoHistory {
         match self.remove(&path.to_path_buf()) {
             Some(mut dirlist) => {
                 if dirlist.need_update() {
-                    dirlist.update_contents(&sort_option)?
+                    dirlist.reload_contents(&sort_option)?
                 } else {
                     let metadata = std::fs::symlink_metadata(dirlist.file_path())?;
 
                     let modified = metadata.modified()?;
                     if modified > dirlist.metadata.modified {
-                        dirlist.update_contents(&sort_option)?
+                        dirlist.reload_contents(&sort_option)?
                     }
                 }
                 Ok(dirlist)
@@ -89,7 +89,7 @@ impl DirectoryHistory for JoshutoHistory {
             Entry::Occupied(entry) => {
                 /*
                                 if dir_entry.need_update() {
-                                    dir_entry.update_contents(&sort_option)?;
+                                    dir_entry.reload_contents(&sort_option)?;
                                 }
                 */
                 Ok(entry.into_mut())
