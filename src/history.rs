@@ -1,13 +1,13 @@
 use std::collections::{hash_map::Entry, HashMap};
 use std::path::{Path, PathBuf};
 
-use crate::fs::JoshutoDirList;
+use crate::fs::{JoshutoDirEntry, JoshutoDirList};
 use crate::sort;
 
 pub trait DirectoryHistory {
     fn populate_to_root(
         &mut self,
-        pathbuf: &PathBuf,
+        path: &Path,
         sort_option: &sort::SortOption,
     ) -> std::io::Result<()>;
     fn pop_or_create(
@@ -28,28 +28,29 @@ pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
 impl DirectoryHistory for JoshutoHistory {
     fn populate_to_root(
         &mut self,
-        pathbuf: &PathBuf,
+        path: &Path,
         sort_option: &sort::SortOption,
     ) -> std::io::Result<()> {
-        let mut ancestors = pathbuf.ancestors();
-        match ancestors.next() {
-            None => {}
-            Some(mut ancestor) => {
-                for curr in ancestors {
-                    let mut dirlist = JoshutoDirList::new(curr.to_path_buf().clone(), sort_option)?;
-                    let index = dirlist.contents.iter().enumerate().find_map(|(i, dir)| {
-                        if dir.file_path() == ancestor {
-                            Some(i)
-                        } else {
-                            None
+        let mut ancestors = path.ancestors();
+        if let Some(mut ancestor) = ancestors.next() {
+            for curr in ancestors {
+                match self.entry(curr.to_path_buf()) {
+                    Entry::Occupied(mut entry) => {
+                        let dirlist = entry.get_mut();
+                        dirlist.reload_contents(sort_option)?;
+                        if let Some(i) = get_index_of_value(&dirlist.contents, &ancestor) {
+                            dirlist.index = Some(i);
                         }
-                    });
-                    if let Some(i) = index {
-                        dirlist.index = Some(i);
                     }
-                    self.insert(curr.to_path_buf(), dirlist);
-                    ancestor = curr;
+                    Entry::Vacant(entry) => {
+                        let mut dirlist = JoshutoDirList::new(curr.to_path_buf().clone(), sort_option)?;
+                        if let Some(i) = get_index_of_value(&dirlist.contents, &ancestor) {
+                            dirlist.index = Some(i);
+                        }
+                        entry.insert(dirlist);
+                    }
                 }
+                ancestor = curr;
             }
         }
         Ok(())
@@ -76,7 +77,8 @@ impl DirectoryHistory for JoshutoHistory {
             }
             None => {
                 let path_clone = path.to_path_buf();
-                JoshutoDirList::new(path_clone, &sort_option)
+                let dirlist = JoshutoDirList::new(path_clone, &sort_option)?;
+                Ok(dirlist)
             }
         }
     }
@@ -104,4 +106,14 @@ impl DirectoryHistory for JoshutoHistory {
     fn depreciate_all_entries(&mut self) {
         self.iter_mut().for_each(|(_, v)| v.depreciate());
     }
+}
+
+fn get_index_of_value(arr: &[JoshutoDirEntry], val: &Path) -> Option<usize> {
+    arr.iter().enumerate().find_map(|(i, dir)| {
+        if dir.file_path() == val {
+            Some(i)
+        } else {
+            None
+        }
+    })
 }

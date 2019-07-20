@@ -20,16 +20,17 @@ impl ReloadDirList {
     pub fn reload(index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
         let curr_tab = &mut context.tabs[index];
         let sort_option = &context.config_t.sort_option;
-        curr_tab.curr_list.update_contents(sort_option)?;
+        curr_tab.curr_list.reload_contents(sort_option)?;
 
         if let Some(parent) = curr_tab.curr_list.file_path().parent() {
             match curr_tab.history.entry(parent.to_path_buf().clone()) {
                 Entry::Occupied(mut entry) => {
                     let dirlist = entry.get_mut();
-                    dirlist.update_contents(sort_option)?;
+                    dirlist.reload_contents(sort_option)?;
                 }
                 Entry::Vacant(entry) => {
-                    let s = JoshutoDirList::new(parent.to_path_buf().clone(), sort_option)?;
+                    let mut s = JoshutoDirList::new(parent.to_path_buf().clone(), &sort_option)?;
+                    s.sort(sort_option.compare_func());
                     entry.insert(s);
                 }
             }

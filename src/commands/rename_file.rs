@@ -5,16 +5,6 @@ use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::window::JoshutoView;
 
-use rustyline::completion::{escape, Quote};
-
-#[cfg(unix)]
-static DEFAULT_BREAK_CHARS: [u8; 18] = [
-    b' ', b'\t', b'\n', b'"', b'\\', b'\'', b'`', b'@', b'$', b'>', b'<', b'=', b';', b'|', b'&',
-    b'{', b'(', b'\0',
-];
-#[cfg(unix)]
-static ESCAPE_CHAR: Option<char> = Some('\\');
-
 #[derive(Clone, Debug)]
 pub struct RenameFile {
     path: path::PathBuf,
@@ -44,7 +34,7 @@ impl RenameFile {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         curr_tab
             .curr_list
-            .update_contents(&context.config_t.sort_option)?;
+            .reload_contents(&context.config_t.sort_option)?;
         curr_tab.refresh_curr(&view.mid_win, &context.config_t);
         curr_tab.refresh_preview(&view.right_win, &context.config_t);
         Ok(())
@@ -119,18 +109,9 @@ impl std::fmt::Display for RenameFileAppend {
 impl JoshutoRunnable for RenameFileAppend {
     fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
-        let file_name = match curr_list.get_curr_ref() {
-            Some(s) => {
-                let escaped = escape(
-                    String::from(s.file_name()),
-                    ESCAPE_CHAR,
-                    &DEFAULT_BREAK_CHARS,
-                    Quote::None,
-                );
-                Some(escaped)
-            }
-            None => None,
-        };
+        let file_name = curr_list
+            .get_curr_ref()
+            .and_then(|s| Some(String::from(s.file_name())));
 
         if let Some(file_name) = file_name {
             self.rename_file(context, view, file_name)?;
@@ -176,18 +157,9 @@ impl std::fmt::Display for RenameFilePrepend {
 impl JoshutoRunnable for RenameFilePrepend {
     fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
-        let file_name = match curr_list.get_curr_ref() {
-            Some(s) => {
-                let escaped = escape(
-                    String::from(s.file_name()),
-                    ESCAPE_CHAR,
-                    &DEFAULT_BREAK_CHARS,
-                    Quote::None,
-                );
-                Some(escaped)
-            }
-            None => None,
-        };
+        let file_name = curr_list
+            .get_curr_ref()
+            .and_then(|s| Some(String::from(s.file_name())));
 
         if let Some(file_name) = file_name {
             self.rename_file(context, view, file_name)?;

@@ -3,10 +3,10 @@ use crate::config;
 use crate::tab::JoshutoTab;
 
 pub struct JoshutoContext {
-    pub threads: Vec<FileOperationThread<u64, fs_extra::TransitProcess>>,
+    pub exit: bool,
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
-    pub exit: bool,
+    pub threads: Vec<FileOperationThread<u64, fs_extra::TransitProcess>>,
 
     pub config_t: config::JoshutoConfig,
 }
@@ -14,10 +14,11 @@ pub struct JoshutoContext {
 impl JoshutoContext {
     pub fn new(config_t: config::JoshutoConfig) -> Self {
         JoshutoContext {
-            threads: Vec::new(),
+            exit: false,
             curr_tab_index: 0,
             tabs: Vec::new(),
-            exit: false,
+            threads: Vec::new(),
+
             config_t,
         }
     }

@@ -4,10 +4,10 @@ use std::process;
 
 use rand::Rng;
 
+use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::window::JoshutoView;
-use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 
 #[derive(Clone, Debug)]
 pub struct BulkRename;
@@ -24,10 +24,12 @@ impl BulkRename {
         const PREFIX: &str = "joshuto-";
         let editor = match std::env::var("EDITOR") {
             Ok(s) => s,
-            Err(_) => return Err(JoshutoError::new(
-                JoshutoErrorKind::EnvVarNotPresent,
-                String::from("EDITOR environment variable not set"),
-            )),
+            Err(_) => {
+                return Err(JoshutoError::new(
+                    JoshutoErrorKind::EnvVarNotPresent,
+                    String::from("EDITOR environment variable not set"),
+                ));
+            }
         };
 
         /* generate a random file name to write to */

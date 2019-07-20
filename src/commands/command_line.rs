@@ -40,14 +40,12 @@ impl CommandLine {
                 Some(ind) => {
                     let (command, xs) = trimmed.split_at(ind);
                     let xs = xs.trim_start();
-                    let wexp = wordexp::wordexp(xs, wordexp::Wordexp::new(0), 0);
-                    let args: Vec<&str> = match wexp.as_ref() {
-                        Ok(wexp) => wexp.iter().collect(),
-                        Err(_) => Vec::new(),
-                    };
-                    commands::from_args(command, &args)?.execute(context, view)
+                    let args: Vec<String> = vec![String::from(xs)];
+                    commands::from_args(String::from(command), args)?.execute(context, view)
                 }
-                None => commands::from_args(trimmed, &Vec::new())?.execute(context, view),
+                None => {
+                    commands::from_args(String::from(trimmed), Vec::new())?.execute(context, view)
+                }
             }
         } else {
             Ok(())

@@ -32,7 +32,7 @@ impl TabSwitch {
             if curr_tab.curr_list.need_update() {
                 curr_tab
                     .curr_list
-                    .update_contents(&context.config_t.sort_option)?;
+                    .reload_contents(&context.config_t.sort_option)?;
             }
             curr_tab.refresh(view, &context.config_t);
         }

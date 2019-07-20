@@ -70,8 +70,8 @@ impl std::fmt::Display for CommandKeybind {
     }
 }
 
-pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoCommand>> {
-    match command {
+pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<JoshutoCommand>> {
+    match command.as_str() {
         "bulk_rename" => Ok(Box::new(self::BulkRename::new())),
         "cd" => match args.len() {
             0 => match HOME_DIR.as_ref() {
@@ -81,7 +81,7 @@ pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoComma
                     format!("{}: Cannot find home directory", command),
                 )),
             },
-            1 => match args[0] {
+            1 => match args[0].as_str() {
                 ".." => Ok(Box::new(self::ParentDirectory::new())),
                 arg => Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(arg)))),
             },
@@ -98,7 +98,7 @@ pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoComma
                 String::new(),
             ))),
             1 => Ok(Box::new(self::CommandLine::new(
-                String::from(args[0]),
+                String::from(args[0].as_str()),
                 String::new(),
             ))),
             i => Err(JoshutoError::new(
@@ -159,7 +159,7 @@ pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoComma
             let mut options = fs_extra::dir::CopyOptions::new();
             options.buffer_size = 1024 * 1024 * 4;
             for arg in args {
-                match *arg {
+                match arg.as_str() {
                     "--overwrite" => options.overwrite = true,
                     "--skip_exist" => options.skip_exist = true,
                     _ => {
@@ -176,7 +176,7 @@ pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoComma
         "reload_dir_list" => Ok(Box::new(self::ReloadDirList::new())),
         "rename" => match args.len() {
             1 => {
-                let path: PathBuf = PathBuf::from(args[0]);
+                let path: PathBuf = PathBuf::from(args[0].as_str());
                 Ok(Box::new(self::RenameFile::new(path)))
             }
             i => Err(JoshutoError::new(
@@ -187,7 +187,7 @@ pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoComma
         "rename_append" => Ok(Box::new(self::RenameFileAppend::new())),
         "rename_prepend" => Ok(Box::new(self::RenameFilePrepend::new())),
         "search" => match args.len() {
-            1 => Ok(Box::new(self::Search::new(args[0]))),
+            1 => Ok(Box::new(self::Search::new(args[0].as_str()))),
             i => Err(JoshutoError::new(
                 JoshutoErrorKind::IOInvalidData,
                 format!("{}: Expected 1, got {}", command, i),
@@ -199,7 +199,7 @@ pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoComma
             let mut toggle = false;
             let mut all = false;
             for arg in args {
-                match *arg {
+                match arg.as_str() {
                     "--toggle" => toggle = true,
                     "--all" => all = true,
                     _ => {
@@ -232,7 +232,7 @@ pub fn from_args(command: &str, args: &[&str]) -> JoshutoResult<Box<JoshutoComma
         "toggle_hidden" => Ok(Box::new(self::ToggleHiddenFiles::new())),
         inp => Err(JoshutoError::new(
             JoshutoErrorKind::UnknownCommand,
-            format!("{}: {}", "Unknown command", inp),
+            format!("Unknown command: {}", inp),
         )),
     }
 }

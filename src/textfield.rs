@@ -29,6 +29,16 @@ pub struct JoshutoTextField<'a> {
     pub suffix: &'a str,
 }
 
+impl<'a> std::fmt::Debug for JoshutoTextField<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("JoshutoTextField")
+            .field("prompt", &self.prompt)
+            .field("prefix", &self.prefix)
+            .field("suffix", &self.suffix)
+            .finish()
+    }
+}
+
 impl<'a> JoshutoTextField<'a> {
     pub fn new(
         rows: i32,
@@ -144,7 +154,7 @@ impl<'a> JoshutoTextField<'a> {
                 if let Some(ref mut s) = completion_tracker {
                     if s.index < s.candidates.len() {
                         let candidate = &s.candidates[s.index];
-                        completer.update(&mut line_buffer, s.pos, candidate.replacement());
+                        completer.update(&mut line_buffer, s.pos, candidate.display());
                         s.index += 1;
                     }
                 }

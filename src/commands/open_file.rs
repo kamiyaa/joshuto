@@ -53,7 +53,10 @@ impl OpenFile {
             if curr_tab.curr_list.need_update() {
                 curr_tab
                     .curr_list
-                    .update_contents(&context.config_t.sort_option)?;
+                    .reload_contents(&context.config_t.sort_option)?;
+                curr_tab
+                    .curr_list
+                    .sort(context.config_t.sort_option.compare_func());
             }
             curr_tab.refresh(view, &context.config_t);
         } else {
@@ -69,7 +72,10 @@ impl OpenFile {
             if curr_tab.curr_list.need_update() {
                 curr_tab
                     .curr_list
-                    .update_contents(&context.config_t.sort_option)?;
+                    .reload_contents(&context.config_t.sort_option)?;
+                curr_tab
+                    .curr_list
+                    .sort(context.config_t.sort_option.compare_func());
             }
             curr_tab.refresh(view, &context.config_t);
         }
@@ -102,7 +108,7 @@ impl OpenFile {
         if mimetype_options.is_empty() {
             open::that(&paths[0]).unwrap();
         } else {
-            unix::open_with_entry(paths, &mimetype_options[0]);
+            mimetype_options[0].execute_with(paths);
         }
         ncurses::resetty();
         ncurses::refresh();
@@ -177,7 +183,7 @@ impl OpenFileWith {
                     if s < mimetype_options.len() {
                         ncurses::savetty();
                         ncurses::endwin();
-                        unix::open_with_entry(paths, &mimetype_options[s]);
+                        mimetype_options[s].execute_with(paths);
                         ncurses::resetty();
                         ncurses::refresh();
                     }

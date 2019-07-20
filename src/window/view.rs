@@ -10,6 +10,7 @@ pub struct JoshutoView {
     pub right_win: JoshutoPanel,
     pub bot_win: JoshutoPanel,
     pub win_ratio: (usize, usize, usize),
+    pub collapsed: bool,
 }
 
 impl JoshutoView {
@@ -65,6 +66,7 @@ impl JoshutoView {
             right_win,
             bot_win,
             win_ratio,
+            collapsed: false,
         }
     }
 

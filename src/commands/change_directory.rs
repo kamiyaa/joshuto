@@ -32,13 +32,13 @@ impl ChangeDirectory {
             .pop_or_create(&path, &context.config_t.sort_option)?;
 
         std::mem::swap(&mut curr_tab.curr_list, &mut curr_list);
+
+        curr_tab.history.insert(curr_list.file_path().clone(), curr_list);
         curr_tab.curr_path = path.clone();
 
-        if let Some(s) = path.parent() {
-            curr_tab
-                .history
-                .populate_to_root(s, &context.config_t.sort_option)?;
-        }
+        curr_tab
+            .history
+            .populate_to_root(path, &context.config_t.sort_option)?;
 
         curr_tab.refresh(view, &context.config_t);
         Ok(())

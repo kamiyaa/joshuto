@@ -1,6 +1,9 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
+use std::io::Read;
+use std::path::PathBuf;
+use std::process;
 
 use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::MIMETYPE_FILE;
@@ -19,6 +22,8 @@ pub struct JoshutoMimetypeEntry {
     fork: bool,
     #[serde(default = "default_false")]
     silent: bool,
+    #[serde(default = "default_false")]
+    confirm_exit: bool,
 }
 
 impl JoshutoMimetypeEntry {
@@ -40,6 +45,40 @@ impl JoshutoMimetypeEntry {
 
     pub fn get_silent(&self) -> bool {
         self.silent
+    }
+
+    pub fn get_confirm_exit(&self) -> bool {
+        self.confirm_exit
+    }
+
+    pub fn execute_with(&self, paths: &[&PathBuf]) {
+        let program = String::from(self.get_command());
+
+        let mut command = process::Command::new(program);
+        if self.get_silent() {
+            command.stdout(process::Stdio::null());
+            command.stderr(process::Stdio::null());
+        }
+
+        command.args(self.get_args());
+        command.args(paths.iter().map(|path| path.as_os_str()));
+
+        match command.spawn() {
+            Ok(mut handle) => {
+                if !self.get_fork() {
+                    match handle.wait() {
+                        Ok(_) => {
+                            if self.get_confirm_exit() {
+                                println!(" --- Press any key to continue --- ");
+                                std::io::stdin().bytes().next();
+                            }
+                        }
+                        Err(e) => eprintln!("{}", e),
+                    }
+                }
+            }
+            Err(e) => eprintln!("{}", e),
+        };
     }
 }
 
