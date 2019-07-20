@@ -24,23 +24,21 @@ impl ChangeDirectory {
         context: &mut JoshutoContext,
         view: &JoshutoView,
     ) -> std::io::Result<()> {
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-
         std::env::set_current_dir(path.as_path())?;
+
+        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        let mut curr_list = curr_tab
+            .history
+            .pop_or_create(&path, &context.config_t.sort_option)?;
+
+        std::mem::swap(&mut curr_tab.curr_list, &mut curr_list);
         curr_tab.curr_path = path.clone();
 
-        curr_tab
-            .history
-            .populate_to_root(&curr_tab.curr_path, &context.config_t.sort_option)?;
-
-        let mut new_curr_list = curr_tab
-            .history
-            .pop_or_create(&curr_tab.curr_path, &context.config_t.sort_option)?;
-
-        std::mem::swap(&mut curr_tab.curr_list, &mut new_curr_list);
-        curr_tab
-            .history
-            .insert(new_curr_list.file_path().clone(), new_curr_list);
+        if let Some(s) = path.parent() {
+            curr_tab
+                .history
+                .populate_to_root(s, &context.config_t.sort_option)?;
+        }
 
         curr_tab.refresh(view, &context.config_t);
         Ok(())
