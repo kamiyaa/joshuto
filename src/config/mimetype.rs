@@ -14,16 +14,16 @@ const fn default_false() -> bool {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
-    id: usize,
-    command: String,
+    pub id: usize,
+    pub command: String,
     #[serde(default)]
-    args: Vec<String>,
+    pub args: Vec<String>,
     #[serde(default = "default_false")]
-    fork: bool,
+    pub fork: bool,
     #[serde(default = "default_false")]
-    silent: bool,
+    pub silent: bool,
     #[serde(default = "default_false")]
-    confirm_exit: bool,
+    pub confirm_exit: bool,
 }
 
 impl JoshutoMimetypeEntry {
@@ -66,15 +66,19 @@ impl JoshutoMimetypeEntry {
         match command.spawn() {
             Ok(mut handle) => {
                 if !self.get_fork() {
+                    ncurses::savetty();
+                    ncurses::endwin();
                     match handle.wait() {
                         Ok(_) => {
                             if self.get_confirm_exit() {
-                                println!(" --- Press any key to continue --- ");
+                                println!(" --- Press ENTER to continue --- ");
                                 std::io::stdin().bytes().next();
                             }
                         }
                         Err(e) => eprintln!("{}", e),
                     }
+                    ncurses::resetty();
+                    ncurses::refresh();
                 }
             }
             Err(e) => eprintln!("{}", e),

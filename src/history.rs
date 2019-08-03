@@ -43,7 +43,8 @@ impl DirectoryHistory for JoshutoHistory {
                         }
                     }
                     Entry::Vacant(entry) => {
-                        let mut dirlist = JoshutoDirList::new(curr.to_path_buf().clone(), sort_option)?;
+                        let mut dirlist =
+                            JoshutoDirList::new(curr.to_path_buf().clone(), sort_option)?;
                         if let Some(i) = get_index_of_value(&dirlist.contents, &ancestor) {
                             dirlist.index = Some(i);
                         }

@@ -47,15 +47,21 @@ fn preview_directory(
     path: &path::Path,
     win: &JoshutoPanel,
     config_t: &JoshutoConfig,
-) {
+) -> std::io::Result<()> {
     match history.entry(path.to_path_buf().clone()) {
         Entry::Occupied(mut entry) => {
-            ui::display_contents(
-                win,
-                entry.get_mut(),
-                config_t,
-                &ui::SECONDARY_DISPLAY_OPTION,
-            );
+            let mut dirlist = entry.get_mut();
+            if dirlist.need_update() {
+                dirlist.reload_contents(&config_t.sort_option)?
+            } else {
+                let metadata = std::fs::symlink_metadata(dirlist.file_path())?;
+
+                let modified = metadata.modified()?;
+                if modified > dirlist.metadata.modified {
+                    dirlist.reload_contents(&config_t.sort_option)?
+                }
+            }
+            ui::display_contents(win, dirlist, config_t, &ui::SECONDARY_DISPLAY_OPTION);
         }
         Entry::Vacant(entry) => {
             if let Ok(s) = JoshutoDirList::new(path.to_path_buf().clone(), &config_t.sort_option) {
@@ -69,6 +75,7 @@ fn preview_directory(
         }
     }
     win.queue_for_refresh();
+    Ok(())
 }
 
 fn preview_file(entry: &JoshutoDirEntry, win: &JoshutoPanel) {

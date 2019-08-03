@@ -6,6 +6,7 @@ column_ratio = [1, 4, 4]
 scroll_offset = 6
 
 show_preview = true
+xdg_open = false
 max_preview_size = 2097152 # 2MB
 
 # lexical, mtime, natural

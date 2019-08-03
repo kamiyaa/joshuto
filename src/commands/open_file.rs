@@ -1,9 +1,9 @@
 use std::path::{Path, PathBuf};
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
-use crate::config::mimetype;
+use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
-use crate::error::JoshutoResult;
+use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
@@ -24,8 +24,8 @@ impl OpenFile {
         "open_file"
     }
 
-    pub fn get_options<'a>(path: &Path) -> Vec<&'a mimetype::JoshutoMimetypeEntry> {
-        let mut mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> = Vec::new();
+    pub fn get_options<'a>(path: &Path) -> Vec<&'a JoshutoMimetypeEntry> {
+        let mut mimetype_options: Vec<&JoshutoMimetypeEntry> = Vec::new();
 
         /* extensions have priority */
         if let Some(file_ext) = path.extension() {
@@ -67,7 +67,18 @@ impl OpenFile {
                 let err = std::io::Error::new(std::io::ErrorKind::NotFound, "No files selected");
                 return Err(err);
             }
-            Self::open_file(&paths);
+            let mimetype_options = Self::get_options(&paths[0]);
+            if !mimetype_options.is_empty() {
+                mimetype_options[0].execute_with(&paths);
+            } else if context.config_t.xdg_open {
+                ncurses::savetty();
+                ncurses::endwin();
+                open::that(paths[0]).unwrap();
+                ncurses::resetty();
+                ncurses::refresh();
+            } else {
+                OpenFileWith::open_with(&paths);
+            }
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             if curr_tab.curr_list.need_update() {
                 curr_tab
@@ -99,21 +110,6 @@ impl OpenFile {
         curr_tab.curr_path = path.to_path_buf().clone();
         Ok(())
     }
-
-    fn open_file(paths: &[&PathBuf]) {
-        let mimetype_options = Self::get_options(&paths[0]);
-
-        ncurses::savetty();
-        ncurses::endwin();
-        if mimetype_options.is_empty() {
-            open::that(&paths[0]).unwrap();
-        } else {
-            mimetype_options[0].execute_with(paths);
-        }
-        ncurses::resetty();
-        ncurses::refresh();
-        ncurses::doupdate();
-    }
 }
 
 impl JoshutoCommand for OpenFile {}
@@ -142,11 +138,10 @@ impl OpenFileWith {
         "open_file_with"
     }
 
-    pub fn open_with(paths: &[&PathBuf]) {
+    pub fn open_with(paths: &[&PathBuf]) -> JoshutoResult<()> {
         const PROMPT: &str = ":open_with ";
 
-        let mimetype_options: Vec<&mimetype::JoshutoMimetypeEntry> =
-            OpenFile::get_options(&paths[0]);
+        let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
         let user_input: Option<String>;
         {
             let (term_rows, term_cols) = ui::getmaxyx();
@@ -174,30 +169,42 @@ impl OpenFileWith {
         }
         ncurses::doupdate();
 
-        if let Some(user_input) = user_input {
-            if user_input.is_empty() {
-                return;
-            }
-            match user_input.parse::<usize>() {
-                Ok(s) => {
-                    if s < mimetype_options.len() {
-                        ncurses::savetty();
-                        ncurses::endwin();
-                        mimetype_options[s].execute_with(paths);
-                        ncurses::resetty();
-                        ncurses::refresh();
+        match user_input.as_ref() {
+            None => Ok(()),
+            Some(user_input) if user_input.is_empty() => Ok(()),
+            Some(user_input) => match user_input.parse::<usize>() {
+                Ok(n) => {
+                    if n < mimetype_options.len() {
+                        mimetype_options[n].execute_with(paths);
+                        Ok(())
+                    } else {
+                        Err(JoshutoError::new(
+                            JoshutoErrorKind::IOInvalidData,
+                            "option does not exist".to_owned(),
+                        ))
                     }
                 }
                 Err(_) => {
-                    let args: Vec<String> =
-                        user_input.split_whitespace().map(String::from).collect();
-                    ncurses::savetty();
-                    ncurses::endwin();
-                    unix::open_with_args(paths, &args);
-                    ncurses::resetty();
-                    ncurses::refresh();
+                    let mut args_iter = user_input.split_whitespace();
+                    match args_iter.next() {
+                        Some(s) => {
+                            let command = String::from(s);
+                            let args = args_iter.map(String::from).collect();
+                            let entry = JoshutoMimetypeEntry {
+                                id: 0,
+                                command,
+                                args,
+                                fork: true,
+                                silent: false,
+                                confirm_exit: true,
+                            };
+                            entry.execute_with(paths);
+                        }
+                        None => {}
+                    }
+                    Ok(())
                 }
-            }
+            },
         }
     }
 }
@@ -213,6 +220,15 @@ impl std::fmt::Display for OpenFileWith {
 impl JoshutoRunnable for OpenFileWith {
     fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
+        match curr_list.index {
+            None => {
+                return Err(JoshutoError::new(
+                    JoshutoErrorKind::IONotFound,
+                    String::from("No files selected"),
+                ))
+            }
+            Some(_) => {}
+        }
         let paths = curr_list.get_selected_paths();
         Self::open_with(&paths);
         Ok(())

@@ -33,7 +33,9 @@ impl ChangeDirectory {
 
         std::mem::swap(&mut curr_tab.curr_list, &mut curr_list);
 
-        curr_tab.history.insert(curr_list.file_path().clone(), curr_list);
+        curr_tab
+            .history
+            .insert(curr_list.file_path().clone(), curr_list);
         curr_tab.curr_path = path.clone();
 
         curr_tab

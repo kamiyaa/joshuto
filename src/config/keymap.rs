@@ -55,6 +55,14 @@ const fn default_tab() -> i32 {
 }
 
 #[derive(Debug, Deserialize)]
+struct JoshutoMapCommand {
+    pub command: String,
+    #[serde(default)]
+    pub args: Vec<String>,
+    pub keys: Vec<i32>,
+}
+
+#[derive(Debug, Deserialize)]
 struct JoshutoRawKeymapping {
     #[serde(default)]
     keymaps: JoshutoKeyMapping,
@@ -123,14 +131,6 @@ impl ConfigStructure for JoshutoKeyMapping {
         parse_to_config_file::<JoshutoRawKeymapping, JoshutoKeyMapping>(KEYMAP_FILE)
             .unwrap_or_else(JoshutoKeyMapping::default)
     }
-}
-
-#[derive(Debug, Deserialize)]
-struct JoshutoMapCommand {
-    pub command: String,
-    #[serde(default)]
-    pub args: Vec<String>,
-    pub keys: Vec<i32>,
 }
 
 #[derive(Debug, Deserialize)]
