@@ -188,15 +188,9 @@ impl OpenFileWith {
                     match args_iter.next() {
                         Some(s) => {
                             let command = String::from(s);
-                            let args = args_iter.map(String::from).collect();
-                            let entry = JoshutoMimetypeEntry {
-                                command,
-                                args,
-                                fork: false,
-                                silent: false,
-                                confirm_exit: true,
-                            };
-                            entry.execute_with(paths);
+                            JoshutoMimetypeEntry::new(command)
+                                .add_args(args_iter)
+                                .execute_with(paths);
                         }
                         None => {}
                     }

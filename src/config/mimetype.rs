@@ -14,18 +14,59 @@ const fn default_false() -> bool {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
-    pub command: String,
+    command: String,
     #[serde(default)]
-    pub args: Vec<String>,
+    args: Vec<String>,
     #[serde(default = "default_false")]
-    pub fork: bool,
+    fork: bool,
     #[serde(default = "default_false")]
-    pub silent: bool,
+    silent: bool,
     #[serde(default = "default_false")]
-    pub confirm_exit: bool,
+    confirm_exit: bool,
 }
 
 impl JoshutoMimetypeEntry {
+    pub fn new(command: String) -> Self {
+        Self {
+            command,
+            args: Vec::new(),
+            fork: false,
+            silent: false,
+            confirm_exit: false,
+        }
+    }
+
+    pub fn add_arg<S: std::convert::Into<String>>(&mut self, arg: S) -> &mut Self {
+        self.args.push(arg.into());
+        self
+    }
+
+    pub fn add_args<I, S>(&mut self, args: I) -> &mut Self
+    where
+        I: IntoIterator<Item = S>,
+        S: std::convert::Into<String>,
+    {
+        for arg in args {
+            self.args.push(arg.into());
+        }
+        self
+    }
+
+    pub fn set_fork(&mut self, set: bool) -> &mut Self {
+        self.fork = set;
+        self
+    }
+
+    pub fn set_silent(&mut self, set: bool) -> &mut Self {
+        self.silent = set;
+        self
+    }
+
+    pub fn set_confirm_exit(&mut self, set: bool) -> &mut Self {
+        self.confirm_exit = set;
+        self
+    }
+
     pub fn get_command(&self) -> &str {
         &self.command
     }
@@ -46,7 +87,7 @@ impl JoshutoMimetypeEntry {
         self.confirm_exit
     }
 
-    pub fn execute_with(&self, paths: &[&PathBuf]) {
+    pub fn execute_with(&self, paths: &[&PathBuf]) -> std::io::Result<()> {
         let program = String::from(self.get_command());
 
         let mut command = process::Command::new(program);
@@ -58,26 +99,19 @@ impl JoshutoMimetypeEntry {
         command.args(self.get_args());
         command.args(paths.iter().map(|path| path.as_os_str()));
 
-        match command.spawn() {
-            Ok(mut handle) => {
-                if !self.get_fork() {
-                    ncurses::savetty();
-                    ncurses::endwin();
-                    match handle.wait() {
-                        Ok(_) => {
-                            if self.get_confirm_exit() {
-                                println!(" --- Press ENTER to continue --- ");
-                                std::io::stdin().bytes().next();
-                            }
-                        }
-                        Err(e) => eprintln!("{}", e),
-                    }
-                    ncurses::resetty();
-                    ncurses::refresh();
-                }
+        let mut handle = command.spawn()?;
+        if !self.get_fork() {
+            ncurses::savetty();
+            ncurses::endwin();
+            handle.wait()?;
+            if self.get_confirm_exit() {
+                println!(" --- Press ENTER to continue --- ");
+                std::io::stdin().bytes().next();
             }
-            Err(e) => eprintln!("{}", e),
-        };
+            ncurses::resetty();
+            ncurses::refresh();
+        }
+        Ok(())
     }
 }
 
