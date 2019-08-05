@@ -7,7 +7,6 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
 use crate::textfield::JoshutoTextField;
 use crate::ui;
-use crate::unix;
 use crate::window;
 use crate::window::JoshutoView;
 
@@ -191,10 +190,9 @@ impl OpenFileWith {
                             let command = String::from(s);
                             let args = args_iter.map(String::from).collect();
                             let entry = JoshutoMimetypeEntry {
-                                id: 0,
                                 command,
                                 args,
-                                fork: true,
+                                fork: false,
                                 silent: false,
                                 confirm_exit: true,
                             };

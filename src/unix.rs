@@ -1,8 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::process;
 
-use crate::config::mimetype;
-
 pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 
@@ -64,21 +62,5 @@ pub fn set_mode(path: &Path, mode: u32) {
         unsafe {
             libc::chmod(svec.as_ptr(), mode as libc::mode_t);
         }
-    }
-}
-
-pub fn open_with_args(paths: &[&PathBuf], args: &[String]) {
-    let program = args[0].clone();
-
-    let mut command = process::Command::new(program);
-    command.args(args[1..].iter().cloned());
-    command.args(paths.iter().map(|path| path.as_os_str()));
-
-    match command.spawn() {
-        Ok(mut handle) => match handle.wait() {
-            Ok(_) => {}
-            Err(e) => eprintln!("{}", e),
-        },
-        Err(e) => eprintln!("{}", e),
     }
 }

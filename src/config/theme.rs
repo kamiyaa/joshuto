@@ -1,6 +1,8 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
+use crate::THEME_FILE;
+
 use super::{parse_config_file, ConfigStructure};
 
 const fn default_zero() -> i16 {
@@ -82,7 +84,7 @@ pub struct JoshutoTheme {
 
 impl ConfigStructure for JoshutoTheme {
     fn get_config() -> Self {
-        parse_config_file::<JoshutoTheme>(crate::THEME_FILE).unwrap_or_else(JoshutoTheme::default)
+        parse_config_file::<JoshutoTheme>(THEME_FILE).unwrap_or_else(Self::default)
     }
 }
 
