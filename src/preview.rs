@@ -50,7 +50,7 @@ fn preview_directory(
 ) -> std::io::Result<()> {
     match history.entry(path.to_path_buf().clone()) {
         Entry::Occupied(mut entry) => {
-            let mut dirlist = entry.get_mut();
+            let dirlist = entry.get_mut();
             if dirlist.need_update() {
                 dirlist.reload_contents(&config_t.sort_option)?
             } else {

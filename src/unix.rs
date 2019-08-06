@@ -1,5 +1,4 @@
-use std::path::{Path, PathBuf};
-use std::process;
+use std::path::Path;
 
 pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];

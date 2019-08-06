@@ -61,6 +61,7 @@ pub struct JoshutoError {
     _cause: String,
 }
 
+#[allow(dead_code)]
 impl JoshutoError {
     pub fn new(_kind: JoshutoErrorKind, _cause: String) -> Self {
         JoshutoError { _kind, _cause }

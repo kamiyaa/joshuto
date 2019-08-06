@@ -70,7 +70,7 @@ impl OpenFile {
 
             /* try executing with user defined entries */
             if !mimetype_options.is_empty() {
-                mimetype_options[0].execute_with(&paths);
+                mimetype_options[0].execute_with(&paths)?;
             } else if context.config_t.xdg_open {   // try system defined entries
                 ncurses::savetty();
                 ncurses::endwin();
@@ -78,7 +78,7 @@ impl OpenFile {
                 ncurses::resetty();
                 ncurses::refresh();
             } else {    // ask user for command
-                OpenFileWith::open_with(&paths);
+                OpenFileWith::open_with(&paths)?;
             }
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             if curr_tab.curr_list.need_update() {

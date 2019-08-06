@@ -129,7 +129,7 @@ impl Flattenable<JoshutoKeyMapping> for JoshutoRawKeymapping {
 impl ConfigStructure for JoshutoKeyMapping {
     fn get_config() -> Self {
         parse_to_config_file::<JoshutoRawKeymapping, JoshutoKeyMapping>(KEYMAP_FILE)
-            .unwrap_or_else(JoshutoKeyMapping::default)
+            .unwrap_or_else(Self::default)
     }
 }
 
@@ -159,39 +159,39 @@ pub type JoshutoCommandMapping = HashMap<i32, CommandKeybind>;
 impl ConfigStructure for JoshutoCommandMapping {
     fn get_config() -> Self {
         parse_to_config_file::<JoshutoRawCommandMapping, JoshutoCommandMapping>(KEYMAP_FILE)
-            .unwrap_or_else(JoshutoCommandMapping::default)
+            .unwrap_or_else(Self::default)
     }
 }
 
 fn insert_keycommand(
-    map: &mut JoshutoCommandMapping,
+    keymap: &mut JoshutoCommandMapping,
     keycommand: Box<JoshutoCommand>,
-    keys: &[i32],
+    keycodes: &[i32],
 ) {
-    match keys.len() {
+    match keycodes.len() {
         0 => {}
-        1 => match map.entry(keys[0]) {
+        1 => match keymap.entry(keycodes[0]) {
             Entry::Occupied(_) => {
-                eprintln!("Error: Keybindings ambiguous");
+                eprintln!("Error: Keybindings ambiguous for {}", keycommand);
                 exit(1);
             }
             Entry::Vacant(entry) => {
                 entry.insert(CommandKeybind::SimpleKeybind(keycommand));
             }
         },
-        _ => match map.entry(keys[0]) {
+        _ => match keymap.entry(keycodes[0]) {
             Entry::Occupied(mut entry) => match entry.get_mut() {
                 CommandKeybind::CompositeKeybind(ref mut m) => {
-                    insert_keycommand(m, keycommand, &keys[1..])
+                    insert_keycommand(m, keycommand, &keycodes[1..])
                 }
                 _ => {
-                    eprintln!("Error: Keybindings ambiguous");
+                    eprintln!("Error: Keybindings ambiguous for {}", keycommand);
                     exit(1);
                 }
             },
             Entry::Vacant(entry) => {
                 let mut new_map = JoshutoCommandMapping::new();
-                insert_keycommand(&mut new_map, keycommand, &keys[1..]);
+                insert_keycommand(&mut new_map, keycommand, &keycodes[1..]);
                 let composite_command = CommandKeybind::CompositeKeybind(new_map);
                 entry.insert(composite_command);
             }

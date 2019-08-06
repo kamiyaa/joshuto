@@ -25,6 +25,7 @@ pub struct JoshutoMimetypeEntry {
     confirm_exit: bool,
 }
 
+#[allow(dead_code)]
 impl JoshutoMimetypeEntry {
     pub fn new(command: String) -> Self {
         Self {
