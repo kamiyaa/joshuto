@@ -1,9 +1,3 @@
-use std::fs;
-use std::time;
-
-use users::mock::{Groups, Users};
-use users::UsersCache;
-
 use crate::config::{JoshutoColorTheme, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList};
@@ -11,6 +5,14 @@ use crate::unix;
 use crate::window;
 
 use crate::THEME_T;
+
+use std::fs;
+use std::time;
+use std::sync::Mutex;
+
+use lazy_static::lazy_static;
+use users::mock::{Groups, Users};
+use users::UsersCache;
 
 pub const ERR_COLOR: i16 = 240;
 pub const EMPTY_COLOR: i16 = 241;
@@ -65,13 +67,17 @@ pub fn getmaxyx() -> (i32, i32) {
     (term_rows, term_cols)
 }
 
-pub fn display_menu(win: &window::JoshutoPanel, vals: &[String]) {
+pub fn display_menu<I, S>(win: &window::JoshutoPanel, items: I)
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
     ncurses::werase(win.win);
     ncurses::mvwhline(win.win, 0, 0, 0, win.cols);
 
-    for (i, val) in vals.iter().enumerate() {
+    for (i, val) in items.into_iter().enumerate() {
         ncurses::wmove(win.win, (i + 1) as i32, 0);
-        ncurses::waddstr(win.win, val.as_str());
+        ncurses::waddstr(win.win, val.as_ref());
     }
     ncurses::wnoutrefresh(win.win);
 }
@@ -241,6 +247,10 @@ pub fn display_contents(
     win.queue_for_refresh();
 }
 
+lazy_static! {
+    static ref USERCACHE: Mutex<UsersCache> = Mutex::new(UsersCache::new());
+}
+
 pub fn wprint_file_status(
     win: &window::JoshutoPanel,
     entry: &JoshutoDirEntry,
@@ -252,7 +262,8 @@ pub fn wprint_file_status(
     ncurses::waddch(win.win, ' ' as ncurses::chtype);
     ncurses::waddstr(win.win, &format!("{}/{} ", index + 1, len));
 
-    let usercache: UsersCache = UsersCache::new();
+    let usercache = USERCACHE.lock().unwrap();
+
     match usercache.get_user_by_uid(entry.metadata.uid) {
         Some(s) => match s.name().to_str() {
             Some(name) => ncurses::waddstr(win.win, name),

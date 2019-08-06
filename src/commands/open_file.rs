@@ -68,7 +68,7 @@ impl OpenFile {
             }
             let mimetype_options = Self::get_options(&paths[0]);
             if !mimetype_options.is_empty() {
-                mimetype_options[0].execute_with(&paths);
+                mimetype_options[0].execute_with(&paths)?;
             } else if context.config_t.xdg_open {
                 ncurses::savetty();
                 ncurses::endwin();
@@ -76,7 +76,7 @@ impl OpenFile {
                 ncurses::resetty();
                 ncurses::refresh();
             } else {
-                OpenFileWith::open_with(&paths);
+                OpenFileWith::open_with(&paths)?;
             }
             let curr_tab = &mut context.tabs[context.curr_tab_index];
             if curr_tab.curr_list.need_update() {
@@ -137,7 +137,7 @@ impl OpenFileWith {
         "open_file_with"
     }
 
-    pub fn open_with(paths: &[&PathBuf]) -> JoshutoResult<()> {
+    pub fn open_with(paths: &[&PathBuf]) -> std::io::Result<()> {
         const PROMPT: &str = ":open_with ";
 
         let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
@@ -174,27 +174,23 @@ impl OpenFileWith {
             Some(user_input) => match user_input.parse::<usize>() {
                 Ok(n) => {
                     if n < mimetype_options.len() {
-                        mimetype_options[n].execute_with(paths);
-                        Ok(())
+                        mimetype_options[n].execute_with(paths)
                     } else {
-                        Err(JoshutoError::new(
-                            JoshutoErrorKind::IOInvalidData,
+                        let err = std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
                             "option does not exist".to_owned(),
-                        ))
+                        );
+                        Err(err)
                     }
                 }
                 Err(_) => {
                     let mut args_iter = user_input.split_whitespace();
                     match args_iter.next() {
-                        Some(s) => {
-                            let command = String::from(s);
-                            JoshutoMimetypeEntry::new(command)
+                        Some(s) => JoshutoMimetypeEntry::new(s.to_owned())
                                 .add_args(args_iter)
-                                .execute_with(paths);
-                        }
-                        None => {}
+                                .execute_with(paths),
+                        None => Ok(()),
                     }
-                    Ok(())
                 }
             },
         }
@@ -222,7 +218,7 @@ impl JoshutoRunnable for OpenFileWith {
             Some(_) => {}
         }
         let paths = curr_list.get_selected_paths();
-        Self::open_with(&paths);
+        Self::open_with(&paths)?;
         Ok(())
     }
 }

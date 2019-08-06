@@ -113,7 +113,7 @@ pub struct JoshutoConfig {
 impl ConfigStructure for JoshutoConfig {
     fn get_config() -> Self {
         parse_to_config_file::<JoshutoRawConfig, JoshutoConfig>(CONFIG_FILE)
-            .unwrap_or_else(JoshutoConfig::default)
+            .unwrap_or_else(Self::default)
     }
 }
 

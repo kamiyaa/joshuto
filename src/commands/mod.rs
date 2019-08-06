@@ -55,12 +55,6 @@ pub enum CommandKeybind {
     CompositeKeybind(JoshutoCommandMapping),
 }
 
-pub trait JoshutoRunnable {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()>;
-}
-
-pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
-
 impl std::fmt::Display for CommandKeybind {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -69,6 +63,12 @@ impl std::fmt::Display for CommandKeybind {
         }
     }
 }
+
+pub trait JoshutoRunnable {
+    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()>;
+}
+
+pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
 
 pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<JoshutoCommand>> {
     match command.as_str() {
