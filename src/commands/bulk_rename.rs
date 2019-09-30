@@ -97,7 +97,7 @@ impl BulkRename {
         for (p, q) in paths.iter().zip(paths_renamed.iter()) {
             println!("{:?} -> {:?}", p, q);
         }
-        print!("Continue with rename? (y/N): ");
+        print!("Continue with rename? (Y/n): ");
         std::io::stdout().flush()?;
 
         let mut user_input = String::with_capacity(4);
@@ -105,7 +105,7 @@ impl BulkRename {
         user_input = user_input.to_lowercase();
 
         let user_input_trimmed = user_input.trim();
-        if user_input_trimmed == "y" || user_input_trimmed == "yes" {
+        if user_input_trimmed != "n" || user_input_trimmed != "no" {
             for (p, q) in paths.iter().zip(paths_renamed.iter()) {
                 let mut command = process::Command::new("mv");
                 command.arg("-iv");
