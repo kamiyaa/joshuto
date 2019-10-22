@@ -3,6 +3,8 @@
 [ranger](https://github.com/ranger/ranger)-like terminal file manager written in Rust.
 Currently a work in progress.
 
+## Will be migrating to [tui-rs](https://github.com/fdehau/tui-rs) in the near future. Until then, no new development will be happening
+
 ![Alt text](joshuto_screenshot.png?raw=true "joshuto")
 
 ## Dependencies
@@ -57,6 +59,7 @@ Please create a pull request :)
 Please create an issue :)
 
 ## TODOs
+ - [ ] Migrate to [tui-rs](https://github.com/fdehau/tui-rs)
  - [x] Tab support
  - [x] Ctrl/Shift/Alt support
  - [ ] Asynch File IO (cut/copy/paste/delete/rename) (in progress)
