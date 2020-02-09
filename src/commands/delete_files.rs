@@ -5,6 +5,7 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui;
+use crate::util::event::Event;
 use crate::window::JoshutoView;
 
 use crate::KEYMAP_T;
@@ -45,13 +46,40 @@ impl DeleteFiles {
                 "no files selected",
             ));
         }
-        if paths.len() > 1 {
-            ui::wprint_msg(&view.bot_win, "Are you sure? (y/N)");
-        } else {
+
+        let mut ch = termion::event::Key::Char('n');
+        while let Ok(evt) = context.events.next() {
+            match evt {
+                Event::Input(key) => {
+                    if key == termion::event::Key::Char('y') ||
+                            key == termion::event::Key::Char('\n') {
+                        if paths.len() > 1 {
+                            ui::wprint_msg(&view.bot_win, "Are you sure? (y/N)");
+                            ncurses::doupdate();
+                            while let Ok(evt) = context.events.next() {
+                                match evt {
+                                    Event::Input(key) => {
+                                        ch = key;
+                                        break;
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        } else {
+                            ch = termion::event::Key::Char('y');
+                        }
+                    }
+                    break;
+                }
+                _ => {}
+            }
         }
-        Self::remove_files(&paths)?;
-        ui::wprint_msg(&view.bot_win, "Deleted files");
-        ReloadDirList::reload(context.curr_tab_index, context)?;
+
+        if ch == termion::event::Key::Char('y') {
+            Self::remove_files(&paths)?;
+            ui::wprint_msg(&view.bot_win, "Deleted files");
+            ReloadDirList::reload(context.curr_tab_index, context)?;
+        }
         Ok(())
     }
 }
