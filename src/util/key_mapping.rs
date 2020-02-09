@@ -34,7 +34,7 @@ pub fn str_to_key(s: &str) -> Option<Key> {
         _ => None,
     };
 
-    if let Some(a) = key {
+    if let Some(_) = key {
         return key;
     }
 

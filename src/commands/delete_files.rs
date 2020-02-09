@@ -35,32 +35,23 @@ impl DeleteFiles {
 
     fn delete_files(context: &mut JoshutoContext, view: &JoshutoView) -> std::io::Result<()> {
         ui::wprint_msg(&view.bot_win, "Delete selected files? (Y/n)");
-        ncurses::timeout(-1);
         ncurses::doupdate();
 
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        let mut ch = ncurses::getch();
-        if ch == 'y' as i32 || ch == KEYMAP_T.enter {
-            let paths = curr_tab.curr_list.get_selected_paths();
-            if paths.is_empty() {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "no files selected",
-                ));
-            }
-            if paths.len() > 1 {
-                ui::wprint_msg(&view.bot_win, "Are you sure? (y/N)");
-                ncurses::doupdate();
-                ch = ncurses::getch();
-            } else {
-                ch = 'y' as i32;
-            }
-            if ch == 'y' as i32 {
-                Self::remove_files(&paths)?;
-                ui::wprint_msg(&view.bot_win, "Deleted files");
-                ReloadDirList::reload(context.curr_tab_index, context)?;
-            }
+        let paths = curr_tab.curr_list.get_selected_paths();
+        if paths.is_empty() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "no files selected",
+            ));
         }
+        if paths.len() > 1 {
+            ui::wprint_msg(&view.bot_win, "Are you sure? (y/N)");
+        } else {
+        }
+        Self::remove_files(&paths)?;
+        ui::wprint_msg(&view.bot_win, "Deleted files");
+        ReloadDirList::reload(context.curr_tab_index, context)?;
         Ok(())
     }
 }

@@ -49,7 +49,6 @@ impl<'a> JoshutoTextField<'a> {
         suffix: &'a str,
     ) -> Self {
         let win = window::JoshutoPanel::new(rows, cols, coord);
-        ncurses::keypad(win.win, true);
         JoshutoTextField {
             win,
             prompt,
@@ -60,7 +59,6 @@ impl<'a> JoshutoTextField<'a> {
 
     pub fn readline(&self) -> Option<String> {
         self.win.move_to_top();
-        ncurses::timeout(-1);
         let win = self.win.win;
 
         let prompt_len = self.prompt.len();

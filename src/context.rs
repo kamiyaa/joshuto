@@ -1,12 +1,19 @@
-use crate::commands::FileOperationThread;
+use std::collections::VecDeque;
+use std::sync::mpsc;
+
 use crate::config;
+use crate::io::IOWorkerThread;
 use crate::tab::JoshutoTab;
+use crate::util::event::Events;
 
 pub struct JoshutoContext {
     pub exit: bool,
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
-    pub threads: Vec<FileOperationThread<u64, fs_extra::TransitProcess>>,
+    pub worker_queue: VecDeque<IOWorkerThread>,
+    pub trx: (mpsc::SyncSender<u64>, mpsc::Receiver<u64>),
+
+    pub events: Events,
 
     pub config_t: config::JoshutoConfig,
 }
@@ -17,7 +24,9 @@ impl JoshutoContext {
             exit: false,
             curr_tab_index: 0,
             tabs: Vec::new(),
-            threads: Vec::new(),
+            worker_queue: VecDeque::with_capacity(10),
+            trx: mpsc::sync_channel::<u64>(1),
+            events: Events::new(),
 
             config_t,
         }
@@ -27,5 +36,8 @@ impl JoshutoContext {
     }
     pub fn curr_tab_mut(&mut self) -> &mut JoshutoTab {
         &mut self.tabs[self.curr_tab_index]
+    }
+    pub fn add_new_worker(&mut self, thread: IOWorkerThread) {
+        self.worker_queue.push_back(thread);
     }
 }

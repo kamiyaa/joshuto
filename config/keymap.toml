@@ -122,7 +122,7 @@ keys = [ "A" ]
 [[mapcommand]]
 command = "select_files"
 args = [ "--toggle" ]
-keys = [ "space" ]
+keys = [ " " ]
 [[mapcommand]]
 command = "select_files"
 args = [ "--toggle", "--all" ]

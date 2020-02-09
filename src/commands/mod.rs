@@ -3,7 +3,7 @@ mod change_directory;
 mod command_line;
 mod cursor_move;
 mod delete_files;
-mod file_operations;
+mod file_ops;
 mod new_directory;
 mod open_file;
 mod parent_directory;
@@ -25,7 +25,7 @@ pub use self::cursor_move::{
     CursorMoveUp,
 };
 pub use self::delete_files::DeleteFiles;
-pub use self::file_operations::{CopyFiles, CutFiles, FileOperationThread, PasteFiles};
+pub use self::file_ops::{CopyFiles, CutFiles, PasteFiles};
 pub use self::new_directory::NewDirectory;
 pub use self::open_file::{OpenFile, OpenFileWith};
 pub use self::parent_directory::ParentDirectory;
@@ -45,13 +45,14 @@ use std::path::PathBuf;
 use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::io::Options;
 use crate::window::JoshutoView;
 
 use crate::HOME_DIR;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
-    SimpleKeybind(Box<JoshutoCommand>),
+    SimpleKeybind(Box<dyn JoshutoCommand>),
     CompositeKeybind(JoshutoCommandMapping),
 }
 
@@ -70,7 +71,7 @@ pub trait JoshutoRunnable {
 
 pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
 
-pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<JoshutoCommand>> {
+pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn JoshutoCommand>> {
     match command.as_str() {
         "bulk_rename" => Ok(Box::new(self::BulkRename::new())),
         "cd" => match args.len() {
@@ -156,8 +157,7 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<Joshut
         "open_file" => Ok(Box::new(self::OpenFile::new())),
         "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
         "paste_files" => {
-            let mut options = fs_extra::dir::CopyOptions::new();
-            options.buffer_size = 1024 * 1024 * 4;
+            let mut options = Options::default();
             for arg in args {
                 match arg.as_str() {
                     "--overwrite" => options.overwrite = true,

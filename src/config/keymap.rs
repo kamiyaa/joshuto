@@ -1,5 +1,4 @@
 use std::collections::{hash_map::Entry, HashMap};
-use std::process::exit;
 
 use serde_derive::Deserialize;
 
@@ -155,7 +154,7 @@ impl Flattenable<JoshutoCommandMapping> for JoshutoRawCommandMapping {
 
                     let result = insert_keycommand(&mut keymaps, command, &keycodes);
                     match result {
-                        Ok(_) => {},
+                        Ok(_) => {}
                         Err(e) => eprintln!("{}", e),
                     }
                 }
@@ -175,7 +174,7 @@ impl ConfigStructure for JoshutoCommandMapping {
 
 fn insert_keycommand(
     keymap: &mut JoshutoCommandMapping,
-    keycommand: Box<JoshutoCommand>,
+    keycommand: Box<dyn JoshutoCommand>,
     keycodes: &[&str],
 ) -> Result<(), String> {
     let keycode_len = keycodes.len();
@@ -186,12 +185,14 @@ fn insert_keycommand(
 
     let key = match str_to_key(keycodes[0]) {
         Some(k) => k,
-        None => return Err(format!("Unknown keycode: {}", keycodes[0]))
+        None => return Err(format!("Unknown keycode: {}", keycodes[0])),
     };
 
     if keycode_len == 1 {
         match keymap.entry(key) {
-            Entry::Occupied(_) => return Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
+            Entry::Occupied(_) => {
+                return Err(format!("Error: Keybindings ambiguous for {}", keycommand))
+            }
             Entry::Vacant(entry) => entry.insert(CommandKeybind::SimpleKeybind(keycommand)),
         };
         return Ok(());

@@ -15,7 +15,7 @@ impl Quit {
     }
 
     pub fn quit(context: &mut JoshutoContext) -> JoshutoResult<()> {
-        if !context.threads.is_empty() {
+        if !context.worker_queue.is_empty() {
             Err(JoshutoError::new(
                 JoshutoErrorKind::IOOther,
                 String::from("operations running in background, use force_quit to quit"),

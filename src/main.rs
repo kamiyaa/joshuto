@@ -4,14 +4,15 @@ mod context;
 mod error;
 mod fs;
 mod history;
+mod io;
 mod preview;
 mod run;
 mod sort;
 mod tab;
 mod textfield;
 mod ui;
-mod util;
 mod unix;
+mod util;
 mod window;
 
 use lazy_static::lazy_static;
@@ -69,9 +70,9 @@ fn main() {
 
     if args.debug {
         eprintln!("keymaps: {:#?}", keymap);
-    //    eprintln!("config: {:#?}", config);
-    //    eprintln!("theme config: {:#?}", *THEME_T);
-    //    eprintln!("mimetype config: {:#?}", *MIMETYPE_T);
+        eprintln!("config: {:#?}", config);
+        eprintln!("theme config: {:#?}", *THEME_T);
+        eprintln!("mimetype config: {:#?}", *MIMETYPE_T);
     }
 
     run(config, keymap);

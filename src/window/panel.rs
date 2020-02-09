@@ -20,7 +20,6 @@ impl JoshutoPanel {
     pub fn new(rows: i32, cols: i32, coords: (usize, usize)) -> Self {
         let win = ncurses::newwin(rows, cols, coords.0 as i32, coords.1 as i32);
         let panel = ncurses::new_panel(win);
-        ncurses::leaveok(win, true);
 
         ncurses::wnoutrefresh(win);
         JoshutoPanel {
