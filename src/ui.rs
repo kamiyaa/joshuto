@@ -32,7 +32,6 @@ pub fn init_ncurses() {
     ncurses::initscr();
     ncurses::cbreak();
 
-    ncurses::keypad(ncurses::stdscr(), true);
     ncurses::start_color();
     ncurses::use_default_colors();
     ncurses::noecho();

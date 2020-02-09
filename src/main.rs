@@ -10,6 +10,7 @@ mod sort;
 mod tab;
 mod textfield;
 mod ui;
+mod util;
 mod unix;
 mod window;
 
@@ -67,9 +68,10 @@ fn main() {
     let keymap = JoshutoCommandMapping::get_config();
 
     if args.debug {
-        eprintln!("config: {:#?}", config);
-        eprintln!("theme config: {:#?}", *THEME_T);
-        eprintln!("mimetype config: {:#?}", *MIMETYPE_T);
+        eprintln!("keymaps: {:#?}", keymap);
+    //    eprintln!("config: {:#?}", config);
+    //    eprintln!("theme config: {:#?}", *THEME_T);
+    //    eprintln!("mimetype config: {:#?}", *MIMETYPE_T);
     }
 
     run(config, keymap);

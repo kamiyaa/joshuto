@@ -1,63 +1,186 @@
 [keymaps]
 # backspace = 263
 
-mapcommand = [
-    { command = "new_tab", keys = [ 20 ] },
-    { command = "new_tab", keys = [ 84 ] },
-    { command = "close_tab", keys = [ 23 ] },
-    { command = "close_tab", keys = [ 87 ] },
-    { command = "close_tab", keys = [ 113 ] },
-    { command = "force_quit", keys = [ 81 ] },
-    { command = "reload_dir_list", keys = [ 82 ] },
-    { command = "toggle_hidden", keys = [ 122, 104 ] },
+[[mapcommand]]
+command = "new_tab"
+keys = [ "T" ]
 
-    { command = "tab_switch", args = [ "1" ], keys = [ 9 ] },
-    { command = "tab_switch", args = [ "-1" ], keys = [ 353 ] },
+[[mapcommand]]
+command = "new_tab"
+keys = [ "ctrl+t" ]
+[[mapcommand]]
+command = "close_tab"
+keys = [ "W" ]
+[[mapcommand]]
+command = "close_tab"
+keys = [ "ctrl+w" ]
+[[mapcommand]]
+command = "close_tab"
+keys = [ "q" ]
+[[mapcommand]]
+command = "force_quit"
+keys = [ "Q" ]
+[[mapcommand]]
+command = "reload_dir_list"
+keys = [ "R" ]
+[[mapcommand]]
+command = "toggle_hidden"
+keys = [ "z", "h" ]
 
-    { command = "bulk_rename", keys = [ 98, 98 ] },
-    { command = "set_mode", keys = [ 45 ] },
+[[mapcommand]]
+command = "tab_switch"
+args = [ "1" ]
+keys = [ "\t" ]
+[[mapcommand]]
+command = "tab_switch"
+args = [ "-1" ]
+keys = [ "shift+\t" ]
 
-    { command = "cursor_move_up", keys = [ 259 ] },
-    { command = "cursor_move_up", keys = [ 107 ] },
-    { command = "cursor_move_down", keys = [ 258 ] },
-    { command = "cursor_move_down", keys = [ 106 ] },
-    { command = "cursor_move_end", keys = [ 360 ] },
-    { command = "cursor_move_end", keys = [ 71 ] },
-    { command = "cursor_move_home", keys = [ 262 ] },
-    { command = "cursor_move_home", keys = [ 103, 103 ] },
-    { command = "cursor_move_page_down", keys = [ 338 ] },
-    { command = "cursor_move_page_up", keys = [ 339 ] },
+[[mapcommand]]
+command = "cursor_move_up"
+keys = [ "up" ]
+[[mapcommand]]
+command = "cursor_move_up"
+keys = [ "k" ]
+[[mapcommand]]
+command = "cursor_move_down"
+keys = [ "down" ]
+[[mapcommand]]
+command = "cursor_move_down"
+keys = [ "j" ]
+[[mapcommand]]
+command = "cursor_move_end"
+keys = [ "end" ]
+[[mapcommand]]
+command = "cursor_move_end"
+keys = [ "G" ]
+[[mapcommand]]
+command = "cursor_move_home"
+keys = [ "home" ]
+[[mapcommand]]
+command = "cursor_move_home"
+keys = [ "g", "g" ]
+[[mapcommand]]
+command = "cursor_move_page_up"
+keys = [ "page_up" ]
+[[mapcommand]]
+command = "cursor_move_page_down"
+keys = [ "page_down" ]
 
-    { command = "open_file", keys = [ 261 ] },
-    { command = "open_file", keys = [ 108 ] },
-    { command = "open_file", keys = [ 10 ] },
-    { command = "open_file_with", keys = [ 114 ] },
+[[mapcommand]]
+command = "open_file"
+keys = [ "right" ]
+[[mapcommand]]
+command = "open_file"
+keys = [ "l" ]
+[[mapcommand]]
+command = "open_file"
+keys = [ "\n" ]
+[[mapcommand]]
+command = "open_file_with"
+keys = [ "r" ]
 
-    { command = "cd", keys = [ 103, 104 ] },
-    { command = "cd", args = [ ".." ], keys = [ 260 ] },
-    { command = "cd", args = [ ".." ], keys = [ 104 ] },
+[[mapcommand]]
+command = "cd"
+keys = [ "c", "d" ]
+[[mapcommand]]
+command = "cd"
+args = [ ".." ]
+keys = [ "left" ]
+[[mapcommand]]
+command = "cd"
+args = [ ".." ]
+keys = [ "h" ]
 
-    { command = "cut_files", keys = [ 100, 100 ] },
-    { command = "copy_files", keys = [ 121, 121 ] },
-    { command = "paste_files", keys = [ 112, 112 ] },
-    { command = "paste_files", args = [ "--overwrite" ], keys = [ 112, 111 ] },
-    { command = "delete_files", keys = [ 100, 68 ] },
-    { command = "delete_files", keys = [ 330 ] },
+[[mapcommand]]
+command = "cut_files"
+keys = [ "d", "d" ]
+[[mapcommand]]
+command = "copy_files"
+keys = [ "y", "y" ]
+[[mapcommand]]
+command = "paste_files"
+keys = [ "p", "p" ]
+[[mapcommand]]
+command = "paste_files"
+args = [ "--overwrite" ]
+keys = [ "p", "o" ]
+[[mapcommand]]
+command = "delete_files"
+keys = [ "d", "D" ]
+[[mapcommand]]
+command = "delete_files"
+keys = [ "delete" ]
 
-    { command = "rename_append", keys = [ 97 ] },
-    { command = "rename_prepend", keys = [ 65 ] },
+[[mapcommand]]
+command = "rename_append"
+keys = [ "a" ]
+[[mapcommand]]
+command = "rename_prepend"
+keys = [ "A" ]
 
-    { command = "select_files", args = [ "--toggle" ], keys = [ 32 ] },
-    { command = "select_files", args = [ "--toggle", "--all" ], keys = [ 116 ] },
+[[mapcommand]]
+command = "select_files"
+args = [ "--toggle" ]
+keys = [ "space" ]
+[[mapcommand]]
+command = "select_files"
+args = [ "--toggle", "--all" ]
+keys = [ "t" ]
 
-    { command = "search_next", keys = [ 110 ] },
-    { command = "search_prev", keys = [ 78 ] },
+[[mapcommand]]
+command = "search_next"
+keys = [ "n", "p" ]
+[[mapcommand]]
+command = "search_prev"
+keys = [ "n", "n" ]
 
-    { command = "console", keys = [ 59 ] },
-    { command = "console", args = [ "mkdir " ], keys = [ 109, 107 ] },
-    { command = "console", args = [ "rename " ], keys = [ 99, 119 ] },
-    { command = "console", args = [ "search " ], keys = [ 47 ] },
+[[mapcommand]]
+command = "bulk_rename"
+keys = [ "b", "b" ]
+[[mapcommand]]
+command = "set_mode"
+keys = [ "=" ]
 
-    { command = "cd", args = [ "/" ], keys = [ 103, 104 ] },
-    { command = "cd", args = [ "/etc" ], keys = [ 103, 101 ] },
-    ]
+[[mapcommand]]
+command = "console"
+keys = [ ";" ]
+[[mapcommand]]
+command = "console"
+args = [ "mkdir " ]
+keys = [ "m", "k" ]
+[[mapcommand]]
+command = "console"
+args = [ "rename " ]
+keys = [ "c", "w" ]
+[[mapcommand]]
+command = "console"
+args = [ "search " ]
+keys = [ "/" ]
+
+[[mapcommand]]
+command = "console"
+args = [ "search " ]
+keys = [ "/" ]
+
+[[mapcommand]]
+command = "sort"
+args = [ "lexical" ]
+keys = [ "s", "l" ]
+[[mapcommand]]
+command = "sort"
+args = [ "mtime" ]
+keys = [ "s", "m" ]
+[[mapcommand]]
+command = "sort"
+args = [ "natural" ]
+keys = [ "s", "n" ]
+
+[[mapcommand]]
+command = "cd"
+args = [ "/" ]
+keys = [ "g", "/" ]
+[[mapcommand]]
+command = "cd"
+args = [ "/etc" ]
+keys = [ "g", "e" ]

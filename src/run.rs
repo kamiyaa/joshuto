@@ -1,11 +1,14 @@
 use std::process;
 use std::time;
 
+use termion::event::Key;
+
 use crate::commands::{CommandKeybind, FileOperationThread, JoshutoCommand, ReloadDirList};
 use crate::config::{self, JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
+use crate::util::event::{Event, Events};
 use crate::window::JoshutoPanel;
 use crate::window::JoshutoView;
 
@@ -13,7 +16,8 @@ fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&JoshutoComm
     let (term_rows, term_cols) = ui::getmaxyx();
     ncurses::timeout(-1);
 
-    let ch: i32 = {
+    let events = Events::new();
+    let event = {
         let keymap_len = keymap.len();
         let win = JoshutoPanel::new(
             keymap_len as i32 + 1,
@@ -23,7 +27,7 @@ fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&JoshutoComm
 
         let mut display_vec: Vec<String> = keymap
             .iter()
-            .map(|(k, v)| format!("  {}\t{}", *k as u8 as char, v))
+            .map(|(k, v)| format!("  {:?}\t{}", k, v))
             .collect();
         display_vec.sort();
 
@@ -31,18 +35,27 @@ fn recurse_get_keycommand(keymap: &JoshutoCommandMapping) -> Option<&JoshutoComm
         ui::display_menu(&win, &display_vec);
         ncurses::doupdate();
 
-        ncurses::wgetch(win.win)
+        events.next()
     };
     ncurses::doupdate();
 
-    if ch == config::keymap::ESCAPE {
-        None
-    } else {
-        match keymap.get(&ch) {
-            Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(&m),
-            Some(CommandKeybind::SimpleKeybind(s)) => Some(s.as_ref()),
-            _ => None,
+    match event {
+        Ok(Event::Input(input)) => match input {
+            Key::Esc => {
+                None
+            }
+            key @ Key::Char(_) => {
+                match keymap.get(&key) {
+                    Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(&m),
+                    Some(CommandKeybind::SimpleKeybind(s)) => Some(s.as_ref()),
+                    _ => None,
+                }
+            }
+            _ => {
+                None
+            }
         }
+        _ => None,
     }
 }
 
@@ -147,53 +160,41 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
     let mut view = JoshutoView::new(context.config_t.column_ratio);
     init_context(&mut context, &view);
 
+    let events = Events::new();
     while !context.exit {
-        if !context.threads.is_empty() {
-            ncurses::timeout(0);
-            match process_threads(&mut context, &view) {
-                Ok(_) => {}
-                Err(e) => ui::wprint_err(&view.bot_win, e.to_string().as_str()),
+        let event = events.next();
+        if let Ok(event) = event {
+            match event {
+                Event::Input(key) => {
+                    let keycommand = match keymap_t.get(&key) {
+                        Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
+                            Some(s) => s,
+                            None => {
+                                ui::wprint_err(&view.bot_win, &format!("Unknown keycode: {:?}", key));
+                                ncurses::doupdate();
+                                continue;
+                            }
+                        },
+                        Some(CommandKeybind::SimpleKeybind(s)) => {
+                            s.as_ref()
+                        }
+                        None => {
+                            ui::wprint_err(&view.bot_win, &format!("Unknown keycode: {:?}", key));
+                            ncurses::doupdate();
+                            continue;
+                        }
+                    };
+                    match keycommand.execute(&mut context, &view) {
+                        Err(e) => {
+                            ui::wprint_err(&view.bot_win, e.cause());
+                        }
+                        _ => {}
+                    }
+                    ncurses::doupdate();
+                }
+                event => ui::wprint_err(&view.bot_win, &format!("Unknown keycode: {:?}", event)),
             }
             ncurses::doupdate();
-        } else {
-            ncurses::timeout(-1);
-        }
-
-        if let Some(ch) = ncurses::get_wch() {
-            let ch = match ch {
-                ncurses::WchResult::Char(s) => s as i32,
-                ncurses::WchResult::KeyCode(s) => s,
-            };
-
-            if ch == ncurses::KEY_RESIZE {
-                view.resize_views();
-                resize_handler(&mut context, &view);
-                continue;
-            }
-
-            let keycommand;
-
-            match keymap_t.get(&ch) {
-                Some(CommandKeybind::CompositeKeybind(m)) => match recurse_get_keycommand(&m) {
-                    Some(s) => keycommand = s,
-                    None => continue,
-                },
-                Some(CommandKeybind::SimpleKeybind(s)) => {
-                    keycommand = s.as_ref();
-                }
-                None => {
-                    ui::wprint_err(&view.bot_win, &format!("Unknown keycode: {}", ch));
-                    ncurses::doupdate();
-                    continue;
-                }
-            }
-            match keycommand.execute(&mut context, &view) {
-                Ok(()) => {}
-                Err(e) => {
-                    ui::wprint_err(&view.bot_win, e.cause());
-                    ncurses::doupdate();
-                }
-            }
         }
     }
     ui::end_ncurses();
