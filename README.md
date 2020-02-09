@@ -4,6 +4,12 @@
 Currently a work in progress.
 
 ## Will be migrating to [tui-rs](https://github.com/fdehau/tui-rs) in the near future. Until then, no new development will be happening
+#### Progress:
+ [x] implement multithreaded input
+ [~] use characters/words rather than keycodes for config
+     - shift does not currently work with special keys (ie. Shift+Tab)
+ [ ] migrate to use tui gui
+ [ ] rework command system
 
 ![Alt text](joshuto_screenshot.png?raw=true "joshuto")
 
