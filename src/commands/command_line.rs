@@ -24,7 +24,8 @@ impl CommandLine {
         context: &mut JoshutoContext,
         backend: &mut TuiBackend,
     ) -> JoshutoResult<()> {
-        //        let mut textfield = TextField::new(&mut terminal, &context.events);
+        //        let mut textfield = 
+	let mut textfield = TextField::new(backend, &context.events);
         let user_input: Option<String> = None; //textfield.readline();
 
         if let Some(s) = user_input {

@@ -16,6 +16,7 @@ use tui::Terminal;
 use unicode_width::UnicodeWidthStr;
 
 use crate::util::event::{Event, Events};
+use crate::ui::TuiBackend;
 use crate::window;
 
 use crate::KEYMAP_T;
@@ -38,20 +39,14 @@ impl CompletionTracker {
     }
 }
 
-pub struct TextField<'a, W>
-where
-    W: std::io::Write,
-{
-    terminal: &'a mut Terminal<TermionBackend<W>>,
+pub struct TextField<'a> {
+    backend: &'a mut TuiBackend,
     events: &'a Events,
 }
 
-impl<'a, W> TextField<'a, W>
-where
-    W: std::io::Write,
-{
-    pub fn new(terminal: &'a mut Terminal<TermionBackend<W>>, events: &'a Events) -> Self {
-        Self { terminal, events }
+impl<'a> TextField<'a> {
+    pub fn new(backend: &'a mut TuiBackend, events: &'a Events) -> Self {
+        Self { backend, events }
     }
     /*
         Paragraph::new(paragraph_contents.iter())
@@ -64,7 +59,7 @@ where
         let events = self.events;
         loop {
             // Draw UI
-            self.terminal.draw(|mut f| {
+            self.backend.terminal.draw(|mut f| {
                 let f_size = f.size();
                 Paragraph::new([Text::raw(&input_string)].iter())
                     .style(Style::default().fg(Color::Yellow))
@@ -80,7 +75,7 @@ where
             });
 
             write!(
-                self.terminal.backend_mut(),
+                self.backend.terminal.backend_mut(),
                 "{}",
                 Goto(4 + input_string.width() as u16, 5)
             );

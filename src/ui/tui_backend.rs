@@ -49,7 +49,6 @@ impl TuiBackend {
             };
             let layout_rect = Layout::default()
                 .direction(Direction::Horizontal)
-                .vertical_margin(1)
                 .constraints(constraints.as_ref())
                 .split(f_size);
 

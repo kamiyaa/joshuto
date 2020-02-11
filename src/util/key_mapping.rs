@@ -18,7 +18,6 @@ pub fn str_to_key(s: &str) -> Option<Key> {
         "delete" => Some(Key::Delete),
         "insert" => Some(Key::Insert),
         "escape" => Some(Key::Esc),
-        "tab" => Some(Key::BackTab),
         "f1" => Some(Key::F(1)),
         "f2" => Some(Key::F(2)),
         "f3" => Some(Key::F(3)),

@@ -9,7 +9,6 @@ edition = "2018"
 
 [dependencies]
 alphanumeric-sort = "^1"
-ansi_term = "^0"
 chrono = "^0"
 dirs = "^1"
 lazy_static = "^1"
