@@ -1,8 +1,24 @@
-use crate::window;
-use crate::KEYMAP_T;
+use std::io::{self, Write};
 
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
 use rustyline::line_buffer;
+
+use termion::cursor::Goto;
+use termion::event::Key;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
+use termion::screen::AlternateScreen;
+use tui::backend::{Backend, TermionBackend};
+use tui::layout::{Constraint, Direction, Layout, Rect};
+use tui::style::{Color, Style};
+use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
+use tui::Terminal;
+use unicode_width::UnicodeWidthStr;
+
+use crate::util::event::{Event, Events};
+use crate::window;
+
+use crate::KEYMAP_T;
 
 struct CompletionTracker {
     pub index: usize,
@@ -22,160 +38,77 @@ impl CompletionTracker {
     }
 }
 
-pub struct JoshutoTextField<'a> {
-    pub win: window::JoshutoPanel,
-    pub prompt: &'a str,
-    pub prefix: &'a str,
-    pub suffix: &'a str,
+pub struct TextField<'a, W>
+where
+    W: std::io::Write,
+{
+    terminal: &'a mut Terminal<TermionBackend<W>>,
+    events: &'a Events,
 }
 
-impl<'a> std::fmt::Debug for JoshutoTextField<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("JoshutoTextField")
-            .field("prompt", &self.prompt)
-            .field("prefix", &self.prefix)
-            .field("suffix", &self.suffix)
-            .finish()
+impl<'a, W> TextField<'a, W>
+where
+    W: std::io::Write,
+{
+    pub fn new(terminal: &'a mut Terminal<TermionBackend<W>>, events: &'a Events) -> Self {
+        Self { terminal, events }
     }
-}
+    /*
+        Paragraph::new(paragraph_contents.iter())
+            .wrap(true)
+            .render(&mut f, Rect { x: 0, y: 0, height: 2, width: f_size.width});
+    */
 
-impl<'a> JoshutoTextField<'a> {
-    pub fn new(
-        rows: i32,
-        cols: i32,
-        coord: (usize, usize),
-        prompt: &'a str,
-        prefix: &'a str,
-        suffix: &'a str,
-    ) -> Self {
-        let win = window::JoshutoPanel::new(rows, cols, coord);
-        JoshutoTextField {
-            win,
-            prompt,
-            prefix,
-            suffix,
-        }
-    }
-
-    pub fn readline(&self) -> Option<String> {
-        self.win.move_to_top();
-        let win = self.win.win;
-
-        let prompt_len = self.prompt.len();
-        let coord = (0, self.win.coords.1 + prompt_len);
-
-        ncurses::mvwaddstr(win, 0, 0, &self.prompt);
-
-        let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
-        let completer = FilenameCompleter::new();
-
-        line_buffer.insert_str(0, self.prefix);
-        line_buffer.insert_str(line_buffer.len(), self.suffix);
-        line_buffer.set_pos(self.prefix.as_bytes().len());
-
-        let mut completion_tracker: Option<CompletionTracker> = None;
-
-        let mut curr_pos = unicode_width::UnicodeWidthStr::width(self.prefix);
+    pub fn readline(&mut self) -> Option<String> {
+        let mut input_string = String::with_capacity(64);
+        let events = self.events;
         loop {
-            ncurses::mvwaddstr(win, coord.0, coord.1 as i32, line_buffer.as_str());
-            ncurses::wclrtoeol(win);
+            // Draw UI
+            self.terminal.draw(|mut f| {
+                let f_size = f.size();
+                Paragraph::new([Text::raw(&input_string)].iter())
+                    .style(Style::default().fg(Color::Yellow))
+                    .render(
+                        &mut f,
+                        Rect {
+                            x: 0,
+                            y: 0,
+                            height: 2,
+                            width: f_size.width,
+                        },
+                    );
+            });
 
-            /* draws cursor */
-            ncurses::mvwchgat(
-                win,
-                coord.0,
-                (coord.1 + curr_pos) as i32,
-                1,
-                ncurses::A_STANDOUT(),
-                0,
+            write!(
+                self.terminal.backend_mut(),
+                "{}",
+                Goto(4 + input_string.width() as u16, 5)
             );
-            ncurses::wrefresh(win);
+            io::stdout().flush().ok();
 
-            let ch = ncurses::wget_wch(win).unwrap();
-            let ch = match ch {
-                ncurses::WchResult::Char(s) => s as i32,
-                ncurses::WchResult::KeyCode(s) => s,
-            };
-
-            if ch == KEYMAP_T.escape {
-                return None;
-            } else if ch == KEYMAP_T.enter {
-                break;
-            } else if ch == KEYMAP_T.home {
-                line_buffer.move_home();
-                curr_pos = 0;
-                completion_tracker.take();
-            } else if ch == KEYMAP_T.end {
-                line_buffer.move_end();
-                curr_pos = unicode_width::UnicodeWidthStr::width(line_buffer.as_str());
-                completion_tracker.take();
-            } else if ch == KEYMAP_T.left {
-                if line_buffer.move_backward(1) {
-                    let pos = line_buffer.pos();
-                    curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
-                    completion_tracker.take();
-                }
-            } else if ch == KEYMAP_T.right {
-                if line_buffer.move_forward(1) {
-                    let pos = line_buffer.pos();
-                    curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
-                    completion_tracker.take();
-                }
-            } else if ch == KEYMAP_T.backspace {
-                if line_buffer.backspace(1) {
-                    let pos = line_buffer.pos();
-                    curr_pos = unicode_width::UnicodeWidthStr::width(&line_buffer.as_str()[..pos]);
-                    completion_tracker.take();
-                }
-            } else if ch == KEYMAP_T.delete {
-                if line_buffer.delete(1).is_some() {
-                    completion_tracker.take();
-                }
-            } else if ch == KEYMAP_T.tab {
-                if completion_tracker.is_none() {
-                    let res = completer.complete_path(line_buffer.as_str(), line_buffer.pos());
-                    if let Ok((pos, mut candidates)) = res {
-                        candidates.sort_by(|x, y| {
-                            x.display()
-                                .partial_cmp(y.display())
-                                .unwrap_or(std::cmp::Ordering::Less)
-                        });
-                        let ct = CompletionTracker::new(
-                            pos,
-                            candidates,
-                            String::from(line_buffer.as_str()),
-                        );
-                        completion_tracker = Some(ct);
-                    }
-                }
-
-                if let Some(ref mut s) = completion_tracker {
-                    if s.index < s.candidates.len() {
-                        let candidate = &s.candidates[s.index];
-                        completer.update(&mut line_buffer, s.pos, candidate.display());
-                        s.index += 1;
-                    }
-                }
-                curr_pos = unicode_width::UnicodeWidthStr::width(
-                    &line_buffer.as_str()[..line_buffer.pos()],
-                );
-            } else if ch == KEYMAP_T.up {
-                // TODO
-            } else if ch == KEYMAP_T.down {
-                // TODO
-            } else if let Some(ch) = std::char::from_u32(ch as u32) {
-                if line_buffer.insert(ch, 1).is_some() {
-                    curr_pos += unicode_width::UnicodeWidthChar::width(ch).unwrap_or(1);
-                    completion_tracker.take();
+            // Handle input
+            if let Ok(event) = events.next() {
+                match event {
+                    Event::Input(input) => match input {
+                        Key::Char('\n') => {
+                            break;
+                        }
+                        Key::Esc => {
+                            return None;
+                        }
+                        Key::Backspace => {
+                            input_string.pop();
+                        }
+                        Key::Char(c) => {
+                            input_string.push(c);
+                        }
+                        _ => {}
+                    },
+                    _ => {}
                 }
             }
         }
-        if line_buffer.as_str().is_empty() {
-            None
-        } else {
-            //            let strin = rustyline::completion::unescape(line_buffer.as_str(), ESCAPE_CHAR).into_owned();
-            let strin = line_buffer.to_string();
-            Some(strin)
-        }
+        eprintln!("You typed: {}", input_string);
+        Some(input_string)
     }
 }

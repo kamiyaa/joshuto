@@ -4,7 +4,7 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 use crate::HOME_DIR;
 
@@ -19,7 +19,7 @@ impl NewTab {
         "new_tab"
     }
 
-    pub fn new_tab(context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    pub fn new_tab(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         /* start the new tab in $HOME or root */
         let curr_path = match HOME_DIR.as_ref() {
             Some(s) => s.clone(),
@@ -29,7 +29,7 @@ impl NewTab {
         let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
         context.tabs.push(tab);
         context.curr_tab_index = context.tabs.len() - 1;
-        TabSwitch::tab_switch(context.curr_tab_index, context, view)?;
+        TabSwitch::tab_switch(context.curr_tab_index, context, backend)?;
         Ok(())
     }
 }
@@ -43,8 +43,8 @@ impl std::fmt::Display for NewTab {
 }
 
 impl JoshutoRunnable for NewTab {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        Self::new_tab(context, view)
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        Self::new_tab(context, backend)
     }
 }
 
@@ -59,7 +59,7 @@ impl CloseTab {
         "close_tab"
     }
 
-    pub fn close_tab(context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    pub fn close_tab(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         if context.tabs.len() <= 1 {
             return Quit::quit(context);
         }
@@ -68,7 +68,7 @@ impl CloseTab {
         if context.curr_tab_index > 0 {
             context.curr_tab_index -= 1;
         }
-        TabSwitch::tab_switch(context.curr_tab_index, context, view)?;
+        TabSwitch::tab_switch(context.curr_tab_index, context, backend)?;
         Ok(())
     }
 }
@@ -82,7 +82,7 @@ impl std::fmt::Display for CloseTab {
 }
 
 impl JoshutoRunnable for CloseTab {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        Self::close_tab(context, view)
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        Self::close_tab(context, backend)
     }
 }

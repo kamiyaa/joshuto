@@ -7,7 +7,7 @@ use rand::Rng;
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
 pub struct BulkRename;
@@ -62,8 +62,6 @@ impl BulkRename {
         let time = std::time::SystemTime::now();
         /* exit curses and launch program */
         {
-            ncurses::savetty();
-            ncurses::endwin();
             let mut handle = command.spawn()?;
             handle.wait()?;
         }
@@ -121,11 +119,6 @@ impl BulkRename {
         std::io::stdin().read_line(&mut user_input)?;
 
         std::fs::remove_file(file_path)?;
-
-        /* restore ncurses */
-        ncurses::resetty();
-        ncurses::refresh();
-        ncurses::doupdate();
         Ok(())
     }
 }
@@ -139,12 +132,9 @@ impl std::fmt::Display for BulkRename {
 }
 
 impl JoshutoRunnable for BulkRename {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         Self::bulk_rename(context)?;
         ReloadDirList::reload(context.curr_tab_index, context)?;
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.refresh(view, &context.config_t);
-        ncurses::doupdate();
         Ok(())
     }
 }

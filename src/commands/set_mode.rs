@@ -2,10 +2,9 @@ use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::fs::JoshutoDirEntry;
-use crate::textfield::JoshutoTextField;
-use crate::ui;
+use crate::textfield::TextField;
+use crate::ui::TuiBackend;
 use crate::unix;
-use crate::window::JoshutoView;
 
 #[derive(Clone, Debug)]
 pub struct SetMode;
@@ -34,20 +33,7 @@ impl SetMode {
         use std::os::unix::fs::PermissionsExt;
 
         const PROMPT: &str = ":set_mode ";
-
-        let (term_rows, term_cols) = ui::getmaxyx();
-        let user_input: Option<String> = {
-            let textfield = JoshutoTextField::new(
-                1,
-                term_cols,
-                (term_rows as usize - 1, 0),
-                PROMPT,
-                &initial,
-                "",
-            );
-            textfield.readline()
-        };
-        ncurses::doupdate();
+        let user_input: Option<String> = None;
 
         match user_input {
             Some(s) => {
@@ -76,7 +62,7 @@ impl std::fmt::Display for SetMode {
 }
 
 impl JoshutoRunnable for SetMode {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         use std::os::unix::fs::PermissionsExt;
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         if let Some(file) = curr_tab.curr_list.get_curr_mut() {
@@ -85,7 +71,7 @@ impl JoshutoRunnable for SetMode {
             mode_string.remove(0);
 
             self.set_mode(file, mode_string);
-            CursorMoveDown::new(1).execute(context, view)
+            CursorMoveDown::new(1).execute(context, backend)
         } else {
             Ok(())
         }

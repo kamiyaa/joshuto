@@ -5,7 +5,7 @@ use crate::commands::{cursor_move, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 lazy_static! {
     static ref SEARCH_PATTERN: Mutex<Option<String>> = Mutex::new(None);
@@ -66,10 +66,10 @@ impl std::fmt::Display for Search {
 }
 
 impl JoshutoRunnable for Search {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let index = Self::search(&context.tabs[context.curr_tab_index], &self.pattern);
         if let Some(index) = index {
-            cursor_move::cursor_move(index, context, view);
+            cursor_move::cursor_move(index, context, backend);
         }
         let mut data = SEARCH_PATTERN.lock().unwrap();
         match data.as_ref() {
@@ -87,14 +87,14 @@ impl JoshutoRunnable for Search {
 
 fn search_with_func(
     context: &mut JoshutoContext,
-    view: &JoshutoView,
+    backend: &mut TuiBackend,
     search_func: fn(&JoshutoTab, &str) -> Option<usize>,
 ) {
     let data = SEARCH_PATTERN.lock().unwrap();
     if let Some(s) = (*data).as_ref() {
         let index = search_func(&context.tabs[context.curr_tab_index], s);
         if let Some(index) = index {
-            cursor_move::cursor_move(index, context, view);
+            cursor_move::cursor_move(index, context, backend);
         }
         ncurses::doupdate();
     }
@@ -121,8 +121,8 @@ impl std::fmt::Display for SearchNext {
 }
 
 impl JoshutoRunnable for SearchNext {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        search_with_func(context, view, Search::search);
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        search_with_func(context, backend, Search::search);
         Ok(())
     }
 }
@@ -148,8 +148,8 @@ impl std::fmt::Display for SearchPrev {
 }
 
 impl JoshutoRunnable for SearchPrev {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        search_with_func(context, view, Search::search_rev);
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        search_with_func(context, backend, Search::search_rev);
         Ok(())
     }
 }

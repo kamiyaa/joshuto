@@ -23,7 +23,7 @@ impl JoshutoTab {
         let mut history = JoshutoHistory::new();
         history.populate_to_root(&curr_path, sort_option)?;
 
-        let curr_list = history.pop_or_create(&curr_path, sort_option)?;
+        let curr_list = JoshutoDirList::new(curr_path.clone(), sort_option)?;
 
         let tab = JoshutoTab {
             curr_path,
@@ -33,77 +33,28 @@ impl JoshutoTab {
         Ok(tab)
     }
 
-    pub fn refresh(&mut self, views: &JoshutoView, config_t: &JoshutoConfig) {
-        self.refresh_curr(&views.mid_win, config_t);
-        self.refresh_parent(&views.left_win, config_t);
-        if config_t.show_preview {
-            self.refresh_preview(&views.right_win, config_t);
-        }
-        self.refresh_path_status(&views.top_win, config_t);
-        self.refresh_file_status(&views.bot_win);
+    pub fn curr_list_ref(&self) -> Option<&JoshutoDirList> {
+        self.history.get(self.curr_path.as_path())
     }
 
-    pub fn refresh_curr(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
-        ui::display_contents(
-            win,
-            &mut self.curr_list,
-            config_t,
-            &ui::PRIMARY_DISPLAY_OPTION,
-        );
+    pub fn parent_list_ref(&self) -> Option<&JoshutoDirList> {
+        let parent = self.curr_path.parent()?;
+        self.history.get(parent)
     }
 
-    pub fn refresh_parent(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
-        preview::preview_parent(self, win, config_t);
+    pub fn child_list_ref(&self) -> Option<&JoshutoDirList> {
+        let curr_list = self.curr_list_ref()?;
+        let index = curr_list.index?;
+        let path = curr_list.contents[index].file_path();
+        self.history.get(path)
     }
 
-    pub fn refresh_preview(&mut self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
-        preview::preview_entry(self, win, config_t);
+    pub fn curr_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
+        self.history.get_mut(self.curr_path.as_path())
     }
 
-    pub fn refresh_file_status(&self, win: &JoshutoPanel) {
-        ncurses::werase(win.win);
-        ncurses::wmove(win.win, 0, 0);
-        if let Some(index) = self.curr_list.index {
-            let entry = &self.curr_list.contents[index];
-            let len = self.curr_list.contents.len();
-            ui::wprint_file_status(win, entry, index, len);
-        }
-    }
-
-    pub fn refresh_path_status(&self, win: &JoshutoPanel, config_t: &JoshutoConfig) {
-        let path_str: &str = self.curr_path.to_str().unwrap();
-
-        ncurses::werase(win.win);
-        ncurses::wattron(win.win, ncurses::A_BOLD());
-        ncurses::mvwaddstr(win.win, 0, 0, (*USERNAME).as_str());
-        ncurses::waddstr(win.win, "@");
-        ncurses::waddstr(win.win, (*HOSTNAME).as_str());
-
-        ncurses::waddstr(win.win, " ");
-
-        ncurses::wattron(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
-        /* shorten $HOME to ~/ */
-        if config_t.tilde_in_titlebar {
-            if let Some(s) = (*HOME_DIR).as_ref() {
-                if let Some(s) = s.as_os_str().to_str() {
-                    let path_str = &path_str.replace(s, "~");
-                    ncurses::waddstr(win.win, path_str);
-                }
-            }
-        } else {
-            ncurses::waddstr(win.win, path_str);
-        }
-        /* do not print extra '/' if we are at the root directory */
-        if let Some(_) = self.curr_path.parent() {
-            ncurses::waddstr(win.win, "/");
-        }
-
-        ncurses::wattroff(win.win, ncurses::COLOR_PAIR(THEME_T.directory.colorpair));
-        /* print currently selected item */
-        if let Some(entry) = self.curr_list.get_curr_ref() {
-            ncurses::waddstr(win.win, &entry.file_name());
-        }
-        ncurses::wattroff(win.win, ncurses::A_BOLD());
-        win.queue_for_refresh();
+    pub fn parent_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
+        let parent = self.curr_path.parent()?;
+        self.history.get_mut(parent)
     }
 }

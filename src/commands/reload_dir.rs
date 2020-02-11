@@ -1,10 +1,10 @@
+use std::collections::hash_map::Entry;
+
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::fs::JoshutoDirList;
-use crate::window::JoshutoView;
-
-use std::collections::hash_map::Entry;
+use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
 pub struct ReloadDirList;
@@ -48,11 +48,8 @@ impl std::fmt::Display for ReloadDirList {
 }
 
 impl JoshutoRunnable for ReloadDirList {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         Self::reload(context.curr_tab_index, context)?;
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.refresh(view, &context.config_t);
-        ncurses::doupdate();
         Ok(())
     }
 }

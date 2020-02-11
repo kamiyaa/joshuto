@@ -3,8 +3,7 @@ use std::env;
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::ui;
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
 pub struct TabSwitch {
@@ -22,22 +21,16 @@ impl TabSwitch {
     pub fn tab_switch(
         new_index: usize,
         context: &mut JoshutoContext,
-        view: &JoshutoView,
+        backend: &mut TuiBackend,
     ) -> std::io::Result<()> {
         context.curr_tab_index = new_index;
         let path = &context.curr_tab_ref().curr_path;
         env::set_current_dir(path)?;
-        {
-            let curr_tab = &mut context.tabs[context.curr_tab_index];
-            if curr_tab.curr_list.need_update() {
-                curr_tab
-                    .curr_list
-                    .reload_contents(&context.config_t.sort_option)?;
-            }
-            curr_tab.refresh(view, &context.config_t);
-        }
-        ui::redraw_tab_view(&view.tab_win, &context);
-        ncurses::doupdate();
+
+        /*
+                ui::redraw_tab_view(&view.tab_win, &context);
+                ncurses::doupdate();
+        */
         Ok(())
     }
 }
@@ -51,7 +44,7 @@ impl std::fmt::Display for TabSwitch {
 }
 
 impl JoshutoRunnable for TabSwitch {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let mut new_index = context.curr_tab_index as i32 + self.movement;
         let tab_len = context.tabs.len() as i32;
         while new_index < 0 {
@@ -61,7 +54,7 @@ impl JoshutoRunnable for TabSwitch {
             new_index -= tab_len;
         }
         let new_index = new_index as usize;
-        Self::tab_switch(new_index, context, view)?;
+        Self::tab_switch(new_index, context, backend)?;
         Ok(())
     }
 }

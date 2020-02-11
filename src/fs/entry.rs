@@ -61,3 +61,34 @@ impl JoshutoDirEntry {
         self.selected = selected;
     }
 }
+
+impl std::fmt::Display for JoshutoDirEntry {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.file_name())
+    }
+}
+
+impl std::convert::AsRef<str> for JoshutoDirEntry {
+    fn as_ref(&self) -> &str {
+        self.file_name()
+    }
+}
+
+impl std::cmp::PartialEq for JoshutoDirEntry {
+    fn eq(&self, other: &Self) -> bool {
+        self.file_path() == other.file_path()
+    }
+}
+impl std::cmp::Eq for JoshutoDirEntry {}
+
+impl std::cmp::PartialOrd for JoshutoDirEntry {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl std::cmp::Ord for JoshutoDirEntry {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.file_path().cmp(other.file_path())
+    }
+}

@@ -1,4 +1,3 @@
-use std::process;
 use std::thread;
 
 use termion::event::Key;
@@ -26,6 +25,7 @@ fn recurse_get_keycommand<'a>(
             ((term_rows - keymap_len as i32 - 2) as usize, 0),
         );
 
+        // TODO: format keys better, rather than debug
         let mut display_vec: Vec<String> = keymap
             .iter()
             .map(|(k, v)| format!("  {:?}\t{}", k, v))
@@ -36,7 +36,8 @@ fn recurse_get_keycommand<'a>(
         ui::display_menu(&win, &display_vec);
         ncurses::doupdate();
 
-        events.next()
+        let event = events.next();
+        event
     };
     ncurses::doupdate();
 
@@ -56,61 +57,25 @@ fn recurse_get_keycommand<'a>(
     command
 }
 
-fn reload_tab(
-    index: usize,
-    context: &mut JoshutoContext,
-    view: &JoshutoView,
-) -> std::io::Result<()> {
-    ReloadDirList::reload(index, context)?;
-    if index == context.curr_tab_index {
-        let dirty_tab = &mut context.tabs[index];
-        dirty_tab.refresh(view, &context.config_t);
-    }
-    Ok(())
-}
-
-#[inline]
-fn resize_handler(context: &mut JoshutoContext, view: &JoshutoView) {
-    ui::redraw_tab_view(&view.tab_win, &context);
-
-    let curr_tab = &mut context.tabs[context.curr_tab_index];
-    curr_tab.refresh(view, &context.config_t);
-    ncurses::doupdate();
-}
-
-fn init_context(context: &mut JoshutoContext, view: &JoshutoView) {
-    match std::env::current_dir() {
-        Ok(curr_path) => match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
-            Ok(tab) => {
-                context.tabs.push(tab);
-                context.curr_tab_index = context.tabs.len() - 1;
-
-                ui::redraw_tab_view(&view.tab_win, &context);
-                let curr_tab = &mut context.tabs[context.curr_tab_index];
-                curr_tab.refresh(view, &context.config_t);
-                ncurses::doupdate();
-            }
-            Err(e) => {
-                ui::end_ncurses();
-                eprintln!("{}", e);
-                process::exit(1);
-            }
-        },
-        Err(e) => {
-            ui::end_ncurses();
-            eprintln!("{}", e);
-            process::exit(1);
-        }
-    }
-}
-
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
-    ui::init_ncurses();
+    let mut backend: ui::TuiBackend = ui::TuiBackend::new().unwrap();
 
     let mut context = JoshutoContext::new(config_t);
     let mut view = JoshutoView::new(context.config_t.column_ratio);
-    init_context(&mut context, &view);
-    ncurses::doupdate();
+    match std::env::current_dir() {
+        Ok(curr_path) => match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
+            Ok(s) => context.push_tab(s),
+            Err(e) => {
+                eprintln!("{}", e);
+                return;
+            }
+        },
+        Err(e) => {
+            eprintln!("{}", e);
+            return;
+        }
+    }
+    backend.render(&context);
 
     let mut io_handle = None;
     while !context.exit {
@@ -125,12 +90,12 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                         let thread = thread::spawn(move || {
                             worker.start();
                             while let Ok(evt) = worker.recv() {
-                                event_tx.send(evt);
-                                sync_tx.send(());
+                                let _ = event_tx.send(evt);
+                                let _ = sync_tx.send(());
                             }
                             worker.handle.join();
-                            event_tx.send(Event::IOWorkerResult);
-                            sync_tx.send(());
+                            let _ = event_tx.send(Event::IOWorkerResult);
+                            let _ = sync_tx.send(());
                         });
                         Some(thread)
                     };
@@ -139,54 +104,54 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
             _ => {}
         }
 
-        let event = context.events.next();
-        if let Ok(event) = event {
-            match event {
-                Event::Input(key) => {
-                    let keycommand = match keymap_t.get(&key) {
+        match context.events.next() {
+            Ok(event) => {
+                match event {
+                    Event::Input(key) => match keymap_t.get(&key) {
                         Some(CommandKeybind::CompositeKeybind(m)) => {
                             match recurse_get_keycommand(&context.events, &m) {
-                                Some(s) => s,
+                                Some(command) => {
+                                    if let Err(e) = command.execute(&mut context, &mut backend) {
+                                        ui::wprint_err(&view.bot_win, e.cause());
+                                    }
+                                }
                                 None => {
                                     ui::wprint_err(
                                         &view.bot_win,
                                         &format!("Unknown keycode: {:?}", key),
                                     );
-                                    ncurses::doupdate();
-                                    continue;
                                 }
                             }
                         }
-                        Some(CommandKeybind::SimpleKeybind(s)) => s.as_ref(),
+                        Some(CommandKeybind::SimpleKeybind(command)) => {
+                            if let Err(e) = command.execute(&mut context, &mut backend) {
+                                eprintln!("{}", e.cause());
+                            }
+                        }
                         None => {
-                            ui::wprint_err(&view.bot_win, &format!("Unknown keycode: {:?}", key));
-                            ncurses::doupdate();
-                            continue;
+                            eprintln!("Unknown keycode: {:?}", key);
                         }
-                    };
-                    match keycommand.execute(&mut context, &view) {
-                        Err(e) => {
-                            ui::wprint_err(&view.bot_win, e.cause());
-                        }
-                        _ => {}
+                    },
+                    Event::IOWorkerProgress(p) => {
+                        ui::wprint_err(&view.bot_win, &format!("bytes copied {}", p));
                     }
-                    ncurses::doupdate();
-                }
-                Event::IOWorkerProgress(p) => {
-                    ui::wprint_err(&view.bot_win, &format!("bytes copied {}", p))
-                }
-                Event::IOWorkerResult => {
-                    match io_handle {
-                        Some(handle) => {
-                            handle.join();
-                            ui::wprint_err(&view.bot_win, "io_worker done");
+                    Event::IOWorkerResult => {
+                        match io_handle {
+                            Some(handle) => {
+                                handle.join();
+                                ui::wprint_err(&view.bot_win, "io_worker done");
+                            }
+                            None => {}
                         }
-                        None => {}
+                        io_handle = None;
                     }
-                    io_handle = None;
                 }
+                backend.render(&context);
             }
-            ncurses::doupdate();
+            Err(e) => {
+                eprintln!("{:?}", e);
+                break;
+            }
         }
     }
     ui::end_ncurses();

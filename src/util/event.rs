@@ -1,15 +1,9 @@
 use std::io;
 use std::sync::mpsc;
 use std::thread;
-use std::time::{Duration, SystemTime};
-
-use chrono::offset::Local;
-use chrono::DateTime;
 
 use termion::event::Key;
 use termion::input::TermRead;
-
-use crate::io::IOWorkerThread;
 
 #[derive(Debug)]
 pub enum Event {
@@ -19,24 +13,21 @@ pub enum Event {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Config {
-    pub tick_rate: Duration,
-}
+pub struct Config {}
 
 impl Default for Config {
     fn default() -> Config {
-        Config {
-            tick_rate: Duration::from_millis(250),
-        }
+        Config {}
     }
 }
 
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
+    prefix: &'static str,
     pub event_tx: mpsc::Sender<Event>,
     event_rx: mpsc::Receiver<Event>,
-    pub sync_tx: mpsc::Sender<()>,
+    pub sync_tx: mpsc::SyncSender<()>,
     sync_rx: mpsc::Receiver<()>,
     input_handle: thread::JoinHandle<()>,
     // fileio_handle: thread::JoinHandle<()>,
@@ -44,11 +35,15 @@ pub struct Events {
 
 impl Events {
     pub fn new() -> Self {
-        Events::with_config(Config::default())
+        Events::with_config("")
+    }
+    pub fn with_debug(s: &'static str) -> Self {
+        let event = Events::with_config(s);
+        event
     }
 
-    pub fn with_config(_: Config) -> Self {
-        let (sync_tx, sync_rx) = mpsc::channel();
+    pub fn with_config(prefix: &'static str) -> Self {
+        let (sync_tx, sync_rx) = mpsc::sync_channel(1);
         let (event_tx, event_rx) = mpsc::channel();
 
         let input_handle = {
@@ -57,18 +52,18 @@ impl Events {
             thread::spawn(move || {
                 let stdin = io::stdin();
                 let mut keys = stdin.keys();
-                loop {
-                    if let Some(evt) = keys.next() {
-                        match evt {
-                            Ok(key) => {
-                                if let Err(e) = event_tx.send(Event::Input(key)) {
-                                    eprintln!("Input thread send err: {:#?}", e);
-                                    return;
-                                }
-                                sync_tx.send(());
+                while let Some(evt) = keys.next() {
+                    match evt {
+                        Ok(key) => {
+                            if let Err(e) = event_tx.send(Event::Input(key)) {
+                                eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
+                                return;
                             }
-                            _ => {}
+                            if let Err(_) = sync_tx.send(()) {
+                                return;
+                            }
                         }
+                        _ => {}
                     }
                 }
             })
@@ -80,38 +75,18 @@ impl Events {
             sync_tx,
             sync_rx,
             input_handle,
+            prefix,
         }
     }
 
     pub fn next(&self) -> Result<Event, mpsc::RecvError> {
-        let now = SystemTime::now();
-        let datetime: DateTime<Local> = now.into();
-        #[cfg(debug_assertions)]
-        eprintln!(
-            "\nwaiting for event...{}",
-            datetime.format("%d/%m/%Y %T %6f")
-        );
-
-        let event = self.event_rx.recv();
-
-        #[cfg(debug_assertions)]
-        eprintln!("got event: {:?}", event);
-
-        let now = SystemTime::now();
-        let datetime: DateTime<Local> = now.into();
-
-        #[cfg(debug_assertions)]
-        eprintln!("Event captured at: {}", datetime.format("%d/%m/%Y %T %6f"));
-
-        #[cfg(debug_assertions)]
-        eprintln!("waiting for recv...");
-
-        self.sync_rx.recv();
-        let now = SystemTime::now();
-        let datetime: DateTime<Local> = now.into();
-
-        #[cfg(debug_assertions)]
-        eprintln!("Done: {}", datetime.format("%d/%m/%Y %T %6f"));
-        event
+        let event = self.event_rx.recv()?;
+        self.sync_rx.recv()?;
+        Ok(event)
     }
+    /*
+        pub fn flush(&self) {
+            self.sync_rx.try_recv();
+        }
+    */
 }

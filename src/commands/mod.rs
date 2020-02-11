@@ -4,6 +4,7 @@ mod command_line;
 mod cursor_move;
 mod delete_files;
 mod file_ops;
+mod load_child;
 mod new_directory;
 mod open_file;
 mod parent_directory;
@@ -26,8 +27,9 @@ pub use self::cursor_move::{
 };
 pub use self::delete_files::DeleteFiles;
 pub use self::file_ops::{CopyFiles, CutFiles, PasteFiles};
+pub use self::load_child::LoadChild;
 pub use self::new_directory::NewDirectory;
-pub use self::open_file::{OpenFile, OpenFileWith};
+pub use self::open_file::OpenFile; //, OpenFileWith};
 pub use self::parent_directory::ParentDirectory;
 pub use self::quit::ForceQuit;
 pub use self::quit::Quit;
@@ -46,7 +48,7 @@ use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::Options;
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 use crate::HOME_DIR;
 
@@ -66,7 +68,7 @@ impl std::fmt::Display for CommandKeybind {
 }
 
 pub trait JoshutoRunnable {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()>;
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()>;
 }
 
 pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
@@ -154,8 +156,11 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
             }
         }
         "new_tab" => Ok(Box::new(self::NewTab::new())),
+
         "open_file" => Ok(Box::new(self::OpenFile::new())),
-        "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
+        /*
+                "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
+        */
         "paste_files" => {
             let mut options = Options::default();
             for arg in args {

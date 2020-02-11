@@ -2,7 +2,7 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::io::Options;
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 use super::local_state::{FileOp, LocalState};
 use super::paste_copy::paste_copy;
@@ -33,7 +33,7 @@ impl std::fmt::Debug for PasteFiles {
 }
 
 impl JoshutoRunnable for PasteFiles {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         let file_operation = LocalState::get_file_operation();
         let thread = match file_operation {
             FileOp::Copy => paste_copy(context, self.options.clone()),

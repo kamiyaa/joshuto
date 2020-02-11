@@ -1,7 +1,7 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
 pub struct Quit;
@@ -36,7 +36,7 @@ impl std::fmt::Display for Quit {
 }
 
 impl JoshutoRunnable for Quit {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         Self::quit(context)
     }
 }
@@ -72,7 +72,7 @@ impl std::fmt::Display for ForceQuit {
 }
 
 impl JoshutoRunnable for ForceQuit {
-    fn execute(&self, context: &mut JoshutoContext, _: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         Self::force_quit(context);
         Ok(())
     }

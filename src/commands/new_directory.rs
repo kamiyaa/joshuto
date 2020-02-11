@@ -3,7 +3,7 @@ use std::path;
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
 pub struct NewDirectory {
@@ -28,14 +28,11 @@ impl std::fmt::Display for NewDirectory {
 }
 
 impl JoshutoRunnable for NewDirectory {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         for path in &self.paths {
             std::fs::create_dir_all(path)?;
         }
         ReloadDirList::reload(context.curr_tab_index, context)?;
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.refresh(view, &context.config_t);
-        ncurses::doupdate();
         Ok(())
     }
 }

@@ -40,4 +40,9 @@ impl JoshutoContext {
     pub fn add_new_worker(&mut self, thread: IOWorkerThread) {
         self.worker_queue.push_back(thread);
     }
+
+    pub fn push_tab(&mut self, tab: JoshutoTab) {
+        self.tabs.push(tab);
+        self.curr_tab_index = self.tabs.len() - 1;
+    }
 }

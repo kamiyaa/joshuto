@@ -3,7 +3,7 @@ use std::path;
 use crate::commands::{CommandLine, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::window::JoshutoView;
+use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
 pub struct RenameFile {
@@ -22,7 +22,7 @@ impl RenameFile {
         &self,
         path: &path::PathBuf,
         context: &mut JoshutoContext,
-        view: &JoshutoView,
+        backend: &mut TuiBackend,
     ) -> std::io::Result<()> {
         let new_path = &self.path;
         if new_path.exists() {
@@ -35,8 +35,6 @@ impl RenameFile {
         curr_tab
             .curr_list
             .reload_contents(&context.config_t.sort_option)?;
-        curr_tab.refresh_curr(&view.mid_win, &context.config_t);
-        curr_tab.refresh_preview(&view.right_win, &context.config_t);
         Ok(())
     }
 }
@@ -50,7 +48,7 @@ impl std::fmt::Display for RenameFile {
 }
 
 impl JoshutoRunnable for RenameFile {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let mut path: Option<path::PathBuf> = None;
 
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
@@ -59,7 +57,7 @@ impl JoshutoRunnable for RenameFile {
         }
 
         if let Some(path) = path {
-            self.rename_file(&path, context, view)?;
+            self.rename_file(&path, context, backend)?;
             ncurses::doupdate();
         }
         Ok(())
@@ -80,7 +78,7 @@ impl RenameFileAppend {
     pub fn rename_file(
         &self,
         context: &mut JoshutoContext,
-        view: &JoshutoView,
+        backend: &mut TuiBackend,
         file_name: String,
     ) -> JoshutoResult<()> {
         let prefix;
@@ -94,7 +92,7 @@ impl RenameFileAppend {
         }
 
         let command = CommandLine::new(prefix, suffix);
-        command.readline(context, view)
+        command.readline(context, backend)
     }
 }
 
@@ -107,14 +105,14 @@ impl std::fmt::Display for RenameFileAppend {
 }
 
 impl JoshutoRunnable for RenameFileAppend {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
         let file_name = curr_list
             .get_curr_ref()
             .and_then(|s| Some(String::from(s.file_name())));
 
         if let Some(file_name) = file_name {
-            self.rename_file(context, view, file_name)?;
+            self.rename_file(context, backend, file_name)?;
             ncurses::doupdate();
         }
         Ok(())
@@ -135,14 +133,14 @@ impl RenameFilePrepend {
     pub fn rename_file(
         &self,
         context: &mut JoshutoContext,
-        view: &JoshutoView,
+        backend: &mut TuiBackend,
         file_name: String,
     ) -> JoshutoResult<()> {
         let prefix = String::from("rename ");
         let suffix = file_name;
 
         let command = CommandLine::new(prefix, suffix);
-        command.readline(context, view)
+        command.readline(context, backend)
     }
 }
 
@@ -155,14 +153,14 @@ impl std::fmt::Display for RenameFilePrepend {
 }
 
 impl JoshutoRunnable for RenameFilePrepend {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let curr_list = &context.tabs[context.curr_tab_index].curr_list;
         let file_name = curr_list
             .get_curr_ref()
             .and_then(|s| Some(String::from(s.file_name())));
 
         if let Some(file_name) = file_name {
-            self.rename_file(context, view, file_name)?;
+            self.rename_file(context, backend, file_name)?;
             ncurses::doupdate();
         }
         Ok(())

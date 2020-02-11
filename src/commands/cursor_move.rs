@@ -1,34 +1,38 @@
+use std::path::PathBuf;
+
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::window::JoshutoView;
+use crate::history::DirectoryHistory;
+use crate::ui::TuiBackend;
 
-pub fn cursor_move(mut new_index: usize, context: &mut JoshutoContext, view: &JoshutoView) {
+pub fn cursor_move(new_index: usize, context: &mut JoshutoContext, backend: &mut TuiBackend) {
+    let mut new_index = new_index;
     let curr_tab = &mut context.tabs[context.curr_tab_index];
 
-    match curr_tab.curr_list.index {
-        None => return,
-        Some(_) => {
-            let dir_len = curr_tab.curr_list.contents.len();
-            /*
-            if index == dir_len - 1 {
-                return;
-            }
-            */
+    let mut path: Option<PathBuf> = None;
+
+    if let Some(curr_list) = curr_tab.curr_list_mut() {
+        if let Some(index) = curr_list.index {
+            let dir_len = curr_list.contents.len();
             if new_index >= dir_len {
                 new_index = dir_len - 1;
             }
-            curr_tab.curr_list.index = Some(new_index);
+            curr_list.index = Some(new_index);
+
+            let entry = &curr_list.contents[new_index];
+            path = Some(entry.file_path().clone())
         }
     }
 
-    curr_tab.refresh_curr(&view.mid_win, &context.config_t);
-    if context.config_t.show_preview {
-        curr_tab.refresh_preview(&view.right_win, &context.config_t);
+    // get preview
+    if let Some(path) = path {
+        if path.is_dir() {
+            curr_tab
+                .history
+                .create_or_update(path.as_path(), &context.config_t.sort_option);
+        }
     }
-    curr_tab.refresh_path_status(&view.top_win, &context.config_t);
-    curr_tab.refresh_file_status(&view.bot_win);
-    ncurses::doupdate();
 }
 
 #[derive(Clone, Debug)]
@@ -54,13 +58,14 @@ impl std::fmt::Display for CursorMoveDown {
 }
 
 impl JoshutoRunnable for CursorMoveDown {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        let movement: Option<usize> = {
-            let curr_list = &mut context.curr_tab_mut().curr_list;
-            curr_list.index.map(|idx| idx + self.movement)
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        let movement = match context.curr_tab_ref().curr_list_ref() {
+            Some(curr_list) => curr_list.index.map(|idx| idx + self.movement),
+            None => None,
         };
+
         if let Some(s) = movement {
-            cursor_move(s, context, view)
+            cursor_move(s, context, backend)
         }
         Ok(())
     }
@@ -89,16 +94,20 @@ impl std::fmt::Display for CursorMoveUp {
 }
 
 impl JoshutoRunnable for CursorMoveUp {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        let movement: Option<usize> = context.curr_tab_mut().curr_list.index.map(|idx| {
-            if idx > self.movement {
-                idx - self.movement
-            } else {
-                0
-            }
-        });
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        let movement = match context.curr_tab_ref().curr_list_ref() {
+            Some(curr_list) => curr_list.index.map(|idx| {
+                if idx > self.movement {
+                    idx - self.movement
+                } else {
+                    0
+                }
+            }),
+            None => None,
+        };
+
         if let Some(s) = movement {
-            cursor_move(s, context, view);
+            cursor_move(s, context, backend)
         }
         Ok(())
     }
@@ -125,16 +134,19 @@ impl std::fmt::Display for CursorMovePageUp {
 }
 
 impl JoshutoRunnable for CursorMovePageUp {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        let movement: Option<usize> = {
-            let curr_list = &mut context.curr_tab_mut().curr_list;
-            let half_page = view.mid_win.cols as usize / 2;
-            curr_list
-                .index
-                .map(|x| if x > half_page { x - half_page } else { 0 })
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        let movement = match context.curr_tab_ref().curr_list_ref() {
+            Some(curr_list) => {
+                let half_page = 10;
+                curr_list
+                    .index
+                    .map(|idx| if idx > half_page { idx - half_page } else { 0 })
+            }
+            None => None,
         };
+
         if let Some(s) = movement {
-            cursor_move(s, context, view);
+            cursor_move(s, context, backend);
         }
         Ok(())
     }
@@ -161,22 +173,24 @@ impl std::fmt::Display for CursorMovePageDown {
 }
 
 impl JoshutoRunnable for CursorMovePageDown {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
-        let movement: Option<usize> = {
-            let curr_list = &mut context.curr_tab_mut().curr_list;
-            let dir_len = curr_list.contents.len();
-            let half_page = view.mid_win.cols as usize / 2;
-            curr_list.index.map(|x| {
-                if x + half_page > dir_len - 1 {
-                    dir_len - 1
-                } else {
-                    x + half_page
-                }
-            })
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        let movement = match context.curr_tab_ref().curr_list_ref() {
+            Some(curr_list) => {
+                let dir_len = curr_list.contents.len();
+                let half_page = 10;
+                curr_list.index.map(|idx| {
+                    if idx + half_page > dir_len - 1 {
+                        dir_len - 1
+                    } else {
+                        idx + half_page
+                    }
+                })
+            }
+            None => None,
         };
 
         if let Some(s) = movement {
-            cursor_move(s, context, view);
+            cursor_move(s, context, backend);
         }
         Ok(())
     }
@@ -203,7 +217,7 @@ impl std::fmt::Display for CursorMoveHome {
 }
 
 impl JoshutoRunnable for CursorMoveHome {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let movement: Option<usize> = {
             let len = context.curr_tab_mut().curr_list.contents.len();
             if len == 0 {
@@ -214,7 +228,7 @@ impl JoshutoRunnable for CursorMoveHome {
         };
 
         if let Some(s) = movement {
-            cursor_move(s, context, view);
+            cursor_move(s, context, backend);
         }
         Ok(())
     }
@@ -241,7 +255,7 @@ impl std::fmt::Display for CursorMoveEnd {
 }
 
 impl JoshutoRunnable for CursorMoveEnd {
-    fn execute(&self, context: &mut JoshutoContext, view: &JoshutoView) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let movement: Option<usize> = {
             let len = context.curr_tab_mut().curr_list.contents.len();
             if len == 0 {
@@ -252,7 +266,7 @@ impl JoshutoRunnable for CursorMoveEnd {
         };
 
         if let Some(s) = movement {
-            cursor_move(s, context, view);
+            cursor_move(s, context, backend);
         }
         Ok(())
     }
