@@ -7,7 +7,6 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
 use crate::textfield::TextField;
 use crate::ui::TuiBackend;
-use crate::window;
 
 use crate::MIMETYPE_T;
 

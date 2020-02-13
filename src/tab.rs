@@ -2,15 +2,7 @@ use std::path::PathBuf;
 
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
-use crate::preview;
 use crate::sort;
-use crate::ui;
-use crate::window::{JoshutoPanel, JoshutoView};
-use crate::JoshutoConfig;
-
-use crate::{HOME_DIR, HOSTNAME, USERNAME};
-
-use crate::THEME_T;
 
 pub struct JoshutoTab {
     pub history: JoshutoHistory,

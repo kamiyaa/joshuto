@@ -2,7 +2,7 @@ use std::thread;
 
 use termion::event::Key;
 
-use crate::commands::{CommandKeybind, JoshutoCommand, ReloadDirList};
+use crate::commands::{CommandKeybind, CursorMoveUp, JoshutoCommand, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
@@ -74,6 +74,10 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
             eprintln!("{}", e);
             return;
         }
+    }
+    {
+        let tmp = CursorMoveUp::new(0);
+        tmp.execute(&mut context, &mut backend);
     }
     backend.render(&context);
 
@@ -154,5 +158,4 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
             }
         }
     }
-    ui::end_ncurses();
 }

@@ -1,7 +1,6 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::history::DirectoryHistory;
 use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
