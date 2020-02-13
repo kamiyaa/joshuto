@@ -19,10 +19,7 @@ impl ChangeDirectory {
         "cd"
     }
 
-    pub fn cd(
-        path: &path::Path,
-        context: &mut JoshutoContext,
-    ) -> std::io::Result<()> {
+    pub fn cd(path: &path::Path, context: &mut JoshutoContext) -> std::io::Result<()> {
         std::env::set_current_dir(path)?;
 
         let curr_tab = &mut context.tabs[context.curr_tab_index];
@@ -31,14 +28,17 @@ impl ChangeDirectory {
         Ok(())
     }
 
-    pub fn change_directories(path: &path::Path,
+    pub fn change_directories(
+        path: &path::Path,
         context: &mut JoshutoContext,
         backend: &mut TuiBackend,
     ) -> std::io::Result<()> {
         Self::cd(path, context)?;
 
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.history.populate_to_root(&path, &context.config_t.sort_option)?;
+        curr_tab
+            .history
+            .populate_to_root(&path, &context.config_t.sort_option)?;
 
         Ok(())
     }

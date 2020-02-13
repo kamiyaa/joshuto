@@ -3,6 +3,7 @@ use std::io::{self, Write};
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
 use rustyline::line_buffer;
 
+use termion::clear;
 use termion::cursor::Goto;
 use termion::event::Key;
 use termion::input::TermRead;
@@ -15,8 +16,8 @@ use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
 use tui::Terminal;
 use unicode_width::UnicodeWidthStr;
 
-use crate::util::event::{Event, Events};
 use crate::ui::TuiBackend;
+use crate::util::event::{Event, Events};
 use crate::window;
 
 use crate::KEYMAP_T;
@@ -57,28 +58,39 @@ impl<'a> TextField<'a> {
     pub fn readline(&mut self) -> Option<String> {
         let mut input_string = String::with_capacity(64);
         let events = self.events;
+
+        // initially, clear the line for textfield and move the cursor there as well
+        {
+            let f_size = {
+                let frame = self.backend.terminal.get_frame();
+                frame.size()
+            };
+            let txt_y = f_size.height;
+
+            let termion_terminal = self.backend.terminal.backend_mut();
+
+            write!(termion_terminal, "{}", Goto(1, txt_y));
+            write!(termion_terminal, "{}{}", Goto(1, txt_y), clear::AfterCursor,);
+        }
+
         loop {
-            // Draw UI
-            self.backend.terminal.draw(|mut f| {
-                let f_size = f.size();
-                Paragraph::new([Text::raw(&input_string)].iter())
-                    .style(Style::default().fg(Color::Yellow))
-                    .render(
-                        &mut f,
-                        Rect {
-                            x: 0,
-                            y: 0,
-                            height: 2,
-                            width: f_size.width,
-                        },
-                    );
-            });
+            let f_size = {
+                let frame = self.backend.terminal.get_frame();
+                frame.size()
+            };
+            let txt_y = f_size.height;
+
+            let termion_terminal = self.backend.terminal.backend_mut();
+
+            write!(termion_terminal, "{}", Goto(1, txt_y));
 
             write!(
-                self.backend.terminal.backend_mut(),
-                "{}",
-                Goto(4 + input_string.width() as u16, 5)
+                termion_terminal,
+                "{}{}",
+                input_string,
+                Goto(1 + input_string.width() as u16, txt_y)
             );
+
             io::stdout().flush().ok();
 
             // Handle input
@@ -89,6 +101,7 @@ impl<'a> TextField<'a> {
                             break;
                         }
                         Key::Esc => {
+                            write!(termion_terminal, "{}{}", Goto(1, txt_y), clear::AfterCursor,);
                             return None;
                         }
                         Key::Backspace => {
