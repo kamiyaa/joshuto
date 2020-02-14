@@ -1,7 +1,7 @@
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::textfield::TextField;
+use crate::util::textfield::TextField;
 use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]

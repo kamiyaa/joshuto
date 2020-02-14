@@ -8,22 +8,18 @@ use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::util::event::{Event, Events};
+use crate::util::menu::OptionMenu;
 use crate::window::JoshutoPanel;
 use crate::window::JoshutoView;
 
 fn recurse_get_keycommand<'a>(
     events: &Events,
     keymap: &'a JoshutoCommandMapping,
+    backend: &'a mut ui::TuiBackend
 ) -> Option<&'a dyn JoshutoCommand> {
-    let (term_rows, term_cols) = ui::getmaxyx();
-
     let event = {
+        let mut menu = OptionMenu::new(backend, events);
         let keymap_len = keymap.len();
-        let win = JoshutoPanel::new(
-            keymap_len as i32 + 1,
-            term_cols,
-            ((term_rows - keymap_len as i32 - 2) as usize, 0),
-        );
 
         // TODO: format keys better, rather than debug
         let mut display_vec: Vec<String> = keymap
@@ -31,21 +27,22 @@ fn recurse_get_keycommand<'a>(
             .map(|(k, v)| format!("  {:?}\t{}", k, v))
             .collect();
         display_vec.sort();
-
-        win.move_to_top();
-        ui::display_menu(&win, &display_vec);
-        ncurses::doupdate();
+        let display_str: Vec<&str> = display_vec
+            .iter()
+            .map(|v| v.as_str())
+            .collect();
+        let result = menu.get_option(&display_str);
+        eprintln!("{:?}", result);
 
         let event = events.next();
         event
     };
-    ncurses::doupdate();
 
     let command = match event {
         Ok(Event::Input(input)) => match input {
             Key::Esc => None,
             key @ Key::Char(_) => match keymap.get(&key) {
-                Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(events, &m),
+                Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(events, &m, backend),
                 Some(CommandKeybind::SimpleKeybind(s)) => Some(s.as_ref()),
                 _ => None,
             },
@@ -53,7 +50,6 @@ fn recurse_get_keycommand<'a>(
         },
         _ => None,
     };
-    ncurses::doupdate();
     command
 }
 
@@ -84,58 +80,30 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
     let mut io_handle = None;
     while !context.exit {
         /* checking if there are workers that need to be run */
-        match io_handle.as_ref() {
-            None => {
-                if !context.worker_queue.is_empty() {
-                    let worker = context.worker_queue.pop_front().unwrap();
-                    io_handle = {
-                        let event_tx = context.events.event_tx.clone();
-                        let sync_tx = context.events.sync_tx.clone();
-                        let thread = thread::spawn(move || {
-                            worker.start();
-                            while let Ok(evt) = worker.recv() {
-                                let _ = event_tx.send(evt);
-                                let _ = sync_tx.send(());
-                            }
-                            worker.handle.join();
-                            let _ = event_tx.send(Event::IOWorkerResult);
+        if !context.worker_queue.is_empty() {
+            if let None = io_handle.as_ref() {
+                let worker = context.worker_queue.pop_front().unwrap();
+                io_handle = {
+                    let event_tx = context.events.event_tx.clone();
+                    let sync_tx = context.events.sync_tx.clone();
+                    let thread = thread::spawn(move || {
+                        worker.start();
+                        while let Ok(evt) = worker.recv() {
+                            let _ = event_tx.send(evt);
                             let _ = sync_tx.send(());
-                        });
-                        Some(thread)
-                    };
-                }
+                        }
+                        worker.handle.join();
+                        let _ = event_tx.send(Event::IOWorkerResult);
+                        let _ = sync_tx.send(());
+                    });
+                    Some(thread)
+                };
             }
-            _ => {}
         }
 
         match context.events.next() {
             Ok(event) => {
                 match event {
-                    Event::Input(key) => match keymap_t.get(&key) {
-                        Some(CommandKeybind::CompositeKeybind(m)) => {
-                            match recurse_get_keycommand(&context.events, &m) {
-                                Some(command) => {
-                                    if let Err(e) = command.execute(&mut context, &mut backend) {
-                                        ui::wprint_err(&view.bot_win, e.cause());
-                                    }
-                                }
-                                None => {
-                                    ui::wprint_err(
-                                        &view.bot_win,
-                                        &format!("Unknown keycode: {:?}", key),
-                                    );
-                                }
-                            }
-                        }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
-                            if let Err(e) = command.execute(&mut context, &mut backend) {
-                                eprintln!("{}", e.cause());
-                            }
-                        }
-                        None => {
-                            eprintln!("Unknown keycode: {:?}", key);
-                        }
-                    },
                     Event::IOWorkerProgress(p) => {
                         ui::wprint_err(&view.bot_win, &format!("bytes copied {}", p));
                     }
@@ -148,6 +116,68 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                             None => {}
                         }
                         io_handle = None;
+                    }
+                    Event::Input(key) => match keymap_t.get(&key) {
+                        None => {
+                            eprintln!("Unknown keycode: {:?}", key);
+                        }
+                        Some(CommandKeybind::SimpleKeybind(command)) => {
+                            if let Err(e) = command.execute(&mut context, &mut backend) {
+                                ui::wprint_err(&view.bot_win, e.cause());
+                            }
+                        }
+                        Some(CommandKeybind::CompositeKeybind(m)) => {
+                            let mut cmd = None;
+                            let mut map: &JoshutoCommandMapping = &m;
+
+                            loop {
+                                eprintln!("run loop");
+                                let event2 = {
+                                    let mut menu = OptionMenu::new(&mut backend, &context.events);
+
+                                    // TODO: format keys better, rather than debug
+                                    let mut display_vec: Vec<String> = map
+                                        .iter()
+                                        .map(|(k, v)| format!("  {:?}\t{}", k, v))
+                                        .collect();
+                                    display_vec.sort();
+                                    let display_str: Vec<&str> = display_vec
+                                        .iter()
+                                        .map(|v| v.as_str())
+                                        .collect();
+                                    let result = menu.get_option(&display_str);
+                                    eprintln!("{:?}", result);
+
+                                    result
+                                };
+
+                                match event2 {
+                                    Some(key) => {
+                                        match key {
+                                            Key::Esc => {
+                                                break;
+                                            }
+                                            Key::Char(_) => match map.get(&key) {
+                                                Some(CommandKeybind::CompositeKeybind(m)) => map = &m,
+                                                Some(CommandKeybind::SimpleKeybind(s)) => {
+                                                    cmd = Some(s.as_ref());
+                                                    break;
+                                                }
+                                                None => break,
+                                            },
+                                            _ => {},
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                            }
+                            eprintln!("cmd: {:#?}", cmd);
+                            if let Some(command) = cmd {
+                                if let Err(e) = command.execute(&mut context, &mut backend) {
+                                    ui::wprint_err(&view.bot_win, e.cause());
+                                }
+                            }
+                        }
                     }
                 }
                 backend.render(&context);

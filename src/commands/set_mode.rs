@@ -2,7 +2,7 @@ use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::fs::JoshutoDirEntry;
-use crate::textfield::TextField;
+use crate::util::textfield::TextField;
 use crate::ui::TuiBackend;
 use crate::unix;
 

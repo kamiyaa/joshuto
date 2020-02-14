@@ -9,7 +9,6 @@ mod preview;
 mod run;
 mod sort;
 mod tab;
-mod textfield;
 mod ui;
 mod unix;
 mod util;

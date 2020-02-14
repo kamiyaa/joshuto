@@ -49,11 +49,6 @@ impl<'a> TextField<'a> {
     pub fn new(backend: &'a mut TuiBackend, events: &'a Events) -> Self {
         Self { backend, events }
     }
-    /*
-        Paragraph::new(paragraph_contents.iter())
-            .wrap(true)
-            .render(&mut f, Rect { x: 0, y: 0, height: 2, width: f_size.width});
-    */
 
     pub fn readline(&mut self) -> Option<String> {
         let mut input_string = String::with_capacity(64);
@@ -69,8 +64,7 @@ impl<'a> TextField<'a> {
 
             let termion_terminal = self.backend.terminal.backend_mut();
 
-            write!(termion_terminal, "{}", Goto(1, txt_y));
-            write!(termion_terminal, "{}{}", Goto(1, txt_y), clear::AfterCursor,);
+            write!(termion_terminal, "{}{}", Goto(1, txt_y), clear::AfterCursor);
         }
 
         loop {
