@@ -1,9 +1,6 @@
-use std::collections::hash_map::Entry;
-
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::fs::JoshutoDirList;
 use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
@@ -35,7 +32,7 @@ impl std::fmt::Display for ReloadDirList {
 }
 
 impl JoshutoRunnable for ReloadDirList {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         Self::reload(context.curr_tab_index, context)?;
         Ok(())
     }

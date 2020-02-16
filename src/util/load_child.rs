@@ -7,7 +7,7 @@ use crate::ui::TuiBackend;
 pub struct LoadChild {}
 
 impl LoadChild {
-    pub fn load_child(context: &mut JoshutoContext, backend: &mut TuiBackend) {
+    pub fn load_child(context: &mut JoshutoContext) -> std::io::Result<()> {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         let mut path: Option<PathBuf> = None;
 
@@ -23,8 +23,9 @@ impl LoadChild {
             if path.is_dir() {
                 curr_tab
                     .history
-                    .create_or_update(path.as_path(), &context.config_t.sort_option);
+                    .create_or_update(path.as_path(), &context.config_t.sort_option)?;
             }
         }
+        Ok(())
     }
 }

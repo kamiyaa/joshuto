@@ -102,15 +102,11 @@ impl JoshutoMimetypeEntry {
 
         let mut handle = command.spawn()?;
         if !self.get_fork() {
-            ncurses::savetty();
-            ncurses::endwin();
             handle.wait()?;
             if self.get_confirm_exit() {
                 println!(" --- Press ENTER to continue --- ");
                 std::io::stdin().bytes().next();
             }
-            ncurses::resetty();
-            ncurses::refresh();
         }
         Ok(())
     }

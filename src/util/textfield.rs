@@ -20,8 +20,6 @@ use crate::ui::TuiBackend;
 use crate::util::event::{Event, Events};
 use crate::window;
 
-use crate::KEYMAP_T;
-
 struct CompletionTracker {
     pub index: usize,
     pub pos: usize,

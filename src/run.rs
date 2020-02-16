@@ -10,46 +10,6 @@ use crate::ui;
 use crate::util::event::{Event, Events};
 use crate::util::menu::OptionMenu;
 
-fn recurse_get_keycommand<'a>(
-    events: &Events,
-    keymap: &'a JoshutoCommandMapping,
-    backend: &'a mut ui::TuiBackend,
-) -> Option<&'a dyn JoshutoCommand> {
-    let event = {
-        let mut menu = OptionMenu::new(backend, events);
-        let keymap_len = keymap.len();
-
-        // TODO: format keys better, rather than debug
-        let mut display_vec: Vec<String> = keymap
-            .iter()
-            .map(|(k, v)| format!("  {:?}\t{}", k, v))
-            .collect();
-        display_vec.sort();
-        let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
-        let result = menu.get_option(&display_str);
-        eprintln!("{:?}", result);
-
-        let event = events.next();
-        event
-    };
-
-    let command = match event {
-        Ok(Event::Input(input)) => match input {
-            Key::Esc => None,
-            key @ Key::Char(_) => match keymap.get(&key) {
-                Some(CommandKeybind::CompositeKeybind(m)) => {
-                    recurse_get_keycommand(events, &m, backend)
-                }
-                Some(CommandKeybind::SimpleKeybind(s)) => Some(s.as_ref()),
-                _ => None,
-            },
-            _ => None,
-        },
-        _ => None,
-    };
-    command
-}
-
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new().unwrap();
 

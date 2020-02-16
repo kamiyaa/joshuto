@@ -1,9 +1,10 @@
 use std::{fs, path};
 
-use tui::style::{Color, Style};
-use tui::widgets::Text;
+use tui::style::Color;
 
 use crate::fs::JoshutoMetadata;
+
+use crate::THEME_T;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
@@ -68,17 +69,48 @@ impl JoshutoDirEntry {
         let metadata = &self.metadata;
         let filetype = metadata.file_type;
 
-        if filetype.is_dir() {
-            Color::LightBlue
+        if self.is_selected() {
+            THEME_T.selection.fg
+        } else if filetype.is_dir() {
+            THEME_T.directory.fg
         } else if filetype.is_symlink() {
-            Color::Cyan
+            THEME_T.link.fg
         } else {
-            Color::White
+            match self.file_path().extension() {
+                None => Color::White,
+                Some(os_str) => match os_str.to_str() {
+                    None => Color::White,
+                    Some(s) => match THEME_T.ext.get(s) {
+                        None => Color::White,
+                        Some(t) => t.fg,
+                    },
+                },
+            }
         }
     }
 
     pub fn get_bg_color(&self) -> Color {
-        Color::Reset
+        let metadata = &self.metadata;
+        let filetype = metadata.file_type;
+
+        if self.is_selected() {
+            THEME_T.selection.bg
+        } else if filetype.is_dir() {
+            THEME_T.directory.bg
+        } else if filetype.is_symlink() {
+            THEME_T.link.bg
+        } else {
+            match self.file_path().extension() {
+                None => Color::Reset,
+                Some(os_str) => match os_str.to_str() {
+                    None => Color::Reset,
+                    Some(s) => match THEME_T.ext.get(s) {
+                        None => Color::Reset,
+                        Some(t) => t.bg,
+                    },
+                },
+            }
+        }
     }
 }
 

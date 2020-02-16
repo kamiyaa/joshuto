@@ -5,10 +5,10 @@ pub mod preview;
 pub mod theme;
 
 pub use self::config::JoshutoConfig;
-pub use self::keymap::{JoshutoCommandMapping, JoshutoKeyMapping};
+pub use self::keymap::JoshutoCommandMapping;
 pub use self::mimetype::JoshutoMimetype;
 pub use self::preview::{JoshutoPreview, JoshutoPreviewEntry};
-pub use self::theme::{JoshutoColorTheme, JoshutoTheme};
+pub use self::theme::{JoshutoStyleTheme, JoshutoTheme};
 
 use serde::de::DeserializeOwned;
 use std::fs;

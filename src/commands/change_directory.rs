@@ -32,7 +32,6 @@ impl ChangeDirectory {
     pub fn change_directories(
         path: &path::Path,
         context: &mut JoshutoContext,
-        backend: &mut TuiBackend,
     ) -> std::io::Result<()> {
         Self::cd(path, context)?;
 
@@ -55,8 +54,8 @@ impl std::fmt::Display for ChangeDirectory {
 
 impl JoshutoRunnable for ChangeDirectory {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        Self::change_directories(&self.path, context, backend)?;
-        LoadChild::load_child(context, backend);
+        Self::change_directories(&self.path, context)?;
+        LoadChild::load_child(context)?;
 
         Ok(())
     }

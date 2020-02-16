@@ -58,7 +58,6 @@ impl JoshutoRunnable for RenameFile {
 
         if let Some(path) = path {
             self.rename_file(&path, context, backend)?;
-            ncurses::doupdate();
         }
         Ok(())
     }
@@ -113,7 +112,6 @@ impl JoshutoRunnable for RenameFileAppend {
 
         if let Some(file_name) = file_name {
             self.rename_file(context, backend, file_name)?;
-            ncurses::doupdate();
         }
         Ok(())
     }
@@ -161,7 +159,6 @@ impl JoshutoRunnable for RenameFilePrepend {
 
         if let Some(file_name) = file_name {
             self.rename_file(context, backend, file_name)?;
-            ncurses::doupdate();
         }
         Ok(())
     }

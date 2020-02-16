@@ -56,7 +56,6 @@ impl std::fmt::Display for CommandLine {
 impl JoshutoRunnable for CommandLine {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let res = self.readline(context, backend);
-        ncurses::doupdate();
         res
     }
 }

@@ -66,10 +66,10 @@ impl std::fmt::Display for Search {
 }
 
 impl JoshutoRunnable for Search {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         let index = Self::search(&context.tabs[context.curr_tab_index], &self.pattern);
         if let Some(index) = index {
-            cursor_move::cursor_move(index, context, backend);
+            cursor_move::cursor_move(index, context);
         }
         let mut data = SEARCH_PATTERN.lock().unwrap();
         match data.as_ref() {
@@ -80,23 +80,20 @@ impl JoshutoRunnable for Search {
             }
             None => *data = Some(self.pattern.clone()),
         }
-        ncurses::doupdate();
         Ok(())
     }
 }
 
 fn search_with_func(
     context: &mut JoshutoContext,
-    backend: &mut TuiBackend,
     search_func: fn(&JoshutoTab, &str) -> Option<usize>,
 ) {
     let data = SEARCH_PATTERN.lock().unwrap();
     if let Some(s) = (*data).as_ref() {
         let index = search_func(&context.tabs[context.curr_tab_index], s);
         if let Some(index) = index {
-            cursor_move::cursor_move(index, context, backend);
+            cursor_move::cursor_move(index, context);
         }
-        ncurses::doupdate();
     }
 }
 
@@ -121,8 +118,8 @@ impl std::fmt::Display for SearchNext {
 }
 
 impl JoshutoRunnable for SearchNext {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        search_with_func(context, backend, Search::search);
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+        search_with_func(context, Search::search);
         Ok(())
     }
 }
@@ -148,8 +145,8 @@ impl std::fmt::Display for SearchPrev {
 }
 
 impl JoshutoRunnable for SearchPrev {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        search_with_func(context, backend, Search::search_rev);
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+        search_with_func(context, Search::search_rev);
         Ok(())
     }
 }

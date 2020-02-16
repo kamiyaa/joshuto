@@ -1,135 +1,76 @@
-# 0 -> black
-# 1 -> red
-# 2 -> green
-# 3 -> yellow
-# 4 -> blue
-# 5 -> magenta
-# 6 -> cyan
-# 7 -> white
-# -1 -> default (transparent)
-
-[[colorpair]]
-id = 1
-fg = 1
-bg = -1
-
-[[colorpair]]
-id = 2
-fg = 2
-bg = -1
-
-[[colorpair]]
-id = 3
-fg = 3
-bg = -1
-
-[[colorpair]]
-id = 4
-fg = 4
-bg = -1
-
-[[colorpair]]
-id = 5
-fg = 5
-bg = -1
-
-[[colorpair]]
-id = 6
-fg = 6
-bg = -1
-
-
 [selection]
-colorpair = 3
+fg = "light_yellow"
 bold = true
-underline = false
 [selection.prefix]
 prefix = "  "
 size = 2
 
 [executable]
-colorpair = 2
+fg = "light_green"
 bold = true
-underline = false
 
 [regular]
-colorpair = 0
-bold = false
-underline = false
+fg = "white"
 
 [directory]
-colorpair = 4
+fg = "light_blue"
 bold = true
-underline = false
 
 [link]
-colorpair = 6
+fg = "cyan"
 bold = true
-underline = false
 
 [socket]
-colorpair = 6
+fg = "cyan"
 bold = true
-underline = false
 
 [ext]
-	[ext.jpg]
-	colorpair = 3
 
-	[ext.jpeg]
-	colorpair = 3
+[ext.bmp]
+fg = "yellow"
+[ext.jpg]
+fg = "yellow"
+[ext.jpeg]
+fg = "yellow"
+[ext.png]
+fg = "yellow"
+[ext.svg]
+fg = "yellow"
+[ext.gif]
+fg = "yellow"
 
-	[ext.png]
-	colorpair = 3
+[ext.wav]
+fg = "magenta"
+[ext.flac]
+fg = "magenta"
+[ext.mp3]
+fg = "magenta"
+[ext.avi]
+fg = "magenta"
+[ext.m3u]
+fg = "magenta"
+[ext.mp4]
+fg = "magenta"
+[ext.mkv]
+fg = "magenta"
+[ext.m4a]
+fg = "magenta"
+[ext.ts]
+fg = "magenta"
+[ext.webm]
+fg = "magenta"
+[ext.wmv]
+fg = "magenta"
 
-	[ext.svg]
-	colorpair = 6
-
-	[ext.gif]
-	colorpair = 6
-
-	[ext.wav]
-	colorpair = 5
-
-	[ext.flac]
-	colorpair = 5
-
-	[ext.mp3]
-	colorpair = 5
-
-	[ext.avi]
-	colorpair = 5
-
-	[ext.mp4]
-	colorpair = 5
-
-	[ext.mkv]
-	colorpair = 5
-
-	[ext.m4a]
-	colorpair = 5
-
-	[ext.ts]
-	colorpair = 5
-
-	[ext.webm]
-	colorpair = 5
-
-	[ext.wmv]
-	colorpair = 5
-
-	[ext.7z]
-	colorpair = 1
-
-	[ext.zip]
-	colorpair = 1
-
-	[ext.bz2]
-	colorpair = 1
-	[ext.gz]
-	colorpair = 1
-	[ext.xz]
-	colorpair = 1
-
-	[ext.rar]
-	colorpair = 1
+[ext.7z]
+fg = "red"
+[ext.zip]
+fg = "red"
+[ext.bz2]
+fg = "red"
+[ext.gz]
+fg = "red"
+[ext.xz]
+fg = "red"
+[ext.rar]
+fg = "red"

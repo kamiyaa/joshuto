@@ -40,10 +40,6 @@ xdg = "^2"
 # whoami = "*"
 # xdg = "*"
 
-[dependencies.ncurses]
-version = "5.99.0"
-features = [ "extended_colors", "panel", "wide" ]
-
 [dependencies.wordexp]
 version = "^0"
 git = "https://github.com/kamiyaa/wordexp-rs"

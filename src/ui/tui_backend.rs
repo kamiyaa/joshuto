@@ -6,7 +6,7 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
-use tui::backend::{Backend, TermionBackend};
+use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, SelectableList, Text, Widget};
@@ -77,5 +77,3 @@ impl TuiBackend {
         });
     }
 }
-
-pub fn rerender(context: &mut JoshutoContext) {}

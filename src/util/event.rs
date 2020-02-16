@@ -29,7 +29,6 @@ pub struct Events {
     event_rx: mpsc::Receiver<Event>,
     pub sync_tx: mpsc::SyncSender<()>,
     sync_rx: mpsc::Receiver<()>,
-    input_handle: thread::JoinHandle<()>,
     // fileio_handle: thread::JoinHandle<()>,
 }
 
@@ -46,7 +45,7 @@ impl Events {
         let (sync_tx, sync_rx) = mpsc::sync_channel(1);
         let (event_tx, event_rx) = mpsc::channel();
 
-        let input_handle = {
+        {
             let sync_tx = sync_tx.clone();
             let event_tx = event_tx.clone();
             thread::spawn(move || {
@@ -74,7 +73,6 @@ impl Events {
             event_rx,
             sync_tx,
             sync_rx,
-            input_handle,
             prefix,
         }
     }

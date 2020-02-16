@@ -2,8 +2,8 @@ use std::io::{self, Write};
 
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::{Modifier, Style};
-use tui::widgets::{Block, Text, Widget};
+use tui::style::{Color, Modifier, Style};
+use tui::widgets::Widget;
 
 use crate::fs::JoshutoDirList;
 /*
@@ -97,7 +97,8 @@ impl<'a> Widget for TuiDirList<'a> {
 
         let dir_len = self.dirlist.contents.len();
         if dir_len == 0 {
-            buf.set_stringn(x, y, "empty", area.width as usize, Style::default());
+            let style = Style::default().bg(Color::Red).fg(Color::White);
+            buf.set_stringn(x, y, "empty", area.width as usize, style);
             return;
         }
 

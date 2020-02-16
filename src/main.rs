@@ -5,7 +5,6 @@ mod error;
 mod fs;
 mod history;
 mod io;
-mod preview;
 mod run;
 mod sort;
 mod tab;
@@ -19,8 +18,8 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 use config::{
-    ConfigStructure, JoshutoCommandMapping, JoshutoConfig, JoshutoKeyMapping, JoshutoMimetype,
-    JoshutoPreview, JoshutoTheme,
+    ConfigStructure, JoshutoCommandMapping, JoshutoConfig, JoshutoMimetype, JoshutoPreview,
+    JoshutoTheme,
 };
 use run::run;
 
@@ -48,7 +47,6 @@ lazy_static! {
     static ref THEME_T: JoshutoTheme = JoshutoTheme::get_config();
     static ref MIMETYPE_T: JoshutoMimetype = JoshutoMimetype::get_config();
     static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config();
-    static ref KEYMAP_T: JoshutoKeyMapping = JoshutoKeyMapping::get_config();
 
     static ref HOME_DIR: Option<PathBuf> = dirs::home_dir();
     static ref USERNAME: String = whoami::username();

@@ -51,7 +51,7 @@ impl OpenFile {
         }
         if let Some(path) = dirpath {
             ChangeDirectory::cd(path.as_path(), context)?;
-            LoadChild::load_child(context, backend);
+            LoadChild::load_child(context)?;
         } else if let Some(paths) = filepaths {
             let options = Self::get_options(paths[0]);
             if options.len() > 0 {

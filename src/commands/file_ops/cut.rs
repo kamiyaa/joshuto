@@ -28,9 +28,14 @@ impl std::fmt::Display for CutFiles {
 impl JoshutoRunnable for CutFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         let curr_tab = context.curr_tab_ref();
-        LocalState::repopulated_selected_files(&curr_tab.curr_list)?;
-        LocalState::set_file_op(FileOp::Cut);
-        LocalState::set_tab_src(context.curr_tab_index);
+        match curr_tab.curr_list_ref() {
+            Some(list) => {
+                LocalState::repopulated_selected_files(list)?;
+                LocalState::set_file_op(FileOp::Cut);
+                LocalState::set_tab_src(context.curr_tab_index);
+            }
+            None => {}
+        }
         Ok(())
     }
 }
