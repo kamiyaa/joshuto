@@ -26,7 +26,7 @@ impl Search {
         "search"
     }
     pub fn search(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
-        let curr_list = &curr_tab.curr_list;
+        let curr_list = curr_tab.curr_list_ref()?;
 
         let offset = curr_list.index? + 1;
         let contents_len = curr_list.contents.len();
@@ -41,7 +41,7 @@ impl Search {
         None
     }
     pub fn search_rev(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
-        let curr_list = &curr_tab.curr_list;
+        let curr_list = curr_tab.curr_list_ref()?;
 
         let offset = curr_list.index?;
         let contents_len = curr_list.contents.len();

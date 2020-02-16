@@ -8,13 +8,14 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
-use tui::style::{Color, Style};
+use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, SelectableList, Text, Widget};
 use unicode_width::UnicodeWidthStr;
 
 use super::widgets::TuiDirList;
 use crate::context::JoshutoContext;
-// use crate::fs::JoshutoDirList;
+
+use crate::{HOSTNAME, USERNAME};
 
 pub struct TuiBackend {
     pub terminal: tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>>,
@@ -62,6 +63,34 @@ impl TuiBackend {
                 .margin(1)
                 .constraints(constraints.as_ref())
                 .split(f_size);
+
+            {
+                let username_style = Style::default()
+                    .fg(Color::LightGreen)
+                    .modifier(Modifier::BOLD);
+
+                let path_style = Style::default()
+                    .fg(Color::LightBlue)
+                    .modifier(Modifier::BOLD);
+
+                let curr_path_str = curr_tab.curr_path.to_string_lossy();
+
+                let text = [
+                    Text::styled(format!("{}@{} ", *USERNAME, *HOSTNAME), username_style),
+                    Text::styled(curr_path_str, path_style),
+                ];
+
+                let top_rect = Rect {
+                    x: 0,
+                    y: 0,
+                    width: f_size.width,
+                    height: 1,
+                };
+
+                Paragraph::new(text.iter())
+                    .wrap(true)
+                    .render(&mut frame, top_rect);
+            }
 
             if let Some(curr_list) = parent_list.as_ref() {
                 TuiDirList::new(&curr_list).render(&mut frame, layout_rect[0]);

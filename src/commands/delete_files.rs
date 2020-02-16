@@ -33,7 +33,11 @@ impl DeleteFiles {
 
     fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::io::Result<()> {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        let paths = curr_tab.curr_list.get_selected_paths();
+        let paths = match curr_tab.curr_list_ref() {
+            Some(s) => s.get_selected_paths(),
+            None => Vec::new(),
+        };
+
         if paths.is_empty() {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,

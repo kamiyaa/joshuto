@@ -7,7 +7,6 @@ use crate::sort;
 pub struct JoshutoTab {
     pub history: JoshutoHistory,
     pub curr_path: PathBuf,
-    pub curr_list: JoshutoDirList,
 }
 
 impl JoshutoTab {
@@ -15,12 +14,9 @@ impl JoshutoTab {
         let mut history = JoshutoHistory::new();
         history.populate_to_root(&curr_path, sort_option)?;
 
-        let curr_list = JoshutoDirList::new(curr_path.clone(), sort_option)?;
-
         let tab = JoshutoTab {
             curr_path,
             history,
-            curr_list,
         };
         Ok(tab)
     }

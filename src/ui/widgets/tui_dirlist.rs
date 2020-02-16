@@ -103,20 +103,25 @@ impl<'a> Widget for TuiDirList<'a> {
         }
 
         let curr_index = self.dirlist.index.unwrap();
+        let skip_dist = curr_index / area.height as usize * area.height as usize;
+
+        let screen_index = if skip_dist > 0 {
+            curr_index % skip_dist
+        } else {
+            curr_index
+        };
         for (i, entry) in self
             .dirlist
             .contents
             .iter()
+            .skip(skip_dist)
             .enumerate()
             .take(area.height as usize)
         {
-            let fg = entry.get_fg_color();
-            let bg = entry.get_bg_color();
             let name = entry.file_name();
+            let mut style = entry.get_style();
 
-            let mut style = Style::default().fg(fg).bg(bg);
-
-            if i == curr_index {
+            if i == screen_index {
                 style = style.modifier(Modifier::REVERSED);
             }
             buf.set_stringn(x, y + i as u16, name, area.width as usize, style);

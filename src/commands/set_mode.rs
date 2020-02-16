@@ -65,15 +65,16 @@ impl JoshutoRunnable for SetMode {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         use std::os::unix::fs::PermissionsExt;
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        if let Some(file) = curr_tab.curr_list.get_curr_mut() {
-            let mode = file.metadata.permissions.mode();
-            let mut mode_string = unix::stringify_mode(mode);
-            mode_string.remove(0);
+        if let Some(curr_list) = curr_tab.curr_list_mut() {
+            if let Some(file) = curr_list.get_curr_mut() {
+                let mode = file.metadata.permissions.mode();
+                let mut mode_string = unix::stringify_mode(mode);
+                mode_string.remove(0);
 
-            self.set_mode(file, mode_string);
-            CursorMoveDown::new(1).execute(context, backend)
-        } else {
-            Ok(())
+                self.set_mode(file, mode_string);
+                CursorMoveDown::new(1).execute(context, backend)?;
+            }
         }
+        Ok(())
     }
 }

@@ -32,9 +32,9 @@ impl RenameFile {
         }
         std::fs::rename(&path, &new_path)?;
         let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab
-            .curr_list
-            .reload_contents(&context.config_t.sort_option)?;
+        if let Some(curr_list) = curr_tab.curr_list_mut() {
+            curr_list.reload_contents(&context.config_t.sort_option)?;
+        }
         Ok(())
     }
 }
@@ -51,9 +51,10 @@ impl JoshutoRunnable for RenameFile {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let mut path: Option<path::PathBuf> = None;
 
-        let curr_list = &context.tabs[context.curr_tab_index].curr_list;
-        if let Some(s) = curr_list.get_curr_ref() {
-            path = Some(s.file_path().clone());
+        if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
+            if let Some(s) = curr_list.get_curr_ref() {
+                path = Some(s.file_path().clone());
+            }
         }
 
         if let Some(path) = path {
@@ -105,10 +106,13 @@ impl std::fmt::Display for RenameFileAppend {
 
 impl JoshutoRunnable for RenameFileAppend {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        let curr_list = &context.tabs[context.curr_tab_index].curr_list;
-        let file_name = curr_list
-            .get_curr_ref()
-            .and_then(|s| Some(String::from(s.file_name())));
+        let mut file_name: Option<String> = None;
+
+        if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
+            file_name = curr_list
+                .get_curr_ref()
+                .and_then(|s| Some(s.file_name().to_string()));
+        }
 
         if let Some(file_name) = file_name {
             self.rename_file(context, backend, file_name)?;
@@ -152,10 +156,13 @@ impl std::fmt::Display for RenameFilePrepend {
 
 impl JoshutoRunnable for RenameFilePrepend {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        let curr_list = &context.tabs[context.curr_tab_index].curr_list;
-        let file_name = curr_list
-            .get_curr_ref()
-            .and_then(|s| Some(String::from(s.file_name())));
+        let mut file_name: Option<String> = None;
+
+        if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
+            file_name = curr_list
+                .get_curr_ref()
+                .and_then(|s| Some(s.file_name().to_string()));
+        }
 
         if let Some(file_name) = file_name {
             self.rename_file(context, backend, file_name)?;

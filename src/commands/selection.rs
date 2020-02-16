@@ -38,27 +38,35 @@ impl JoshutoRunnable for SelectFiles {
         let curr_tab = &mut context.tabs[context.curr_tab_index];
         if self.toggle {
             if !self.all {
-                let curr_list = &mut curr_tab.curr_list;
+                let curr_list = curr_tab.curr_list_mut();
+                if let Some(curr_list) = curr_list {
+                    if let Some(s) = curr_list.get_curr_mut() {
+                        s.set_selected(!s.is_selected());
+                        CursorMoveDown::new(1).execute(context, backend)?;
+                    }
+                }
+            } else {
+                let curr_list = curr_tab.curr_list_mut();
+                if let Some(curr_list) = curr_list {
+                    for curr in &mut curr_list.contents {
+                        curr.set_selected(!curr.is_selected());
+                    }
+                }
+            }
+        } else if !self.all {
+            let curr_list = curr_tab.curr_list_mut();
+            if let Some(curr_list) = curr_list {
                 if let Some(s) = curr_list.get_curr_mut() {
                     s.set_selected(!s.is_selected());
                     CursorMoveDown::new(1).execute(context, backend)?;
                 }
-            } else {
-                let curr_list = &mut curr_tab.curr_list;
-                for curr in &mut curr_list.contents {
-                    curr.set_selected(!curr.is_selected());
-                }
-            }
-        } else if !self.all {
-            let curr_list = &mut curr_tab.curr_list;
-            if let Some(s) = curr_list.get_curr_mut() {
-                s.set_selected(true);
-                CursorMoveDown::new(1).execute(context, backend)?;
             }
         } else {
-            let curr_list = &mut curr_tab.curr_list;
-            for curr in &mut curr_list.contents {
-                curr.set_selected(true);
+            let curr_list = curr_tab.curr_list_mut();
+            if let Some(curr_list) = curr_list {
+                for curr in &mut curr_list.contents {
+                    curr.set_selected(true);
+                }
             }
         }
         Ok(())

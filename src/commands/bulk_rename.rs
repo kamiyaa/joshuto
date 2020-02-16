@@ -45,7 +45,10 @@ impl BulkRename {
         file_path.push(rand_str);
 
         let curr_tab = &context.tabs[context.curr_tab_index];
-        let paths = curr_tab.curr_list.get_selected_paths();
+        let paths = match curr_tab.curr_list_ref() {
+            Some(s) => s.get_selected_paths(),
+            None => Vec::new(),
+        };
         {
             let mut file = std::fs::File::create(&file_path)?;
             for path in &paths {

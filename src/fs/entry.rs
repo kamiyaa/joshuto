@@ -1,6 +1,6 @@
 use std::{fs, path};
 
-use tui::style::Color;
+use tui::style::{Color, Modifier, Style};
 
 use crate::fs::JoshutoMetadata;
 
@@ -111,6 +111,112 @@ impl JoshutoDirEntry {
                 },
             }
         }
+    }
+
+    pub fn get_modifier(&self) -> Modifier {
+        let metadata = &self.metadata;
+        let filetype = metadata.file_type;
+
+        let mut modifier = Modifier::empty();
+
+        if filetype.is_dir() {
+            if THEME_T.directory.bold {
+                modifier.insert(Modifier::BOLD);
+            }
+            if THEME_T.directory.underline {
+                modifier.insert(Modifier::UNDERLINED);
+            }
+        } else if filetype.is_symlink() {
+            if THEME_T.link.bold {
+                modifier.insert(Modifier::BOLD);
+            }
+            if THEME_T.link.underline {
+                modifier.insert(Modifier::UNDERLINED);
+            }
+        } else {
+            match self.file_path().extension() {
+                None => {}
+                Some(os_str) => match os_str.to_str() {
+                    None => {}
+                    Some(s) => match THEME_T.ext.get(s) {
+                        None => {}
+                        Some(t) => {
+                            if t.bold {
+                                modifier.insert(Modifier::BOLD);
+                            }
+                            if t.underline {
+                                modifier.insert(Modifier::UNDERLINED);
+                            }
+                        }
+                    },
+                },
+            };
+        }
+        modifier
+    }
+
+    pub fn get_style(&self) -> Style {
+        let metadata = &self.metadata;
+        let filetype = metadata.file_type;
+
+        let mut style = Style::default();
+
+        if self.is_selected() {
+            let mut modifier = Modifier::empty();
+            if THEME_T.selection.bold {
+                modifier.insert(Modifier::BOLD);
+            }
+            if THEME_T.selection.underline {
+                modifier.insert(Modifier::UNDERLINED);
+            }
+
+            style = style.fg(THEME_T.selection.fg).bg(THEME_T.selection.bg);
+            style = style.modifier(modifier);
+        } else if filetype.is_dir() {
+            let mut modifier = Modifier::empty();
+            if THEME_T.directory.bold {
+                modifier.insert(Modifier::BOLD);
+            }
+            if THEME_T.directory.underline {
+                modifier.insert(Modifier::UNDERLINED);
+            }
+
+            style = style.fg(THEME_T.directory.fg).bg(THEME_T.directory.bg);
+            style = style.modifier(modifier);
+        } else if filetype.is_symlink() {
+            let mut modifier = Modifier::empty();
+            if THEME_T.link.bold {
+                modifier.insert(Modifier::BOLD);
+            }
+            if THEME_T.link.underline {
+                modifier.insert(Modifier::UNDERLINED);
+            }
+
+            style = style.fg(THEME_T.link.fg).bg(THEME_T.link.bg);
+            style = style.modifier(modifier);
+        } else {
+            match self.file_path().extension() {
+                None => {}
+                Some(os_str) => match os_str.to_str() {
+                    None => {}
+                    Some(s) => match THEME_T.ext.get(s) {
+                        None => {}
+                        Some(t) => {
+                            let mut modifier = Modifier::empty();
+                            if t.bold {
+                                modifier.insert(Modifier::BOLD);
+                            }
+                            if t.underline {
+                                modifier.insert(Modifier::UNDERLINED);
+                            }
+                            style = style.fg(t.fg).bg(t.bg);
+                            style = style.modifier(modifier);
+                        }
+                    },
+                },
+            }
+        }
+        style
     }
 }
 
