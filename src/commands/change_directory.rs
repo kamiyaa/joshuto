@@ -1,10 +1,11 @@
 use std::path;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable, LoadChild};
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::ui::TuiBackend;
+use crate::util::load_child::LoadChild;
 
 #[derive(Clone, Debug)]
 pub struct ChangeDirectory {

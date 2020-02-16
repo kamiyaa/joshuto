@@ -9,13 +9,11 @@ use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::util::event::{Event, Events};
 use crate::util::menu::OptionMenu;
-use crate::window::JoshutoPanel;
-use crate::window::JoshutoView;
 
 fn recurse_get_keycommand<'a>(
     events: &Events,
     keymap: &'a JoshutoCommandMapping,
-    backend: &'a mut ui::TuiBackend
+    backend: &'a mut ui::TuiBackend,
 ) -> Option<&'a dyn JoshutoCommand> {
     let event = {
         let mut menu = OptionMenu::new(backend, events);
@@ -27,10 +25,7 @@ fn recurse_get_keycommand<'a>(
             .map(|(k, v)| format!("  {:?}\t{}", k, v))
             .collect();
         display_vec.sort();
-        let display_str: Vec<&str> = display_vec
-            .iter()
-            .map(|v| v.as_str())
-            .collect();
+        let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
         let result = menu.get_option(&display_str);
         eprintln!("{:?}", result);
 
@@ -42,7 +37,9 @@ fn recurse_get_keycommand<'a>(
         Ok(Event::Input(input)) => match input {
             Key::Esc => None,
             key @ Key::Char(_) => match keymap.get(&key) {
-                Some(CommandKeybind::CompositeKeybind(m)) => recurse_get_keycommand(events, &m, backend),
+                Some(CommandKeybind::CompositeKeybind(m)) => {
+                    recurse_get_keycommand(events, &m, backend)
+                }
                 Some(CommandKeybind::SimpleKeybind(s)) => Some(s.as_ref()),
                 _ => None,
             },
@@ -57,7 +54,6 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new().unwrap();
 
     let mut context = JoshutoContext::new(config_t);
-    let mut view = JoshutoView::new(context.config_t.column_ratio);
     match std::env::current_dir() {
         Ok(curr_path) => match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
             Ok(s) => context.push_tab(s),
@@ -105,13 +101,13 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
             Ok(event) => {
                 match event {
                     Event::IOWorkerProgress(p) => {
-                        ui::wprint_err(&view.bot_win, &format!("bytes copied {}", p));
+                        eprintln!("{}", &format!("bytes copied {}", p));
                     }
                     Event::IOWorkerResult => {
                         match io_handle {
                             Some(handle) => {
                                 handle.join();
-                                ui::wprint_err(&view.bot_win, "io_worker done");
+                                eprintln!("io_worker done");
                             }
                             None => {}
                         }
@@ -123,7 +119,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                         }
                         Some(CommandKeybind::SimpleKeybind(command)) => {
                             if let Err(e) = command.execute(&mut context, &mut backend) {
-                                ui::wprint_err(&view.bot_win, e.cause());
+                                eprintln!("{}", e.cause());
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
@@ -131,7 +127,6 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                             let mut map: &JoshutoCommandMapping = &m;
 
                             loop {
-                                eprintln!("run loop");
                                 let event2 = {
                                     let mut menu = OptionMenu::new(&mut backend, &context.events);
 
@@ -141,44 +136,34 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                                         .map(|(k, v)| format!("  {:?}\t{}", k, v))
                                         .collect();
                                     display_vec.sort();
-                                    let display_str: Vec<&str> = display_vec
-                                        .iter()
-                                        .map(|v| v.as_str())
-                                        .collect();
+                                    let display_str: Vec<&str> =
+                                        display_vec.iter().map(|v| v.as_str()).collect();
                                     let result = menu.get_option(&display_str);
-                                    eprintln!("{:?}", result);
-
                                     result
                                 };
 
                                 match event2 {
-                                    Some(key) => {
-                                        match key {
-                                            Key::Esc => {
+                                    None => break,
+                                    Some(key) => match key {
+                                        Key::Char(_) => match map.get(&key) {
+                                            Some(CommandKeybind::CompositeKeybind(m)) => map = &m,
+                                            Some(CommandKeybind::SimpleKeybind(s)) => {
+                                                cmd = Some(s.as_ref());
                                                 break;
                                             }
-                                            Key::Char(_) => match map.get(&key) {
-                                                Some(CommandKeybind::CompositeKeybind(m)) => map = &m,
-                                                Some(CommandKeybind::SimpleKeybind(s)) => {
-                                                    cmd = Some(s.as_ref());
-                                                    break;
-                                                }
-                                                None => break,
-                                            },
-                                            _ => {},
-                                        }
-                                    }
-                                    _ => {}
+                                            None => break,
+                                        },
+                                        _ => {}
+                                    },
                                 }
                             }
-                            eprintln!("cmd: {:#?}", cmd);
                             if let Some(command) = cmd {
                                 if let Err(e) = command.execute(&mut context, &mut backend) {
-                                    ui::wprint_err(&view.bot_win, e.cause());
+                                    eprintln!("{}", e.cause());
                                 }
                             }
                         }
-                    }
+                    },
                 }
                 backend.render(&context);
             }

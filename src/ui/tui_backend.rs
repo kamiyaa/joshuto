@@ -1,3 +1,6 @@
+use std::io::{self, Write};
+
+use termion::clear;
 use termion::cursor::Goto;
 use termion::event::Key;
 use termion::input::TermRead;
@@ -9,6 +12,7 @@ use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, SelectableList, Text, Widget};
 use unicode_width::UnicodeWidthStr;
 
+use super::widgets::TuiDirList;
 use crate::context::JoshutoContext;
 // use crate::fs::JoshutoDirList;
 
@@ -22,6 +26,7 @@ impl TuiBackend {
         let stdout = AlternateScreen::from(stdout);
         let backend = TermionBackend::new(stdout);
         let mut terminal = tui::Terminal::new(backend)?;
+        terminal.hide_cursor()?;
         Ok(Self { terminal })
     }
 
@@ -32,8 +37,13 @@ impl TuiBackend {
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
 
-        self.terminal.draw(|mut f| {
-            let f_size = f.size();
+        let f_size = {
+            let frame = self.terminal.get_frame();
+            frame.size()
+        };
+
+        self.terminal.draw(|mut frame| {
+            let f_size = frame.size();
 
             let constraints = match child_list {
                 Some(_) => [
@@ -49,56 +59,21 @@ impl TuiBackend {
             };
             let layout_rect = Layout::default()
                 .direction(Direction::Horizontal)
+                .margin(1)
                 .constraints(constraints.as_ref())
                 .split(f_size);
 
             if let Some(curr_list) = parent_list.as_ref() {
-                let list_name = "parent_list";
-                let list_style = Style::default().fg(tui::style::Color::LightBlue);
-                let selected_style = Style::default()
-                    .fg(tui::style::Color::LightBlue)
-                    .modifier(tui::style::Modifier::REVERSED);
-
-                SelectableList::default()
-                    .block(Block::default().borders(Borders::ALL).title(list_name))
-                    .items(&curr_list.contents)
-                    .style(list_style)
-                    .highlight_style(selected_style)
-                    .select(curr_list.index)
-                    .render(&mut f, layout_rect[0]);
-            }
+                TuiDirList::new(&curr_list).render(&mut frame, layout_rect[0]);
+            };
 
             if let Some(curr_list) = curr_list.as_ref() {
-                let list_name = "curr_list";
-                let list_style = Style::default().fg(tui::style::Color::LightBlue);
-                let selected_style = Style::default()
-                    .fg(tui::style::Color::LightBlue)
-                    .modifier(tui::style::Modifier::REVERSED);
-
-                SelectableList::default()
-                    .block(Block::default().borders(Borders::ALL).title(list_name))
-                    .items(&curr_list.contents)
-                    .style(list_style)
-                    .highlight_style(selected_style)
-                    .select(curr_list.index)
-                    .render(&mut f, layout_rect[1]);
-            }
+                TuiDirList::new(&curr_list).render(&mut frame, layout_rect[1]);
+            };
 
             if let Some(curr_list) = child_list.as_ref() {
-                let list_name = "child_list";
-                let list_style = Style::default().fg(tui::style::Color::LightBlue);
-                let selected_style = Style::default()
-                    .fg(tui::style::Color::LightBlue)
-                    .modifier(tui::style::Modifier::REVERSED);
-
-                SelectableList::default()
-                    .block(Block::default().borders(Borders::ALL).title(list_name))
-                    .items(&curr_list.contents)
-                    .style(list_style)
-                    .highlight_style(selected_style)
-                    .select(curr_list.index)
-                    .render(&mut f, layout_rect[2]);
-            }
+                TuiDirList::new(&curr_list).render(&mut frame, layout_rect[2]);
+            };
         });
     }
 }

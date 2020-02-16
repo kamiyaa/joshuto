@@ -1,8 +1,8 @@
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::util::textfield::TextField;
 use crate::ui::TuiBackend;
+use crate::util::textfield::TextField;
 
 #[derive(Clone, Debug)]
 pub struct CommandLine {

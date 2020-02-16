@@ -1,5 +1,8 @@
 use std::{fs, path};
 
+use tui::style::{Color, Style};
+use tui::widgets::Text;
+
 use crate::fs::JoshutoMetadata;
 
 #[derive(Clone, Debug)]
@@ -59,6 +62,23 @@ impl JoshutoDirEntry {
 
     pub fn set_selected(&mut self, selected: bool) {
         self.selected = selected;
+    }
+
+    pub fn get_fg_color(&self) -> Color {
+        let metadata = &self.metadata;
+        let filetype = metadata.file_type;
+
+        if filetype.is_dir() {
+            Color::LightBlue
+        } else if filetype.is_symlink() {
+            Color::Cyan
+        } else {
+            Color::White
+        }
+    }
+
+    pub fn get_bg_color(&self) -> Color {
+        Color::Reset
     }
 }
 

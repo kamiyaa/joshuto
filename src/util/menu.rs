@@ -19,12 +19,11 @@ use crate::util::event::{Event, Events};
 
 pub struct OptionMenu<'a> {
     backend: &'a mut TuiBackend,
-    events: &'a Events
+    events: &'a Events,
 }
 
 impl<'a> OptionMenu<'a> {
-    pub fn new(backend: &'a mut TuiBackend,
-            events: &'a Events) -> Self {
+    pub fn new(backend: &'a mut TuiBackend, events: &'a Events) -> Self {
         Self { backend, events }
     }
 
@@ -46,13 +45,17 @@ impl<'a> OptionMenu<'a> {
 
         write!(termion_terminal, "{}", Goto(1, txt_y));
         for (i, option) in options.iter().enumerate() {
-            write!(termion_terminal, "{}{}{}",
-                option, Goto(1, txt_y + i as u16), clear::AfterCursor);
+            write!(
+                termion_terminal,
+                "{}{}{}",
+                option,
+                Goto(1, txt_y + i as u16),
+                clear::AfterCursor
+            );
         }
         io::stdout().flush().ok();
 
         loop {
-            eprintln!("menu loop");
             let event = events.next();
             if let Ok(event) = event {
                 match event {
@@ -60,7 +63,7 @@ impl<'a> OptionMenu<'a> {
                         Key::Esc => return None,
                         key => return Some(key),
                     },
-                    _ => {},
+                    _ => {}
                 }
             }
         }

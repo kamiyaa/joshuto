@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use crate::context::JoshutoContext;
-use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::ui::TuiBackend;
 

@@ -4,7 +4,6 @@ mod command_line;
 mod cursor_move;
 mod delete_files;
 mod file_ops;
-mod load_child;
 mod new_directory;
 mod open_file;
 mod parent_directory;
@@ -27,7 +26,6 @@ pub use self::cursor_move::{
 };
 pub use self::delete_files::DeleteFiles;
 pub use self::file_ops::{CopyFiles, CutFiles, PasteFiles};
-pub use self::load_child::LoadChild;
 pub use self::new_directory::NewDirectory;
 pub use self::open_file::OpenFile; //, OpenFileWith};
 pub use self::parent_directory::ParentDirectory;
