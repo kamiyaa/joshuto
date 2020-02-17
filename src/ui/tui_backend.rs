@@ -1,21 +1,15 @@
-use std::io::{self, Write};
+use std::io::Write;
 
-use termion::clear;
-use termion::cursor::Goto;
-use termion::event::Key;
-use termion::input::TermRead;
+use tui::buffer::Buffer;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
-use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, List, Paragraph, SelectableList, Text, Widget};
+use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
-use super::widgets::TuiDirList;
+use super::widgets::{TuiDirList, TuiDirListDetailed, TuiTopBar};
 use crate::context::JoshutoContext;
-
-use crate::{HOSTNAME, USERNAME};
 
 pub struct TuiBackend {
     pub terminal: tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>>,
@@ -46,6 +40,18 @@ impl TuiBackend {
         self.terminal.draw(|mut frame| {
             let f_size = frame.size();
 
+            {
+                let top_rect = Rect {
+                    x: 0,
+                    y: 0,
+                    width: f_size.width,
+                    height: 1,
+                };
+
+                TuiTopBar::new(curr_tab.curr_path.as_path())
+                    .render(&mut frame, top_rect);
+            }
+
             let constraints = match child_list {
                 Some(_) => [
                     Constraint::Ratio(1, 6),
@@ -64,45 +70,23 @@ impl TuiBackend {
                 .constraints(constraints.as_ref())
                 .split(f_size);
 
-            {
-                let username_style = Style::default()
-                    .fg(Color::LightGreen)
-                    .modifier(Modifier::BOLD);
-
-                let path_style = Style::default()
-                    .fg(Color::LightBlue)
-                    .modifier(Modifier::BOLD);
-
-                let curr_path_str = curr_tab.curr_path.to_string_lossy();
-
-                let text = [
-                    Text::styled(format!("{}@{} ", *USERNAME, *HOSTNAME), username_style),
-                    Text::styled(curr_path_str, path_style),
-                ];
-
-                let top_rect = Rect {
-                    x: 0,
-                    y: 0,
-                    width: f_size.width,
-                    height: 1,
-                };
-
-                Paragraph::new(text.iter())
-                    .wrap(true)
-                    .render(&mut frame, top_rect);
-            }
-
             if let Some(curr_list) = parent_list.as_ref() {
                 TuiDirList::new(&curr_list).render(&mut frame, layout_rect[0]);
             };
 
             if let Some(curr_list) = curr_list.as_ref() {
-                TuiDirList::new(&curr_list).render(&mut frame, layout_rect[1]);
+                TuiDirListDetailed::new(&curr_list).render(&mut frame, layout_rect[1]);
             };
 
             if let Some(curr_list) = child_list.as_ref() {
                 TuiDirList::new(&curr_list).render(&mut frame, layout_rect[2]);
             };
         });
+    }
+}
+
+impl Widget for TuiBackend {
+    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+
     }
 }

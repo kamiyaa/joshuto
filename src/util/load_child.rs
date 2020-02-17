@@ -2,7 +2,6 @@ use std::path::PathBuf;
 
 use crate::context::JoshutoContext;
 use crate::history::DirectoryHistory;
-use crate::ui::TuiBackend;
 
 pub struct LoadChild {}
 

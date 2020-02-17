@@ -13,6 +13,7 @@ use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
 use tui::Terminal;
 use unicode_width::UnicodeWidthStr;
 
+use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
 use crate::util::event::{Event, Events};
 
@@ -24,6 +25,10 @@ pub struct OptionMenu<'a> {
 impl<'a> OptionMenu<'a> {
     pub fn new(backend: &'a mut TuiBackend, events: &'a Events) -> Self {
         Self { backend, events }
+    }
+
+    pub fn render(&mut self, context: &JoshutoContext) {
+
     }
 
     pub fn get_option(&mut self, options: &[&str]) -> Option<Key> {
