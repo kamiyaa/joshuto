@@ -64,25 +64,28 @@ impl JoshutoDirList {
         contents.sort_by(sort_func);
 
         let contents_len = contents.len();
-        /* update the index */
-        if contents_len == 0 {
-            self.index = None;
-        } else {
-            self.index = match self.index {
-                Some(index) => {
-                    if index >= contents_len {
-                        Some(contents_len - 1)
-                    } else {
-                        self.index
+
+        let index: Option<usize> = {
+            if contents_len == 0 {
+                None
+            } else {
+                match self.get_curr_ref() {
+                    Some(entry) => {
+                        contents
+                            .iter()
+                            .enumerate()
+                            .find(|(i, e)| e.file_name() == entry.file_name())
+                            .and_then(|(i, e)| Some(i))
                     }
+                    None => Some(0),
                 }
-                None => Some(0),
-            };
-        }
+            }
+        };
 
         let metadata = JoshutoMetadata::from(&self.path)?;
         self.metadata = metadata;
         self.contents = contents;
+        self.index = index;
         self.content_outdated = false;
 
         Ok(())
