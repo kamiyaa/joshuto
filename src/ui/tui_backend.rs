@@ -8,12 +8,14 @@ use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
-use super::widgets::{TuiDirList, TuiDirListDetailed, TuiTopBar};
+use super::widgets::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTopBar};
 use crate::context::JoshutoContext;
 
 pub struct TuiBackend {
     pub terminal: tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>>,
 }
+
+use super::{DEFAULT_LAYOUT, NO_PREVIEW_LAYOUT};
 
 impl TuiBackend {
     pub fn new() -> std::io::Result<Self> {
@@ -53,16 +55,8 @@ impl TuiBackend {
             }
 
             let constraints = match child_list {
-                Some(_) => [
-                    Constraint::Ratio(1, 6),
-                    Constraint::Ratio(2, 6),
-                    Constraint::Ratio(3, 6),
-                ],
-                None => [
-                    Constraint::Ratio(1, 6),
-                    Constraint::Ratio(5, 6),
-                    Constraint::Ratio(0, 6),
-                ],
+                Some(_) => DEFAULT_LAYOUT,
+                None => NO_PREVIEW_LAYOUT,
             };
             let layout_rect = Layout::default()
                 .direction(Direction::Horizontal)
@@ -76,6 +70,16 @@ impl TuiBackend {
 
             if let Some(curr_list) = curr_list.as_ref() {
                 TuiDirListDetailed::new(&curr_list).render(&mut frame, layout_rect[1]);
+                if let Some(entry) = curr_list.get_curr_ref() {
+                    let top_rect = Rect {
+                        x: 0,
+                        y: f_size.height - 1,
+                        width: f_size.width,
+                        height: 1,
+                    };
+                    TuiFooter::new(entry)
+                        .render(&mut frame, top_rect);
+                }
             };
 
             if let Some(curr_list) = child_list.as_ref() {

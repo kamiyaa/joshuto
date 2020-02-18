@@ -8,7 +8,7 @@ use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::util::event::{Event, Events};
-use crate::util::menu::OptionMenu;
+use crate::ui::widgets::TuiCommandMenu;
 
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new().unwrap();
@@ -83,40 +83,13 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let mut cmd = None;
                             let mut map: &JoshutoCommandMapping = &m;
 
-                            loop {
-                                let event2 = {
-                                    let mut menu = OptionMenu::new(&mut backend, &context.events);
+                            let cmd = {
+                                let mut menu = TuiCommandMenu::new();
+                                menu.get_input(&mut backend, &context, map)
+                            };
 
-                                    // TODO: format keys better, rather than debug
-                                    let mut display_vec: Vec<String> = map
-                                        .iter()
-                                        .map(|(k, v)| format!("  {:?}\t{}", k, v))
-                                        .collect();
-                                    display_vec.sort();
-                                    let display_str: Vec<&str> =
-                                        display_vec.iter().map(|v| v.as_str()).collect();
-                                    let result = menu.get_option(&display_str);
-                                    result
-                                };
-
-                                match event2 {
-                                    None => break,
-                                    Some(key) => match key {
-                                        Key::Char(_) => match map.get(&key) {
-                                            Some(CommandKeybind::CompositeKeybind(m)) => map = &m,
-                                            Some(CommandKeybind::SimpleKeybind(s)) => {
-                                                cmd = Some(s.as_ref());
-                                                break;
-                                            }
-                                            None => break,
-                                        },
-                                        _ => {}
-                                    },
-                                }
-                            }
                             if let Some(command) = cmd {
                                 if let Err(e) = command.execute(&mut context, &mut backend) {
                                     eprintln!("{}", e.cause());
