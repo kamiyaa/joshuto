@@ -17,7 +17,16 @@ impl ReloadDirList {
     pub fn reload(index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
         let curr_tab = &mut context.tabs[index];
         let sort_option = &context.config_t.sort_option;
+
         match curr_tab.curr_list_mut() {
+            Some(curr_list) => curr_list.reload_contents(sort_option)?,
+            None => {},
+        }
+        match curr_tab.parent_list_mut() {
+            Some(curr_list) => curr_list.reload_contents(sort_option)?,
+            None => {},
+        }
+        match curr_tab.child_list_mut() {
             Some(curr_list) => curr_list.reload_contents(sort_option)?,
             None => {},
         }

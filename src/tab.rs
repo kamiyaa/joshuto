@@ -45,4 +45,14 @@ impl JoshutoTab {
         let parent = self.curr_path.parent()?;
         self.history.get_mut(parent)
     }
+
+    pub fn child_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
+        let path = {
+            let curr_list = self.curr_list_ref()?;
+            let index = curr_list.index?;
+            curr_list.contents[index].file_path().clone()
+        };
+
+        self.history.get_mut(path.as_path())
+    }
 }
