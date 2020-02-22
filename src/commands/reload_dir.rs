@@ -20,15 +20,15 @@ impl ReloadDirList {
 
         match curr_tab.curr_list_mut() {
             Some(curr_list) => curr_list.reload_contents(sort_option)?,
-            None => {},
+            None => {}
         }
         match curr_tab.parent_list_mut() {
             Some(curr_list) => curr_list.reload_contents(sort_option)?,
-            None => {},
+            None => {}
         }
         match curr_tab.child_list_mut() {
             Some(curr_list) => curr_list.reload_contents(sort_option)?,
-            None => {},
+            None => {}
         }
 
         Ok(())

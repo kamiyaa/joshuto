@@ -2,9 +2,9 @@ use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::fs::JoshutoDirEntry;
+use crate::ui::widgets::TuiTextField;
 use crate::ui::TuiBackend;
 use crate::unix;
-use crate::util::textfield::TextField;
 
 #[derive(Clone, Debug)]
 pub struct SetMode;

@@ -34,8 +34,6 @@ impl<'a> Widget for TuiTopBar<'a> {
             Text::styled(curr_path_str, path_style),
         ];
 
-        Paragraph::new(text.iter())
-            .wrap(true)
-            .draw(area, buf);
+        Paragraph::new(text.iter()).wrap(true).draw(area, buf);
     }
 }

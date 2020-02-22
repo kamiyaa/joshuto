@@ -7,6 +7,7 @@ pub fn str_to_key(s: &str) -> Option<Key> {
 
     let key = match s {
         "backspace" => Some(Key::Backspace),
+        "backtab" => Some(Key::BackTab),
         "left" => Some(Key::Left),
         "right" => Some(Key::Right),
         "up" => Some(Key::Up),

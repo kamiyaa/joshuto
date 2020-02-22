@@ -1,5 +1,4 @@
 use std::fs;
-use std::path::Path;
 
 use tui::buffer::Buffer;
 use tui::layout::Rect;
@@ -8,8 +7,6 @@ use tui::widgets::{Paragraph, Text, Widget};
 
 use crate::fs::JoshutoDirEntry;
 use crate::util::format;
-
-use crate::{HOSTNAME, USERNAME};
 
 pub struct TuiFooter<'a> {
     entry: &'a JoshutoDirEntry,
@@ -28,8 +25,7 @@ impl<'a> Widget for TuiFooter<'a> {
         let mode = self.entry.metadata.permissions.mode();
         let mode = format::mode_to_string(mode);
 
-        let mode_style = Style::default()
-            .fg(Color::Cyan);
+        let mode_style = Style::default().fg(Color::Cyan);
 
         let mtime = self.entry.metadata.modified;
         let mtime = format::mtime_to_string(mtime);
@@ -54,8 +50,6 @@ impl<'a> Widget for TuiFooter<'a> {
             }
         }
 
-        Paragraph::new(text.iter())
-            .wrap(true)
-            .draw(area, buf);
+        Paragraph::new(text.iter()).wrap(true).draw(area, buf);
     }
 }

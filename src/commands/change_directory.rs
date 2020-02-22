@@ -53,7 +53,7 @@ impl std::fmt::Display for ChangeDirectory {
 }
 
 impl JoshutoRunnable for ChangeDirectory {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         Self::change_directories(&self.path, context)?;
         LoadChild::load_child(context)?;
 

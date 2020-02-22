@@ -1,8 +1,8 @@
 use crate::commands::{self, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
+use crate::ui::widgets::TuiTextField;
 use crate::ui::TuiBackend;
-use crate::util::textfield::TextField;
 
 #[derive(Clone, Debug)]
 pub struct CommandLine {
@@ -23,8 +23,8 @@ impl CommandLine {
         context: &mut JoshutoContext,
         backend: &mut TuiBackend,
     ) -> JoshutoResult<()> {
-        let mut textfield = TextField::new(backend, &context.events);
-        let user_input: Option<String> = textfield.readline();
+        // let mut textfield = TuiTextField::new(backend, &context.events);
+        let user_input: Option<String> = None; // textfield.readline();
 
         if let Some(s) = user_input {
             let trimmed = s.trim_start();

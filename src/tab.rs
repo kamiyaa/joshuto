@@ -14,10 +14,7 @@ impl JoshutoTab {
         let mut history = JoshutoHistory::new();
         history.populate_to_root(&curr_path, sort_option)?;
 
-        let tab = JoshutoTab {
-            curr_path,
-            history,
-        };
+        let tab = JoshutoTab { curr_path, history };
         Ok(tab)
     }
 

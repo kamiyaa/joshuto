@@ -70,13 +70,12 @@ impl JoshutoDirList {
                 None
             } else {
                 match self.get_curr_ref() {
-                    Some(entry) => {
-                        contents
-                            .iter()
-                            .enumerate()
-                            .find(|(i, e)| e.file_name() == entry.file_name())
-                            .and_then(|(i, e)| Some(i)).or(Some(0))
-                    }
+                    Some(entry) => contents
+                        .iter()
+                        .enumerate()
+                        .find(|(i, e)| e.file_name() == entry.file_name())
+                        .and_then(|(i, e)| Some(i))
+                        .or(Some(0)),
                     None => Some(0),
                 }
             }

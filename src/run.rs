@@ -1,37 +1,32 @@
 use std::thread;
 
-use termion::event::Key;
-
-use crate::commands::{CommandKeybind, CursorMoveUp, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CommandKeybind, CursorMoveUp, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
-use crate::util::event::{Event, Events};
-use crate::ui::widgets::TuiCommandMenu;
+use crate::ui::widgets::{TuiCommandMenu, TuiView};
+use crate::util::event::Event;
 
-pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
-    let mut backend: ui::TuiBackend = ui::TuiBackend::new().unwrap();
+pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
+    let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
 
     let mut context = JoshutoContext::new(config_t);
-    match std::env::current_dir() {
-        Ok(curr_path) => match JoshutoTab::new(curr_path, &context.config_t.sort_option) {
-            Ok(s) => context.push_tab(s),
-            Err(e) => {
-                eprintln!("{}", e);
-                return;
-            }
-        },
-        Err(e) => {
-            eprintln!("{}", e);
-            return;
-        }
-    }
+    let curr_path = std::env::current_dir()?;
+
     {
+        // Initialize an initial tab
+        let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
+        context.push_tab(tab);
+
+        // move the cursor by 0 just to trigger a preview of child
         let tmp = CursorMoveUp::new(0);
         tmp.execute(&mut context, &mut backend);
+
+        // render our view
+        let mut view = TuiView::new(&context);
+        backend.render(&mut view);
     }
-    backend.render(&context);
 
     let mut io_handle = None;
     while !context.exit {
@@ -61,13 +56,17 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
             Ok(event) => {
                 match event {
                     Event::IOWorkerProgress(p) => {
-                        eprintln!("{}", &format!("bytes copied {}", p));
+                        context
+                            .message_queue
+                            .push_back(format!("bytes copied {}", p));
                     }
                     Event::IOWorkerResult => {
                         match io_handle {
                             Some(handle) => {
                                 handle.join();
-                                eprintln!("io_worker done");
+                                context
+                                    .message_queue
+                                    .push_back("io_worker done".to_string());
                             }
                             None => {}
                         }
@@ -75,11 +74,13 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
                     }
                     Event::Input(key) => match keymap_t.get(&key) {
                         None => {
-                            eprintln!("Unknown keycode: {:?}", key);
+                            context
+                                .message_queue
+                                .push_back(format!("Unknown keycode: {:?}", key));
                         }
                         Some(CommandKeybind::SimpleKeybind(command)) => {
                             if let Err(e) = command.execute(&mut context, &mut backend) {
-                                eprintln!("{}", e.cause());
+                                context.message_queue.push_back(e.to_string());
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
@@ -92,18 +93,21 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) {
 
                             if let Some(command) = cmd {
                                 if let Err(e) = command.execute(&mut context, &mut backend) {
-                                    eprintln!("{}", e.cause());
+                                    context.message_queue.push_back(e.to_string());
                                 }
                             }
                         }
                     },
                 }
-                backend.render(&context);
+                let mut view = TuiView::new(&context);
+                backend.render(&mut view);
             }
             Err(e) => {
-                eprintln!("{:?}", e);
+                context.message_queue.push_back(e.to_string());
                 break;
             }
         }
     }
+    eprintln!("{:#?}", context.message_queue);
+    Ok(())
 }

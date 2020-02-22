@@ -218,13 +218,9 @@ impl std::fmt::Display for CursorMoveHome {
 
 impl JoshutoRunnable for CursorMoveHome {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let movement: Option<usize> = match context
-                .curr_tab_ref()
-                .curr_list_ref() {
+        let movement: Option<usize> = match context.curr_tab_ref().curr_list_ref() {
             Some(curr_list) => {
-                let len = curr_list
-                    .contents
-                    .len();
+                let len = curr_list.contents.len();
                 if len == 0 {
                     None
                 } else {
@@ -263,13 +259,9 @@ impl std::fmt::Display for CursorMoveEnd {
 
 impl JoshutoRunnable for CursorMoveEnd {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let movement: Option<usize> = match context
-                .curr_tab_ref()
-                .curr_list_ref() {
+        let movement: Option<usize> = match context.curr_tab_ref().curr_list_ref() {
             Some(curr_list) => {
-                let len = curr_list
-                    .contents
-                    .len();
+                let len = curr_list.contents.len();
                 if len == 0 {
                     None
                 } else {

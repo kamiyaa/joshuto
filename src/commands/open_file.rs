@@ -5,9 +5,9 @@ use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
+use crate::ui::widgets::TuiTextField;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
-use crate::util::textfield::TextField;
 
 use crate::MIMETYPE_T;
 

@@ -1,5 +1,9 @@
 use std::fs;
+use std::io::{self, Write};
 use std::path;
+
+use termion::clear;
+use termion::cursor::Goto;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
@@ -45,6 +49,21 @@ impl DeleteFiles {
             ));
         }
 
+        let frame = backend.terminal.get_frame();
+        let f_size = frame.size();
+
+        let termion_terminal = backend.terminal.backend_mut();
+
+        write!(
+            termion_terminal,
+            "{}Delete {} files? (y/N){}",
+            Goto(1, f_size.height),
+            paths.len(),
+            clear::AfterCursor
+        );
+
+        io::stdout().flush().ok();
+
         let mut ch = termion::event::Key::Char('n');
         while let Ok(evt) = context.events.next() {
             match evt {
@@ -52,19 +71,7 @@ impl DeleteFiles {
                     if key == termion::event::Key::Char('y')
                         || key == termion::event::Key::Char('\n')
                     {
-                        if paths.len() > 1 {
-                            while let Ok(evt) = context.events.next() {
-                                match evt {
-                                    Event::Input(key) => {
-                                        ch = key;
-                                        break;
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        } else {
-                            ch = termion::event::Key::Char('y');
-                        }
+                        ch = termion::event::Key::Char('y');
                     }
                     break;
                 }
@@ -73,9 +80,40 @@ impl DeleteFiles {
         }
 
         if ch == termion::event::Key::Char('y') {
+            if paths.len() > 1 {
+                write!(
+                    termion_terminal,
+                    "{}Are you sure? (Y/n){}",
+                    Goto(1, f_size.height),
+                    clear::AfterCursor
+                );
+
+                io::stdout().flush().ok();
+
+                while let Ok(evt) = context.events.next() {
+                    match evt {
+                        Event::Input(key) => {
+                            ch = key;
+                            break;
+                        }
+                        _ => {}
+                    }
+                }
+            } else {
+                ch = termion::event::Key::Char('y');
+            }
+        }
+
+        if ch == termion::event::Key::Char('y') {
             Self::remove_files(&paths)?;
             ReloadDirList::reload(context.curr_tab_index, context)?;
         }
+        write!(
+            termion_terminal,
+            "{}{}",
+            Goto(1, f_size.height),
+            clear::AfterCursor
+        );
         Ok(())
     }
 }
