@@ -2,14 +2,15 @@ use std::fs;
 use std::io::{self, Write};
 use std::path;
 
-use termion::clear;
-use termion::cursor::Goto;
+use termion::event::Key;
 
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 use crate::util::event::Event;
+
+use crate::ui::widgets::TuiPrompt;
 
 #[derive(Clone, Debug)]
 pub struct DeleteFiles;
@@ -36,84 +37,46 @@ impl DeleteFiles {
     }
 
     fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::io::Result<()> {
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
+        let curr_tab = &context.tabs[context.curr_tab_index];
         let paths = match curr_tab.curr_list_ref() {
             Some(s) => s.get_selected_paths(),
             None => Vec::new(),
         };
+        let paths_len = paths.len();
 
-        if paths.is_empty() {
+        if paths_len == 0 {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "no files selected",
             ));
         }
 
-        let frame = backend.terminal.get_frame();
-        let f_size = frame.size();
+        let ch = {
+            let prompt_str = format!("Delete {} files? (y/N)", paths_len);
+            let mut prompt = TuiPrompt::new(&prompt_str);
+            prompt.get_key(backend, &context)
+        };
 
-        let termion_terminal = backend.terminal.backend_mut();
-
-        write!(
-            termion_terminal,
-            "{}Delete {} files? (y/N){}",
-            Goto(1, f_size.height),
-            paths.len(),
-            clear::AfterCursor
-        );
-
-        io::stdout().flush().ok();
-
-        let mut ch = termion::event::Key::Char('n');
-        while let Ok(evt) = context.events.next() {
-            match evt {
-                Event::Input(key) => {
-                    if key == termion::event::Key::Char('y')
-                        || key == termion::event::Key::Char('\n')
-                    {
-                        ch = termion::event::Key::Char('y');
-                    }
-                    break;
-                }
-                _ => {}
-            }
-        }
-
-        if ch == termion::event::Key::Char('y') {
-            if paths.len() > 1 {
-                write!(
-                    termion_terminal,
-                    "{}Are you sure? (Y/n){}",
-                    Goto(1, f_size.height),
-                    clear::AfterCursor
-                );
-
-                io::stdout().flush().ok();
-
-                while let Ok(evt) = context.events.next() {
-                    match evt {
-                        Event::Input(key) => {
-                            ch = key;
-                            break;
-                        }
-                        _ => {}
-                    }
+        if ch == Key::Char('y') {
+            if paths_len > 1 {
+                let ch = {
+                    let prompt_str = "Are you sure? (Y/n)";
+                    let mut prompt = TuiPrompt::new(prompt_str);
+                    prompt.get_key(backend, &context)
+                };
+                if ch == Key::Char('y') || ch == Key::Char('\n') {
+                    Self::remove_files(&paths)?;
+                    ReloadDirList::reload(context.curr_tab_index, context)?;
+                    let msg = format!("Deleted {} files", paths_len);
+                    context.message_queue.push_back(msg);
                 }
             } else {
-                ch = termion::event::Key::Char('y');
+                Self::remove_files(&paths)?;
+                ReloadDirList::reload(context.curr_tab_index, context)?;
+                let msg = format!("Deleted {} files", paths_len);
+                context.message_queue.push_back(msg);
             }
         }
-
-        if ch == termion::event::Key::Char('y') {
-            Self::remove_files(&paths)?;
-            ReloadDirList::reload(context.curr_tab_index, context)?;
-        }
-        write!(
-            termion_terminal,
-            "{}{}",
-            Goto(1, f_size.height),
-            clear::AfterCursor
-        );
         Ok(())
     }
 }

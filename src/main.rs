@@ -9,9 +9,7 @@ mod run;
 mod sort;
 mod tab;
 mod ui;
-mod unix;
 mod util;
-mod window;
 
 use lazy_static::lazy_static;
 use std::path::PathBuf;

@@ -2,7 +2,6 @@ use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::sort::SortOption;
-use crate::window::JoshutoPageState;
 
 #[derive(Debug)]
 pub struct JoshutoDirList {
@@ -12,7 +11,6 @@ pub struct JoshutoDirList {
     order_outdated: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
-    pub pagestate: JoshutoPageState,
 }
 
 impl JoshutoDirList {
@@ -25,7 +23,6 @@ impl JoshutoDirList {
         let index = if contents.is_empty() { None } else { Some(0) };
 
         let metadata = JoshutoMetadata::from(&path)?;
-        let pagestate = JoshutoPageState::default();
 
         Ok(JoshutoDirList {
             index,
@@ -34,7 +31,6 @@ impl JoshutoDirList {
             order_outdated: false,
             metadata,
             contents,
-            pagestate,
         })
     }
 

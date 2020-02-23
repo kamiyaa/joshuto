@@ -1,6 +1,6 @@
 use std::time;
 
-use crate::unix;
+use super::unix;
 
 pub fn file_size_to_string(mut file_size: f64) -> String {
     const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "E"];

@@ -10,6 +10,8 @@ pub struct JoshutoMetadata {
     pub uid: u32,
     #[cfg(unix)]
     pub gid: u32,
+    #[cfg(unix)]
+    pub mode: u32,
 }
 
 impl JoshutoMetadata {
@@ -28,6 +30,8 @@ impl JoshutoMetadata {
         let uid = metadata.uid();
         #[cfg(unix)]
         let gid = metadata.gid();
+        #[cfg(unix)]
+        let mode = metadata.mode();
 
         Ok(JoshutoMetadata {
             len,
@@ -38,6 +42,8 @@ impl JoshutoMetadata {
             uid,
             #[cfg(unix)]
             gid,
+            #[cfg(unix)]
+            mode,
         })
     }
 }

@@ -2,7 +2,7 @@ use std::thread;
 
 use crate::commands::{CommandKeybind, CursorMoveUp, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
-use crate::context::JoshutoContext;
+use crate::context::{JoshutoContext, MESSAGE_VISIBLE_DURATION};
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::widgets::{TuiCommandMenu, TuiView};
@@ -56,9 +56,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
             Ok(event) => {
                 match event {
                     Event::IOWorkerProgress(p) => {
-                        context
-                            .message_queue
-                            .push_back(format!("bytes copied {}", p));
+                        context.worker_msg = Some(format!("bytes copied {}", p));
                     }
                     Event::IOWorkerResult => {
                         match io_handle {
@@ -71,33 +69,45 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                             None => {}
                         }
                         io_handle = None;
+                        context.worker_msg = None;
                     }
-                    Event::Input(key) => match keymap_t.get(&key) {
-                        None => {
-                            context
-                                .message_queue
-                                .push_back(format!("Unknown keycode: {:?}", key));
-                        }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
-                            if let Err(e) = command.execute(&mut context, &mut backend) {
-                                context.message_queue.push_back(e.to_string());
+                    Event::Input(key) => {
+                        /* Message handling */
+                        if !context.message_queue.is_empty() {
+                            if context.message_elapse < MESSAGE_VISIBLE_DURATION {
+                                context.message_elapse += 1;
+                            } else {
+                                let _ = context.message_queue.pop_front();
+                                context.message_elapse = 0;
                             }
                         }
-                        Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let mut map: &JoshutoCommandMapping = &m;
-
-                            let cmd = {
-                                let mut menu = TuiCommandMenu::new();
-                                menu.get_input(&mut backend, &context, map)
-                            };
-
-                            if let Some(command) = cmd {
+                        match keymap_t.get(&key) {
+                            None => {
+                                context
+                                    .message_queue
+                                    .push_back(format!("Unknown keycode: {:?}", key));
+                            }
+                            Some(CommandKeybind::SimpleKeybind(command)) => {
                                 if let Err(e) = command.execute(&mut context, &mut backend) {
                                     context.message_queue.push_back(e.to_string());
                                 }
                             }
+                            Some(CommandKeybind::CompositeKeybind(m)) => {
+                                let mut map: &JoshutoCommandMapping = &m;
+
+                                let cmd = {
+                                    let mut menu = TuiCommandMenu::new();
+                                    menu.get_input(&mut backend, &context, map)
+                                };
+
+                                if let Some(command) = cmd {
+                                    if let Err(e) = command.execute(&mut context, &mut backend) {
+                                        context.message_queue.push_back(e.to_string());
+                                    }
+                                }
+                            }
                         }
-                    },
+                    }
                 }
                 let mut view = TuiView::new(&context);
                 backend.render(&mut view);

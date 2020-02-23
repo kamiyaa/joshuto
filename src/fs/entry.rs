@@ -4,6 +4,7 @@ use tui::style::{Color, Modifier, Style};
 
 use crate::fs::JoshutoMetadata;
 
+use crate::util::unix;
 use crate::THEME_T;
 
 #[derive(Clone, Debug)]
@@ -117,6 +118,8 @@ impl JoshutoDirEntry {
         let metadata = &self.metadata;
         let filetype = metadata.file_type;
 
+        use std::os::unix::fs::MetadataExt;
+
         let mut modifier = Modifier::empty();
 
         if filetype.is_dir() {
@@ -156,6 +159,8 @@ impl JoshutoDirEntry {
     }
 
     pub fn get_style(&self) -> Style {
+        use std::os::unix::fs::MetadataExt;
+
         let metadata = &self.metadata;
         let filetype = metadata.file_type;
 
@@ -193,6 +198,17 @@ impl JoshutoDirEntry {
             }
 
             style = style.fg(THEME_T.link.fg).bg(THEME_T.link.bg);
+            style = style.modifier(modifier);
+        } else if unix::is_executable(metadata.mode) {
+            let mut modifier = Modifier::empty();
+            if THEME_T.link.bold {
+                modifier.insert(Modifier::BOLD);
+            }
+            if THEME_T.link.underline {
+                modifier.insert(Modifier::UNDERLINED);
+            }
+
+            style = style.fg(THEME_T.executable.fg).bg(THEME_T.executable.bg);
             style = style.modifier(modifier);
         } else {
             match self.file_path().extension() {

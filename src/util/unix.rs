@@ -3,10 +3,7 @@ use std::path::Path;
 pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 
-    LIBC_PERMISSION_VALS.iter().any(|val| {
-        let val: u32 = (*val) as u32;
-        mode & val != 0
-    })
+    LIBC_PERMISSION_VALS.iter().any(|val| mode & *val != 0)
 }
 
 pub fn stringify_mode(mode: u32) -> String {

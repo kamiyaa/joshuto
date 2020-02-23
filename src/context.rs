@@ -6,7 +6,7 @@ use crate::io::IOWorkerThread;
 use crate::tab::JoshutoTab;
 use crate::util::event::Events;
 
-pub const MESSAGE_VISIBLE_DURATION: usize = 2;
+pub const MESSAGE_VISIBLE_DURATION: usize = 1;
 
 pub struct JoshutoContext {
     pub exit: bool,
@@ -15,6 +15,7 @@ pub struct JoshutoContext {
     pub worker_queue: VecDeque<IOWorkerThread>,
     pub trx: (mpsc::SyncSender<u64>, mpsc::Receiver<u64>),
 
+    pub worker_msg: Option<String>,
     pub message_queue: VecDeque<String>,
     pub message_elapse: usize,
     pub events: Events,
@@ -30,8 +31,9 @@ impl JoshutoContext {
             tabs: Vec::new(),
             worker_queue: VecDeque::with_capacity(10),
             trx: mpsc::sync_channel::<u64>(1),
+            worker_msg: None,
             message_queue: VecDeque::with_capacity(4),
-            message_elapse: MESSAGE_VISIBLE_DURATION,
+            message_elapse: 0,
             events: Events::new(),
 
             config_t,
