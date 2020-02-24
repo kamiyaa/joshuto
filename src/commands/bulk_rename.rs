@@ -9,6 +9,8 @@ use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::TuiBackend;
 
+const ENV_EDITOR: &str = "EDITOR";
+
 #[derive(Clone, Debug)]
 pub struct BulkRename;
 
@@ -22,12 +24,12 @@ impl BulkRename {
 
     pub fn bulk_rename(context: &mut JoshutoContext) -> JoshutoResult<()> {
         const PREFIX: &str = "joshuto-";
-        let editor = match std::env::var("EDITOR") {
+        let editor = match std::env::var(ENV_EDITOR) {
             Ok(s) => s,
             Err(_) => {
                 return Err(JoshutoError::new(
                     JoshutoErrorKind::EnvVarNotPresent,
-                    String::from("EDITOR environment variable not set"),
+                    format!("{} environment variable not set", ENV_EDITOR),
                 ));
             }
         };
@@ -63,7 +65,6 @@ impl BulkRename {
         command.arg(&file_path);
 
         let time = std::time::SystemTime::now();
-        /* exit curses and launch program */
         {
             let mut handle = command.spawn()?;
             handle.wait()?;
@@ -91,7 +92,7 @@ impl BulkRename {
         if paths_renamed.len() < paths.len() {
             return Err(JoshutoError::new(
                 JoshutoErrorKind::IOInvalidInput,
-                String::from("Not enough input given"),
+                "Insufficient inputs".to_string(),
             ));
         }
 
@@ -108,16 +109,16 @@ impl BulkRename {
         let user_input_trimmed = user_input.trim();
         if user_input_trimmed != "n" || user_input_trimmed != "no" {
             for (p, q) in paths.iter().zip(paths_renamed.iter()) {
-                let mut command = process::Command::new("mv");
-                command.arg("-iv");
-                command.arg("--");
-                command.arg(p);
-                command.arg(q);
-                let mut handle = command.spawn()?;
+                let mut handle = process::Command::new("mv")
+                    .arg("-iv")
+                    .arg("--")
+                    .arg(p)
+                    .arg(q)
+                    .spawn()?;
                 handle.wait()?;
             }
         }
-        print!("Press ENTER to continue");
+        print!("Press ENTER to continue...");
         std::io::stdout().flush()?;
         std::io::stdin().read_line(&mut user_input)?;
 
@@ -135,8 +136,10 @@ impl std::fmt::Display for BulkRename {
 }
 
 impl JoshutoRunnable for BulkRename {
-    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        backend.terminal_drop();
         Self::bulk_rename(context)?;
+        backend.terminal_restore();
         ReloadDirList::reload(context.curr_tab_index, context)?;
         Ok(())
     }
