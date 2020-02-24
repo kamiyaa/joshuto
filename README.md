@@ -1,20 +1,10 @@
 # joshuto
 
 [ranger](https://github.com/ranger/ranger)-like terminal file manager written in Rust.
-Currently a work in progress.
-
-## Will be migrating to [tui-rs](https://github.com/fdehau/tui-rs) in the near future. Until then, no new development will be happening
-#### Progress:
- - implement multithreaded input (Done)
- - use characters/words rather than keycodes for config (Partial)
-   - shift does not currently work with special keys (ie. Shift+Tab)
- - migrate to use tui gui (No work)
- - rework command system (No work)
 
 ![Alt text](joshuto_screenshot.png?raw=true "joshuto")
 
 ## Dependencies
- - ncurses
  - [cargo](https://github.com/rust-lang/cargo/) >= 0.32.0
  - [rustc](https://www.rust-lang.org/) >= 1.32.0
 
@@ -65,12 +55,12 @@ Please create a pull request :)
 Please create an issue :)
 
 ## TODOs
- - [ ] Migrate to [tui-rs](https://github.com/fdehau/tui-rs)
+ - [x] Migrate to [tui-rs](https://github.com/fdehau/tui-rs)
  - [x] Tab support
  - [x] Ctrl/Shift/Alt support
- - [ ] Asynch File IO (cut/copy/paste/delete/rename) (in progress)
+ - [x] Asynch File IO (cut/copy/paste/delete/rename) (in progress)
  - [ ] Built-in command line (in progress)
  - [ ] File previews (in progress)
  - [ ] Tab autocomplete (in progress)
- - [ ] Bulk rename
+ - [x] Bulk rename
 
