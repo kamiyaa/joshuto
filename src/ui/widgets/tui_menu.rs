@@ -31,9 +31,10 @@ impl TuiCommandMenu {
         m: &'a JoshutoCommandMapping,
     ) -> Option<&'a Box<dyn JoshutoCommand>> {
         let mut map: &JoshutoCommandMapping = &m;
+        let mut terminal = backend.terminal_mut();
 
         loop {
-            backend.terminal.draw(|mut frame| {
+            terminal.draw(|mut frame| {
                 let f_size = frame.size();
 
                 {
@@ -100,6 +101,10 @@ pub struct TuiMenu<'a> {
 impl<'a> TuiMenu<'a> {
     pub fn new(options: &'a Vec<&str>) -> Self {
         Self { options }
+    }
+
+    pub fn len(&self) -> usize {
+        self.options.len()
     }
 }
 

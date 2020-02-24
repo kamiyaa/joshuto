@@ -28,7 +28,6 @@ pub struct Events {
     pub event_tx: mpsc::Sender<Event>,
     event_rx: mpsc::Receiver<Event>,
     pub sync_tx: mpsc::SyncSender<()>,
-    sync_rx: mpsc::Receiver<()>,
     // fileio_handle: thread::JoinHandle<()>,
 }
 
@@ -46,23 +45,21 @@ impl Events {
         let (event_tx, event_rx) = mpsc::channel();
 
         {
-            let sync_tx = sync_tx.clone();
             let event_tx = event_tx.clone();
             thread::spawn(move || {
                 let stdin = io::stdin();
                 let mut keys = stdin.keys();
-                while let Some(evt) = keys.next() {
-                    match evt {
-                        Ok(key) => {
-                            if let Err(e) = event_tx.send(Event::Input(key)) {
-                                eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
-                                return;
+                while let Ok(_) = sync_rx.recv() {
+                    if let Some(evt) = keys.next() {
+                        match evt {
+                            Ok(key) => {
+                                if let Err(e) = event_tx.send(Event::Input(key)) {
+                                    eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
+                                    return;
+                                }
                             }
-                            if let Err(_) = sync_tx.send(()) {
-                                return;
-                            }
+                            _ => {}
                         }
-                        _ => {}
                     }
                 }
             })
@@ -72,14 +69,13 @@ impl Events {
             event_tx,
             event_rx,
             sync_tx,
-            sync_rx,
             prefix,
         }
     }
 
     pub fn next(&self) -> Result<Event, mpsc::RecvError> {
+        self.sync_tx.try_send(());
         let event = self.event_rx.recv()?;
-        self.sync_rx.recv()?;
         Ok(event)
     }
     /*

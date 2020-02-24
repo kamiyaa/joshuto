@@ -36,16 +36,13 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 let worker = context.worker_queue.pop_front().unwrap();
                 io_handle = {
                     let event_tx = context.events.event_tx.clone();
-                    let sync_tx = context.events.sync_tx.clone();
                     let thread = thread::spawn(move || {
                         worker.start();
                         while let Ok(evt) = worker.recv() {
                             let _ = event_tx.send(evt);
-                            let _ = sync_tx.send(());
                         }
                         worker.handle.join();
                         let _ = event_tx.send(Event::IOWorkerResult);
-                        let _ = sync_tx.send(());
                     });
                     Some(thread)
                 };

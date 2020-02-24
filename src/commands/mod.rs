@@ -27,7 +27,7 @@ pub use self::cursor_move::{
 pub use self::delete_files::DeleteFiles;
 pub use self::file_ops::{CopyFiles, CutFiles, PasteFiles};
 pub use self::new_directory::NewDirectory;
-pub use self::open_file::OpenFile; //, OpenFileWith};
+pub use self::open_file::{OpenFile, OpenFileWith};
 pub use self::parent_directory::ParentDirectory;
 pub use self::quit::ForceQuit;
 pub use self::quit::Quit;
@@ -156,9 +156,7 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
         "new_tab" => Ok(Box::new(self::NewTab::new())),
 
         "open_file" => Ok(Box::new(self::OpenFile::new())),
-        /*
-                "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
-        */
+        "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
         "paste_files" => {
             let mut options = Options::default();
             for arg in args {

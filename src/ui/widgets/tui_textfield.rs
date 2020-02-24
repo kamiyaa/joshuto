@@ -9,7 +9,7 @@ use tui::backend::Backend;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
-use unicode_width::UnicodeWidthStr;
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
@@ -77,25 +77,25 @@ impl<'a> TuiTextField<'a> {
             ._prefix
             .char_indices()
             .last()
-            .map(|(i, c)| i)
+            .map(|(i, c)| i + c.width().unwrap_or(0))
             .unwrap_or(0);
 
         line_buffer.insert_str(0, self._prefix);
-        line_buffer.insert_str(line_buffer.len(), self._suffix);
+        line_buffer.insert_str(char_idx, self._suffix);
         line_buffer.set_pos(char_idx);
 
-        backend.terminal.show_cursor();
-        let mut cursor_xpos = line_buffer.pos() + 1;
+        let mut terminal = backend.terminal_mut();;
+        terminal.show_cursor();
+        let mut cursor_xpos = self._prefix.len() + 1;
         {
-            let frame = backend.terminal.get_frame();
+            let frame = terminal.get_frame();
             let f_size = frame.size();
-            backend
-                .terminal
+            terminal
                 .set_cursor(cursor_xpos as u16, f_size.height - 1);
         }
 
         loop {
-            backend.terminal.draw(|mut frame| {
+            terminal.draw(|mut frame| {
                 let f_size = frame.size();
                 if f_size.height == 0 {
                     return;
@@ -107,15 +107,21 @@ impl<'a> TuiTextField<'a> {
                     view.render(&mut frame, f_size);
                 }
 
-                let top_rect = Rect {
-                    x: 0,
-                    y: 0,
-                    width: f_size.width,
-                    height: 1,
-                };
-
                 if let Some(menu) = self._menu.as_mut() {
-                    menu.render(&mut frame, top_rect);
+                    let menu_len = menu.len();
+                    let menu_y = if menu_len + 1 > f_size.height as usize {
+                        0
+                    } else {
+                        (f_size.height as usize - menu_len - 1) as u16
+                    };
+
+                    let rect = Rect {
+                        x: 0,
+                        y: menu_y,
+                        width: f_size.width,
+                        height: menu_len as u16,
+                    };
+                    menu.render(&mut frame, rect);
                 }
 
                 let cmd_prompt_style = Style::default().fg(Color::LightGreen);
@@ -170,7 +176,7 @@ impl<'a> TuiTextField<'a> {
                     Event::Input(Key::Up) => {}
                     Event::Input(Key::Down) => {}
                     Event::Input(Key::Esc) => {
-                        backend.terminal.hide_cursor();
+                        terminal.hide_cursor();
                         return None;
                     }
                     Event::Input(Key::Char('\t')) => {
@@ -213,14 +219,13 @@ impl<'a> TuiTextField<'a> {
             }
             cursor_xpos = line_buffer.pos() + 1;
             {
-                let frame = backend.terminal.get_frame();
+                let frame = terminal.get_frame();
                 let f_size = frame.size();
-                backend
-                    .terminal
+                terminal
                     .set_cursor(cursor_xpos as u16, f_size.height - 1);
             }
         }
-        backend.terminal.hide_cursor();
+        terminal.hide_cursor();
         if line_buffer.as_str().is_empty() {
             None
         } else {

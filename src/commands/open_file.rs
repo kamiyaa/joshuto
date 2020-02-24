@@ -55,7 +55,9 @@ impl OpenFile {
         } else if let Some(paths) = filepaths {
             let options = Self::get_options(paths[0]);
             if options.len() > 0 {
+                backend.terminal_drop();
                 options[0].execute_with(&paths)?;
+                backend.terminal_restore();
             } else {
             }
         }
@@ -77,7 +79,7 @@ impl JoshutoRunnable for OpenFile {
         Ok(())
     }
 }
-/*
+
 #[derive(Clone, Debug)]
 pub struct OpenFileWith;
 
@@ -89,55 +91,43 @@ impl OpenFileWith {
         "open_file_with"
     }
 
-    pub fn open_with(paths: &[&PathBuf]) -> std::io::Result<()> {
-        const PROMPT: &str = ":open_with ";
-
+    pub fn open_with(context: &JoshutoContext, backend: &mut TuiBackend, paths: &[&PathBuf]) -> std::io::Result<()> {
         let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
-        let user_input: Option<String> = {
-            let (term_rows, term_cols) = ui::getmaxyx();
 
-            let option_size = mimetype_options.len();
-            let display_win = window::JoshutoPanel::new(
-                option_size as i32 + 2,
-                term_cols,
-                (term_rows as usize - option_size - 2, 0),
-            );
-
-            let mut display_vec: Vec<String> = Vec::with_capacity(option_size);
-            for (i, val) in mimetype_options.iter().enumerate() {
-                display_vec.push(format!("  {}\t{}", i, val));
-            }
-            display_vec.sort();
-
-            display_win.move_to_top();
-            ui::display_menu(&display_win, &display_vec);
-            ncurses::doupdate();
-
-            let textfield =
-                JoshutoTextField::new(1, term_cols, (term_rows as usize - 1, 0), PROMPT, "", "");
-            textfield.readline()
-        };
-        ncurses::doupdate();
+        let mut textfield = TuiTextField::default()
+            .prompt(":")
+            .prefix("open_with ");
+        let user_input: Option<String> = textfield.get_input(backend, &context);
 
         match user_input.as_ref() {
             None => Ok(()),
-            Some(user_input) if user_input.is_empty() => Ok(()),
             Some(user_input) => match user_input.parse::<usize>() {
                 Ok(n) if n >= mimetype_options.len() => Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     "option does not exist".to_owned(),
                 )),
-                Ok(n) => mimetype_options[n].execute_with(paths),
+                Ok(n) => {
+                    backend.terminal_drop();
+                    let res = mimetype_options[n].execute_with(paths);
+                    backend.terminal_restore()?;
+                    res
+                }
                 Err(_) => {
                     let mut args_iter = user_input.split_whitespace();
+                    args_iter.next();
                     match args_iter.next() {
-                        Some(cmd) => JoshutoMimetypeEntry::new(String::from(cmd))
-                            .add_args(args_iter)
-                            .execute_with(paths),
+                        Some(cmd) => {
+                            backend.terminal_drop();
+                            let res = JoshutoMimetypeEntry::new(String::from(cmd))
+                                .args(args_iter)
+                                .execute_with(paths);
+                            backend.terminal_restore()?;
+                            res
+                        }
                         None => Ok(()),
                     }
                 }
-            },
+            }
         }
     }
 }
@@ -151,20 +141,21 @@ impl std::fmt::Display for OpenFileWith {
 }
 
 impl JoshutoRunnable for OpenFileWith {
-    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let curr_list = &context.tabs[context.curr_tab_index].curr_list;
-        match curr_list.index {
-            None => {
-                return Err(JoshutoError::new(
-                    JoshutoErrorKind::IONotFound,
-                    String::from("No files selected"),
-                ))
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        let paths = match &context.tabs[context.curr_tab_index].curr_list_ref() {
+            Some(curr_list) => {
+                curr_list.get_selected_paths()
             }
-            Some(_) => {}
+            None => vec![],
+        };
+
+        if paths.is_empty() {
+            return Err(JoshutoError::new(
+                JoshutoErrorKind::IONotFound,
+                String::from("No files selected"),
+            ))
         }
-        let paths = curr_list.get_selected_paths();
-        Self::open_with(&paths)?;
+        Self::open_with(context, backend, &paths)?;
         Ok(())
     }
 }
-*/

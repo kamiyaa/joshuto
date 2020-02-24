@@ -14,78 +14,76 @@ const fn default_false() -> bool {
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
-    command: String,
-    #[serde(default)]
-    args: Vec<String>,
-    #[serde(default = "default_false")]
-    fork: bool,
-    #[serde(default = "default_false")]
-    silent: bool,
-    #[serde(default = "default_false")]
-    confirm_exit: bool,
+    #[serde(rename = "command")]
+    _command: String,
+    #[serde(default, rename = "args")]
+    _args: Vec<String>,
+    #[serde(default, rename = "fork")]
+    _fork: bool,
+    #[serde(default, rename = "silent")]
+    _silent: bool,
+    #[serde(default, rename = "confirm_exit")]
+    _confirm_exit: bool,
 }
 
-#[allow(dead_code)]
 impl JoshutoMimetypeEntry {
     pub fn new(command: String) -> Self {
         Self {
-            command,
-            args: Vec::new(),
-            fork: false,
-            silent: false,
-            confirm_exit: false,
+            _command: command,
+            _args: Vec::new(),
+            _fork: false,
+            _silent: false,
+            _confirm_exit: false,
         }
     }
 
-    pub fn add_arg<S: std::convert::Into<String>>(&mut self, arg: S) -> &mut Self {
-        self.args.push(arg.into());
+    pub fn arg<S: std::convert::Into<String>>(mut self, arg: S) -> Self {
+        self._args.push(arg.into());
         self
     }
 
-    pub fn add_args<I, S>(&mut self, args: I) -> &mut Self
+    pub fn args<I, S>(mut self, args: I) -> Self
     where
-        I: IntoIterator<Item = S>,
+        I: Iterator<Item = S>,
         S: std::convert::Into<String>,
     {
-        for arg in args {
-            self.args.push(arg.into());
-        }
+        args.for_each(|arg| self._args.push(arg.into()));
         self
     }
 
-    pub fn set_fork(&mut self, set: bool) -> &mut Self {
-        self.fork = set;
+    pub fn fork(mut self, fork: bool) -> Self {
+        self._fork = fork;
         self
     }
 
-    pub fn set_silent(&mut self, set: bool) -> &mut Self {
-        self.silent = set;
+    pub fn silent(mut self, silent: bool) -> Self {
+        self._silent = silent;
         self
     }
 
-    pub fn set_confirm_exit(&mut self, set: bool) -> &mut Self {
-        self.confirm_exit = set;
+    pub fn set_confirm_exit(mut self, confirm_exit: bool) -> Self {
+        self._confirm_exit = confirm_exit;
         self
     }
 
     pub fn get_command(&self) -> &str {
-        &self.command
+        self._command.as_str()
     }
 
     pub fn get_args(&self) -> &[String] {
-        &self.args
+        &self._args
     }
 
     pub fn get_fork(&self) -> bool {
-        self.fork
+        self._fork
     }
 
     pub fn get_silent(&self) -> bool {
-        self.silent
+        self._silent
     }
 
     pub fn get_confirm_exit(&self) -> bool {
-        self.confirm_exit
+        self._confirm_exit
     }
 
     pub fn execute_with(&self, paths: &[&PathBuf]) -> std::io::Result<()> {
@@ -109,6 +107,18 @@ impl JoshutoMimetypeEntry {
             }
         }
         Ok(())
+    }
+}
+
+impl std::default::Default for JoshutoMimetypeEntry {
+    fn default() -> Self {
+        Self {
+            _command: "".to_string(),
+            _args: Vec::new(),
+            _fork: false,
+            _silent: false,
+            _confirm_exit: false,
+        }
     }
 }
 

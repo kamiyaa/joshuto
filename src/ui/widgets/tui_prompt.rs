@@ -20,8 +20,9 @@ impl<'a> TuiPrompt<'a> {
     }
 
     pub fn get_key(&mut self, backend: &mut TuiBackend, context: &JoshutoContext) -> Key {
+        let mut terminal = backend.terminal_mut();
         loop {
-            backend.terminal.draw(|mut frame| {
+            terminal.draw(|mut frame| {
                 let f_size = frame.size();
                 if f_size.height == 0 {
                     return;

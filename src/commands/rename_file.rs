@@ -79,7 +79,7 @@ impl RenameFileAppend {
         &self,
         context: &mut JoshutoContext,
         backend: &mut TuiBackend,
-        file_name: String,
+        file_name: &str,
     ) -> JoshutoResult<()> {
         let prefix;
         let suffix;
@@ -115,7 +115,7 @@ impl JoshutoRunnable for RenameFileAppend {
         }
 
         if let Some(file_name) = file_name {
-            self.rename_file(context, backend, file_name)?;
+            self.rename_file(context, backend, file_name.as_str())?;
         }
         Ok(())
     }
