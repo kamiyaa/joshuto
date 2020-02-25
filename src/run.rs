@@ -71,12 +71,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                     Event::Input(key) => {
                         /* Message handling */
                         if !context.message_queue.is_empty() {
-                            if context.message_elapse < MESSAGE_VISIBLE_DURATION {
-                                context.message_elapse += 1;
-                            } else {
-                                let _ = context.message_queue.pop_front();
-                                context.message_elapse = 0;
-                            }
+                            let _ = context.message_queue.pop_front();
                         }
                         match keymap_t.get(&key) {
                             None => {

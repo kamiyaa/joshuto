@@ -168,6 +168,29 @@ pub struct JoshutoStyleTheme {
     pub prefix: Option<JoshutoPrefix>,
 }
 
+impl JoshutoStyleTheme {
+    pub fn set_bg(mut self, bg: Color) -> Self {
+        self.bg = bg;
+        self
+    }
+    pub fn set_fg(mut self, fg: Color) -> Self {
+        self.fg = fg;
+        self
+    }
+    pub fn set_bold(mut self, bold: bool) -> Self {
+        self.bold = bold;
+        self
+    }
+    pub fn set_underline(mut self, bold: bool) -> Self {
+        self.bold = bold;
+        self
+    }
+    pub fn set_invert(mut self, bold: bool) -> Self {
+        self.bold = bold;
+        self
+    }
+}
+
 impl std::default::Default for JoshutoStyleTheme {
     fn default() -> Self {
         JoshutoStyleTheme {
@@ -201,12 +224,23 @@ impl ConfigStructure for JoshutoTheme {
 
 impl std::default::Default for JoshutoTheme {
     fn default() -> Self {
-        let selection = JoshutoStyleTheme::default();
-        let executable = JoshutoStyleTheme::default();
-        let regular = JoshutoStyleTheme::default();
-        let directory = JoshutoStyleTheme::default();
-        let link = JoshutoStyleTheme::default();
-        let socket = JoshutoStyleTheme::default();
+        let selection = JoshutoStyleTheme::default()
+            .set_fg(Color::LightYellow)
+            .set_bold(true);
+        let executable = JoshutoStyleTheme::default()
+            .set_fg(Color::LightGreen)
+            .set_bold(true);
+        let regular = JoshutoStyleTheme::default()
+            .set_fg(Color::White);
+        let directory = JoshutoStyleTheme::default()
+            .set_fg(Color::LightBlue)
+            .set_bold(true);
+        let link = JoshutoStyleTheme::default()
+            .set_fg(Color::LightCyan)
+            .set_bold(true);
+        let socket = JoshutoStyleTheme::default()
+            .set_fg(Color::LightMagenta)
+            .set_bold(true);
         let ext = HashMap::new();
 
         JoshutoTheme {
