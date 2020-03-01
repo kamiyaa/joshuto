@@ -52,19 +52,19 @@ impl DeleteFiles {
         }
 
         let ch = {
-            let prompt_str = format!("Delete {} files? (y/N)", paths_len);
+            let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
             let mut prompt = TuiPrompt::new(&prompt_str);
             prompt.get_key(backend, &context)
         };
 
-        if ch == Key::Char('y') {
+        if ch == Key::Char('y') || ch == Key::Char('\n') {
             if paths_len > 1 {
                 let ch = {
-                    let prompt_str = "Are you sure? (Y/n)";
+                    let prompt_str = "Are you sure? (y/N)";
                     let mut prompt = TuiPrompt::new(prompt_str);
                     prompt.get_key(backend, &context)
                 };
-                if ch == Key::Char('y') || ch == Key::Char('\n') {
+                if ch == Key::Char('y') {
                     Self::remove_files(&paths)?;
                     ReloadDirList::reload(context.curr_tab_index, context)?;
                     let msg = format!("Deleted {} files", paths_len);
