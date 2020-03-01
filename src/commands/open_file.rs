@@ -125,7 +125,6 @@ impl OpenFileWith {
                             "option does not exist".to_owned(),
                     )),
                     Ok(n) => {
-
                         let mimetype_entry = &mimetype_options[n];
                         if mimetype_entry.get_fork() {
                             mimetype_entry.execute_with(paths)
@@ -138,7 +137,6 @@ impl OpenFileWith {
                     }
                     Err(_) => {
                         let mut args_iter = user_input.split_whitespace();
-                        args_iter.next();
                         match args_iter.next() {
                             Some(cmd) => {
                                 backend.terminal_drop();
