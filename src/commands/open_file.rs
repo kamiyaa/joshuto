@@ -5,7 +5,7 @@ use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
-use crate::ui::widgets::TuiTextField;
+use crate::ui::widgets::{TuiMenu, TuiTextField};
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
 
@@ -92,42 +92,68 @@ impl OpenFileWith {
     }
 
     pub fn open_with(context: &JoshutoContext, backend: &mut TuiBackend, paths: &[&PathBuf]) -> std::io::Result<()> {
+        const PROMPT: &'static str = "open_with ";
+
         let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
 
-        let mut textfield = TuiTextField::default()
-            .prompt(":")
-            .prefix("open_with ");
-        let user_input: Option<String> = textfield.get_input(backend, &context);
+        let user_input: Option<String> = {
+            let menu_options: Vec<String> = mimetype_options
+                .iter()
+                .enumerate()
+                .map(|(i, e)| format!("  {} | {}", i, e))
+                .collect();
+            let menu_options_str: Vec<&str> = menu_options
+                .iter()
+                .map(|e| e.as_str())
+                .collect();
+            let mut menu_widget = TuiMenu::new(&menu_options_str);
+
+            let mut textfield = TuiTextField::default()
+                .prompt(":")
+                .prefix(PROMPT)
+                .menu(&mut menu_widget);
+            textfield.get_input(backend, &context)
+        };
 
         match user_input.as_ref() {
-            None => Ok(()),
-            Some(user_input) => match user_input.parse::<usize>() {
-                Ok(n) if n >= mimetype_options.len() => Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    "option does not exist".to_owned(),
-                )),
-                Ok(n) => {
-                    backend.terminal_drop();
-                    let res = mimetype_options[n].execute_with(paths);
-                    backend.terminal_restore()?;
-                    res
-                }
-                Err(_) => {
-                    let mut args_iter = user_input.split_whitespace();
-                    args_iter.next();
-                    match args_iter.next() {
-                        Some(cmd) => {
+            Some(user_input) if user_input.starts_with(PROMPT) => {
+                let user_input = &user_input[PROMPT.len()..];
+
+                match user_input.parse::<usize>() {
+                    Ok(n) if n >= mimetype_options.len() => Err(std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "option does not exist".to_owned(),
+                    )),
+                    Ok(n) => {
+
+                        let mimetype_entry = &mimetype_options[n];
+                        if mimetype_entry.get_fork() {
+                            mimetype_entry.execute_with(paths)
+                        } else {
                             backend.terminal_drop();
-                            let res = JoshutoMimetypeEntry::new(String::from(cmd))
-                                .args(args_iter)
-                                .execute_with(paths);
+                            let res = mimetype_entry.execute_with(paths);
                             backend.terminal_restore()?;
                             res
                         }
-                        None => Ok(()),
+                    }
+                    Err(_) => {
+                        let mut args_iter = user_input.split_whitespace();
+                        args_iter.next();
+                        match args_iter.next() {
+                            Some(cmd) => {
+                                backend.terminal_drop();
+                                let res = JoshutoMimetypeEntry::new(String::from(cmd))
+                                    .args(args_iter)
+                                    .execute_with(paths);
+                                backend.terminal_restore()?;
+                                res
+                            }
+                            None => Ok(()),
+                        }
                     }
                 }
             }
+            _ => Ok(()),
         }
     }
 }

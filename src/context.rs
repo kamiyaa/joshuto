@@ -16,7 +16,6 @@ pub struct JoshutoContext {
 
     pub worker_msg: Option<String>,
     pub message_queue: VecDeque<String>,
-    pub message_elapse: usize,
     pub events: Events,
 
     pub config_t: config::JoshutoConfig,
@@ -31,7 +30,6 @@ impl JoshutoContext {
             worker_queue: VecDeque::with_capacity(10),
             worker_msg: None,
             message_queue: VecDeque::with_capacity(4),
-            message_elapse: 0,
             events: Events::new(),
 
             config_t,

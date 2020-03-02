@@ -109,10 +109,10 @@ impl<'a> TuiTextField<'a> {
 
                 if let Some(menu) = self._menu.as_mut() {
                     let menu_len = menu.len();
-                    let menu_y = if menu_len + 1 > f_size.height as usize {
+                    let menu_y = if menu_len + 2 > f_size.height as usize {
                         0
                     } else {
-                        (f_size.height as usize - menu_len - 1) as u16
+                        (f_size.height as usize - menu_len - 2) as u16
                     };
 
                     let rect = Rect {
