@@ -25,13 +25,13 @@ impl<'a> TuiView<'a> {
 
 impl<'a> Widget for TuiView<'a> {
     fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+        let f_size = area;
+
         let curr_tab = self.context.curr_tab_ref();
 
         let curr_list = curr_tab.curr_list_ref();
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
-
-        let f_size = area;
 
         let constraints = match child_list {
             Some(_) => DEFAULT_LAYOUT,
@@ -43,7 +43,23 @@ impl<'a> Widget for TuiView<'a> {
             .constraints(constraints.as_ref())
             .split(f_size);
 
-        {
+         if self.context.tabs.len() > 1 {
+            let rect = Rect {
+                x: f_size.width - 5,
+                y: 0,
+                width: 5,
+                height: 1,
+            };
+
+            let rect = Rect {
+                x: 0,
+                y: 0,
+                width: f_size.width - 5,
+                height: 1,
+            };
+
+            TuiTopBar::new(curr_tab.curr_path.as_path()).draw(rect, buf);
+         } else {
             let rect = Rect {
                 x: 0,
                 y: 0,
@@ -52,7 +68,7 @@ impl<'a> Widget for TuiView<'a> {
             };
 
             TuiTopBar::new(curr_tab.curr_path.as_path()).draw(rect, buf);
-        }
+         }
 
         if let Some(curr_list) = parent_list.as_ref() {
             TuiDirList::new(&curr_list).draw(layout_rect[0], buf);

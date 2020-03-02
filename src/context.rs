@@ -13,7 +13,6 @@ pub struct JoshutoContext {
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
     pub worker_queue: VecDeque<IOWorkerThread>,
-    pub trx: (mpsc::SyncSender<u64>, mpsc::Receiver<u64>),
 
     pub worker_msg: Option<String>,
     pub message_queue: VecDeque<String>,
@@ -29,7 +28,6 @@ impl JoshutoContext {
             curr_tab_index: 0,
             tabs: Vec::new(),
             worker_queue: VecDeque::with_capacity(10),
-            trx: mpsc::sync_channel::<u64>(1),
             worker_msg: None,
             message_queue: VecDeque::with_capacity(4),
             events: Events::new(),
