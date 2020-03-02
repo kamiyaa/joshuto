@@ -26,13 +26,13 @@ impl<'a> TuiView<'a> {
 
 impl<'a> Widget for TuiView<'a> {
     fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+        let f_size = area;
+
         let curr_tab = self.context.curr_tab_ref();
 
         let curr_list = curr_tab.curr_list_ref();
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
-
-        let f_size = area;
 
         let constraints = match child_list {
             Some(_) => DEFAULT_LAYOUT,
