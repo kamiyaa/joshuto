@@ -65,7 +65,7 @@ impl DirectoryHistory for JoshutoHistory {
                 dirlist.reload_contents(sort_option)?;
             }
             Entry::Vacant(entry) => {
-                let mut dirlist = JoshutoDirList::new(path.to_path_buf(), sort_option)?;
+                let dirlist = JoshutoDirList::new(path.to_path_buf(), sort_option)?;
                 entry.insert(dirlist);
             }
         }

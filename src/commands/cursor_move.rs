@@ -134,10 +134,16 @@ impl std::fmt::Display for CursorMovePageUp {
 }
 
 impl JoshutoRunnable for CursorMovePageUp {
-    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        let half_page = {
+            match backend.terminal.as_ref().unwrap().size() {
+                Ok(rect) => rect.height as usize - 2,
+                _ => 10,
+            }
+        };
+
         let movement = match context.curr_tab_ref().curr_list_ref() {
             Some(curr_list) => {
-                let half_page = 10;
                 curr_list
                     .index
                     .map(|idx| if idx > half_page { idx - half_page } else { 0 })
@@ -173,11 +179,17 @@ impl std::fmt::Display for CursorMovePageDown {
 }
 
 impl JoshutoRunnable for CursorMovePageDown {
-    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+        let half_page = {
+            match backend.terminal.as_ref().unwrap().size() {
+                Ok(rect) => rect.height as usize - 2,
+                _ => 10,
+            }
+        };
+
         let movement = match context.curr_tab_ref().curr_list_ref() {
             Some(curr_list) => {
                 let dir_len = curr_list.contents.len();
-                let half_page = 10;
                 curr_list.index.map(|idx| {
                     if idx + half_page > dir_len - 1 {
                         dir_len - 1

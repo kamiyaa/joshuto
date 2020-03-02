@@ -1,5 +1,4 @@
 use std::fs;
-use std::io::{self, Write};
 use std::path;
 
 use termion::event::Key;
@@ -8,7 +7,6 @@ use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
-use crate::util::event::Event;
 
 use crate::ui::widgets::TuiPrompt;
 

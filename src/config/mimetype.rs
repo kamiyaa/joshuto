@@ -8,10 +8,6 @@ use std::process;
 use super::{parse_config_file, ConfigStructure};
 use crate::MIMETYPE_FILE;
 
-const fn default_false() -> bool {
-    false
-}
-
 #[derive(Debug, Deserialize)]
 pub struct JoshutoMimetypeEntry {
     #[serde(rename = "command")]

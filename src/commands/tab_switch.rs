@@ -18,19 +18,11 @@ impl TabSwitch {
         "tab_switch"
     }
 
-    pub fn tab_switch(
-        new_index: usize,
-        context: &mut JoshutoContext,
-        backend: &mut TuiBackend,
-    ) -> std::io::Result<()> {
+    pub fn tab_switch(new_index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
         context.curr_tab_index = new_index;
         let path = &context.curr_tab_ref().curr_path;
         env::set_current_dir(path)?;
 
-        /*
-                ui::redraw_tab_view(&view.tab_win, &context);
-                ncurses::doupdate();
-        */
         Ok(())
     }
 }
@@ -54,7 +46,7 @@ impl JoshutoRunnable for TabSwitch {
             new_index -= tab_len;
         }
         let new_index = new_index as usize;
-        Self::tab_switch(new_index, context, backend)?;
+        Self::tab_switch(new_index, context)?;
         Ok(())
     }
 }

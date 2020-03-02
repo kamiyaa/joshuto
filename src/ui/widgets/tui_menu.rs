@@ -3,7 +3,7 @@ use std::iter::Iterator;
 use termion::event::Key;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::{Color, Style};
+use tui::style::Style;
 use tui::widgets::{Block, Borders, Widget};
 use unicode_width::UnicodeWidthStr;
 
@@ -31,7 +31,7 @@ impl TuiCommandMenu {
         m: &'a JoshutoCommandMapping,
     ) -> Option<&'a Box<dyn JoshutoCommand>> {
         let mut map: &JoshutoCommandMapping = &m;
-        let mut terminal = backend.terminal_mut();
+        let terminal = backend.terminal_mut();
 
         loop {
             terminal.draw(|mut frame| {

@@ -4,7 +4,6 @@ use crate::commands::{ChangeDirectory, JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::history::DirectoryHistory;
 use crate::ui::widgets::{TuiMenu, TuiTextField};
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
@@ -59,6 +58,7 @@ impl OpenFile {
                 options[0].execute_with(&paths)?;
                 backend.terminal_restore();
             } else {
+                OpenFileWith::open_with(context, backend, &paths)?;
             }
         }
         Ok(())
@@ -91,7 +91,11 @@ impl OpenFileWith {
         "open_file_with"
     }
 
-    pub fn open_with(context: &JoshutoContext, backend: &mut TuiBackend, paths: &[&PathBuf]) -> std::io::Result<()> {
+    pub fn open_with(
+        context: &JoshutoContext,
+        backend: &mut TuiBackend,
+        paths: &[&PathBuf],
+    ) -> std::io::Result<()> {
         const PROMPT: &'static str = "open_with ";
 
         let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
@@ -102,10 +106,7 @@ impl OpenFileWith {
                 .enumerate()
                 .map(|(i, e)| format!("  {} | {}", i, e))
                 .collect();
-            let menu_options_str: Vec<&str> = menu_options
-                .iter()
-                .map(|e| e.as_str())
-                .collect();
+            let menu_options_str: Vec<&str> = menu_options.iter().map(|e| e.as_str()).collect();
             let mut menu_widget = TuiMenu::new(&menu_options_str);
 
             let mut textfield = TuiTextField::default()
@@ -121,8 +122,8 @@ impl OpenFileWith {
 
                 match user_input.parse::<usize>() {
                     Ok(n) if n >= mimetype_options.len() => Err(std::io::Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "option does not exist".to_owned(),
+                        std::io::ErrorKind::InvalidData,
+                        "option does not exist".to_owned(),
                     )),
                     Ok(n) => {
                         let mimetype_entry = &mimetype_options[n];
@@ -167,9 +168,7 @@ impl std::fmt::Display for OpenFileWith {
 impl JoshutoRunnable for OpenFileWith {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let paths = match &context.tabs[context.curr_tab_index].curr_list_ref() {
-            Some(curr_list) => {
-                curr_list.get_selected_paths()
-            }
+            Some(curr_list) => curr_list.get_selected_paths(),
             None => vec![],
         };
 
@@ -177,7 +176,7 @@ impl JoshutoRunnable for OpenFileWith {
             return Err(JoshutoError::new(
                 JoshutoErrorKind::IONotFound,
                 String::from("No files selected"),
-            ))
+            ));
         }
         Self::open_with(context, backend, &paths)?;
         Ok(())

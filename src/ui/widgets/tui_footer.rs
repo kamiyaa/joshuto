@@ -2,7 +2,7 @@ use std::fs;
 
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Color, Style};
 use tui::widgets::{Paragraph, Text, Widget};
 
 use crate::fs::JoshutoDirEntry;

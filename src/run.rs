@@ -2,7 +2,7 @@ use std::thread;
 
 use crate::commands::{CommandKeybind, CursorMoveUp, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
-use crate::context::{JoshutoContext, MESSAGE_VISIBLE_DURATION};
+use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::widgets::{TuiCommandMenu, TuiView};
@@ -85,11 +85,9 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                                 }
                             }
                             Some(CommandKeybind::CompositeKeybind(m)) => {
-                                let mut map: &JoshutoCommandMapping = &m;
-
                                 let cmd = {
                                     let mut menu = TuiCommandMenu::new();
-                                    menu.get_input(&mut backend, &context, map)
+                                    menu.get_input(&mut backend, &context, &m)
                                 };
 
                                 if let Some(command) = cmd {

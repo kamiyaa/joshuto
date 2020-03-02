@@ -6,8 +6,6 @@ use crate::io::IOWorkerThread;
 use crate::tab::JoshutoTab;
 use crate::util::event::Events;
 
-pub const MESSAGE_VISIBLE_DURATION: usize = 1;
-
 pub struct JoshutoContext {
     pub exit: bool,
     pub curr_tab_index: usize,

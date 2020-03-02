@@ -22,7 +22,6 @@ impl RenameFile {
         &self,
         path: &path::PathBuf,
         context: &mut JoshutoContext,
-        backend: &mut TuiBackend,
     ) -> std::io::Result<()> {
         let new_path = &self.path;
         if new_path.exists() {
@@ -58,7 +57,7 @@ impl JoshutoRunnable for RenameFile {
         }
 
         if let Some(path) = path {
-            self.rename_file(&path, context, backend)?;
+            self.rename_file(&path, context)?;
         }
         Ok(())
     }

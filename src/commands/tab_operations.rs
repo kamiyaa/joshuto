@@ -29,7 +29,7 @@ impl NewTab {
         let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
         context.tabs.push(tab);
         context.curr_tab_index = context.tabs.len() - 1;
-        TabSwitch::tab_switch(context.curr_tab_index, context, backend)?;
+        TabSwitch::tab_switch(context.curr_tab_index, context)?;
         Ok(())
     }
 }
@@ -68,7 +68,7 @@ impl CloseTab {
         if context.curr_tab_index > 0 {
             context.curr_tab_index -= 1;
         }
-        TabSwitch::tab_switch(context.curr_tab_index, context, backend)?;
+        TabSwitch::tab_switch(context.curr_tab_index, context)?;
         Ok(())
     }
 }

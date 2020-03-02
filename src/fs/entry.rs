@@ -118,8 +118,6 @@ impl JoshutoDirEntry {
         let metadata = &self.metadata;
         let filetype = metadata.file_type;
 
-        use std::os::unix::fs::MetadataExt;
-
         let mut modifier = Modifier::empty();
 
         if filetype.is_dir() {
@@ -159,8 +157,6 @@ impl JoshutoDirEntry {
     }
 
     pub fn get_style(&self) -> Style {
-        use std::os::unix::fs::MetadataExt;
-
         let metadata = &self.metadata;
         let filetype = metadata.file_type;
 

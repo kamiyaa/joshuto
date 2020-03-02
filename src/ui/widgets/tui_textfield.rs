@@ -1,19 +1,15 @@
-use std::io::Write;
-
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
 use rustyline::line_buffer;
 
-use termion::cursor::Goto;
 use termion::event::Key;
-use tui::backend::Backend;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
-use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
-use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use tui::widgets::{Paragraph, Text, Widget};
+use unicode_width::UnicodeWidthChar;
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
-use crate::util::event::{Event, Events};
+use crate::util::event::Event;
 
 use super::{TuiMenu, TuiView};
 
@@ -73,7 +69,7 @@ impl<'a> TuiTextField<'a> {
 
         let mut completion_tracker: Option<CompletionTracker> = None;
 
-        let mut char_idx = self
+        let char_idx = self
             ._prefix
             .char_indices()
             .last()
@@ -84,14 +80,13 @@ impl<'a> TuiTextField<'a> {
         line_buffer.insert_str(char_idx, self._suffix);
         line_buffer.set_pos(char_idx);
 
-        let mut terminal = backend.terminal_mut();;
+        let terminal = backend.terminal_mut();
         terminal.show_cursor();
         let mut cursor_xpos = self._prefix.len() + 1;
         {
             let frame = terminal.get_frame();
             let f_size = frame.size();
-            terminal
-                .set_cursor(cursor_xpos as u16, f_size.height - 1);
+            terminal.set_cursor(cursor_xpos as u16, f_size.height - 1);
         }
 
         loop {
@@ -221,8 +216,7 @@ impl<'a> TuiTextField<'a> {
             {
                 let frame = terminal.get_frame();
                 let f_size = frame.size();
-                terminal
-                    .set_cursor(cursor_xpos as u16, f_size.height - 1);
+                terminal.set_cursor(cursor_xpos as u16, f_size.height - 1);
             }
         }
         terminal.hide_cursor();

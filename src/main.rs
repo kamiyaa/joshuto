@@ -70,5 +70,8 @@ fn main() {
         eprintln!("mimetype config: {:#?}", *MIMETYPE_T);
     }
 
-    run(config, keymap);
+    match run(config, keymap) {
+        Ok(_) => {}
+        Err(e) => eprintln!("{}", e),
+    }
 }

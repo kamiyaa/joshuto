@@ -230,8 +230,7 @@ impl std::default::Default for JoshutoTheme {
         let executable = JoshutoStyleTheme::default()
             .set_fg(Color::LightGreen)
             .set_bold(true);
-        let regular = JoshutoStyleTheme::default()
-            .set_fg(Color::White);
+        let regular = JoshutoStyleTheme::default().set_fg(Color::White);
         let directory = JoshutoStyleTheme::default()
             .set_fg(Color::LightBlue)
             .set_bold(true);

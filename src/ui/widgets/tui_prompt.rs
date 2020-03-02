@@ -1,12 +1,12 @@
 use termion::event::Key;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
-use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
+use tui::widgets::{Paragraph, Text, Widget};
 use unicode_width::UnicodeWidthStr;
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
-use crate::util::event::{Event, Events};
+use crate::util::event::Event;
 
 use super::TuiView;
 
@@ -20,7 +20,7 @@ impl<'a> TuiPrompt<'a> {
     }
 
     pub fn get_key(&mut self, backend: &mut TuiBackend, context: &JoshutoContext) -> Key {
-        let mut terminal = backend.terminal_mut();
+        let terminal = backend.terminal_mut();
         loop {
             terminal.draw(|mut frame| {
                 let f_size = frame.size();

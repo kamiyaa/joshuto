@@ -1,5 +1,5 @@
-use std::io::Write;
 use std::io::stdout;
+use std::io::Write;
 
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
@@ -7,7 +7,8 @@ use tui::backend::TermionBackend;
 use tui::widgets::Widget;
 
 pub struct TuiBackend {
-    pub terminal: Option<tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>>>,
+    pub terminal:
+        Option<tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>>>,
 }
 
 impl TuiBackend {
@@ -17,7 +18,9 @@ impl TuiBackend {
         let backend = TermionBackend::new(stdout);
         let mut terminal = tui::Terminal::new(backend)?;
         terminal.hide_cursor()?;
-        Ok(Self { terminal: Some(terminal) })
+        Ok(Self {
+            terminal: Some(terminal),
+        })
     }
 
     pub fn render<W>(&mut self, widget: &mut W)
@@ -30,7 +33,9 @@ impl TuiBackend {
         });
     }
 
-    pub fn terminal_mut(&mut self) -> &mut tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>> {
+    pub fn terminal_mut(
+        &mut self,
+    ) -> &mut tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>> {
         self.terminal.as_mut().unwrap()
     }
 

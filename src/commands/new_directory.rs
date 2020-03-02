@@ -28,7 +28,7 @@ impl std::fmt::Display for NewDirectory {
 }
 
 impl JoshutoRunnable for NewDirectory {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         for path in &self.paths {
             std::fs::create_dir_all(path)?;
         }
