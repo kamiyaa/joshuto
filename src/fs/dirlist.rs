@@ -65,15 +65,23 @@ impl JoshutoDirList {
             if contents_len == 0 {
                 None
             } else {
-                match self.get_curr_ref() {
-                    Some(entry) => contents
-                        .iter()
-                        .enumerate()
-                        .find(|(_, e)| e.file_name() == entry.file_name())
-                        .and_then(|(i, _)| Some(i))
-                        .or(Some(0)),
+                match self.index {
+                    Some(i) if i < contents_len => {
+                        Some(i)
+                    }
+                    Some(i) => {
+                        let entry = &self.contents[i];
+                        contents
+                            .iter()
+                            .enumerate()
+                            .find(|(_, e)| e.file_name() == entry.file_name())
+                            .and_then(|(i, _)| Some(i))
+                            .or(Some(0))
+                    }
                     None => Some(0),
                 }
+
+
             }
         };
 
