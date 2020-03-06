@@ -76,7 +76,7 @@ impl JoshutoDirList {
                             .enumerate()
                             .find(|(_, e)| e.file_name() == entry.file_name())
                             .and_then(|(i, _)| Some(i))
-                            .or(Some(0))
+                            .or(Some(contents_len - 1))
                     }
                     None => Some(0),
                 }
