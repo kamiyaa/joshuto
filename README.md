@@ -5,8 +5,8 @@
 ![Alt text](joshuto_screenshot.png?raw=true "joshuto")
 
 ## Dependencies
- - [cargo](https://github.com/rust-lang/cargo/) >= 0.32.0
- - [rustc](https://www.rust-lang.org/) >= 1.32.0
+ - [cargo](https://github.com/rust-lang/cargo/) >= 0.41.0
+ - [rustc](https://www.rust-lang.org/) >= 1.41.0
 
 Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 
