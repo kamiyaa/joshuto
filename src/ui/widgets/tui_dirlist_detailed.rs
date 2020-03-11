@@ -33,13 +33,15 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         let y = area.top();
 
         let dir_len = self.dirlist.contents.len();
-        if dir_len == 0 {
-            let style = Style::default().bg(Color::Red).fg(Color::White);
-            buf.set_stringn(x, y, "empty", area.width as usize, style);
-            return;
-        }
+        let curr_index = match self.dirlist.index {
+            Some(i) => i,
+            None => {
+                let style = Style::default().bg(Color::Red).fg(Color::White);
+                buf.set_stringn(x, y, "empty", area.width as usize, style);
+                return;
+            }
+        };
 
-        let curr_index = self.dirlist.index.unwrap();
         let skip_dist = curr_index / area.height as usize * area.height as usize;
 
         let screen_index = if skip_dist > 0 {

@@ -55,8 +55,9 @@ impl OpenFile {
             let options = Self::get_options(paths[0]);
             if options.len() > 0 {
                 backend.terminal_drop();
-                options[0].execute_with(&paths)?;
-                backend.terminal_restore();
+                let res = options[0].execute_with(&paths);
+                backend.terminal_restore()?;
+                return res;
             } else {
                 OpenFileWith::open_with(context, backend, &paths)?;
             }
@@ -123,7 +124,7 @@ impl OpenFileWith {
                 match user_input.parse::<usize>() {
                     Ok(n) if n >= mimetype_options.len() => Err(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
-                        "option does not exist".to_owned(),
+                        "option does not exist".to_string(),
                     )),
                     Ok(n) => {
                         let mimetype_entry = &mimetype_options[n];
