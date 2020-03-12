@@ -83,8 +83,8 @@ impl RenameFileAppend {
         let prefix;
         let suffix;
         if let Some(ext) = file_name.rfind('.') {
-            prefix = format!("rename {}", &file_name[0..ext + 1]);
-            suffix = String::from(&file_name[ext + 1..]);
+            prefix = format!("rename {}", &file_name[0..ext]);
+            suffix = String::from(&file_name[ext..]);
         } else {
             prefix = format!("rename {}", file_name);
             suffix = String::new();

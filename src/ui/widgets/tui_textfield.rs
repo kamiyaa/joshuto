@@ -161,7 +161,7 @@ impl<'a> TuiTextField<'a> {
                         }
                     }
                     Event::Input(Key::Home) => {
-                        line_buffer.move_end();
+                        line_buffer.move_home();
                         completion_tracker.take();
                     }
                     Event::Input(Key::End) => {
