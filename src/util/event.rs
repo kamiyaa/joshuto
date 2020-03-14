@@ -27,7 +27,7 @@ pub struct Events {
     prefix: &'static str,
     pub event_tx: mpsc::Sender<Event>,
     event_rx: mpsc::Receiver<Event>,
-    pub sync_tx: mpsc::SyncSender<()>,
+    pub input_tx: mpsc::SyncSender<()>,
     // fileio_handle: thread::JoinHandle<()>,
 }
 
@@ -41,7 +41,7 @@ impl Events {
     }
 
     pub fn with_config(prefix: &'static str) -> Self {
-        let (sync_tx, sync_rx) = mpsc::sync_channel(1);
+        let (input_tx, input_rx) = mpsc::sync_channel(1);
         let (event_tx, event_rx) = mpsc::channel();
 
         {
@@ -49,16 +49,26 @@ impl Events {
             thread::spawn(move || {
                 let stdin = io::stdin();
                 let mut keys = stdin.keys();
-                while let Ok(_) = sync_rx.recv() {
-                    if let Some(evt) = keys.next() {
-                        match evt {
-                            Ok(key) => {
-                                if let Err(e) = event_tx.send(Event::Input(key)) {
-                                    eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
-                                    return;
-                                }
+                match keys.next() {
+                    Some(key) => match key {
+                        Ok(key) => {
+                            if let Err(e) = event_tx.send(Event::Input(key)) {
+                                eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
+                                return;
                             }
-                            _ => {}
+                        }
+                        _ => return,
+                    }
+                    _ => return,
+                }
+
+                while let Ok(_) = input_rx.recv() {
+                    if let Some(key) = keys.next() {
+                        if let Ok(key) = key {
+                            if let Err(e) = event_tx.send(Event::Input(key)) {
+                                eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
+                                return;
+                            }
                         }
                     }
                 }
@@ -68,19 +78,17 @@ impl Events {
         Events {
             event_tx,
             event_rx,
-            sync_tx,
+            input_tx,
             prefix,
         }
     }
 
     pub fn next(&self) -> Result<Event, mpsc::RecvError> {
-        self.sync_tx.try_send(());
         let event = self.event_rx.recv()?;
         Ok(event)
     }
-    /*
-        pub fn flush(&self) {
-            self.sync_rx.try_recv();
-        }
-    */
+
+    pub fn flush(&self) {
+        self.input_tx.send(());
+    }
 }

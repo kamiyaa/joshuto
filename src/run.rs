@@ -98,6 +98,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                                 }
                             }
                         }
+                        context.events.flush();
                     }
                 }
                 let mut view = TuiView::new(&context);
@@ -109,6 +110,5 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
             }
         }
     }
-    eprintln!("{:#?}", context.message_queue);
     Ok(())
 }
