@@ -66,9 +66,7 @@ impl JoshutoDirList {
                 None
             } else {
                 match self.index {
-                    Some(i) if i < contents_len => {
-                        Some(i)
-                    }
+                    Some(i) if i < contents_len => Some(i),
                     Some(i) => {
                         let entry = &self.contents[i];
                         contents
@@ -80,8 +78,6 @@ impl JoshutoDirList {
                     }
                     None => Some(0),
                 }
-
-
             }
         };
 

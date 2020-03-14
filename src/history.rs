@@ -16,6 +16,8 @@ pub trait DirectoryHistory {
         sort_option: &sort::SortOption,
     ) -> std::io::Result<()>;
     fn depreciate_all_entries(&mut self);
+
+    fn depreciate_entry(&mut self, path: &Path);
 }
 
 pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
@@ -74,6 +76,10 @@ impl DirectoryHistory for JoshutoHistory {
 
     fn depreciate_all_entries(&mut self) {
         self.iter_mut().for_each(|(_, v)| v.depreciate());
+    }
+
+    fn depreciate_entry(&mut self, path: &Path) {
+        self.get_mut(path).map(|v| v.depreciate());
     }
 }
 
