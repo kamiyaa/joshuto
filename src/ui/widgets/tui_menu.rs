@@ -32,6 +32,7 @@ impl TuiCommandMenu {
     ) -> Option<&'a Box<dyn JoshutoCommand>> {
         let mut map: &JoshutoCommandMapping = &m;
         let terminal = backend.terminal_mut();
+        context.events.flush();
 
         loop {
             terminal.draw(|mut frame| {
@@ -73,20 +74,26 @@ impl TuiCommandMenu {
                     TuiMenu::new(&display_str).render(&mut frame, menu_rect);
                 }
             });
+
             if let Ok(event) = context.events.next() {
                 match event {
-                    Event::Input(Key::Esc) => {
-                        return None;
+                    Event::Input(key) => {
+                        match key {
+                            Key::Esc => return None,
+                            key => {
+                                match map.get(&key) {
+                                    Some(CommandKeybind::SimpleKeybind(s)) => {
+                                        return Some(s);
+                                    }
+                                    Some(CommandKeybind::CompositeKeybind(m)) => {
+                                        map = m;
+                                    }
+                                    None => return None,
+                                }
+                            }
+                        }
+                        context.events.flush();
                     }
-                    Event::Input(key) => match map.get(&key) {
-                        Some(CommandKeybind::SimpleKeybind(s)) => {
-                            return Some(s);
-                        }
-                        Some(CommandKeybind::CompositeKeybind(m)) => {
-                            map = m;
-                        }
-                        None => return None,
-                    },
                     _ => {}
                 }
             }

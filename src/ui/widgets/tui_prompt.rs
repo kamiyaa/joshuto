@@ -21,6 +21,8 @@ impl<'a> TuiPrompt<'a> {
 
     pub fn get_key(&mut self, backend: &mut TuiBackend, context: &JoshutoContext) -> Key {
         let terminal = backend.terminal_mut();
+
+        context.events.flush();
         loop {
             terminal.draw(|mut frame| {
                 let f_size = frame.size();
@@ -52,7 +54,9 @@ impl<'a> TuiPrompt<'a> {
 
             if let Ok(event) = context.events.next() {
                 match event {
-                    Event::Input(key) => return key,
+                    Event::Input(key) => {
+                        return key;
+                    }
                     _ => {}
                 };
             }
