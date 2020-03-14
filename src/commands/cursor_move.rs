@@ -36,13 +36,47 @@ pub fn cursor_move(new_index: usize, context: &mut JoshutoContext) {
 }
 
 #[derive(Clone, Debug)]
+pub struct CursorMoveStub {}
+
+impl CursorMoveStub {
+    pub fn new() -> Self {
+        Self {}
+    }
+    pub const fn command() -> &'static str {
+        "cursor_move_stub"
+    }
+}
+
+impl JoshutoCommand for CursorMoveStub {}
+
+impl std::fmt::Display for CursorMoveStub {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", Self::command())
+    }
+}
+
+impl JoshutoRunnable for CursorMoveStub {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+        let new_index = match context.curr_tab_ref().curr_list_ref() {
+            Some(curr_list) => curr_list.index,
+            None => None,
+        };
+
+        if let Some(s) = new_index {
+            cursor_move(s, context)
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct CursorMoveDown {
     movement: usize,
 }
 
 impl CursorMoveDown {
     pub fn new(movement: usize) -> Self {
-        CursorMoveDown { movement }
+        Self { movement }
     }
     pub const fn command() -> &'static str {
         "cursor_move_up"
@@ -78,7 +112,7 @@ pub struct CursorMoveUp {
 
 impl CursorMoveUp {
     pub fn new(movement: usize) -> Self {
-        CursorMoveUp { movement }
+        Self { movement }
     }
     pub const fn command() -> &'static str {
         "cursor_move_down"
@@ -118,7 +152,7 @@ pub struct CursorMovePageUp;
 
 impl CursorMovePageUp {
     pub fn new() -> Self {
-        CursorMovePageUp
+        Self
     }
     pub const fn command() -> &'static str {
         "cursor_move_page_up"
@@ -163,7 +197,7 @@ pub struct CursorMovePageDown;
 
 impl CursorMovePageDown {
     pub fn new() -> Self {
-        CursorMovePageDown
+        Self
     }
     pub const fn command() -> &'static str {
         "cursor_move_page_down"
@@ -213,7 +247,7 @@ pub struct CursorMoveHome;
 
 impl CursorMoveHome {
     pub fn new() -> Self {
-        CursorMoveHome
+        Self
     }
     pub const fn command() -> &'static str {
         "cursor_move_home"
@@ -254,7 +288,7 @@ pub struct CursorMoveEnd;
 
 impl CursorMoveEnd {
     pub fn new() -> Self {
-        CursorMoveEnd
+        Self
     }
     pub const fn command() -> &'static str {
         "cursor_move_end"

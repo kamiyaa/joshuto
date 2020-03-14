@@ -22,7 +22,7 @@ pub use self::change_directory::ChangeDirectory;
 pub use self::command_line::CommandLine;
 pub use self::cursor_move::{
     CursorMoveDown, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
-    CursorMoveUp,
+    CursorMoveStub, CursorMoveUp,
 };
 pub use self::delete_files::DeleteFiles;
 pub use self::file_ops::{CopyFiles, CutFiles, PasteFiles};
