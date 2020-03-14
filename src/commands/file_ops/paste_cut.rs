@@ -52,7 +52,9 @@ pub fn paste_cut(
     }
 
     let tab_dest = context.curr_tab_index;
-    let dest = context.tabs[tab_dest].curr_path.clone();
+    let thread_dest = context.tabs[tab_dest].curr_path.clone();
+    let dest = thread_dest.clone();
+    let src = paths[0].parent().unwrap().to_path_buf();
 
     let (tx_start, rx_start) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
@@ -60,13 +62,15 @@ pub fn paste_cut(
         let mut total = 0;
         rx_start.recv();
         for path in paths {
-            total += recursive_cut(dest.as_path(), path.as_path(), &options)?;
+            total += recursive_cut(thread_dest.as_path(), path.as_path(), &options)?;
             tx.send(Event::IOWorkerProgress(total));
         }
         Ok(total)
     });
 
     let thread = IOWorkerThread {
+        src,
+        dest,
         handle,
         tx_start,
         rx,

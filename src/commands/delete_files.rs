@@ -3,7 +3,7 @@ use std::path;
 
 use termion::event::Key;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
+use crate::commands::{CursorMoveStub, JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
@@ -90,6 +90,7 @@ impl std::fmt::Display for DeleteFiles {
 impl JoshutoRunnable for DeleteFiles {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         Self::delete_files(context, backend)?;
+        CursorMoveStub::new().execute(context, backend)?;
         Ok(())
     }
 }
