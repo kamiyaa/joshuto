@@ -53,22 +53,26 @@ lazy_static! {
 
 #[derive(StructOpt, Debug)]
 pub struct Args {
-    #[structopt(short = "d", long = "debug")]
-    debug: bool,
+    #[structopt(long = "path", parse(from_os_str))]
+    path: Option<PathBuf>,
+    #[structopt(short = "v", long = "version")]
+    version: bool,
 }
 
 fn main() {
     let args = Args::from_args();
 
+    if args.version {
+        let version = env!("CARGO_PKG_VERSION");
+        println!("{}", version);
+        return;
+    }
+    if let Some(p) = args.path {
+        std::env::set_current_dir(p.as_path());
+    }
+
     let config = JoshutoConfig::get_config();
     let keymap = JoshutoCommandMapping::get_config();
-
-    if args.debug {
-        eprintln!("keymaps: {:#?}", keymap);
-        eprintln!("config: {:#?}", config);
-        eprintln!("theme config: {:#?}", *THEME_T);
-        eprintln!("mimetype config: {:#?}", *MIMETYPE_T);
-    }
 
     match run(config, keymap) {
         Ok(_) => {}
