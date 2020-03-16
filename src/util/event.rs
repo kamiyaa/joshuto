@@ -9,7 +9,7 @@ use termion::input::TermRead;
 pub enum Event {
     Input(Key),
     IOWorkerProgress(u64),
-    IOWorkerResult,
+    IOWorkerResult(std::io::Result<u64>),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -24,7 +24,6 @@ impl Default for Config {
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
-    prefix: &'static str,
     pub event_tx: mpsc::Sender<Event>,
     event_rx: mpsc::Receiver<Event>,
     pub input_tx: mpsc::SyncSender<()>,
@@ -33,14 +32,10 @@ pub struct Events {
 
 impl Events {
     pub fn new() -> Self {
-        Events::with_config("")
-    }
-    pub fn with_debug(s: &'static str) -> Self {
-        let event = Events::with_config(s);
-        event
+        Events::with_config()
     }
 
-    pub fn with_config(prefix: &'static str) -> Self {
+    pub fn with_config() -> Self {
         let (input_tx, input_rx) = mpsc::sync_channel(1);
         let (event_tx, event_rx) = mpsc::channel();
 
@@ -53,12 +48,12 @@ impl Events {
                     Some(key) => match key {
                         Ok(key) => {
                             if let Err(e) = event_tx.send(Event::Input(key)) {
-                                eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
+                                eprintln!("Input thread send err: {:#?}", e);
                                 return;
                             }
                         }
                         _ => return,
-                    }
+                    },
                     _ => return,
                 }
 
@@ -66,7 +61,7 @@ impl Events {
                     if let Some(key) = keys.next() {
                         if let Ok(key) = key {
                             if let Err(e) = event_tx.send(Event::Input(key)) {
-                                eprintln!("[{}] Input thread send err: {:#?}", prefix, e);
+                                eprintln!("Input thread send err: {:#?}", e);
                                 return;
                             }
                         }
@@ -79,7 +74,6 @@ impl Events {
             event_tx,
             event_rx,
             input_tx,
-            prefix,
         }
     }
 
@@ -89,6 +83,6 @@ impl Events {
     }
 
     pub fn flush(&self) {
-        self.input_tx.send(());
+        let _ = self.input_tx.send(());
     }
 }

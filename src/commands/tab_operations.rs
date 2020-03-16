@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable, CursorMoveStub, Quit, TabSwitch};
+use crate::commands::{CursorMoveStub, JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
@@ -60,7 +60,7 @@ impl CloseTab {
         "close_tab"
     }
 
-    pub fn close_tab(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    pub fn close_tab(context: &mut JoshutoContext) -> JoshutoResult<()> {
         if context.tabs.len() <= 1 {
             return Quit::quit(context);
         }
@@ -83,7 +83,7 @@ impl std::fmt::Display for CloseTab {
 }
 
 impl JoshutoRunnable for CloseTab {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        Self::close_tab(context, backend)
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+        Self::close_tab(context)
     }
 }

@@ -2,7 +2,7 @@ use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
-use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use unicode_width::UnicodeWidthStr;
 
 use crate::fs::JoshutoDirList;
 use crate::util::format;
@@ -32,7 +32,6 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         let x = area.left();
         let y = area.top();
 
-        let dir_len = self.dirlist.contents.len();
         let curr_index = match self.dirlist.index {
             Some(i) => i,
             None => {

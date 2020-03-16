@@ -80,17 +80,15 @@ impl TuiCommandMenu {
                     Event::Input(key) => {
                         match key {
                             Key::Esc => return None,
-                            key => {
-                                match map.get(&key) {
-                                    Some(CommandKeybind::SimpleKeybind(s)) => {
-                                        return Some(s);
-                                    }
-                                    Some(CommandKeybind::CompositeKeybind(m)) => {
-                                        map = m;
-                                    }
-                                    None => return None,
+                            key => match map.get(&key) {
+                                Some(CommandKeybind::SimpleKeybind(s)) => {
+                                    return Some(s);
                                 }
-                            }
+                                Some(CommandKeybind::CompositeKeybind(m)) => {
+                                    map = m;
+                                }
+                                None => return None,
+                            },
                         }
                         context.events.flush();
                     }

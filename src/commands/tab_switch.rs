@@ -36,7 +36,7 @@ impl std::fmt::Display for TabSwitch {
 }
 
 impl JoshutoRunnable for TabSwitch {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         let mut new_index = context.curr_tab_index as i32 + self.movement;
         let tab_len = context.tabs.len() as i32;
         while new_index < 0 {

@@ -92,53 +92,55 @@ impl<'a> TuiTextField<'a> {
         }
 
         loop {
-            terminal.draw(|mut frame| {
-                let f_size = frame.size();
-                if f_size.height == 0 {
-                    return;
-                }
+            terminal
+                .draw(|mut frame| {
+                    let f_size = frame.size();
+                    if f_size.height == 0 {
+                        return;
+                    }
 
-                {
-                    let mut view = TuiView::new(&context);
-                    view.show_bottom_status = false;
-                    view.render(&mut frame, f_size);
-                }
+                    {
+                        let mut view = TuiView::new(&context);
+                        view.show_bottom_status = false;
+                        view.render(&mut frame, f_size);
+                    }
 
-                if let Some(menu) = self._menu.as_mut() {
-                    let menu_len = menu.len();
-                    let menu_y = if menu_len + 2 > f_size.height as usize {
-                        0
-                    } else {
-                        (f_size.height as usize - menu_len - 2) as u16
-                    };
+                    if let Some(menu) = self._menu.as_mut() {
+                        let menu_len = menu.len();
+                        let menu_y = if menu_len + 2 > f_size.height as usize {
+                            0
+                        } else {
+                            (f_size.height as usize - menu_len - 2) as u16
+                        };
 
-                    let rect = Rect {
+                        let rect = Rect {
+                            x: 0,
+                            y: menu_y,
+                            width: f_size.width,
+                            height: menu_len as u16,
+                        };
+                        menu.render(&mut frame, rect);
+                    }
+
+                    let cmd_prompt_style = Style::default().fg(Color::LightGreen);
+
+                    let text = [
+                        Text::styled(self._prompt, cmd_prompt_style),
+                        Text::raw(line_buffer.as_str()),
+                    ];
+
+                    let textfield_rect = Rect {
                         x: 0,
-                        y: menu_y,
+                        y: f_size.height - 1,
                         width: f_size.width,
-                        height: menu_len as u16,
+                        height: 1,
                     };
-                    menu.render(&mut frame, rect);
-                }
 
-                let cmd_prompt_style = Style::default().fg(Color::LightGreen);
-
-                let text = [
-                    Text::styled(self._prompt, cmd_prompt_style),
-                    Text::raw(line_buffer.as_str()),
-                ];
-
-                let textfield_rect = Rect {
-                    x: 0,
-                    y: f_size.height - 1,
-                    width: f_size.width,
-                    height: 1,
-                };
-
-                Paragraph::new(text.iter())
-                    .wrap(true)
-                    .render(&mut frame, textfield_rect);
-            });
+                    Paragraph::new(text.iter())
+                        .wrap(true)
+                        .render(&mut frame, textfield_rect);
+                })
+                .unwrap();
 
             if let Ok(event) = context.events.next() {
                 match event {
@@ -180,8 +182,8 @@ impl<'a> TuiTextField<'a> {
                             }
                             Key::Char('\t') => {
                                 if completion_tracker.is_none() {
-                                    let res =
-                                        completer.complete_path(line_buffer.as_str(), line_buffer.pos());
+                                    let res = completer
+                                        .complete_path(line_buffer.as_str(), line_buffer.pos());
                                     if let Ok((pos, mut candidates)) = res {
                                         candidates.sort_by(|x, y| {
                                             x.display()
@@ -200,7 +202,11 @@ impl<'a> TuiTextField<'a> {
                                 if let Some(ref mut s) = completion_tracker {
                                     if s.index < s.candidates.len() {
                                         let candidate = &s.candidates[s.index];
-                                        completer.update(&mut line_buffer, s.pos, candidate.display());
+                                        completer.update(
+                                            &mut line_buffer,
+                                            s.pos,
+                                            candidate.display(),
+                                        );
                                         s.index += 1;
                                     }
                                 }

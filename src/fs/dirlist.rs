@@ -34,13 +34,6 @@ impl JoshutoDirList {
         })
     }
 
-    pub fn sort<F>(&mut self, sort_func: F)
-    where
-        F: Fn(&JoshutoDirEntry, &JoshutoDirEntry) -> std::cmp::Ordering,
-    {
-        self.contents.sort_by(sort_func);
-    }
-
     pub fn depreciate(&mut self) {
         self.content_outdated = true;
     }

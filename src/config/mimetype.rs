@@ -57,7 +57,7 @@ impl JoshutoMimetypeEntry {
         self
     }
 
-    pub fn set_confirm_exit(mut self, confirm_exit: bool) -> Self {
+    pub fn confirm_exit(mut self, confirm_exit: bool) -> Self {
         self._confirm_exit = confirm_exit;
         self
     }
@@ -125,14 +125,17 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
             .iter()
             .for_each(|arg| write!(f, " {}", arg).unwrap());
 
-        f.write_str("\t[").unwrap();
+        f.write_str("\t\t").unwrap();
         if self.get_fork() {
-            f.write_str("fork,").unwrap();
+            f.write_str("[fork]").unwrap();
         }
         if self.get_silent() {
-            f.write_str("silent").unwrap();
+            f.write_str("[silent]").unwrap();
         }
-        f.write_str("]")
+        if self.get_confirm_exit() {
+            f.write_str("[confirm-exit]").unwrap();
+        }
+        f.write_str("")
     }
 }
 

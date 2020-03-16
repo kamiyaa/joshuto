@@ -1,7 +1,6 @@
 use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::fs::JoshutoDirEntry;
 use crate::ui::widgets::TuiTextField;
 use crate::ui::TuiBackend;
 use crate::util::unix;
@@ -77,7 +76,7 @@ impl JoshutoRunnable for SetMode {
                 let s = &s[PREFIX.len()..];
                 let mode = Self::str_to_mode(s);
 
-                let mut entry = context.tabs[context.curr_tab_index]
+                let entry = context.tabs[context.curr_tab_index]
                     .curr_list_mut()
                     .and_then(|x| x.get_curr_mut())
                     .unwrap();

@@ -138,9 +138,9 @@ impl std::fmt::Display for BulkRename {
 impl JoshutoRunnable for BulkRename {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         backend.terminal_drop();
-        Self::bulk_rename(context)?;
-        backend.terminal_restore();
+        let res = Self::bulk_rename(context);
+        backend.terminal_restore()?;
         ReloadDirList::reload(context.curr_tab_index, context)?;
-        Ok(())
+        res
     }
 }

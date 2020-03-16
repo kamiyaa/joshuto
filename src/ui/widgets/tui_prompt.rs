@@ -2,7 +2,6 @@ use termion::event::Key;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
 use tui::widgets::{Paragraph, Text, Widget};
-use unicode_width::UnicodeWidthStr;
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;

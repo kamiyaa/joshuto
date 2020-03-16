@@ -63,7 +63,7 @@ pub fn paste_cut(
         rx_start.recv();
         for path in paths {
             total += recursive_cut(thread_dest.as_path(), path.as_path(), &options)?;
-            tx.send(Event::IOWorkerProgress(total));
+            tx.send(total);
         }
         Ok(total)
     });

@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use std::sync::mpsc;
 
 use crate::config;
 use crate::io::IOWorkerThread;

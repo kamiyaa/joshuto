@@ -1,14 +1,12 @@
-use std::thread;
-
 use crate::commands::{CommandKeybind, CursorMoveStub, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
+use crate::history::DirectoryHistory;
+use crate::io::IOWorkerObserver;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::widgets::{TuiCommandMenu, TuiView};
 use crate::util::event::Event;
-use crate::history::DirectoryHistory;
-use crate::io::IOWorkerObserver;
 
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
@@ -43,72 +41,73 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
             }
         }
 
-        match context.events.next() {
-            Ok(event) => {
-                match event {
-                    Event::IOWorkerProgress(p) => {
-                        context.worker_msg = Some(format!("bytes copied {}", p));
-                    }
-                    Event::IOWorkerResult => {
-                        match io_observer {
-                            Some(handle) => {
-                                let src = handle.src.clone();
-                                let dest = handle.dest.clone();
-                                handle.join();
-                                context
-                                    .message_queue
-                                    .push_back("io_worker done".to_string());
-                                let options = &context.config_t.sort_option;
-                                for tab in context.tabs.iter_mut() {
-                                    tab.history.create_or_update(src.as_path(), options);
-                                    tab.history.create_or_update(dest.as_path(), options);
-                                }
-                            }
-                            None => {}
-                        }
-                        io_observer = None;
-                        context.worker_msg = None;
-                    }
-                    Event::Input(key) => {
-                        /* Message handling */
-                        if !context.message_queue.is_empty() {
-                            let _ = context.message_queue.pop_front();
-                        }
-                        match keymap_t.get(&key) {
-                            None => {
-                                context
-                                    .message_queue
-                                    .push_back(format!("Unknown keycode: {:?}", key));
-                            }
-                            Some(CommandKeybind::SimpleKeybind(command)) => {
-                                if let Err(e) = command.execute(&mut context, &mut backend) {
-                                    context.message_queue.push_back(e.to_string());
-                                }
-                            }
-                            Some(CommandKeybind::CompositeKeybind(m)) => {
-                                let cmd = {
-                                    let mut menu = TuiCommandMenu::new();
-                                    menu.get_input(&mut backend, &context, &m)
-                                };
+        let event = match context.events.next() {
+            Ok(event) => event,
+            Err(e) => return Ok(()),
+        };
 
-                                if let Some(command) = cmd {
-                                    if let Err(e) = command.execute(&mut context, &mut backend) {
-                                        context.message_queue.push_back(e.to_string());
-                                    }
-                                }
+        match event {
+            Event::IOWorkerProgress(p) => {
+                context.worker_msg = Some(format!("bytes copied {}", p));
+            }
+            Event::IOWorkerResult(res) => {
+                match io_observer {
+                    Some(handle) => {
+                        let src = handle.src.clone();
+                        let dest = handle.dest.clone();
+                        handle.join();
+                        let msg = match res {
+                            Ok(s) => {
+                                format!("io_worker completed successfully: {} bytes processed", s)
+                            }
+                            Err(e) => format!("io_worker was not completed: {}", e.to_string()),
+                        };
+                        context.message_queue.push_back(msg);
+                        let options = &context.config_t.sort_option;
+                        for tab in context.tabs.iter_mut() {
+                            tab.history.create_or_update(src.as_path(), options);
+                            tab.history.create_or_update(dest.as_path(), options);
+                        }
+                    }
+                    None => {}
+                }
+                io_observer = None;
+                context.worker_msg = None;
+            }
+            Event::Input(key) => {
+                /* Message handling */
+                if !context.message_queue.is_empty() {
+                    let _ = context.message_queue.pop_front();
+                }
+                match keymap_t.get(&key) {
+                    None => {
+                        context
+                            .message_queue
+                            .push_back(format!("Unknown keycode: {:?}", key));
+                    }
+                    Some(CommandKeybind::SimpleKeybind(command)) => {
+                        if let Err(e) = command.execute(&mut context, &mut backend) {
+                            context.message_queue.push_back(e.to_string());
+                        }
+                    }
+                    Some(CommandKeybind::CompositeKeybind(m)) => {
+                        let cmd = {
+                            let mut menu = TuiCommandMenu::new();
+                            menu.get_input(&mut backend, &context, &m)
+                        };
+
+                        if let Some(command) = cmd {
+                            if let Err(e) = command.execute(&mut context, &mut backend) {
+                                context.message_queue.push_back(e.to_string());
                             }
                         }
-                        context.events.flush();
                     }
                 }
-                let mut view = TuiView::new(&context);
-                backend.render(&mut view);
-            }
-            Err(e) => {
-                context.message_queue.push_back(e.to_string());
-                break;
+                context.events.flush();
             }
         }
+        let mut view = TuiView::new(&context);
+        backend.render(&mut view);
     }
     Ok(())
 }

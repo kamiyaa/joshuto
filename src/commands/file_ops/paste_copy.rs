@@ -55,7 +55,7 @@ pub fn paste_copy(
         rx_start.recv();
         for path in paths {
             total += recursive_copy(thread_dest.as_path(), path.as_path(), &options)?;
-            tx.send(Event::IOWorkerProgress(total));
+            tx.send(total);
         }
         Ok(total)
     });
