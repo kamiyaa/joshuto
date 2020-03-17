@@ -109,9 +109,7 @@ impl JoshutoRunnable for RenameFileAppend {
         let mut file_name: Option<String> = None;
 
         if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
-            file_name = curr_list
-                .get_curr_ref()
-                .and_then(|s| Some(s.file_name().to_string()));
+            file_name = curr_list.get_curr_ref().map(|s| s.file_name().to_string());
         }
 
         if let Some(file_name) = file_name {
@@ -160,9 +158,7 @@ impl JoshutoRunnable for RenameFilePrepend {
         let mut file_name: Option<String> = None;
 
         if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
-            file_name = curr_list
-                .get_curr_ref()
-                .and_then(|s| Some(s.file_name().to_string()));
+            file_name = curr_list.get_curr_ref().map(|s| s.file_name().to_string());
         }
 
         if let Some(file_name) = file_name {

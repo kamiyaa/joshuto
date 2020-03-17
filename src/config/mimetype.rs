@@ -172,7 +172,7 @@ impl ConfigStructure for JoshutoMimetype {
 
 impl std::default::Default for JoshutoMimetype {
     fn default() -> Self {
-        JoshutoMimetype {
+        Self {
             empty_vec: Vec::new(),
             mimetype: HashMap::new(),
             extension: HashMap::new(),

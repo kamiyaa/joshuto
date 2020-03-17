@@ -20,7 +20,7 @@ pub struct JoshutoContext {
 
 impl JoshutoContext {
     pub fn new(config_t: config::JoshutoConfig) -> Self {
-        JoshutoContext {
+        Self {
             exit: false,
             curr_tab_index: 0,
             tabs: Vec::new(),

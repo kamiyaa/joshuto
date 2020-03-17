@@ -31,7 +31,7 @@ impl JoshutoDirEntry {
         let path = direntry.path();
         let metadata = JoshutoMetadata::from(&path)?;
 
-        Ok(JoshutoDirEntry {
+        Ok(Self {
             name,
             path,
             metadata,

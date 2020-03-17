@@ -33,7 +33,7 @@ impl JoshutoMetadata {
         #[cfg(unix)]
         let mode = metadata.mode();
 
-        Ok(JoshutoMetadata {
+        Ok(Self {
             len,
             modified,
             permissions,

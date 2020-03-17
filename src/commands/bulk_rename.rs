@@ -57,7 +57,7 @@ impl BulkRename {
                 let file_name = path.file_name().unwrap();
                 let file_name_as_bytes = file_name.to_str().unwrap().as_bytes();
                 file.write(file_name_as_bytes)?;
-                file.write(&['\n' as u8])?;
+                file.write(&[b'\n'])?;
             }
         }
 
@@ -82,7 +82,7 @@ impl BulkRename {
             for line in reader.lines() {
                 let line2 = line?;
                 let line = line2.trim();
-                if line.len() == 0 {
+                if line.is_empty() {
                     continue;
                 }
                 let path = path::PathBuf::from(line);

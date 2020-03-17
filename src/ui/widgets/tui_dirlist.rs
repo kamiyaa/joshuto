@@ -46,11 +46,8 @@ impl<'a> Widget for TuiDirList<'a> {
         };
 
         let area_width = area.width as usize - 1;
-        for (i, entry) in self
-            .dirlist
-            .contents
+        for (i, entry) in self.dirlist.contents[skip_dist..]
             .iter()
-            .skip(skip_dist)
             .enumerate()
             .take(area.height as usize)
         {

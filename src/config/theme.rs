@@ -87,8 +87,8 @@ impl JoshutoStyleThemeRaw {
 impl std::default::Default for JoshutoStyleThemeRaw {
     fn default() -> Self {
         Self {
-            bg: String::new(),
-            fg: String::new(),
+            bg: "".to_string(),
+            fg: "".to_string(),
             bold: false,
             underline: false,
             invert: false,
@@ -193,7 +193,7 @@ impl JoshutoStyleTheme {
 
 impl std::default::Default for JoshutoStyleTheme {
     fn default() -> Self {
-        JoshutoStyleTheme {
+        Self {
             fg: default_color(),
             bg: default_color(),
             bold: false,
@@ -242,7 +242,7 @@ impl std::default::Default for JoshutoTheme {
             .set_bold(true);
         let ext = HashMap::new();
 
-        JoshutoTheme {
+        Self {
             selection,
             executable,
             regular,

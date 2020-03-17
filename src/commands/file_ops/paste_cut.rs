@@ -5,7 +5,6 @@ use std::thread;
 
 use crate::context::JoshutoContext;
 use crate::io::{IOWorkerThread, Options};
-use crate::util::event::Event;
 
 use super::local_state::LocalState;
 use super::name_resolution::rename_filename_conflict;

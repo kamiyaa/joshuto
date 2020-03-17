@@ -31,7 +31,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
     while !context.exit {
         /* checking if there are workers that need to be run */
         if !context.worker_queue.is_empty() {
-            if let None = io_observer.as_ref() {
+            if io_observer.is_none() {
                 let worker = context.worker_queue.pop_front().unwrap();
                 io_observer = {
                     let event_tx = context.events.event_tx.clone();
@@ -43,7 +43,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
 
         let event = match context.events.next() {
             Ok(event) => event,
-            Err(e) => return Ok(()),
+            Err(_) => return Ok(()), // TODO
         };
 
         match event {

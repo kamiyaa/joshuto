@@ -44,7 +44,7 @@ impl SortRawOption {
 
 impl std::default::Default for SortRawOption {
     fn default() -> Self {
-        SortRawOption {
+        Self {
             show_hidden: bool::default(),
             directories_first: default_true(),
             case_sensitive: bool::default(),
@@ -121,7 +121,7 @@ impl std::default::Default for JoshutoConfig {
     fn default() -> Self {
         let sort_option = sort::SortOption::default();
 
-        JoshutoConfig {
+        Self {
             scroll_offset: default_scroll_offset(),
             tilde_in_titlebar: default_true(),
             show_preview: default_true(),

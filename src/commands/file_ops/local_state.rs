@@ -46,8 +46,7 @@ impl LocalState {
     }
 
     pub fn take_selected_files() -> Option<Vec<path::PathBuf>> {
-        let paths = SELECTED_FILES.lock().unwrap().take();
-        paths
+        SELECTED_FILES.lock().unwrap().take()
     }
 
     pub fn get_file_operation() -> FileOp {

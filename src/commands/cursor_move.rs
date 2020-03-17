@@ -13,7 +13,7 @@ pub fn cursor_move(new_index: usize, context: &mut JoshutoContext) {
     let mut path: Option<PathBuf> = None;
 
     if let Some(curr_list) = curr_tab.curr_list_mut() {
-        if let Some(_) = curr_list.index {
+        if curr_list.index.is_some() {
             let dir_len = curr_list.contents.len();
             if new_index >= dir_len {
                 new_index = dir_len - 1;

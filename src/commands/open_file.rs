@@ -53,7 +53,7 @@ impl OpenFile {
             LoadChild::load_child(context)?;
         } else if let Some(paths) = filepaths {
             let options = Self::get_options(paths[0]);
-            if options.len() > 0 {
+            if !options.is_empty() {
                 backend.terminal_drop();
                 let res = options[0].execute_with(&paths);
                 backend.terminal_restore()?;
@@ -97,7 +97,7 @@ impl OpenFileWith {
         backend: &mut TuiBackend,
         paths: &[&PathBuf],
     ) -> std::io::Result<()> {
-        const PROMPT: &'static str = "open_with ";
+        const PROMPT: &str = "open_with ";
 
         let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
 

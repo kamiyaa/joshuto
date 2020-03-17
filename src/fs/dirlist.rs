@@ -24,7 +24,7 @@ impl JoshutoDirList {
 
         let metadata = JoshutoMetadata::from(&path)?;
 
-        Ok(JoshutoDirList {
+        Ok(Self {
             index,
             path,
             content_outdated: false,
@@ -66,7 +66,7 @@ impl JoshutoDirList {
                             .iter()
                             .enumerate()
                             .find(|(_, e)| e.file_name() == entry.file_name())
-                            .and_then(|(i, _)| Some(i))
+                            .map(|(i, _)| i)
                             .or(Some(contents_len - 1))
                     }
                     None => Some(0),

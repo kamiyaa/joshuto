@@ -66,7 +66,7 @@ impl TuiCommandMenu {
 
                     let menu_rect = Rect {
                         x: 0,
-                        y: y,
+                        y,
                         width: f_size.width,
                         height: (display_str_len + BORDER_HEIGHT) as u16,
                     };
@@ -100,11 +100,11 @@ impl TuiCommandMenu {
 }
 
 pub struct TuiMenu<'a> {
-    options: &'a Vec<&'a str>,
+    options: &'a [&'a str],
 }
 
 impl<'a> TuiMenu<'a> {
-    pub fn new(options: &'a Vec<&str>) -> Self {
+    pub fn new(options: &'a [&'a str]) -> Self {
         Self { options }
     }
 

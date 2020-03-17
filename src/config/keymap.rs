@@ -82,21 +82,18 @@ fn insert_keycommand(
     match keymap.entry(key) {
         Entry::Occupied(mut entry) => match entry.get_mut() {
             CommandKeybind::CompositeKeybind(ref mut m) => {
-                return insert_keycommand(m, keycommand, &keycodes[1..])
+                insert_keycommand(m, keycommand, &keycodes[1..])
             }
-            _ => return Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
+            _ => Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
         },
         Entry::Vacant(entry) => {
             let mut new_map = JoshutoCommandMapping::new();
             let result = insert_keycommand(&mut new_map, keycommand, &keycodes[1..]);
-            match result {
-                Ok(_) => {
-                    let composite_command = CommandKeybind::CompositeKeybind(new_map);
-                    entry.insert(composite_command);
-                }
-                _ => {}
+            if result.is_ok() {
+                let composite_command = CommandKeybind::CompositeKeybind(new_map);
+                entry.insert(composite_command);
             }
-            return result;
+            result
         }
     }
 }

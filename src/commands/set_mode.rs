@@ -52,7 +52,7 @@ impl JoshutoRunnable for SetMode {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         use std::os::unix::fs::PermissionsExt;
 
-        const PREFIX: &'static str = "set_mode ";
+        const PREFIX: &str = "set_mode ";
 
         let entry = context.tabs[context.curr_tab_index]
             .curr_list_ref()
