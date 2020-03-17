@@ -17,23 +17,29 @@ pub fn recursive_cut(dest: &Path, src: &Path, options: &Options) -> std::io::Res
     rename_filename_conflict(&mut dest_buf);
     if !src.is_dir() {
         let metadata = src.metadata()?;
-        match std::fs::rename(src, dest_buf.as_path()) {
-            Err(_) => {
-                std::fs::copy(src, dest_buf.as_path())?;
-                std::fs::remove_file(src)?;
-            }
-            _ => {}
+        if fs::rename(src, dest_buf.as_path()).is_err() {
+            fs::copy(src, dest_buf.as_path())?;
+            fs::remove_file(src)?;
         }
         Ok(metadata.len())
     } else {
-        fs::create_dir(dest_buf.as_path())?;
-        let mut total = 0;
-        for entry in fs::read_dir(src)? {
-            let entry = entry?;
-            let entry_path = entry.path();
-            total += recursive_cut(dest_buf.as_path(), entry_path.as_path(), options)?;
+        match fs::rename(src, dest_buf.as_path()) {
+            Ok(_) => {
+                let metadata = dest_buf.metadata()?;
+                Ok(metadata.len())
+            }
+            Err(_) => {
+                fs::create_dir(dest_buf.as_path())?;
+                let mut total = 0;
+                for entry in fs::read_dir(src)? {
+                    let entry = entry?;
+                    let entry_path = entry.path();
+                    total += recursive_cut(dest_buf.as_path(), entry_path.as_path(), options)?;
+                }
+                fs::remove_dir(src)?;
+                Ok(total)
+            }
         }
-        Ok(total)
     }
 }
 
@@ -57,14 +63,19 @@ pub fn paste_cut(
 
     let (tx_start, rx_start) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
+
     let handle: thread::JoinHandle<std::io::Result<u64>> = thread::spawn(move || {
-        let mut total = 0;
-        rx_start.recv();
-        for path in paths {
-            total += recursive_cut(thread_dest.as_path(), path.as_path(), &options)?;
-            tx.send(total);
+        match rx_start.recv() {
+            Ok(_) => {
+                let mut total = 0;
+                for path in paths {
+                    total += recursive_cut(thread_dest.as_path(), path.as_path(), &options)?;
+                    tx.send(total);
+                }
+                Ok(total)
+            }
+            Err(_) => Ok(0),
         }
-        Ok(total)
     });
 
     let thread = IOWorkerThread {

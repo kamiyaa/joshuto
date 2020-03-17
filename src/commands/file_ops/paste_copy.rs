@@ -49,14 +49,19 @@ pub fn paste_copy(
 
     let (tx_start, rx_start) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
+
     let handle: thread::JoinHandle<std::io::Result<u64>> = thread::spawn(move || {
-        let mut total = 0;
-        rx_start.recv();
-        for path in paths {
-            total += recursive_copy(thread_dest.as_path(), path.as_path(), &options)?;
-            tx.send(total);
+        match rx_start.recv() {
+            Ok(_) => {
+                let mut total = 0;
+                for path in paths {
+                    total += recursive_copy(thread_dest.as_path(), path.as_path(), &options)?;
+                    tx.send(total);
+                }
+                Ok(total)
+            }
+            Err(_) => Ok(0),
         }
-        Ok(total)
     });
 
     let thread = IOWorkerThread {

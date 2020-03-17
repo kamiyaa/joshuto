@@ -58,7 +58,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                         handle.join();
                         let msg = match res {
                             Ok(s) => {
-                                format!("io_worker completed successfully: {} bytes processed", s)
+                                format!("io_worker completed successfully: {:.3} KB processed",
+                                    s as f64 / 1024.0)
                             }
                             Err(e) => format!("io_worker was not completed: {}", e.to_string()),
                         };
@@ -68,6 +69,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                             tab.history.create_or_update(src.as_path(), options);
                             tab.history.create_or_update(dest.as_path(), options);
                         }
+                        CursorMoveStub::new().execute(&mut context, &mut backend);
                     }
                     None => {}
                 }

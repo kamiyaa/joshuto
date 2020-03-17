@@ -1,4 +1,4 @@
-use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CursorMoveStub, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
@@ -18,17 +18,14 @@ impl ReloadDirList {
         let curr_tab = &mut context.tabs[index];
         let sort_option = &context.config_t.sort_option;
 
-        match curr_tab.curr_list_mut() {
-            Some(curr_list) => curr_list.reload_contents(sort_option)?,
-            None => {}
+        if let Some(curr_list) = curr_tab.curr_list_mut() {
+            curr_list.reload_contents(sort_option)?;
         }
-        match curr_tab.parent_list_mut() {
-            Some(curr_list) => curr_list.reload_contents(sort_option)?,
-            None => {}
+        if let Some(curr_list) = curr_tab.parent_list_mut() {
+            curr_list.reload_contents(sort_option)?;
         }
-        match curr_tab.child_list_mut() {
-            Some(curr_list) => curr_list.reload_contents(sort_option)?,
-            None => {}
+        if let Some(curr_list) = curr_tab.child_list_mut() {
+            curr_list.reload_contents(sort_option)?;
         }
 
         Ok(())
@@ -44,8 +41,9 @@ impl std::fmt::Display for ReloadDirList {
 }
 
 impl JoshutoRunnable for ReloadDirList {
-    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         Self::reload(context.curr_tab_index, context)?;
+        CursorMoveStub::new().execute(context, backend)?;
         Ok(())
     }
 }

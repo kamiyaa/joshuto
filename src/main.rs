@@ -13,6 +13,7 @@ mod util;
 
 use lazy_static::lazy_static;
 use std::path::PathBuf;
+use std::process;
 use structopt::StructOpt;
 
 use config::{
@@ -68,7 +69,13 @@ fn main() {
         return;
     }
     if let Some(p) = args.path {
-        std::env::set_current_dir(p.as_path());
+        match std::env::set_current_dir(p.as_path()) {
+            Ok(_) => {},
+            Err(e) => {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        }
     }
 
     let config = JoshutoConfig::get_config();
@@ -76,6 +83,9 @@ fn main() {
 
     match run(config, keymap) {
         Ok(_) => {}
-        Err(e) => eprintln!("{}", e),
+        Err(e) => {
+            eprintln!("{}", e);
+            process::exit(1);
+        }
     }
 }
