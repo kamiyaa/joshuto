@@ -1,4 +1,4 @@
-use crate::commands::{CommandKeybind, CursorMoveStub, JoshutoRunnable};
+use crate::commands::{CommandKeybind, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::history::DirectoryHistory;
@@ -7,6 +7,7 @@ use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::widgets::{TuiCommandMenu, TuiView};
 use crate::util::event::Event;
+use crate::util::load_child::LoadChild;
 
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
@@ -19,8 +20,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
         context.push_tab(tab);
 
-        // move the cursor by 0 just to trigger a preview of child
-        CursorMoveStub::new().execute(&mut context, &mut backend);
+        // trigger a preview of child
+        LoadChild::load_child(&mut context)?;
 
         // render our view
         let mut view = TuiView::new(&context);
@@ -57,19 +58,18 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                         let dest = handle.dest.clone();
                         handle.join();
                         let msg = match res {
-                            Ok(s) => {
-                                format!("io_worker completed successfully: {:.3} KB processed",
-                                    s as f64 / 1024.0)
-                            }
+                            Ok(s) => format!(
+                                "io_worker completed successfully: {:.3} KB processed",
+                                s as f64 / 1024.0
+                            ),
                             Err(e) => format!("io_worker was not completed: {}", e.to_string()),
                         };
                         context.message_queue.push_back(msg);
                         let options = &context.config_t.sort_option;
                         for tab in context.tabs.iter_mut() {
-                            tab.history.create_or_update(src.as_path(), options);
-                            tab.history.create_or_update(dest.as_path(), options);
+                            tab.history.depreciate_all_entries();
                         }
-                        CursorMoveStub::new().execute(&mut context, &mut backend);
+                        LoadChild::load_child(&mut context)?;
                     }
                     None => {}
                 }

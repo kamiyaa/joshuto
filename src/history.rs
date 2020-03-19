@@ -10,7 +10,12 @@ pub trait DirectoryHistory {
         path: &Path,
         sort_option: &sort::SortOption,
     ) -> std::io::Result<()>;
-    fn create_or_update(
+    fn create_or_soft_update(
+        &mut self,
+        path: &Path,
+        sort_option: &sort::SortOption,
+    ) -> std::io::Result<()>;
+    fn create_or_reload(
         &mut self,
         path: &Path,
         sort_option: &sort::SortOption,
@@ -56,7 +61,27 @@ impl DirectoryHistory for JoshutoHistory {
         Ok(())
     }
 
-    fn create_or_update(
+    fn create_or_soft_update(
+        &mut self,
+        path: &Path,
+        sort_option: &sort::SortOption,
+    ) -> std::io::Result<()> {
+        match self.entry(path.to_path_buf()) {
+            Entry::Occupied(mut entry) => {
+                let dirlist = entry.get_mut();
+                if dirlist.need_update() {
+                    dirlist.reload_contents(sort_option)?;
+                }
+            }
+            Entry::Vacant(entry) => {
+                let dirlist = JoshutoDirList::new(path.to_path_buf(), sort_option)?;
+                entry.insert(dirlist);
+            }
+        }
+        Ok(())
+    }
+
+    fn create_or_reload(
         &mut self,
         path: &Path,
         sort_option: &sort::SortOption,

@@ -7,7 +7,7 @@ use crate::fs::JoshutoDirEntry;
 use alphanumeric_sort::compare_str;
 use serde_derive::Deserialize;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize)]
 pub enum SortType {
     Lexical,
     Mtime,

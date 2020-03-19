@@ -30,42 +30,8 @@ pub fn cursor_move(new_index: usize, context: &mut JoshutoContext) {
         if path.is_dir() {
             curr_tab
                 .history
-                .create_or_update(path.as_path(), &context.config_t.sort_option);
+                .create_or_soft_update(path.as_path(), &context.config_t.sort_option);
         }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct CursorMoveStub {}
-
-impl CursorMoveStub {
-    pub fn new() -> Self {
-        Self {}
-    }
-    pub const fn command() -> &'static str {
-        "cursor_move_stub"
-    }
-}
-
-impl JoshutoCommand for CursorMoveStub {}
-
-impl std::fmt::Display for CursorMoveStub {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", Self::command())
-    }
-}
-
-impl JoshutoRunnable for CursorMoveStub {
-    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let new_index = match context.curr_tab_ref().curr_list_ref() {
-            Some(curr_list) => curr_list.index,
-            None => None,
-        };
-
-        if let Some(s) = new_index {
-            cursor_move(s, context)
-        }
-        Ok(())
     }
 }
 

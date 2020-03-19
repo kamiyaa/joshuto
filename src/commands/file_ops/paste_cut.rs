@@ -64,8 +64,8 @@ pub fn paste_cut(
     let (tx_start, rx_start) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
 
-    let handle: thread::JoinHandle<std::io::Result<u64>> = thread::spawn(move || {
-        match rx_start.recv() {
+    let handle: thread::JoinHandle<std::io::Result<u64>> =
+        thread::spawn(move || match rx_start.recv() {
             Ok(_) => {
                 let mut total = 0;
                 for path in paths {
@@ -75,8 +75,7 @@ pub fn paste_cut(
                 Ok(total)
             }
             Err(_) => Ok(0),
-        }
-    });
+        });
 
     let thread = IOWorkerThread {
         src,

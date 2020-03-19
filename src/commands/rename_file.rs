@@ -1,9 +1,10 @@
 use std::path;
 
-use crate::commands::{CommandLine, CursorMoveStub, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{CommandLine, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
+use crate::util::load_child::LoadChild;
 
 #[derive(Clone, Debug)]
 pub struct RenameFile {
@@ -59,7 +60,7 @@ impl JoshutoRunnable for RenameFile {
         if let Some(path) = path {
             self.rename_file(&path, context)?;
         }
-        CursorMoveStub::new().execute(context, backend)?;
+        LoadChild::load_child(context)?;
         Ok(())
     }
 }

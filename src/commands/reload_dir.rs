@@ -1,7 +1,8 @@
-use crate::commands::{CursorMoveStub, JoshutoCommand, JoshutoRunnable};
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
+use crate::util::load_child::LoadChild;
 
 #[derive(Clone, Debug)]
 pub struct ReloadDirList;
@@ -43,7 +44,7 @@ impl std::fmt::Display for ReloadDirList {
 impl JoshutoRunnable for ReloadDirList {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         Self::reload(context.curr_tab_index, context)?;
-        CursorMoveStub::new().execute(context, backend)?;
+        LoadChild::load_child(context)?;
         Ok(())
     }
 }

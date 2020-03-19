@@ -1,10 +1,11 @@
 use std::path;
 
-use crate::commands::{CursorMoveStub, JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
+use crate::commands::{JoshutoCommand, JoshutoRunnable, Quit, TabSwitch};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
 use crate::ui::TuiBackend;
+use crate::util::load_child::LoadChild;
 
 use crate::HOME_DIR;
 
@@ -30,7 +31,7 @@ impl NewTab {
         context.tabs.push(tab);
         context.curr_tab_index = context.tabs.len() - 1;
         TabSwitch::tab_switch(context.curr_tab_index, context)?;
-        CursorMoveStub::new().execute(context, backend)?;
+        LoadChild::load_child(context)?;
         Ok(())
     }
 }

@@ -70,7 +70,7 @@ fn main() {
     }
     if let Some(p) = args.path {
         match std::env::set_current_dir(p.as_path()) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 eprintln!("{}", e);
                 process::exit(1);

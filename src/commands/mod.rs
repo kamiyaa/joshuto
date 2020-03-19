@@ -14,6 +14,7 @@ mod search;
 mod selection;
 mod set_mode;
 mod show_hidden;
+mod sort;
 mod tab_operations;
 mod tab_switch;
 
@@ -22,7 +23,7 @@ pub use self::change_directory::ChangeDirectory;
 pub use self::command_line::CommandLine;
 pub use self::cursor_move::{
     CursorMoveDown, CursorMoveEnd, CursorMoveHome, CursorMovePageDown, CursorMovePageUp,
-    CursorMoveStub, CursorMoveUp,
+    CursorMoveUp,
 };
 pub use self::delete_files::DeleteFiles;
 pub use self::file_ops::{CopyFiles, CutFiles, PasteFiles};
@@ -37,6 +38,7 @@ pub use self::search::{Search, SearchNext, SearchPrev};
 pub use self::selection::SelectFiles;
 pub use self::set_mode::SetMode;
 pub use self::show_hidden::ToggleHiddenFiles;
+pub use self::sort::Sort;
 pub use self::tab_operations::{CloseTab, NewTab};
 pub use self::tab_switch::TabSwitch;
 
@@ -46,6 +48,7 @@ use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::Options;
+use crate::sort::SortType;
 use crate::ui::TuiBackend;
 
 use crate::HOME_DIR;
@@ -214,6 +217,24 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
             Ok(Box::new(self::SelectFiles::new(toggle, all)))
         }
         "set_mode" => Ok(Box::new(self::SetMode::new())),
+        "sort" => {
+            if args.len() == 1 {
+                match args[0].as_str() {
+                    "lexical" => Ok(Box::new(self::Sort::new(SortType::Lexical))),
+                    "mtime" => Ok(Box::new(self::Sort::new(SortType::Mtime))),
+                    "natural" => Ok(Box::new(self::Sort::new(SortType::Natural))),
+                    a => Err(JoshutoError::new(
+                        JoshutoErrorKind::IOInvalidData,
+                        format!("sort: Unknown option {}", a),
+                    )),
+                }
+            } else {
+                Err(JoshutoError::new(
+                    JoshutoErrorKind::IOInvalidData,
+                    format!("sort: Expected 1, got {}", args.len()),
+                ))
+            }
+        }
         "tab_switch" => {
             if args.len() == 1 {
                 match args[0].parse::<i32>() {

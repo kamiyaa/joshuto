@@ -22,7 +22,7 @@ impl LoadChild {
             if path.is_dir() {
                 curr_tab
                     .history
-                    .create_or_update(path.as_path(), &context.config_t.sort_option)?;
+                    .create_or_soft_update(path.as_path(), &context.config_t.sort_option)?;
             }
         }
         Ok(())
