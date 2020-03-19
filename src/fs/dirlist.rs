@@ -1,7 +1,7 @@
 use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
-use crate::sort::SortOption;
+use crate::util::sort::SortOption;
 
 #[derive(Debug)]
 pub struct JoshutoDirList {
@@ -59,7 +59,7 @@ impl JoshutoDirList {
                 None
             } else {
                 match self.index {
-                    Some(i) if i < contents_len => Some(i),
+                    Some(i) if i >= contents_len => Some(contents_len - 1),
                     Some(i) => {
                         let entry = &self.contents[i];
                         contents
@@ -67,7 +67,7 @@ impl JoshutoDirList {
                             .enumerate()
                             .find(|(_, e)| e.file_name() == entry.file_name())
                             .map(|(i, _)| i)
-                            .or(Some(contents_len - 1))
+                            .or(Some(i))
                     }
                     None => Some(0),
                 }

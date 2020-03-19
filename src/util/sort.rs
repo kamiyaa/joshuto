@@ -23,6 +23,13 @@ impl SortType {
             _ => None,
         }
     }
+    pub fn as_str(&self) -> &str {
+        match *self {
+            SortType::Lexical => "lexical",
+            SortType::Mtime => "mtime",
+            SortType::Natural => "natural",
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

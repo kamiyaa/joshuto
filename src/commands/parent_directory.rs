@@ -1,4 +1,4 @@
-use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
@@ -35,6 +35,7 @@ impl std::fmt::Display for ParentDirectory {
 impl JoshutoRunnable for ParentDirectory {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         Self::parent_directory(context)?;
+        ReloadDirList::soft_reload(context.curr_tab_index, context)?;
         Ok(())
     }
 }

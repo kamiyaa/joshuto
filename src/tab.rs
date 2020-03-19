@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
-use crate::sort;
+use crate::util::sort;
 
 pub struct JoshutoTab {
     pub history: JoshutoHistory,

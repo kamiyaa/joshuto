@@ -48,8 +48,8 @@ use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::Options;
-use crate::sort::SortType;
 use crate::ui::TuiBackend;
+use crate::util::sort::SortType;
 
 use crate::HOME_DIR;
 

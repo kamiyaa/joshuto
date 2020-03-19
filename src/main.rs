@@ -6,7 +6,6 @@ mod fs;
 mod history;
 mod io;
 mod run;
-mod sort;
 mod tab;
 mod ui;
 mod util;

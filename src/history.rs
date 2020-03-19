@@ -2,7 +2,7 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::path::{Path, PathBuf};
 
 use crate::fs::{JoshutoDirEntry, JoshutoDirList};
-use crate::sort;
+use crate::util::sort;
 
 pub trait DirectoryHistory {
     fn populate_to_root(

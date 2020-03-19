@@ -1,11 +1,13 @@
 use std::path;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable};
+use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
+use crate::history::DirectoryHistory;
 use crate::ui::TuiBackend;
 
-use crate::sort::SortType;
+use crate::util::load_child::LoadChild;
+use crate::util::sort::SortType;
 
 use crate::HOME_DIR;
 
@@ -27,13 +29,18 @@ impl JoshutoCommand for Sort {}
 
 impl std::fmt::Display for Sort {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(Self::command())
+        write!(f, "{} {}", Self::command(), self.sort_method.as_str())
     }
 }
 
 impl JoshutoRunnable for Sort {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         context.config_t.sort_option.sort_method = self.sort_method;
+        for tab in context.tabs.iter_mut() {
+            tab.history.depreciate_all_entries();
+        }
+        ReloadDirList::soft_reload(context.curr_tab_index, context)?;
+        LoadChild::load_child(context)?;
         Ok(())
     }
 }

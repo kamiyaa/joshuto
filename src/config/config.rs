@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 
 use super::{parse_to_config_file, ConfigStructure, Flattenable};
-use crate::sort;
+use crate::util::sort;
 
 use crate::CONFIG_FILE;
 

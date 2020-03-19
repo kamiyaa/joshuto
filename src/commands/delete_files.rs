@@ -6,8 +6,8 @@ use termion::event::Key;
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::ui::TuiBackend;
 use crate::ui::widgets::TuiPrompt;
+use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
 
 #[derive(Clone, Debug)]
