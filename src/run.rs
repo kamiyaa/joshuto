@@ -81,7 +81,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 if !context.message_queue.is_empty() {
                     let _ = context.message_queue.pop_front();
                 }
-                match keymap_t.get(&key) {
+                match keymap_t.as_ref().get(&key) {
                     None => {
                         context
                             .message_queue

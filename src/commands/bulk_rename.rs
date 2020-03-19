@@ -88,6 +88,7 @@ impl BulkRename {
                 let path = path::PathBuf::from(line);
                 paths_renamed.push(path);
             }
+            std::fs::remove_file(&file_path)?;
         }
         if paths_renamed.len() < paths.len() {
             return Err(JoshutoError::new(

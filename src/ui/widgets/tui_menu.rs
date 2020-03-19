@@ -46,6 +46,7 @@ impl TuiCommandMenu {
                 {
                     // draw menu
                     let mut display_vec: Vec<String> = map
+                        .as_ref()
                         .iter()
                         .map(|(k, v)| format!("  {:?}    {}", k, v))
                         .collect();
@@ -80,7 +81,7 @@ impl TuiCommandMenu {
                     Event::Input(key) => {
                         match key {
                             Key::Esc => return None,
-                            key => match map.get(&key) {
+                            key => match map.as_ref().get(&key) {
                                 Some(CommandKeybind::SimpleKeybind(s)) => {
                                     return Some(s);
                                 }

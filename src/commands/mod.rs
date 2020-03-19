@@ -95,12 +95,12 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
         "copy_files" => Ok(Box::new(self::CopyFiles::new())),
         "console" => match args.len() {
             0 => Ok(Box::new(self::CommandLine::new(
-                String::new(),
-                String::new(),
+                "".to_string(),
+                "".to_string(),
             ))),
             1 => Ok(Box::new(self::CommandLine::new(
-                String::from(args[0].as_str()),
-                String::new(),
+                args[0].clone(),
+                "".to_string(),
             ))),
             i => Err(JoshutoError::new(
                 JoshutoErrorKind::IOInvalidData,

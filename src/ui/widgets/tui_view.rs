@@ -102,8 +102,7 @@ impl<'a> Widget for TuiView<'a> {
             };
 
             let message_style = Style::default()
-                .fg(Color::LightCyan)
-                .modifier(Modifier::BOLD);
+                .fg(Color::Yellow);
 
             if self.show_bottom_status {
                 /* draw the bottom status bar */
