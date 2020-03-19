@@ -34,7 +34,7 @@ keys = [ "\t" ]
 [[mapcommand]]
 command = "tab_switch"
 args = [ "-1" ]
-keys = [ "shift+\t" ]
+keys = [ "backtab" ]
 
 [[mapcommand]]
 command = "cursor_move_up"
@@ -81,7 +81,8 @@ command = "open_file_with"
 keys = [ "r" ]
 
 [[mapcommand]]
-command = "cd"
+command = "console"
+args = [ "cd" ]
 keys = [ "c", "d" ]
 [[mapcommand]]
 command = "cd"
@@ -129,11 +130,15 @@ args = [ "--toggle", "--all" ]
 keys = [ "t" ]
 
 [[mapcommand]]
+command = "console"
+args = [ "search " ]
+keys = [ "/" ]
+[[mapcommand]]
 command = "search_next"
-keys = [ "n", "p" ]
+keys = [ "n" ]
 [[mapcommand]]
 command = "search_prev"
-keys = [ "n", "n" ]
+keys = [ "N" ]
 
 [[mapcommand]]
 command = "bulk_rename"
@@ -153,15 +158,6 @@ keys = [ "m", "k" ]
 command = "console"
 args = [ "rename " ]
 keys = [ "c", "w" ]
-[[mapcommand]]
-command = "console"
-args = [ "search " ]
-keys = [ "/" ]
-
-[[mapcommand]]
-command = "console"
-args = [ "search " ]
-keys = [ "/" ]
 
 [[mapcommand]]
 command = "sort"
