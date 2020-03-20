@@ -6,6 +6,7 @@ use termion::event::Key;
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
+use crate::history::DirectoryHistory;
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
@@ -90,6 +91,12 @@ impl std::fmt::Display for DeleteFiles {
 impl JoshutoRunnable for DeleteFiles {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         Self::delete_files(context, backend)?;
+
+        let options = &context.config_t.sort_option;
+        let curr_path = context.tabs[context.curr_tab_index].curr_path.clone();
+        for tab in context.tabs.iter_mut() {
+            tab.history.reload(&curr_path, options);
+        }
         LoadChild::load_child(context)?;
         Ok(())
     }

@@ -67,8 +67,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                         context.message_queue.push_back(msg);
                         let options = &context.config_t.sort_option;
                         for tab in context.tabs.iter_mut() {
-                            tab.history.depreciate_entry(&src);
-                            tab.history.depreciate_entry(&dest);
+                            tab.history.reload(&src, options);
+                            tab.history.reload(&dest, options);
                         }
                         LoadChild::load_child(&mut context)?;
                     }

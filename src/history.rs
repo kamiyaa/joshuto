@@ -20,6 +20,7 @@ pub trait DirectoryHistory {
         path: &Path,
         sort_option: &sort::SortOption,
     ) -> std::io::Result<()>;
+    fn reload(&mut self, path: &Path, sort_option: &sort::SortOption) -> std::io::Result<()>;
     fn depreciate_all_entries(&mut self);
 
     fn depreciate_entry(&mut self, path: &Path);
@@ -95,6 +96,17 @@ impl DirectoryHistory for JoshutoHistory {
                 let dirlist = JoshutoDirList::new(path.to_path_buf(), sort_option)?;
                 entry.insert(dirlist);
             }
+        }
+        Ok(())
+    }
+
+    fn reload(&mut self, path: &Path, sort_option: &sort::SortOption) -> std::io::Result<()> {
+        match self.entry(path.to_path_buf()) {
+            Entry::Occupied(mut entry) => {
+                let dirlist = entry.get_mut();
+                dirlist.reload_contents(sort_option)?;
+            }
+            Entry::Vacant(entry) => {}
         }
         Ok(())
     }
