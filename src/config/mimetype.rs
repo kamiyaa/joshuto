@@ -2,7 +2,7 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 
 use super::{parse_config_file, ConfigStructure};
@@ -82,7 +82,7 @@ impl JoshutoMimetypeEntry {
         self._confirm_exit
     }
 
-    pub fn execute_with(&self, paths: &[&PathBuf]) -> std::io::Result<()> {
+    pub fn execute_with(&self, paths: &[&Path]) -> std::io::Result<()> {
         let program = String::from(self.get_command());
 
         let mut command = process::Command::new(program);

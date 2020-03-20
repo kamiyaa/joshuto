@@ -33,12 +33,22 @@ impl<'a> Widget for TuiFooter<'a> {
         let size = self.entry.metadata.len;
         let size = format::file_size_to_string(size as f64);
 
+        #[cfg(unix)]
+        let mimetype = match self.entry.metadata.mimetype.as_ref() {
+            Some(s) => s,
+            None => "",
+        };
+
         let mut text = vec![
             Text::styled(mode, mode_style),
             Text::raw("  "),
             Text::raw(mtime),
             Text::raw("  "),
             Text::raw(size),
+            #[cfg(unix)]
+            Text::raw("  "),
+            #[cfg(unix)]
+            Text::raw(mimetype),
         ];
 
         if self.entry.metadata.file_type.is_symlink() {

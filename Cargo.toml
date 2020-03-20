@@ -45,4 +45,5 @@ branch="dev"
 # path = "lib/wordexp-rs"
 
 [features]
-default = []
+file_mimetype = []
+default = [ "file_mimetype" ]

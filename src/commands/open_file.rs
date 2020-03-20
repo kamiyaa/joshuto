@@ -4,6 +4,7 @@ use crate::commands::{ChangeDirectory, JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::ui::widgets::{TuiMenu, TuiTextField};
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
@@ -21,14 +22,21 @@ impl OpenFile {
         "open_file"
     }
 
-    pub fn get_options<'a>(path: &Path) -> Vec<&'a JoshutoMimetypeEntry> {
+    pub fn get_options<'a>(entry: &JoshutoDirEntry) -> Vec<&'a JoshutoMimetypeEntry> {
         let mut mimetype_options: Vec<&JoshutoMimetypeEntry> = Vec::new();
 
         /* extensions have priority */
-        if let Some(file_ext) = path.extension() {
+        if let Some(file_ext) = entry.file_path().extension() {
             if let Some(file_ext) = file_ext.to_str() {
                 let ext_entries = MIMETYPE_T.get_entries_for_ext(file_ext);
                 mimetype_options.extend(ext_entries);
+            }
+        }
+        #[cfg(feature = "file_mimetype")]
+        {
+            if let Some(mimetype) = entry.metadata.mimetype.as_ref() {
+                let mime_entries = MIMETYPE_T.get_entries_for_mimetype(mimetype.as_str());
+                mimetype_options.extend(mime_entries);
             }
         }
         mimetype_options
@@ -36,30 +44,48 @@ impl OpenFile {
 
     fn open(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::io::Result<()> {
         let mut dirpath = None;
-        let mut filepaths = None;
+        let mut selected_entries = None;
 
-        if let Some(curr_list) = context.tabs[context.curr_tab_index].curr_list_ref() {
-            if let Some(index) = curr_list.index {
-                let child_path = curr_list.contents[index].file_path();
-                if child_path.is_dir() {
-                    dirpath = Some(child_path.clone());
-                } else {
-                    filepaths = Some(curr_list.get_selected_paths());
-                }
+        {
+            let curr_tab = context.curr_tab_ref();
+            match curr_tab.curr_list_ref() {
+                None => return Ok(()),
+                Some(curr_list) => match curr_list.get_curr_ref() {
+                    Some(entry) if entry.file_path().is_dir() => {
+                        let path = entry.file_path().clone();
+                        dirpath = Some(path);
+                    }
+                    Some(entry) => {
+                        let vec: Vec<&JoshutoDirEntry> = curr_list.selected_entries().collect();
+                        if vec.is_empty() {
+                            selected_entries = Some(vec![entry]);
+                        } else {
+                            selected_entries = Some(vec);
+                        }
+                    }
+                    None => return Ok(()),
+                },
             }
         }
+
         if let Some(path) = dirpath {
             ChangeDirectory::cd(path.as_path(), context)?;
             LoadChild::load_child(context)?;
-        } else if let Some(paths) = filepaths {
-            let options = Self::get_options(paths[0]);
+        } else if let Some(entries) = selected_entries {
+            let options = Self::get_options(entries[0]);
+            let entry_paths: Vec<&Path> = entries.iter().map(|e| e.file_path().as_path()).collect();
             if !options.is_empty() {
-                backend.terminal_drop();
-                let res = options[0].execute_with(&paths);
-                backend.terminal_restore()?;
+                let res = if options[0].get_fork() {
+                    backend.terminal_drop();
+                    let res = options[0].execute_with(entry_paths.as_slice());
+                    backend.terminal_restore()?;
+                    res
+                } else {
+                    options[0].execute_with(entry_paths.as_slice())
+                };
                 return res;
             } else {
-                OpenFileWith::open_with(context, backend, &paths)?;
+                OpenFileWith::open_with(context, backend, &entries)?;
             }
         }
         Ok(())
@@ -95,11 +121,11 @@ impl OpenFileWith {
     pub fn open_with(
         context: &JoshutoContext,
         backend: &mut TuiBackend,
-        paths: &[&PathBuf],
+        entries: &[&JoshutoDirEntry],
     ) -> std::io::Result<()> {
         const PROMPT: &str = "open_with ";
 
-        let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&paths[0]);
+        let mimetype_options: Vec<&JoshutoMimetypeEntry> = OpenFile::get_options(&entries[0]);
 
         let user_input: Option<String> = {
             let menu_options: Vec<String> = mimetype_options
@@ -116,6 +142,7 @@ impl OpenFileWith {
                 .menu(&mut menu_widget);
             textfield.get_input(backend, &context)
         };
+        let entry_paths: Vec<&Path> = entries.iter().map(|e| e.file_path().as_path()).collect();
 
         match user_input.as_ref() {
             Some(user_input) if user_input.starts_with(PROMPT) => {
@@ -129,10 +156,10 @@ impl OpenFileWith {
                     Ok(n) => {
                         let mimetype_entry = &mimetype_options[n];
                         if mimetype_entry.get_fork() {
-                            mimetype_entry.execute_with(paths)
+                            mimetype_entry.execute_with(entry_paths.as_slice())
                         } else {
                             backend.terminal_drop();
-                            let res = mimetype_entry.execute_with(paths);
+                            let res = mimetype_entry.execute_with(entry_paths.as_slice());
                             backend.terminal_restore()?;
                             res
                         }
@@ -144,7 +171,7 @@ impl OpenFileWith {
                                 backend.terminal_drop();
                                 let res = JoshutoMimetypeEntry::new(String::from(cmd))
                                     .args(args_iter)
-                                    .execute_with(paths);
+                                    .execute_with(entry_paths.as_slice());
                                 backend.terminal_restore()?;
                                 res
                             }
@@ -168,18 +195,31 @@ impl std::fmt::Display for OpenFileWith {
 
 impl JoshutoRunnable for OpenFileWith {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        let paths = match &context.tabs[context.curr_tab_index].curr_list_ref() {
-            Some(curr_list) => curr_list.get_selected_paths(),
-            None => vec![],
+        let selected_entries = {
+            let curr_tab = context.curr_tab_ref();
+            match curr_tab.curr_list_ref() {
+                None => vec![],
+                Some(curr_list) => match curr_list.get_curr_ref() {
+                    Some(entry) => {
+                        let vec: Vec<&JoshutoDirEntry> = curr_list.selected_entries().collect();
+                        if vec.is_empty() {
+                            vec![entry]
+                        } else {
+                            vec
+                        }
+                    }
+                    None => vec![],
+                },
+            }
         };
 
-        if paths.is_empty() {
+        if selected_entries.is_empty() {
             return Err(JoshutoError::new(
                 JoshutoErrorKind::IONotFound,
                 String::from("No files selected"),
             ));
         }
-        Self::open_with(context, backend, &paths)?;
+        Self::open_with(context, backend, &selected_entries)?;
         Ok(())
     }
 }
