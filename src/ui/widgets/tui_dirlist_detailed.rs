@@ -96,7 +96,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     }
                 }
             }
-            let file_size_string = format::file_size_to_string(entry.metadata.len as f64);
+            let file_size_string = format::file_size_to_string(entry.metadata.len);
             buf.set_string(
                 x + (area_width - FILE_SIZE_WIDTH) as u16,
                 y + i as u16,

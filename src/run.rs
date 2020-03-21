@@ -7,6 +7,7 @@ use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::widgets::{TuiCommandMenu, TuiView};
 use crate::util::event::Event;
+use crate::util::format;
 use crate::util::load_child::LoadChild;
 
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
@@ -58,17 +59,19 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                         let dest = handle.dest.clone();
                         handle.join();
                         let msg = match res {
-                            Ok(s) => format!(
-                                "io_worker completed successfully: {:.3} KB processed",
-                                s as f64 / 1024.0
-                            ),
+                            Ok(s) => {
+                                let size_string = format::file_size_to_string(s);
+                                format!(
+                                    "io_worker completed successfully: {} processed",
+                                    size_string)
+                            }
                             Err(e) => format!("io_worker was not completed: {}", e.to_string()),
                         };
                         context.message_queue.push_back(msg);
                         let options = &context.config_t.sort_option;
                         for tab in context.tabs.iter_mut() {
-                            tab.history.reload(&src, options);
-                            tab.history.reload(&dest, options);
+                            tab.history.reload(&src, options)?;
+                            tab.history.reload(&dest, options)?;
                         }
                         LoadChild::load_child(&mut context)?;
                     }

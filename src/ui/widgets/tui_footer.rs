@@ -31,7 +31,7 @@ impl<'a> Widget for TuiFooter<'a> {
         let mtime = format::mtime_to_string(mtime);
 
         let size = self.entry.metadata.len;
-        let size = format::file_size_to_string(size as f64);
+        let size = format::file_size_to_string(size);
 
         #[cfg(unix)]
         let mimetype = match self.entry.metadata.mimetype.as_ref() {

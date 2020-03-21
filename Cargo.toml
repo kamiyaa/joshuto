@@ -46,4 +46,4 @@ branch="dev"
 
 [features]
 file_mimetype = []
-default = [ "file_mimetype" ]
+default = []
