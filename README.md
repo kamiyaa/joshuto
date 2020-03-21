@@ -2,7 +2,7 @@
 
 [ranger](https://github.com/ranger/ranger)-like terminal file manager written in Rust.
 
-![Alt text](joshuto_screenshot.png?raw=true "joshuto")
+![Alt text](screenshot.png?raw=true "joshuto")
 
 ## Dependencies
  - [cargo](https://github.com/rust-lang/cargo/) >= 0.41.0
