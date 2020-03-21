@@ -76,12 +76,12 @@ impl OpenFile {
             let entry_paths: Vec<&Path> = entries.iter().map(|e| e.file_path().as_path()).collect();
             if !options.is_empty() {
                 let res = if options[0].get_fork() {
+                    options[0].execute_with(entry_paths.as_slice())
+                } else {
                     backend.terminal_drop();
                     let res = options[0].execute_with(entry_paths.as_slice());
                     backend.terminal_restore()?;
                     res
-                } else {
-                    options[0].execute_with(entry_paths.as_slice())
                 };
                 return res;
             } else {
