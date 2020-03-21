@@ -5,7 +5,7 @@ use tui::layout::Rect;
 use tui::style::{Color, Style};
 use tui::widgets::{Paragraph, Text, Widget};
 
-use crate::fs::JoshutoDirEntry;
+use crate::fs::{FileType, JoshutoDirEntry};
 use crate::util::format;
 
 pub struct TuiFooter<'a> {
@@ -51,13 +51,12 @@ impl<'a> Widget for TuiFooter<'a> {
             Text::raw(mimetype),
         ];
 
-        if self.entry.metadata.file_type.is_symlink() {
-            if let Ok(path) = fs::read_link(self.entry.file_path()) {
+        match &self.entry.metadata.file_type {
+            FileType::Symlink(s) => {
                 text.push(Text::styled(" -> ", mode_style));
-                if let Some(s) = path.to_str() {
-                    text.push(Text::styled(s.to_string(), mode_style));
-                }
+                text.push(Text::styled(s, mode_style));
             }
+            _ => {}
         }
 
         Paragraph::new(text.iter()).wrap(true).draw(area, buf);

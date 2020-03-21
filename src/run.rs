@@ -63,7 +63,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                                 let size_string = format::file_size_to_string(s);
                                 format!(
                                     "io_worker completed successfully: {} processed",
-                                    size_string)
+                                    size_string
+                                )
                             }
                             Err(e) => format!("io_worker was not completed: {}", e.to_string()),
                         };

@@ -139,8 +139,14 @@ fn map_entry_default(result: std::io::Result<fs::DirEntry>) -> Option<JoshutoDir
     match result {
         Ok(direntry) => match JoshutoDirEntry::from(&direntry) {
             Ok(s) => Some(s),
-            Err(_) => None,
+            Err(e) => {
+                eprintln!("Entry: {:?}, {:?}", direntry, e);
+                None
+            }
         },
-        Err(_) => None,
+        Err(e) => {
+            eprintln!("{:?}", e);
+            None
+        }
     }
 }

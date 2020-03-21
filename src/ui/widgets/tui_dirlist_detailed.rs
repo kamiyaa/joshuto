@@ -21,11 +21,7 @@ impl<'a> TuiDirListDetailed<'a> {
 
 impl<'a> Widget for TuiDirListDetailed<'a> {
     fn draw(&mut self, area: Rect, buf: &mut Buffer) {
-        if area.width < 1 || area.height < 1 {
-            return;
-        }
-
-        if area.width < 4 {
+        if area.width < 4 || area.height < 1 {
             return;
         }
 
@@ -58,12 +54,13 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             let name = entry.file_name();
             let name_width = name.width();
 
-            let mut style = entry.get_style();
-            if i == screen_index {
-                style = style.modifier(Modifier::REVERSED);
-            }
+            let style = if i == screen_index {
+                entry.get_style().modifier(Modifier::REVERSED)
+            } else {
+                entry.get_style()
+            };
 
-            let file_type = entry.metadata.file_type;
+            let file_type = &entry.metadata.file_type;
             if file_type.is_dir() {
                 if name_width <= area_width {
                     buf.set_stringn(x, y + i as u16, name, area_width, style);
@@ -71,38 +68,50 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
                     buf.set_string(x + area_width as u16 - 1, y + i as u16, "…", style);
                 }
-                continue;
-            }
-
-            if name_width < area_width - FILE_SIZE_WIDTH {
-                buf.set_stringn(x, y + i as u16, name, area_width - FILE_SIZE_WIDTH, style);
+            //            } else if file_type.is_symlink() {
             } else {
-                match name.rfind('.') {
-                    None => {
-                        buf.set_stringn(x, y + i as u16, name, area_width - FILE_SIZE_WIDTH, style);
-                    }
-                    Some(p_ind) => {
-                        let ext_width = name[p_ind..].width();
-                        let file_name_width = area_width - FILE_SIZE_WIDTH - ext_width - 2;
+                if name_width < area_width - FILE_SIZE_WIDTH {
+                    buf.set_stringn(x, y + i as u16, name, area_width - FILE_SIZE_WIDTH, style);
+                } else {
+                    match name.rfind('.') {
+                        None => {
+                            buf.set_stringn(
+                                x,
+                                y + i as u16,
+                                name,
+                                area_width - FILE_SIZE_WIDTH,
+                                style,
+                            );
+                        }
+                        Some(p_ind) => {
+                            let ext_width = name[p_ind..].width();
+                            let file_name_width = area_width - FILE_SIZE_WIDTH - ext_width - 2;
 
-                        buf.set_stringn(x, y + i as u16, &name[..p_ind], file_name_width, style);
-                        buf.set_string(x + file_name_width as u16, y + i as u16, "…", style);
-                        buf.set_string(
-                            x + file_name_width as u16 + 1,
-                            y + i as u16,
-                            &name[p_ind..],
-                            style,
-                        );
+                            buf.set_stringn(
+                                x,
+                                y + i as u16,
+                                &name[..p_ind],
+                                file_name_width,
+                                style,
+                            );
+                            buf.set_string(x + file_name_width as u16, y + i as u16, "…", style);
+                            buf.set_string(
+                                x + file_name_width as u16 + 1,
+                                y + i as u16,
+                                &name[p_ind..],
+                                style,
+                            );
+                        }
                     }
                 }
+                let file_size_string = format::file_size_to_string(entry.metadata.len);
+                buf.set_string(
+                    x + (area_width - FILE_SIZE_WIDTH) as u16,
+                    y + i as u16,
+                    file_size_string,
+                    style,
+                );
             }
-            let file_size_string = format::file_size_to_string(entry.metadata.len);
-            buf.set_string(
-                x + (area_width - FILE_SIZE_WIDTH) as u16,
-                y + i as u16,
-                file_size_string,
-                style,
-            );
         }
     }
 }

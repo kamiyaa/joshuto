@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use tui::style::Color;
+use tui::style::{Color, Modifier, Style};
 
 use crate::THEME_FILE;
 
@@ -51,14 +51,21 @@ impl JoshutoStyleThemeRaw {
         let bg = Self::str_to_color(self.bg.as_str());
         let fg = Self::str_to_color(self.fg.as_str());
 
-        JoshutoStyleTheme {
-            bg,
-            fg,
-            bold: self.bold,
-            underline: self.underline,
-            invert: self.invert,
-            prefix: self.prefix.clone(),
+        let mut modifier = Modifier::empty();
+        if self.bold {
+            modifier.insert(Modifier::BOLD);
         }
+        if self.underline {
+            modifier.insert(Modifier::UNDERLINED);
+        }
+        if self.invert {
+            modifier.insert(Modifier::REVERSED);
+        }
+
+        JoshutoStyleTheme::default()
+            .set_fg(fg)
+            .set_bg(bg)
+            .insert(modifier)
     }
 
     pub fn str_to_color(s: &str) -> Color {
@@ -162,9 +169,7 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
 pub struct JoshutoStyleTheme {
     pub fg: Color,
     pub bg: Color,
-    pub bold: bool,
-    pub underline: bool,
-    pub invert: bool,
+    pub modifier: Modifier,
     pub prefix: Option<JoshutoPrefix>,
 }
 
@@ -177,16 +182,13 @@ impl JoshutoStyleTheme {
         self.fg = fg;
         self
     }
-    pub fn set_bold(mut self, bold: bool) -> Self {
-        self.bold = bold;
+    pub fn set_prefix(mut self, prefix: JoshutoPrefix) -> Self {
+        self.prefix = Some(prefix);
         self
     }
-    pub fn set_underline(mut self, bold: bool) -> Self {
-        self.bold = bold;
-        self
-    }
-    pub fn set_invert(mut self, bold: bool) -> Self {
-        self.bold = bold;
+
+    pub fn insert(mut self, modifier: Modifier) -> Self {
+        self.modifier.insert(modifier);
         self
     }
 }
@@ -196,9 +198,7 @@ impl std::default::Default for JoshutoStyleTheme {
         Self {
             fg: default_color(),
             bg: default_color(),
-            bold: false,
-            underline: false,
-            invert: false,
+            modifier: Modifier::empty(),
             prefix: None,
         }
     }
@@ -226,20 +226,20 @@ impl std::default::Default for JoshutoTheme {
     fn default() -> Self {
         let selection = JoshutoStyleTheme::default()
             .set_fg(Color::LightYellow)
-            .set_bold(true);
+            .insert(Modifier::BOLD);
         let executable = JoshutoStyleTheme::default()
             .set_fg(Color::LightGreen)
-            .set_bold(true);
+            .insert(Modifier::BOLD);
         let regular = JoshutoStyleTheme::default().set_fg(Color::White);
         let directory = JoshutoStyleTheme::default()
             .set_fg(Color::LightBlue)
-            .set_bold(true);
+            .insert(Modifier::BOLD);
         let link = JoshutoStyleTheme::default()
             .set_fg(Color::LightCyan)
-            .set_bold(true);
+            .insert(Modifier::BOLD);
         let socket = JoshutoStyleTheme::default()
             .set_fg(Color::LightMagenta)
-            .set_bold(true);
+            .insert(Modifier::BOLD);
         let ext = HashMap::new();
 
         Self {

@@ -1,11 +1,41 @@
 use std::{fs, path, process, time};
 
 #[derive(Clone, Debug)]
+pub enum FileType {
+    Directory,
+    Symlink(String),
+    File,
+}
+
+impl FileType {
+    pub fn is_dir(&self) -> bool {
+        match *self {
+            Self::Directory => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_symlink(&self) -> bool {
+        match *self {
+            Self::Symlink(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_file(&self) -> bool {
+        match *self {
+            Self::File => true,
+            _ => false,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
     pub len: u64,
     pub modified: time::SystemTime,
     pub permissions: fs::Permissions,
-    pub file_type: fs::FileType,
+    pub file_type: FileType,
     pub mimetype: Option<String>,
     #[cfg(unix)]
     pub uid: u32,
@@ -26,9 +56,24 @@ impl JoshutoMetadata {
         let modified = metadata.modified()?;
         let permissions = metadata.permissions();
         let file_type = metadata.file_type();
-        let mut mimetype = None;
 
-        if file_type.is_file() {
+        let file_type = if file_type.is_dir() {
+            FileType::Directory
+        } else if file_type.is_symlink() {
+            let mut link = "".to_string();
+
+            if let Ok(path) = fs::read_link(path) {
+                if let Some(s) = path.to_str() {
+                    link = s.to_string();
+                }
+            }
+            FileType::Symlink(link)
+        } else {
+            FileType::File
+        };
+
+        let mut mimetype = None;
+        if let FileType::File = file_type {
             #[cfg(feature = "file_mimetype")]
             {
                 mimetype = file_mimetype(path)

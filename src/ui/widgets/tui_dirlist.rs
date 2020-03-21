@@ -54,12 +54,13 @@ impl<'a> Widget for TuiDirList<'a> {
             let name = entry.file_name();
             let name_width = name.width();
 
-            let mut style = entry.get_style();
-            if i == screen_index {
-                style = style.modifier(Modifier::REVERSED);
-            }
+            let style = if i == screen_index {
+                entry.get_style().modifier(Modifier::REVERSED)
+            } else {
+                entry.get_style()
+            };
 
-            let file_type = entry.metadata.file_type;
+            let file_type = &entry.metadata.file_type;
             if file_type.is_dir() {
                 if name_width <= area_width {
                     buf.set_stringn(x, y + i as u16, name, area_width, style);
@@ -67,27 +68,33 @@ impl<'a> Widget for TuiDirList<'a> {
                     buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
                     buf.set_string(x + area_width as u16 - 1, y + i as u16, "…", style);
                 }
-                continue;
-            }
-            if name_width < area_width {
-                buf.set_stringn(x, y + i as u16, name, area_width, style);
             } else {
-                match name.rfind('.') {
-                    None => {
-                        buf.set_stringn(x, y + i as u16, name, area_width, style);
-                    }
-                    Some(p_ind) => {
-                        let ext_width = name[p_ind..].width();
-                        let file_name_width = area_width - ext_width - 1;
+                if name_width < area_width {
+                    buf.set_stringn(x, y + i as u16, name, area_width, style);
+                } else {
+                    match name.rfind('.') {
+                        None => {
+                            buf.set_stringn(x, y + i as u16, name, area_width, style);
+                        }
+                        Some(p_ind) => {
+                            let ext_width = name[p_ind..].width();
+                            let file_name_width = area_width - ext_width - 1;
 
-                        buf.set_stringn(x, y + i as u16, &name[..p_ind], file_name_width, style);
-                        buf.set_string(x + file_name_width as u16, y + i as u16, "…", style);
-                        buf.set_string(
-                            x + file_name_width as u16 + 1,
-                            y + i as u16,
-                            &name[p_ind..],
-                            style,
-                        );
+                            buf.set_stringn(
+                                x,
+                                y + i as u16,
+                                &name[..p_ind],
+                                file_name_width,
+                                style,
+                            );
+                            buf.set_string(x + file_name_width as u16, y + i as u16, "…", style);
+                            buf.set_string(
+                                x + file_name_width as u16 + 1,
+                                y + i as u16,
+                                &name[p_ind..],
+                                style,
+                            );
+                        }
                     }
                 }
             }

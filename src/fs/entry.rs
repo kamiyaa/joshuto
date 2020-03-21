@@ -68,7 +68,7 @@ impl JoshutoDirEntry {
 
     pub fn get_fg_color(&self) -> Color {
         let metadata = &self.metadata;
-        let filetype = metadata.file_type;
+        let filetype = &metadata.file_type;
 
         if self.is_selected() {
             THEME_T.selection.fg
@@ -92,7 +92,7 @@ impl JoshutoDirEntry {
 
     pub fn get_bg_color(&self) -> Color {
         let metadata = &self.metadata;
-        let filetype = metadata.file_type;
+        let filetype = &metadata.file_type;
 
         if self.is_selected() {
             THEME_T.selection.bg
@@ -116,119 +116,62 @@ impl JoshutoDirEntry {
 
     pub fn get_modifier(&self) -> Modifier {
         let metadata = &self.metadata;
-        let filetype = metadata.file_type;
-
-        let mut modifier = Modifier::empty();
+        let filetype = &metadata.file_type;
 
         if filetype.is_dir() {
-            if THEME_T.directory.bold {
-                modifier.insert(Modifier::BOLD);
-            }
-            if THEME_T.directory.underline {
-                modifier.insert(Modifier::UNDERLINED);
-            }
+            THEME_T.directory.modifier
         } else if filetype.is_symlink() {
-            if THEME_T.link.bold {
-                modifier.insert(Modifier::BOLD);
-            }
-            if THEME_T.link.underline {
-                modifier.insert(Modifier::UNDERLINED);
-            }
+            THEME_T.link.modifier
         } else {
             match self.file_path().extension() {
-                None => {}
+                None => Modifier::empty(),
                 Some(os_str) => match os_str.to_str() {
-                    None => {}
+                    None => Modifier::empty(),
                     Some(s) => match THEME_T.ext.get(s) {
-                        None => {}
-                        Some(t) => {
-                            if t.bold {
-                                modifier.insert(Modifier::BOLD);
-                            }
-                            if t.underline {
-                                modifier.insert(Modifier::UNDERLINED);
-                            }
-                        }
+                        None => Modifier::empty(),
+                        Some(t) => t.modifier,
                     },
                 },
-            };
+            }
         }
-        modifier
     }
 
     pub fn get_style(&self) -> Style {
         let metadata = &self.metadata;
-        let filetype = metadata.file_type;
-
-        let mut style = Style::default();
+        let filetype = &metadata.file_type;
 
         if self.is_selected() {
-            let mut modifier = Modifier::empty();
-            if THEME_T.selection.bold {
-                modifier.insert(Modifier::BOLD);
-            }
-            if THEME_T.selection.underline {
-                modifier.insert(Modifier::UNDERLINED);
-            }
-
-            style = style.fg(THEME_T.selection.fg).bg(THEME_T.selection.bg);
-            style = style.modifier(modifier);
+            Style::default()
+                .fg(THEME_T.selection.fg)
+                .bg(THEME_T.selection.bg)
+                .modifier(THEME_T.selection.modifier)
         } else if filetype.is_dir() {
-            let mut modifier = Modifier::empty();
-            if THEME_T.directory.bold {
-                modifier.insert(Modifier::BOLD);
-            }
-            if THEME_T.directory.underline {
-                modifier.insert(Modifier::UNDERLINED);
-            }
-
-            style = style.fg(THEME_T.directory.fg).bg(THEME_T.directory.bg);
-            style = style.modifier(modifier);
+            Style::default()
+                .fg(THEME_T.directory.fg)
+                .bg(THEME_T.directory.bg)
+                .modifier(THEME_T.directory.modifier)
         } else if filetype.is_symlink() {
-            let mut modifier = Modifier::empty();
-            if THEME_T.link.bold {
-                modifier.insert(Modifier::BOLD);
-            }
-            if THEME_T.link.underline {
-                modifier.insert(Modifier::UNDERLINED);
-            }
-
-            style = style.fg(THEME_T.link.fg).bg(THEME_T.link.bg);
-            style = style.modifier(modifier);
+            Style::default()
+                .fg(THEME_T.link.fg)
+                .bg(THEME_T.link.bg)
+                .modifier(THEME_T.link.modifier)
         } else if unix::is_executable(metadata.mode) {
-            let mut modifier = Modifier::empty();
-            if THEME_T.link.bold {
-                modifier.insert(Modifier::BOLD);
-            }
-            if THEME_T.link.underline {
-                modifier.insert(Modifier::UNDERLINED);
-            }
-
-            style = style.fg(THEME_T.executable.fg).bg(THEME_T.executable.bg);
-            style = style.modifier(modifier);
+            Style::default()
+                .fg(THEME_T.executable.fg)
+                .bg(THEME_T.executable.bg)
+                .modifier(THEME_T.executable.modifier)
         } else {
             match self.file_path().extension() {
-                None => {}
+                None => Style::default(),
                 Some(os_str) => match os_str.to_str() {
-                    None => {}
+                    None => Style::default(),
                     Some(s) => match THEME_T.ext.get(s) {
-                        None => {}
-                        Some(t) => {
-                            let mut modifier = Modifier::empty();
-                            if t.bold {
-                                modifier.insert(Modifier::BOLD);
-                            }
-                            if t.underline {
-                                modifier.insert(Modifier::UNDERLINED);
-                            }
-                            style = style.fg(t.fg).bg(t.bg);
-                            style = style.modifier(modifier);
-                        }
+                        None => Style::default(),
+                        Some(t) => Style::default().fg(t.fg).bg(t.bg).modifier(t.modifier),
                     },
                 },
             }
         }
-        style
     }
 }
 
