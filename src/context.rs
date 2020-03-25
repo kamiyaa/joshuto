@@ -10,6 +10,7 @@ pub struct JoshutoContext {
     pub curr_tab_index: usize,
     pub tabs: Vec<JoshutoTab>,
     pub worker_queue: VecDeque<IOWorkerThread>,
+    pub worker_busy: bool,
 
     pub worker_msg: Option<String>,
     pub message_queue: VecDeque<String>,
@@ -25,6 +26,7 @@ impl JoshutoContext {
             curr_tab_index: 0,
             tabs: Vec::new(),
             worker_queue: VecDeque::with_capacity(10),
+            worker_busy: false,
             worker_msg: None,
             message_queue: VecDeque::with_capacity(4),
             events: Events::new(),

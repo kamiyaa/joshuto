@@ -1,9 +1,11 @@
+use std::io::Write;
+
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
 use rustyline::line_buffer;
 
 use termion::event::Key;
 use tui::layout::Rect;
-use tui::style::{Color, Style};
+use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Paragraph, Text, Widget};
 use unicode_width::UnicodeWidthChar;
 
@@ -73,25 +75,19 @@ impl<'a> TuiTextField<'a> {
 
         let char_idx = self
             ._prefix
-            .char_indices()
-            .last()
-            .map(|(i, c)| i + c.width().unwrap_or(0))
-            .unwrap_or(0);
+            .chars()
+            .map(|c| c.len_utf8())
+            .sum();
 
+        line_buffer.insert_str(0, self._suffix);
         line_buffer.insert_str(0, self._prefix);
-        line_buffer.insert_str(char_idx, self._suffix);
         line_buffer.set_pos(char_idx);
 
         let terminal = backend.terminal_mut();
-        terminal.show_cursor();
-        let mut cursor_xpos = self._prefix.len() + 1;
-        {
-            let frame = terminal.get_frame();
-            let f_size = frame.size();
-            terminal.set_cursor(cursor_xpos as u16, f_size.height - 1);
-        }
+        let mut cursor_xpos = line_buffer.pos();
 
         loop {
+            cursor_xpos = line_buffer.pos();
             terminal
                 .draw(|mut frame| {
                     let f_size = frame.size();
@@ -124,9 +120,28 @@ impl<'a> TuiTextField<'a> {
 
                     let cmd_prompt_style = Style::default().fg(Color::LightGreen);
 
+                    let cursor_style = Style::default().modifier(Modifier::REVERSED);
+
+                    let prefix = &line_buffer.as_str()[..cursor_xpos];
+
+                    let curr = line_buffer.as_str()[cursor_xpos..]
+                        .chars()
+                        .nth(0);
+                    let (suffix, curr) = match curr {
+                        Some(c) => {
+                            let curr_len = c.len_utf8();
+                            (&line_buffer.as_str()[(cursor_xpos + curr_len)..], c)
+                        }
+                        None => ("", ' '),
+                    };
+
+                    let curr_string = curr.to_string();
+
                     let text = [
                         Text::styled(self._prompt, cmd_prompt_style),
-                        Text::raw(line_buffer.as_str()),
+                        Text::raw(prefix),
+                        Text::styled(curr_string, cursor_style),
+                        Text::raw(suffix),
                     ];
 
                     let textfield_rect = Rect {
@@ -226,19 +241,12 @@ impl<'a> TuiTextField<'a> {
                     _ => {}
                 };
             }
-            cursor_xpos = line_buffer.pos() + 1;
-            {
-                let frame = terminal.get_frame();
-                let f_size = frame.size();
-                terminal.set_cursor(cursor_xpos as u16, f_size.height - 1);
-            }
         }
-        terminal.hide_cursor();
         if line_buffer.as_str().is_empty() {
             None
         } else {
-            let strin = line_buffer.to_string();
-            Some(strin)
+            let input_string = line_buffer.to_string();
+            Some(input_string)
         }
     }
 }

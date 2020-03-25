@@ -40,6 +40,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                     let observer = IOWorkerObserver::new(worker, event_tx);
                     Some(observer)
                 };
+                context.worker_busy = true;
             }
         }
 
@@ -80,6 +81,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 }
                 io_observer = None;
                 context.worker_msg = None;
+                context.worker_busy = false;
             }
             Event::Input(key) => {
                 /* Message handling */
