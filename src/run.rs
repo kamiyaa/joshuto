@@ -51,7 +51,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
 
         match event {
             Event::IOWorkerProgress(p) => {
-                context.worker_msg = Some(format!("bytes copied {}", p));
+                context.worker_msg = Some(format!("{} copied", format::file_size_to_string(p)));
             }
             Event::IOWorkerResult(res) => {
                 match io_observer {
@@ -118,5 +118,6 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         let mut view = TuiView::new(&context);
         backend.render(&mut view);
     }
+
     Ok(())
 }

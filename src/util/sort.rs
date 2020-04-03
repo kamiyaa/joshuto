@@ -43,6 +43,18 @@ pub struct SortOption {
 
 impl SortOption {
     pub fn compare_func(&self) -> impl Fn(&JoshutoDirEntry, &JoshutoDirEntry) -> cmp::Ordering {
+        let dir_cmp = if self.directories_first {
+            dir_first
+        } else {
+            dummy_dir_first
+        };
+
+        let rev_cmp = if self.reverse {
+            reverse_ordering
+        } else {
+            dummy_reverse
+        };
+
         let base_cmp = match self.sort_method {
             SortType::Natural => {
                 if self.case_sensitive {
@@ -59,17 +71,6 @@ impl SortOption {
                 }
             }
             SortType::Mtime => mtime_sort,
-        };
-
-        let rev_cmp = if self.reverse {
-            reverse_ordering
-        } else {
-            dummy_reverse
-        };
-        let dir_cmp = if self.directories_first {
-            dir_first
-        } else {
-            dummy_dir_first
         };
 
         move |f1, f2| dir_cmp(f1, f2).then_with(|| rev_cmp(base_cmp(f1, f2)))

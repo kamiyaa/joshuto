@@ -105,12 +105,12 @@ impl<'a> Widget for TuiView<'a> {
 
             if self.show_bottom_status {
                 /* draw the bottom status bar */
-                if let Some(msg) = self.context.worker_msg.as_ref() {
-                    let text = [Text::styled(msg, message_style)];
+                if !self.context.message_queue.is_empty() {
+                    let text = [Text::styled(&self.context.message_queue[0], message_style)];
 
                     Paragraph::new(text.iter()).wrap(true).draw(rect, buf);
-                } else if !self.context.message_queue.is_empty() {
-                    let text = [Text::styled(&self.context.message_queue[0], message_style)];
+                } else if let Some(msg) = self.context.worker_msg.as_ref() {
+                    let text = [Text::styled(msg, message_style)];
 
                     Paragraph::new(text.iter()).wrap(true).draw(rect, buf);
                 } else if let Some(entry) = curr_list.get_curr_ref() {

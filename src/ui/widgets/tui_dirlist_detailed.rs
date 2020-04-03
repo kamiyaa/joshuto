@@ -68,6 +68,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
                     buf.set_string(x + area_width as u16 - 1, y + i as u16, "…", style);
                 }
+            // TODO: print out symlink path
             //            } else if file_type.is_symlink() {
             } else {
                 if name_width < area_width - FILE_SIZE_WIDTH {

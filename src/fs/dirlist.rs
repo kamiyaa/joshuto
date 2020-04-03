@@ -48,29 +48,27 @@ impl JoshutoDirList {
 
     pub fn reload_contents(&mut self, sort_option: &SortOption) -> std::io::Result<()> {
         let filter_func = sort_option.filter_func();
-        let mut contents = read_dir_list(&self.path, filter_func)?;
         let sort_func = sort_option.compare_func();
+
+        let mut contents = read_dir_list(&self.path, filter_func)?;
         contents.sort_by(sort_func);
 
         let contents_len = contents.len();
-
-        let index: Option<usize> = {
-            if contents_len == 0 {
-                None
-            } else {
-                match self.index {
-                    Some(i) if i >= contents_len => Some(contents_len - 1),
-                    Some(i) => {
-                        let entry = &self.contents[i];
-                        contents
-                            .iter()
-                            .enumerate()
-                            .find(|(_, e)| e.file_name() == entry.file_name())
-                            .map(|(i, _)| i)
-                            .or(Some(i))
-                    }
-                    None => Some(0),
+        let index: Option<usize> = if contents_len == 0 {
+            None
+        } else {
+            match self.index {
+                Some(i) if i >= contents_len => Some(contents_len - 1),
+                Some(i) => {
+                    let entry = &self.contents[i];
+                    contents
+                        .iter()
+                        .enumerate()
+                        .find(|(_, e)| e.file_name() == entry.file_name())
+                        .map(|(i, _)| i)
+                        .or(Some(i))
                 }
+                None => Some(0),
             }
         };
 
@@ -130,23 +128,7 @@ where
 {
     let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
         .filter(filter_func)
-        .filter_map(map_entry_default)
+        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?).ok())
         .collect();
     Ok(results)
-}
-
-fn map_entry_default(result: std::io::Result<fs::DirEntry>) -> Option<JoshutoDirEntry> {
-    match result {
-        Ok(direntry) => match JoshutoDirEntry::from(&direntry) {
-            Ok(s) => Some(s),
-            Err(e) => {
-                eprintln!("Entry: {:?}, {:?}", direntry, e);
-                None
-            }
-        },
-        Err(e) => {
-            eprintln!("{:?}", e);
-            None
-        }
-    }
 }

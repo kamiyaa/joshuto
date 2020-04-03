@@ -125,7 +125,7 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
             .iter()
             .for_each(|arg| write!(f, " {}", arg).unwrap());
 
-        f.write_str("\t\t").unwrap();
+        f.write_str("        ").unwrap();
         if self.get_fork() {
             f.write_str("[fork]").unwrap();
         }
