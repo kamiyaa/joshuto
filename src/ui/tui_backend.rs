@@ -14,7 +14,10 @@ pub struct TuiBackend {
 impl TuiBackend {
     pub fn new() -> std::io::Result<Self> {
         let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = AlternateScreen::from(stdout);
+        let mut alt_screen = AlternateScreen::from(stdout);
+        // clears the screen of artifacts
+        write!(alt_screen, "{}", termion::clear::All)?;
+
         let backend = TermionBackend::new(alt_screen);
         let mut terminal = tui::Terminal::new(backend)?;
         terminal.hide_cursor()?;

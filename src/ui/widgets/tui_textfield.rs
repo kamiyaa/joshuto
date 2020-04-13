@@ -73,11 +73,7 @@ impl<'a> TuiTextField<'a> {
 
         let mut completion_tracker: Option<CompletionTracker> = None;
 
-        let char_idx = self
-            ._prefix
-            .chars()
-            .map(|c| c.len_utf8())
-            .sum();
+        let char_idx = self._prefix.chars().map(|c| c.len_utf8()).sum();
 
         line_buffer.insert_str(0, self._suffix);
         line_buffer.insert_str(0, self._prefix);
@@ -124,9 +120,7 @@ impl<'a> TuiTextField<'a> {
 
                     let prefix = &line_buffer.as_str()[..cursor_xpos];
 
-                    let curr = line_buffer.as_str()[cursor_xpos..]
-                        .chars()
-                        .nth(0);
+                    let curr = line_buffer.as_str()[cursor_xpos..].chars().nth(0);
                     let (suffix, curr) = match curr {
                         Some(c) => {
                             let curr_len = c.len_utf8();
