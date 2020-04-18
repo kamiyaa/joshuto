@@ -16,7 +16,7 @@ impl<'a> TuiTabBar<'a> {
 }
 
 impl<'a> Widget for TuiTabBar<'a> {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let selected = Style::default().modifier(Modifier::REVERSED);
 
         let text = [
@@ -24,6 +24,6 @@ impl<'a> Widget for TuiTabBar<'a> {
             Text::raw(format!("/{}", self.len)),
         ];
 
-        Paragraph::new(text.iter()).wrap(true).draw(area, buf);
+        Paragraph::new(text.iter()).wrap(true).render(area, buf);
     }
 }

@@ -1,5 +1,3 @@
-use std::path;
-
 use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
@@ -8,8 +6,6 @@ use crate::ui::TuiBackend;
 
 use crate::util::load_child::LoadChild;
 use crate::util::sort::SortType;
-
-use crate::HOME_DIR;
 
 #[derive(Clone, Debug)]
 pub struct Sort {
@@ -34,7 +30,7 @@ impl std::fmt::Display for Sort {
 }
 
 impl JoshutoRunnable for Sort {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         context.config_t.sort_option.sort_method = self.sort_method;
         for tab in context.tabs.iter_mut() {
             tab.history.depreciate_all_entries();

@@ -1,5 +1,3 @@
-use std::fs;
-
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
@@ -19,7 +17,7 @@ impl<'a> TuiFooter<'a> {
 }
 
 impl<'a> Widget for TuiFooter<'a> {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         use std::os::unix::fs::PermissionsExt;
 
         let mode = self.entry.metadata.permissions.mode();
@@ -59,6 +57,6 @@ impl<'a> Widget for TuiFooter<'a> {
             _ => {}
         }
 
-        Paragraph::new(text.iter()).wrap(true).draw(area, buf);
+        Paragraph::new(text.iter()).wrap(true).render(area, buf);
     }
 }

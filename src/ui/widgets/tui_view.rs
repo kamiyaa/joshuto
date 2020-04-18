@@ -1,6 +1,6 @@
 use tui::buffer::Buffer;
 use tui::layout::{Direction, Layout, Rect};
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Color, Style};
 use tui::widgets::{Paragraph, Text, Widget};
 
 use super::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
@@ -25,7 +25,7 @@ impl<'a> TuiView<'a> {
 }
 
 impl<'a> Widget for TuiView<'a> {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let f_size = area;
 
         let curr_tab = self.context.curr_tab_ref();
@@ -60,7 +60,7 @@ impl<'a> Widget for TuiView<'a> {
                     width: topbar_width,
                     height: 1,
                 };
-                TuiTopBar::new(curr_path).draw(rect, buf);
+                TuiTopBar::new(curr_path).render(rect, buf);
 
                 let rect = Rect {
                     x: topbar_width,
@@ -74,7 +74,7 @@ impl<'a> Widget for TuiView<'a> {
                     ""
                 };
                 TuiTabBar::new(name, self.context.curr_tab_index, self.context.tabs.len())
-                    .draw(rect, buf);
+                    .render(rect, buf);
             } else {
                 let topbar_width = f_size.width;
 
@@ -84,16 +84,16 @@ impl<'a> Widget for TuiView<'a> {
                     width: topbar_width,
                     height: 1,
                 };
-                TuiTopBar::new(curr_path).draw(rect, buf);
+                TuiTopBar::new(curr_path).render(rect, buf);
             }
         }
 
         if let Some(curr_list) = parent_list.as_ref() {
-            TuiDirList::new(&curr_list).draw(layout_rect[0], buf);
+            TuiDirList::new(&curr_list).render(layout_rect[0], buf);
         };
 
         if let Some(curr_list) = curr_list.as_ref() {
-            TuiDirListDetailed::new(&curr_list).draw(layout_rect[1], buf);
+            TuiDirListDetailed::new(&curr_list).render(layout_rect[1], buf);
             let rect = Rect {
                 x: 0,
                 y: f_size.height - 1,
@@ -108,19 +108,19 @@ impl<'a> Widget for TuiView<'a> {
                 if !self.context.message_queue.is_empty() {
                     let text = [Text::styled(&self.context.message_queue[0], message_style)];
 
-                    Paragraph::new(text.iter()).wrap(true).draw(rect, buf);
+                    Paragraph::new(text.iter()).wrap(true).render(rect, buf);
                 } else if let Some(msg) = self.context.worker_msg.as_ref() {
                     let text = [Text::styled(msg, message_style)];
 
-                    Paragraph::new(text.iter()).wrap(true).draw(rect, buf);
+                    Paragraph::new(text.iter()).wrap(true).render(rect, buf);
                 } else if let Some(entry) = curr_list.get_curr_ref() {
-                    TuiFooter::new(entry).draw(rect, buf);
+                    TuiFooter::new(entry).render(rect, buf);
                 }
             }
         };
 
         if let Some(curr_list) = child_list.as_ref() {
-            TuiDirList::new(&curr_list).draw(layout_rect[2], buf);
+            TuiDirList::new(&curr_list).render(layout_rect[2], buf);
         };
     }
 }

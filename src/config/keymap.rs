@@ -33,6 +33,172 @@ impl JoshutoCommandMapping {
             map: HashMap::new(),
         }
     }
+
+    pub fn default_res(&mut self) -> Result<(), String> {
+        let mut m = self;
+
+        let cmd = Box::new(commands::CursorMoveUp::new(1));
+        let keys = [Key::Up];
+        insert_keycommand(&mut m, cmd, &keys)?;
+        let cmd = Box::new(commands::CursorMoveDown::new(1));
+        let keys = [Key::Down];
+        insert_keycommand(&mut m, cmd, &keys)?;
+        let cmd = Box::new(commands::ParentDirectory::new());
+        let keys = [Key::Left];
+        insert_keycommand(&mut m, cmd, &keys)?;
+        let cmd = Box::new(commands::OpenFile::new());
+        let keys = [Key::Right];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::OpenFile::new());
+        let keys = [Key::Char('\n')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CursorMoveHome::new());
+        let keys = [Key::Home];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CursorMoveEnd::new());
+        let keys = [Key::End];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CursorMovePageUp::new());
+        let keys = [Key::PageUp];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CursorMovePageDown::new());
+        let keys = [Key::PageDown];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        // vim keys
+        let cmd = Box::new(commands::CursorMoveUp::new(1));
+        let keys = [Key::Char('k')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CursorMoveDown::new(1));
+        let keys = [Key::Char('j')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::ParentDirectory::new());
+        let keys = [Key::Char('h')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::OpenFile::new());
+        let keys = [Key::Char('l')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::NewTab::new());
+        let keys = [Key::Char('T')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+        let cmd = Box::new(commands::NewTab::new());
+        let keys = [Key::Ctrl('t')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::NewTab::new());
+        let keys = [Key::Char('W')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+        let cmd = Box::new(commands::NewTab::new());
+        let keys = [Key::Ctrl('w')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CloseTab::new());
+        let keys = [Key::Char('q')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+        let cmd = Box::new(commands::ForceQuit::new());
+        let keys = [Key::Char('Q')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::ReloadDirList::new());
+        let keys = [Key::Char('R')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::ToggleHiddenFiles::new());
+        let keys = [Key::Char('z'), Key::Char('h')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::TabSwitch::new(1));
+        let keys = [Key::Char('\t')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::TabSwitch::new(-1));
+        let keys = [Key::BackTab];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::OpenFileWith::new());
+        let keys = [Key::Char('r')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CutFiles::new());
+        let keys = [Key::Char('d'), Key::Char('d')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CopyFiles::new());
+        let keys = [Key::Char('y'), Key::Char('y')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::PasteFiles::new(Options::default()));
+        let keys = [Key::Char('p'), Key::Char('p')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::DeleteFiles::new());
+        let keys = [Key::Delete];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::DeleteFiles::new());
+        let keys = [Key::Char('D'), Key::Char('d')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::RenameFileAppend::new());
+        let keys = [Key::Char('a')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::RenameFilePrepend::new());
+        let keys = [Key::Char('A')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CommandLine::new(
+            "search ".to_string(),
+            "".to_string(),
+        ));
+        let keys = [Key::Char('/')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::SearchNext::new());
+        let keys = [Key::Char('n')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::SearchPrev::new());
+        let keys = [Key::Char('N')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::BulkRename::new());
+        let keys = [Key::Char('b'), Key::Char('b')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::SetMode::new());
+        let keys = [Key::Char('=')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CommandLine::new("".to_string(), "".to_string()));
+        let keys = [Key::Char(';')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CommandLine::new(
+            "mkdir ".to_string(),
+            "".to_string(),
+        ));
+        let keys = [Key::Char('m'), Key::Char('k')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        let cmd = Box::new(commands::CommandLine::new(
+            "rename ".to_string(),
+            "".to_string(),
+        ));
+        let keys = [Key::Char('c'), Key::Char('w')];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
+        Ok(())
+    }
 }
 
 impl std::default::Default for JoshutoCommandMapping {
@@ -41,165 +207,7 @@ impl std::default::Default for JoshutoCommandMapping {
             map: HashMap::new(),
         };
 
-        let cmd = Box::new(commands::CursorMoveUp::new(1));
-        let keys = [Key::Up];
-        insert_keycommand(&mut m, cmd, &keys);
-        let cmd = Box::new(commands::CursorMoveDown::new(1));
-        let keys = [Key::Down];
-        insert_keycommand(&mut m, cmd, &keys);
-        let cmd = Box::new(commands::ParentDirectory::new());
-        let keys = [Key::Left];
-        insert_keycommand(&mut m, cmd, &keys);
-        let cmd = Box::new(commands::OpenFile::new());
-        let keys = [Key::Right];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::OpenFile::new());
-        let keys = [Key::Char('\n')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CursorMoveHome::new());
-        let keys = [Key::Home];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CursorMoveEnd::new());
-        let keys = [Key::End];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CursorMovePageUp::new());
-        let keys = [Key::PageUp];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CursorMovePageDown::new());
-        let keys = [Key::PageDown];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        // vim keys
-        let cmd = Box::new(commands::CursorMoveUp::new(1));
-        let keys = [Key::Char('k')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CursorMoveDown::new(1));
-        let keys = [Key::Char('j')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::ParentDirectory::new());
-        let keys = [Key::Char('h')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::OpenFile::new());
-        let keys = [Key::Char('l')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::NewTab::new());
-        let keys = [Key::Char('T')];
-        insert_keycommand(&mut m, cmd, &keys);
-        let cmd = Box::new(commands::NewTab::new());
-        let keys = [Key::Ctrl('t')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::NewTab::new());
-        let keys = [Key::Char('W')];
-        insert_keycommand(&mut m, cmd, &keys);
-        let cmd = Box::new(commands::NewTab::new());
-        let keys = [Key::Ctrl('w')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CloseTab::new());
-        let keys = [Key::Char('q')];
-        insert_keycommand(&mut m, cmd, &keys);
-        let cmd = Box::new(commands::ForceQuit::new());
-        let keys = [Key::Char('Q')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::ReloadDirList::new());
-        let keys = [Key::Char('R')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::ToggleHiddenFiles::new());
-        let keys = [Key::Char('z'), Key::Char('h')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::TabSwitch::new(1));
-        let keys = [Key::Char('\t')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::TabSwitch::new(-1));
-        let keys = [Key::BackTab];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::OpenFileWith::new());
-        let keys = [Key::Char('r')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CutFiles::new());
-        let keys = [Key::Char('d'), Key::Char('d')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CopyFiles::new());
-        let keys = [Key::Char('y'), Key::Char('y')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::PasteFiles::new(Options::default()));
-        let keys = [Key::Char('p'), Key::Char('p')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::DeleteFiles::new());
-        let keys = [Key::Delete];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::DeleteFiles::new());
-        let keys = [Key::Char('D'), Key::Char('d')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::RenameFileAppend::new());
-        let keys = [Key::Char('a')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::RenameFilePrepend::new());
-        let keys = [Key::Char('A')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CommandLine::new(
-            "search ".to_string(),
-            "".to_string(),
-        ));
-        let keys = [Key::Char('/')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::SearchNext::new());
-        let keys = [Key::Char('n')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::SearchPrev::new());
-        let keys = [Key::Char('N')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::BulkRename::new());
-        let keys = [Key::Char('b'), Key::Char('b')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::SetMode::new());
-        let keys = [Key::Char('=')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CommandLine::new("".to_string(), "".to_string()));
-        let keys = [Key::Char(';')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CommandLine::new(
-            "mkdir ".to_string(),
-            "".to_string(),
-        ));
-        let keys = [Key::Char('m'), Key::Char('k')];
-        insert_keycommand(&mut m, cmd, &keys);
-
-        let cmd = Box::new(commands::CommandLine::new(
-            "rename ".to_string(),
-            "".to_string(),
-        ));
-        let keys = [Key::Char('c'), Key::Char('w')];
-        insert_keycommand(&mut m, cmd, &keys);
+        let _ = m.default_res();
 
         m
     }

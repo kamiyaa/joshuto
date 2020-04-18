@@ -17,7 +17,7 @@ impl<'a> TuiDirList<'a> {
 }
 
 impl<'a> Widget for TuiDirList<'a> {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         if area.width < 1 || area.height < 1 {
             return;
         }

@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::commands::{JoshutoCommand, JoshutoRunnable, ReloadDirList};
+use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
@@ -38,7 +38,7 @@ impl JoshutoRunnable for NewDirectory {
         let options = &context.config_t.sort_option;
         let curr_path = context.tabs[context.curr_tab_index].curr_path.clone();
         for tab in context.tabs.iter_mut() {
-            tab.history.reload(&curr_path, options);
+            tab.history.reload(&curr_path, options)?;
         }
 
         LoadChild::load_child(context)?;

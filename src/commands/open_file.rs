@@ -1,10 +1,10 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use crate::commands::{ChangeDirectory, JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
+use crate::fs::JoshutoDirEntry;
 use crate::ui::widgets::{TuiMenu, TuiTextField};
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
@@ -134,12 +134,12 @@ impl OpenFileWith {
                 .map(|(i, e)| format!("  {} | {}", i, e))
                 .collect();
             let menu_options_str: Vec<&str> = menu_options.iter().map(|e| e.as_str()).collect();
-            let mut menu_widget = TuiMenu::new(&menu_options_str);
+            let menu_widget = TuiMenu::new(&menu_options_str);
 
             let mut textfield = TuiTextField::default()
                 .prompt(":")
                 .prefix(PROMPT)
-                .menu(&mut menu_widget);
+                .menu(menu_widget);
             textfield.get_input(backend, &context)
         };
         let entry_paths: Vec<&Path> = entries.iter().map(|e| e.file_path().as_path()).collect();

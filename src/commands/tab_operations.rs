@@ -20,7 +20,7 @@ impl NewTab {
         "new_tab"
     }
 
-    pub fn new_tab(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    pub fn new_tab(context: &mut JoshutoContext) -> JoshutoResult<()> {
         /* start the new tab in $HOME or root */
         let curr_path = match HOME_DIR.as_ref() {
             Some(s) => s.clone(),
@@ -45,8 +45,8 @@ impl std::fmt::Display for NewTab {
 }
 
 impl JoshutoRunnable for NewTab {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        Self::new_tab(context, backend)
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+        Self::new_tab(context)
     }
 }
 

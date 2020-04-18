@@ -26,13 +26,13 @@ impl TuiBackend {
         })
     }
 
-    pub fn render<W>(&mut self, widget: &mut W)
+    pub fn render<W>(&mut self, widget: W)
     where
         W: Widget,
     {
         self.terminal_mut().draw(|mut frame| {
             let rect = frame.size();
-            widget.render(&mut frame, rect);
+            frame.render_widget(widget, rect);
         });
     }
 

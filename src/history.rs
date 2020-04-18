@@ -106,7 +106,7 @@ impl DirectoryHistory for JoshutoHistory {
                 let dirlist = entry.get_mut();
                 dirlist.reload_contents(sort_option)?;
             }
-            Entry::Vacant(entry) => {}
+            _ => {}
         }
         Ok(())
     }

@@ -36,11 +36,11 @@ impl TuiCommandMenu {
 
         loop {
             terminal.draw(|mut frame| {
-                let f_size = frame.size();
+                let f_size: Rect = frame.size();
 
                 {
-                    let mut view = TuiView::new(&context);
-                    view.render(&mut frame, f_size);
+                    let view = TuiView::new(&context);
+                    frame.render_widget(view, f_size);
                 }
 
                 {
@@ -72,7 +72,7 @@ impl TuiCommandMenu {
                         height: (display_str_len + BORDER_HEIGHT) as u16,
                     };
 
-                    TuiMenu::new(&display_str).render(&mut frame, menu_rect);
+                    frame.render_widget(TuiMenu::new(&display_str), menu_rect);
                 }
             });
 
@@ -117,11 +117,11 @@ impl<'a> TuiMenu<'a> {
 const LONG_SPACE: &str = "                                                      ";
 
 impl<'a> Widget for TuiMenu<'a> {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let text_iter = self.options.iter();
-        let mut block = Block::default().borders(Borders::TOP);
-
-        block.draw(area, buf);
+        let block = Block::default()
+            .borders(Borders::TOP)
+            .render(area, buf);
 
         let style = Style::default();
 

@@ -1,4 +1,4 @@
-use crate::commands::{CommandKeybind, JoshutoRunnable};
+use crate::commands::CommandKeybind;
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::history::DirectoryHistory;
@@ -25,8 +25,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         LoadChild::load_child(&mut context)?;
 
         // render our view
-        let mut view = TuiView::new(&context);
-        backend.render(&mut view);
+        let view = TuiView::new(&context);
+        backend.render(view);
     }
 
     let mut io_observer = None;
@@ -115,8 +115,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 context.events.flush();
             }
         }
-        let mut view = TuiView::new(&context);
-        backend.render(&mut view);
+        let view = TuiView::new(&context);
+        backend.render(view);
     }
 
     Ok(())

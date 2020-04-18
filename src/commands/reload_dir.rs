@@ -65,7 +65,7 @@ impl std::fmt::Display for ReloadDirList {
 }
 
 impl JoshutoRunnable for ReloadDirList {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         Self::reload(context.curr_tab_index, context)?;
         LoadChild::load_child(context)?;
         Ok(())

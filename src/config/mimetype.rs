@@ -2,7 +2,7 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process;
 
 use super::{parse_config_file, ConfigStructure};

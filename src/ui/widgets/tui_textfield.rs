@@ -1,13 +1,10 @@
-use std::io::Write;
-
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
 use rustyline::line_buffer;
 
 use termion::event::Key;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Paragraph, Text, Widget};
-use unicode_width::UnicodeWidthChar;
+use tui::widgets::{Paragraph, Text};
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
@@ -37,11 +34,11 @@ pub struct TuiTextField<'a> {
     _prompt: &'a str,
     _prefix: &'a str,
     _suffix: &'a str,
-    _menu: Option<&'a mut TuiMenu<'a>>,
+    _menu: Option<TuiMenu<'a>>,
 }
 
 impl<'a> TuiTextField<'a> {
-    pub fn menu(mut self, menu: &'a mut TuiMenu<'a>) -> Self {
+    pub fn menu(mut self, menu: TuiMenu<'a>) -> Self {
         self._menu = Some(menu);
         self
     }
@@ -80,13 +77,12 @@ impl<'a> TuiTextField<'a> {
         line_buffer.set_pos(char_idx);
 
         let terminal = backend.terminal_mut();
-        let mut cursor_xpos = line_buffer.pos();
 
         loop {
-            cursor_xpos = line_buffer.pos();
+            let cursor_xpos = line_buffer.pos();
             terminal
                 .draw(|mut frame| {
-                    let f_size = frame.size();
+                    let f_size: Rect = frame.size();
                     if f_size.height == 0 {
                         return;
                     }
@@ -94,10 +90,10 @@ impl<'a> TuiTextField<'a> {
                     {
                         let mut view = TuiView::new(&context);
                         view.show_bottom_status = false;
-                        view.render(&mut frame, f_size);
+                        frame.render_widget(view, f_size);
                     }
 
-                    if let Some(menu) = self._menu.as_mut() {
+                    if let Some(menu) = self._menu.take() {
                         let menu_len = menu.len();
                         let menu_y = if menu_len + 2 > f_size.height as usize {
                             0
@@ -111,7 +107,7 @@ impl<'a> TuiTextField<'a> {
                             width: f_size.width,
                             height: menu_len as u16,
                         };
-                        menu.render(&mut frame, rect);
+                        frame.render_widget(menu, rect);
                     }
 
                     let cmd_prompt_style = Style::default().fg(Color::LightGreen);
@@ -145,9 +141,8 @@ impl<'a> TuiTextField<'a> {
                         height: 1,
                     };
 
-                    Paragraph::new(text.iter())
-                        .wrap(true)
-                        .render(&mut frame, textfield_rect);
+                    frame.render_widget(Paragraph::new(text.iter())
+                        .wrap(true), textfield_rect);
                 })
                 .unwrap();
 
@@ -186,7 +181,6 @@ impl<'a> TuiTextField<'a> {
                             Key::Up => {}
                             Key::Down => {}
                             Key::Esc => {
-                                terminal.hide_cursor();
                                 return None;
                             }
                             Key::Char('\t') => {

@@ -2,7 +2,7 @@ use std::time;
 
 use super::unix;
 
-pub fn file_size_to_string(mut file_size: u64) -> String {
+pub fn file_size_to_string(file_size: u64) -> String {
     const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "E"];
     const CONV_RATE: f64 = 1024.0;
     let mut file_size: f64 = file_size as f64;

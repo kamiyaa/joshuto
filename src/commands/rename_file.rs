@@ -48,7 +48,7 @@ impl std::fmt::Display for RenameFile {
 }
 
 impl JoshutoRunnable for RenameFile {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         let mut path: Option<path::PathBuf> = None;
 
         if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
