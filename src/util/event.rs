@@ -42,26 +42,23 @@ impl Events {
         {
             let event_tx = event_tx.clone();
             thread::spawn(move || {
-                {
-                    let stdin = io::stdin();
-                    let mut keys = stdin.keys();
-                    match keys.next() {
-                        Some(key) => match key {
-                            Ok(key) => {
-                                if let Err(e) = event_tx.send(Event::Input(key)) {
-                                    eprintln!("Input thread send err: {:#?}", e);
-                                    return;
-                                }
+                let stdin = io::stdin();
+                let mut keys = stdin.keys();
+                match keys.next() {
+                    Some(key) => match key {
+                        Ok(key) => {
+                            if let Err(e) = event_tx.send(Event::Input(key)) {
+                                eprintln!("Input thread send err: {:#?}", e);
+                                return;
                             }
-                            _ => return,
-                        },
+                        }
                         _ => return,
-                    }
+                    },
+                    _ => return,
                 }
 
                 while let Ok(_) = input_rx.recv() {
                     let stdin = io::stdin();
-                    let mut keys = stdin.keys();
                     if let Some(key) = keys.next() {
                         if let Ok(key) = key {
                             if let Err(e) = event_tx.send(Event::Input(key)) {

@@ -79,7 +79,6 @@ impl<'a> TuiTextField<'a> {
         let terminal = backend.terminal_mut();
 
         loop {
-            let cursor_xpos = line_buffer.pos();
             terminal
                 .draw(|mut frame| {
                     let f_size: Rect = frame.size();
@@ -110,8 +109,9 @@ impl<'a> TuiTextField<'a> {
                         frame.render_widget(menu, rect);
                     }
 
-                    let cmd_prompt_style = Style::default().fg(Color::LightGreen);
+                    let cursor_xpos = line_buffer.pos();
 
+                    let cmd_prompt_style = Style::default().fg(Color::LightGreen);
                     let cursor_style = Style::default().modifier(Modifier::REVERSED);
 
                     let prefix = &line_buffer.as_str()[..cursor_xpos];
@@ -141,8 +141,7 @@ impl<'a> TuiTextField<'a> {
                         height: 1,
                     };
 
-                    frame.render_widget(Paragraph::new(text.iter())
-                        .wrap(true), textfield_rect);
+                    frame.render_widget(Paragraph::new(text.iter()).wrap(true), textfield_rect);
                 })
                 .unwrap();
 

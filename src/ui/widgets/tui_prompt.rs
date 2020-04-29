@@ -46,8 +46,7 @@ impl<'a> TuiPrompt<'a> {
                     height: 1,
                 };
 
-                frame.render_widget(Paragraph::new(text.iter())
-                    .wrap(true), textfield_rect);
+                frame.render_widget(Paragraph::new(text.iter()).wrap(true), textfield_rect);
             });
 
             if let Ok(event) = context.events.next() {

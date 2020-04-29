@@ -119,9 +119,7 @@ const LONG_SPACE: &str = "                                                      
 impl<'a> Widget for TuiMenu<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let text_iter = self.options.iter();
-        let block = Block::default()
-            .borders(Borders::TOP)
-            .render(area, buf);
+        let block = Block::default().borders(Borders::TOP).render(area, buf);
 
         let style = Style::default();
 
