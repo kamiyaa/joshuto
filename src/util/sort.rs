@@ -2,16 +2,16 @@ use std::cmp;
 use std::fs;
 use std::time;
 
-use crate::fs::JoshutoDirEntry;
-
-use alphanumeric_sort::compare_str;
 use serde_derive::Deserialize;
+
+use crate::fs::JoshutoDirEntry;
 
 #[derive(Clone, Copy, Debug, Deserialize)]
 pub enum SortType {
     Lexical,
     Mtime,
     Natural,
+    Size,
 }
 
 impl SortType {
@@ -20,6 +20,7 @@ impl SortType {
             "lexical" => Some(SortType::Lexical),
             "mtime" => Some(SortType::Mtime),
             "natural" => Some(SortType::Natural),
+            "size" => Some(SortType::Size),
             _ => None,
         }
     }
@@ -28,6 +29,7 @@ impl SortType {
             SortType::Lexical => "lexical",
             SortType::Mtime => "mtime",
             SortType::Natural => "natural",
+            SortType::Size => "size",
         }
     }
 }
@@ -42,38 +44,53 @@ pub struct SortOption {
 }
 
 impl SortOption {
-    pub fn compare_func(&self) -> impl Fn(&JoshutoDirEntry, &JoshutoDirEntry) -> cmp::Ordering {
-        let dir_cmp = if self.directories_first {
-            dir_first
-        } else {
-            dummy_dir_first
-        };
+    pub fn compare(&self, f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
+        if self.directories_first {
+            let f1_isdir = f1.file_path().is_dir();
+            let f2_isdir = f2.file_path().is_dir();
 
-        let rev_cmp = if self.reverse {
-            reverse_ordering
-        } else {
-            dummy_reverse
-        };
-
-        let base_cmp = match self.sort_method {
-            SortType::Natural => {
-                if self.case_sensitive {
-                    natural_sort
-                } else {
-                    natural_sort_case_insensitive
-                }
+            if f1_isdir && !f2_isdir {
+                return cmp::Ordering::Less;
+            } else if !f1_isdir && f2_isdir {
+                return cmp::Ordering::Greater;
             }
+        }
+
+        let mut res = match self.sort_method {
             SortType::Lexical => {
+                let f1_name = f1.file_name();
+                let f2_name = f2.file_name();
                 if self.case_sensitive {
-                    natural_sort
+                    f1_name.cmp(&f2_name)
                 } else {
-                    natural_sort_case_insensitive
+                    let f1_name = f1_name.to_lowercase();
+                    let f2_name = f2_name.to_lowercase();
+                    f1_name.cmp(&f2_name)
                 }
             }
-            SortType::Mtime => mtime_sort,
+            SortType::Natural => {
+                let f1_name = f1.file_name();
+                let f2_name = f2.file_name();
+                if self.case_sensitive {
+                    alphanumeric_sort::compare_str(&f1_name, &f2_name)
+                } else {
+                    let f1_name = f1_name.to_lowercase();
+                    let f2_name = f2_name.to_lowercase();
+                    alphanumeric_sort::compare_str(&f1_name, &f2_name)
+                }
+            }
+            SortType::Mtime => mtime_sort(f1, f2),
+            SortType::Size => size_sort(f1, f2),
         };
 
-        move |f1, f2| dir_cmp(f1, f2).then_with(|| rev_cmp(base_cmp(f1, f2)))
+        if self.reverse {
+            res = match res {
+                cmp::Ordering::Less => cmp::Ordering::Greater,
+                cmp::Ordering::Greater => cmp::Ordering::Less,
+                s => s,
+            };
+        }
+        return res;
     }
 
     pub fn filter_func(&self) -> fn(&Result<fs::DirEntry, std::io::Error>) -> bool {
@@ -115,41 +132,6 @@ fn filter_hidden(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
     }
 }
 
-const fn dummy_dir_first(_: &JoshutoDirEntry, _: &JoshutoDirEntry) -> cmp::Ordering {
-    cmp::Ordering::Equal
-}
-
-fn dir_first(f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
-    let f1_isdir = f1.file_path().is_dir();
-    let f2_isdir = f2.file_path().is_dir();
-
-    if f1_isdir && !f2_isdir {
-        cmp::Ordering::Less
-    } else if !f1_isdir && f2_isdir {
-        cmp::Ordering::Greater
-    } else {
-        cmp::Ordering::Equal
-    }
-}
-
-const fn dummy_reverse(c: cmp::Ordering) -> cmp::Ordering {
-    c
-}
-
-fn reverse_ordering(c: cmp::Ordering) -> cmp::Ordering {
-    c.reverse()
-}
-
-fn natural_sort_case_insensitive(f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
-    let f1_name = f1.file_name().to_lowercase();
-    let f2_name = f2.file_name().to_lowercase();
-    compare_str(&f1_name, &f2_name)
-}
-
-fn natural_sort(f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
-    compare_str(f1.file_name(), f2.file_name())
-}
-
 fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
     fn compare(
         file1: &JoshutoDirEntry,
@@ -168,4 +150,8 @@ fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering
         })
     }
     compare(&file1, &file2).unwrap_or(cmp::Ordering::Less)
+}
+
+fn size_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
+    file1.metadata.len.cmp(&file2.metadata.len)
 }

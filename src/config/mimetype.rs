@@ -33,12 +33,12 @@ impl JoshutoMimetypeEntry {
         }
     }
 
-    pub fn arg<S: std::convert::Into<String>>(mut self, arg: S) -> Self {
+    pub fn arg<S: std::convert::Into<String>>(&mut self, arg: S) -> &mut Self {
         self._args.push(arg.into());
         self
     }
 
-    pub fn args<I, S>(mut self, args: I) -> Self
+    pub fn args<I, S>(&mut self, args: I) -> &mut Self
     where
         I: Iterator<Item = S>,
         S: std::convert::Into<String>,
@@ -47,17 +47,17 @@ impl JoshutoMimetypeEntry {
         self
     }
 
-    pub fn fork(mut self, fork: bool) -> Self {
+    pub fn fork(&mut self, fork: bool) -> &mut Self {
         self._fork = fork;
         self
     }
 
-    pub fn silent(mut self, silent: bool) -> Self {
+    pub fn silent(&mut self, silent: bool) -> &mut Self {
         self._silent = silent;
         self
     }
 
-    pub fn confirm_exit(mut self, confirm_exit: bool) -> Self {
+    pub fn confirm_exit(&mut self, confirm_exit: bool) -> &mut Self {
         self._confirm_exit = confirm_exit;
         self
     }

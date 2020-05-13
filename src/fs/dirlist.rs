@@ -17,8 +17,7 @@ impl JoshutoDirList {
     pub fn new(path: path::PathBuf, sort_option: &SortOption) -> std::io::Result<Self> {
         let filter_func = sort_option.filter_func();
         let mut contents = read_dir_list(path.as_path(), filter_func)?;
-        let compare_func = sort_option.compare_func();
-        contents.sort_by(compare_func);
+        contents.sort_by(|f1, f2| sort_option.compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
 
@@ -48,10 +47,8 @@ impl JoshutoDirList {
 
     pub fn reload_contents(&mut self, sort_option: &SortOption) -> std::io::Result<()> {
         let filter_func = sort_option.filter_func();
-        let sort_func = sort_option.compare_func();
-
         let mut contents = read_dir_list(&self.path, filter_func)?;
-        contents.sort_by(sort_func);
+        contents.sort_by(|f1, f2| sort_option.compare(f1, f2));
 
         let contents_len = contents.len();
         let index: Option<usize> = if contents_len == 0 {
