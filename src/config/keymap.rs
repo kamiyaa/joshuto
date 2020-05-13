@@ -223,8 +223,6 @@ impl ConfigStructure for JoshutoCommandMapping {
 #[derive(Debug, Deserialize)]
 struct JoshutoMapCommand {
     pub command: String,
-    #[serde(default)]
-    pub args: Vec<String>,
     pub keys: Vec<String>,
 }
 
@@ -238,7 +236,7 @@ impl Flattenable<JoshutoCommandMapping> for JoshutoRawCommandMapping {
     fn flatten(self) -> JoshutoCommandMapping {
         let mut keymaps = JoshutoCommandMapping::new();
         for m in self.mapcommand {
-            match commands::from_args(m.command, m.args) {
+            match commands::parse_command(m.command.as_str()) {
                 Ok(command) => {
                     let keycodes: Vec<Key> = m
                         .keys

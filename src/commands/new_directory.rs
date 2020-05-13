@@ -9,12 +9,12 @@ use crate::util::load_child::LoadChild;
 
 #[derive(Clone, Debug)]
 pub struct NewDirectory {
-    paths: Vec<path::PathBuf>,
+    path: path::PathBuf,
 }
 
 impl NewDirectory {
-    pub fn new(paths: Vec<path::PathBuf>) -> Self {
-        NewDirectory { paths }
+    pub fn new(path: path::PathBuf) -> Self {
+        NewDirectory { path }
     }
     pub const fn command() -> &'static str {
         "mkdir"
@@ -31,9 +31,7 @@ impl std::fmt::Display for NewDirectory {
 
 impl JoshutoRunnable for NewDirectory {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        for path in &self.paths {
-            std::fs::create_dir_all(path)?;
-        }
+        std::fs::create_dir_all(&self.path)?;
 
         let options = &context.config_t.sort_option;
         let curr_path = context.tabs[context.curr_tab_index].curr_path.clone();

@@ -40,3 +40,36 @@ impl JoshutoRunnable for Sort {
         Ok(())
     }
 }
+
+#[derive(Clone, Debug)]
+pub struct SortReverse;
+
+impl SortReverse {
+    pub const fn new() -> Self {
+        Self {}
+    }
+    pub const fn command() -> &'static str {
+        "sort"
+    }
+}
+
+impl JoshutoCommand for SortReverse {}
+
+impl std::fmt::Display for SortReverse {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{} reverse", Self::command())
+    }
+}
+
+impl JoshutoRunnable for SortReverse {
+    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
+        context.config_t.sort_option.reverse = !context.config_t.sort_option.reverse;
+        for tab in context.tabs.iter_mut() {
+            tab.history.depreciate_all_entries();
+        }
+        ReloadDirList::soft_reload(context.curr_tab_index, context)?;
+        LoadChild::load_child(context)?;
+        Ok(())
+    }
+}
+

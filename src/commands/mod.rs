@@ -13,6 +13,7 @@ mod rename_file;
 mod search;
 mod selection;
 mod set_mode;
+mod shell;
 mod show_hidden;
 mod sort;
 mod tab_operations;
@@ -37,8 +38,9 @@ pub use self::rename_file::{RenameFile, RenameFileAppend, RenameFilePrepend};
 pub use self::search::{Search, SearchNext, SearchPrev};
 pub use self::selection::SelectFiles;
 pub use self::set_mode::SetMode;
+pub use self::shell::ShellCommand;
 pub use self::show_hidden::ToggleHiddenFiles;
-pub use self::sort::Sort;
+pub use self::sort::{Sort,SortReverse};
 pub use self::tab_operations::{CloseTab, NewTab};
 pub use self::tab_switch::TabSwitch;
 
@@ -74,87 +76,61 @@ pub trait JoshutoRunnable {
 
 pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
 
-pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn JoshutoCommand>> {
-    match command.as_str() {
+pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
+    let (command, arg) = match s.find(' ') {
+        Some(i) => (&s[..i], s[i+1..].trim_start()),
+        None => (s, ""),
+    };
+
+    match command {
         "bulk_rename" => Ok(Box::new(self::BulkRename::new())),
-        "cd" => match args.len() {
-            0 => match HOME_DIR.as_ref() {
+        "cd" => match arg {
+            "" => match HOME_DIR.as_ref() {
                 Some(s) => Ok(Box::new(self::ChangeDirectory::new(s.clone()))),
                 None => Err(JoshutoError::new(
                     JoshutoErrorKind::EnvVarNotPresent,
                     format!("{}: Cannot find home directory", command),
                 )),
             },
-            1 => match args[0].as_str() {
-                ".." => Ok(Box::new(self::ParentDirectory::new())),
-                arg => Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(arg)))),
-            },
-            i => Err(JoshutoError::new(
-                JoshutoErrorKind::IOInvalidData,
-                format!("{}: Expected 1 argument, got {}", command, i),
-            )),
-        },
+            ".." => Ok(Box::new(self::ParentDirectory::new())),
+            arg => Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(arg)))),
+        }
         "close_tab" => Ok(Box::new(self::CloseTab::new())),
         "copy_files" => Ok(Box::new(self::CopyFiles::new())),
-        "console" => match args.len() {
-            0 => Ok(Box::new(self::CommandLine::new(
-                "".to_string(),
-                "".to_string(),
-            ))),
-            1 => Ok(Box::new(self::CommandLine::new(
-                args[0].clone(),
-                "".to_string(),
-            ))),
-            i => Err(JoshutoError::new(
-                JoshutoErrorKind::IOInvalidData,
-                format!("{}: Expected 0 or 2 arguments, got {}", command, i),
-            )),
-        },
-        "cursor_move_down" => match args.len() {
-            0 => Ok(Box::new(self::CursorMoveDown::new(1))),
-            1 => match args[0].parse::<usize>() {
+        "console" => Ok(Box::new(self::CommandLine::new(arg.to_owned(), "".to_owned()))),
+        "cursor_move_home" => Ok(Box::new(self::CursorMoveHome::new())),
+        "cursor_move_end" => Ok(Box::new(self::CursorMoveEnd::new())),
+        "cursor_move_page_up" => Ok(Box::new(self::CursorMovePageUp::new())),
+        "cursor_move_page_down" => Ok(Box::new(self::CursorMovePageDown::new())),
+        "cursor_move_down" => match arg {
+            "" => Ok(Box::new(self::CursorMoveDown::new(1))),
+            arg => match arg.parse::<usize>() {
                 Ok(s) => Ok(Box::new(self::CursorMoveDown::new(s))),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::ParseError,
                     e.to_string(),
                 )),
             },
-            i => Err(JoshutoError::new(
-                JoshutoErrorKind::IOInvalidData,
-                format!("{}: Expected 0 or 1 arguments, got {}", command, i),
-            )),
-        },
-        "cursor_move_up" => match args.len() {
-            0 => Ok(Box::new(self::CursorMoveUp::new(1))),
-            1 => match args[0].parse::<usize>() {
+        }
+        "cursor_move_up" => match arg {
+            "" => Ok(Box::new(self::CursorMoveUp::new(1))),
+            arg => match arg.parse::<usize>() {
                 Ok(s) => Ok(Box::new(self::CursorMoveUp::new(s))),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::ParseError,
-                    format!("{}: {}", command, e.to_string()),
+                    e.to_string(),
                 )),
             },
-            i => Err(JoshutoError::new(
-                JoshutoErrorKind::IOInvalidData,
-                format!("{}: Expected 0 or 1 arguments, got {}", command, i),
-            )),
-        },
-        "cursor_move_home" => Ok(Box::new(self::CursorMoveHome::new())),
-        "cursor_move_end" => Ok(Box::new(self::CursorMoveEnd::new())),
-        "cursor_move_page_up" => Ok(Box::new(self::CursorMovePageUp::new())),
-        "cursor_move_page_down" => Ok(Box::new(self::CursorMovePageDown::new())),
+        }
         "cut_files" => Ok(Box::new(self::CutFiles::new())),
         "delete_files" => Ok(Box::new(self::DeleteFiles::new())),
         "force_quit" => Ok(Box::new(self::ForceQuit::new())),
-        "mkdir" => {
-            if args.is_empty() {
-                Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
-                    format!("{}: missing additional parameter", command),
-                ))
-            } else {
-                let paths: Vec<PathBuf> = args.iter().map(PathBuf::from).collect();
-                Ok(Box::new(self::NewDirectory::new(paths)))
-            }
+        "mkdir" => match arg {
+            "" => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: missing additional parameter", command),
+            )),
+            arg => Ok(Box::new(self::NewDirectory::new(PathBuf::from(arg)))),
         }
         "new_tab" => Ok(Box::new(self::NewTab::new())),
 
@@ -162,8 +138,8 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
         "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
         "paste_files" => {
             let mut options = Options::default();
-            for arg in args {
-                match arg.as_str() {
+            for arg in arg.split_whitespace() {
+                match arg {
                     "--overwrite" => options.overwrite = true,
                     "--skip_exist" => options.skip_exist = true,
                     _ => {
@@ -178,32 +154,32 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
         }
         "quit" => Ok(Box::new(self::Quit::new())),
         "reload_dir_list" => Ok(Box::new(self::ReloadDirList::new())),
-        "rename" => match args.len() {
-            1 => {
-                let path: PathBuf = PathBuf::from(args[0].as_str());
+        "rename" => match arg {
+            "" => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("rename_file: Expected 1, got 0"),
+            )),
+            arg => {
+                let path: PathBuf = PathBuf::from(arg);
                 Ok(Box::new(self::RenameFile::new(path)))
             }
-            i => Err(JoshutoError::new(
-                JoshutoErrorKind::IOInvalidData,
-                format!("rename_file: Expected 1, got {}", i),
-            )),
         },
         "rename_append" => Ok(Box::new(self::RenameFileAppend::new())),
         "rename_prepend" => Ok(Box::new(self::RenameFilePrepend::new())),
-        "search" => match args.len() {
-            1 => Ok(Box::new(self::Search::new(args[0].as_str()))),
-            i => Err(JoshutoError::new(
+        "search" => match arg {
+            "" => Err(JoshutoError::new(
                 JoshutoErrorKind::IOInvalidData,
-                format!("{}: Expected 1, got {}", command, i),
+                format!("{}: Expected 1, got 0", command),
             )),
+            arg => Ok(Box::new(self::Search::new(arg))),
         },
         "search_next" => Ok(Box::new(self::SearchNext::new())),
         "search_prev" => Ok(Box::new(self::SearchPrev::new())),
         "select_files" => {
             let mut toggle = false;
             let mut all = false;
-            for arg in args {
-                match arg.as_str() {
+            for arg in arg.split_whitespace() {
+                match arg {
                     "--toggle" => toggle = true,
                     "--all" => all = true,
                     _ => {
@@ -217,38 +193,28 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
             Ok(Box::new(self::SelectFiles::new(toggle, all)))
         }
         "set_mode" => Ok(Box::new(self::SetMode::new())),
-        "sort" => {
-            if args.len() == 1 {
-                match args[0].as_str() {
-                    "lexical" => Ok(Box::new(self::Sort::new(SortType::Lexical))),
-                    "mtime" => Ok(Box::new(self::Sort::new(SortType::Mtime))),
-                    "natural" => Ok(Box::new(self::Sort::new(SortType::Natural))),
-                    a => Err(JoshutoError::new(
-                        JoshutoErrorKind::IOInvalidData,
-                        format!("sort: Unknown option {}", a),
-                    )),
-                }
-            } else {
-                Err(JoshutoError::new(
+        "shell" => Ok(Box::new(self::ShellCommand::new(arg.to_owned()))),
+        "sort" => match arg {
+            "reverse" => Ok(Box::new(self::SortReverse::new())),
+            arg => match SortType::parse(arg) {
+                Some(s) => Ok(Box::new(self::Sort::new(s))),
+                None => Err(JoshutoError::new(
                     JoshutoErrorKind::IOInvalidData,
-                    format!("sort: Expected 1, got {}", args.len()),
-                ))
-            }
-        }
-        "tab_switch" => {
-            if args.len() == 1 {
-                match args[0].parse::<i32>() {
-                    Ok(s) => Ok(Box::new(self::TabSwitch::new(s))),
-                    Err(e) => Err(JoshutoError::new(
-                        JoshutoErrorKind::IOInvalidData,
-                        format!("{}: {}", command, e.to_string()),
-                    )),
-                }
-            } else {
-                Err(JoshutoError::new(
+                    format!("sort: Unknown option {}", arg),
+                )),
+            },
+        },
+        "tab_switch" => match arg {
+            "" => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: {}", command, "No option provided"),
+            )),
+            arg => match arg.parse::<i32>() {
+                Ok(s) => Ok(Box::new(self::TabSwitch::new(s))),
+                Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::IOInvalidData,
-                    format!("{}: {}", command, "No option provided"),
-                ))
+                    format!("{}: {}", command, e.to_string()),
+                )),
             }
         }
         "toggle_hidden" => Ok(Box::new(self::ToggleHiddenFiles::new())),
@@ -258,39 +224,3 @@ pub fn from_args(command: String, args: Vec<String>) -> JoshutoResult<Box<dyn Jo
         )),
     }
 }
-
-/*
-pub fn split_shell_style(line: &str) -> Vec<&str> {
-    let mut args: Vec<&str> = Vec::new();
-    let mut char_ind = line.char_indices();
-
-    while let Some((i, ch)) = char_ind.next() {
-        if ch.is_whitespace() {
-            continue;
-        }
-        if ch == '\'' {
-            while let Some((j, ch)) = char_ind.next() {
-                if ch == '\'' {
-                    args.push(&line[i + 1..j]);
-                    break;
-                }
-            }
-        } else if ch == '"' {
-            while let Some((j, ch)) = char_ind.next() {
-                if ch == '"' {
-                    args.push(&line[i + 1..j]);
-                    break;
-                }
-            }
-        } else {
-            while let Some((j, ch)) = char_ind.next() {
-                if ch.is_whitespace() {
-                    args.push(&line[i..j]);
-                    break;
-                }
-            }
-        }
-    }
-    args
-}
-*/

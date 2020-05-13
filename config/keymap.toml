@@ -28,12 +28,10 @@ command = "toggle_hidden"
 keys = [ "z", "h" ]
 
 [[mapcommand]]
-command = "tab_switch"
-args = [ "1" ]
+command = "tab_switch 1"
 keys = [ "\t" ]
 [[mapcommand]]
-command = "tab_switch"
-args = [ "-1" ]
+command = "tab_switch -1"
 keys = [ "backtab" ]
 
 [[mapcommand]]
@@ -81,16 +79,13 @@ command = "open_file_with"
 keys = [ "r" ]
 
 [[mapcommand]]
-command = "console"
-args = [ "cd" ]
+command = "console cd"
 keys = [ "c", "d" ]
 [[mapcommand]]
-command = "cd"
-args = [ ".." ]
+command = "cd .." ]
 keys = [ "left" ]
 [[mapcommand]]
-command = "cd"
-args = [ ".." ]
+command = "cd .." ]
 keys = [ "h" ]
 
 [[mapcommand]]
@@ -103,8 +98,7 @@ keys = [ "y", "y" ]
 command = "paste_files"
 keys = [ "p", "p" ]
 [[mapcommand]]
-command = "paste_files"
-args = [ "--overwrite" ]
+command = "paste_files --overwrite"
 keys = [ "p", "o" ]
 [[mapcommand]]
 command = "delete_files"
@@ -121,17 +115,14 @@ command = "rename_prepend"
 keys = [ "A" ]
 
 [[mapcommand]]
-command = "select_files"
-args = [ "--toggle" ]
+command = "select_files --toggle"
 keys = [ " " ]
 [[mapcommand]]
-command = "select_files"
-args = [ "--toggle", "--all" ]
+command = "select_files --toggle --all"
 keys = [ "t" ]
 
 [[mapcommand]]
-command = "console"
-args = [ "search " ]
+command = "console search "
 keys = [ "/" ]
 [[mapcommand]]
 command = "search_next"
@@ -151,32 +142,28 @@ keys = [ "=" ]
 command = "console"
 keys = [ ";" ]
 [[mapcommand]]
-command = "console"
-args = [ "mkdir " ]
+command = "console mkdir "
 keys = [ "m", "k" ]
 [[mapcommand]]
-command = "console"
-args = [ "rename " ]
+command = "console rename "
 keys = [ "c", "w" ]
 
 [[mapcommand]]
-command = "sort"
-args = [ "lexical" ]
+command = "sort lexical"
 keys = [ "s", "l" ]
 [[mapcommand]]
-command = "sort"
-args = [ "mtime" ]
+command = "sort mtime"
 keys = [ "s", "m" ]
 [[mapcommand]]
-command = "sort"
-args = [ "natural" ]
+command = "sort natural"
 keys = [ "s", "n" ]
+[[mapcommand]]
+command = "sort reverse"
+keys = [ "s", "r" ]
 
 [[mapcommand]]
-command = "cd"
-args = [ "/" ]
+command = "cd /"
 keys = [ "g", "/" ]
 [[mapcommand]]
-command = "cd"
-args = [ "/etc" ]
+command = "cd /etc"
 keys = [ "g", "e" ]
