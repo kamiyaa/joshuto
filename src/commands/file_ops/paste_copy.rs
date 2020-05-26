@@ -15,9 +15,8 @@ pub fn recursive_copy(dest: &Path, src: &Path, options: &Options) -> std::io::Re
         dest_buf.push(s);
     }
     rename_filename_conflict(&mut dest_buf);
-    if !src.is_dir() {
-        std::fs::copy(src, dest_buf)
-    } else {
+    let file_type = fs::symlink_metadata(src)?.file_type();
+    if file_type.is_dir() {
         fs::create_dir(dest_buf.as_path())?;
         let mut total = 0;
         for entry in fs::read_dir(src)? {
@@ -26,6 +25,14 @@ pub fn recursive_copy(dest: &Path, src: &Path, options: &Options) -> std::io::Re
             total += recursive_copy(dest_buf.as_path(), entry_path.as_path(), options)?;
         }
         Ok(total)
+    } else if file_type.is_file() {
+        fs::copy(src, dest_buf)
+    } else if file_type.is_symlink() {
+        let link_path = fs::read_link(src)?;
+        std::os::unix::fs::symlink(link_path, dest_buf)?;
+        Ok(0)
+    } else {
+      Ok(0)
     }
 }
 

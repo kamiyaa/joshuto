@@ -15,22 +15,14 @@ pub fn recursive_cut(dest: &Path, src: &Path, options: &Options) -> std::io::Res
         dest_buf.push(s);
     }
     rename_filename_conflict(&mut dest_buf);
-    if !src.is_dir() {
-        let metadata = src.metadata()?;
-        if fs::rename(src, dest_buf.as_path()).is_err() {
-            fs::copy(src, dest_buf.as_path())?;
-            fs::remove_file(src)?;
-        }
-        Ok(metadata.len())
-    } else {
+    let metadata = fs::symlink_metadata(src)?;
+    let file_type = metadata.file_type();
+    if file_type.is_dir() {
         match fs::rename(src, dest_buf.as_path()) {
-            Ok(_) => {
-                let metadata = dest_buf.metadata()?;
-                Ok(metadata.len())
-            }
+            Ok(_) => Ok(metadata.len()),
             Err(_) => {
-                fs::create_dir(dest_buf.as_path())?;
                 let mut total = 0;
+                fs::create_dir(dest_buf.as_path())?;
                 for entry in fs::read_dir(src)? {
                     let entry = entry?;
                     let entry_path = entry.path();
@@ -40,6 +32,19 @@ pub fn recursive_cut(dest: &Path, src: &Path, options: &Options) -> std::io::Res
                 Ok(total)
             }
         }
+    } else if file_type.is_file() {
+        if fs::rename(src, dest_buf.as_path()).is_err() {
+            fs::copy(src, dest_buf.as_path())?;
+            fs::remove_file(src)?;
+        }
+        Ok(metadata.len())
+    } else if file_type.is_symlink() {
+        let link_path = fs::read_link(src)?;
+        std::os::unix::fs::symlink(link_path, dest_buf)?;
+        fs::remove_file(src)?;
+        Ok(metadata.len())
+    } else {
+      Ok(0)
     }
 }
 
