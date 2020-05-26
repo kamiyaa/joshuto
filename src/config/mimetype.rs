@@ -82,7 +82,10 @@ impl JoshutoMimetypeEntry {
         self._confirm_exit
     }
 
-    pub fn execute_with(&self, paths: &[&Path]) -> std::io::Result<()> {
+    pub fn execute_with<I, S>(&self, paths: I) -> std::io::Result<()>
+      where
+          I: IntoIterator<Item = S>,
+          S: AsRef<std::ffi::OsStr>, {
         let program = String::from(self.get_command());
 
         let mut command = process::Command::new(program);
@@ -92,7 +95,7 @@ impl JoshutoMimetypeEntry {
         }
 
         command.args(self.get_args());
-        command.args(paths.iter().map(|path| path.as_os_str()));
+        command.args(paths);
 
         let mut handle = command.spawn()?;
         if !self.get_fork() {

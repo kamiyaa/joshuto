@@ -73,7 +73,7 @@ impl OpenFile {
             LoadChild::load_child(context)?;
         } else if let Some(entries) = selected_entries {
             let options = Self::get_options(entries[0]);
-            let entry_paths: Vec<&Path> = entries.iter().map(|e| e.file_path().as_path()).collect();
+            let entry_paths: Vec<&str> = entries.iter().map(|e| e.file_name()).collect();
             if !options.is_empty() {
                 let res = if options[0].get_fork() {
                     options[0].execute_with(entry_paths.as_slice())
@@ -142,7 +142,7 @@ impl OpenFileWith {
                 .menu(menu_widget);
             textfield.get_input(backend, &context)
         };
-        let entry_paths: Vec<&Path> = entries.iter().map(|e| e.file_path().as_path()).collect();
+        let entry_paths: Vec<&str> = entries.iter().map(|e| e.file_name()).collect();
 
         match user_input.as_ref() {
             Some(user_input) if user_input.starts_with(PROMPT) => {
