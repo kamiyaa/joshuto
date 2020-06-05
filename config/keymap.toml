@@ -82,10 +82,10 @@ keys = [ "r" ]
 command = "console cd"
 keys = [ "c", "d" ]
 [[mapcommand]]
-command = "cd .." ]
+command = "cd .."
 keys = [ "left" ]
 [[mapcommand]]
-command = "cd .." ]
+command = "cd .."
 keys = [ "h" ]
 
 [[mapcommand]]
