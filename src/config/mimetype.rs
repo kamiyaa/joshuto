@@ -2,7 +2,6 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 use std::io::Read;
-use std::path::Path;
 use std::process;
 
 use super::{parse_config_file, ConfigStructure};
@@ -83,9 +82,10 @@ impl JoshutoMimetypeEntry {
     }
 
     pub fn execute_with<I, S>(&self, paths: I) -> std::io::Result<()>
-      where
-          I: IntoIterator<Item = S>,
-          S: AsRef<std::ffi::OsStr>, {
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<std::ffi::OsStr>,
+    {
         let program = String::from(self.get_command());
 
         let mut command = process::Command::new(program);

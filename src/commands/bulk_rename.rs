@@ -56,8 +56,8 @@ impl BulkRename {
             for path in &paths {
                 let file_name = path.file_name().unwrap();
                 let file_name_as_bytes = file_name.to_str().unwrap().as_bytes();
-                file.write(file_name_as_bytes)?;
-                file.write(&[b'\n'])?;
+                file.write_all(file_name_as_bytes)?;
+                file.write_all(&[b'\n'])?;
             }
         }
 

@@ -4,7 +4,7 @@ use termion::event::Key;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::Style;
-use tui::widgets::{Block, Borders, Widget};
+use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
 use super::TuiView;
@@ -119,10 +119,7 @@ const LONG_SPACE: &str = "                                                      
 impl<'a> Widget for TuiMenu<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let text_iter = self.options.iter();
-        let block = Block::default().borders(Borders::TOP).render(area, buf);
-
         let style = Style::default();
-
         let area_x = area.x + 1;
         let area_y = area.y + 1;
 

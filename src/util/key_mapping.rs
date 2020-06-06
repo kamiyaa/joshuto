@@ -1,7 +1,7 @@
 use termion::event::Key;
 
 pub fn str_to_key(s: &str) -> Option<Key> {
-    if s.len() == 0 {
+    if s.is_empty() {
         return None;
     }
 
@@ -34,7 +34,7 @@ pub fn str_to_key(s: &str) -> Option<Key> {
         _ => None,
     };
 
-    if let Some(_) = key {
+    if key.is_some() {
         return key;
     }
 

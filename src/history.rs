@@ -101,12 +101,9 @@ impl DirectoryHistory for JoshutoHistory {
     }
 
     fn reload(&mut self, path: &Path, sort_option: &sort::SortOption) -> std::io::Result<()> {
-        match self.entry(path.to_path_buf()) {
-            Entry::Occupied(mut entry) => {
-                let dirlist = entry.get_mut();
-                dirlist.reload_contents(sort_option)?;
-            }
-            _ => {}
+        if let Entry::Occupied(mut entry) = self.entry(path.to_path_buf()) {
+            let dirlist = entry.get_mut();
+            dirlist.reload_contents(sort_option)?;
         }
         Ok(())
     }
@@ -116,7 +113,9 @@ impl DirectoryHistory for JoshutoHistory {
     }
 
     fn depreciate_entry(&mut self, path: &Path) {
-        self.get_mut(path).map(|v| v.depreciate());
+        if let Some(v) = self.get_mut(path) {
+            v.depreciate();
+        }
     }
 }
 

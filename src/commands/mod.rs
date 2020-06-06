@@ -40,7 +40,7 @@ pub use self::selection::SelectFiles;
 pub use self::set_mode::SetMode;
 pub use self::shell::ShellCommand;
 pub use self::show_hidden::ToggleHiddenFiles;
-pub use self::sort::{Sort,SortReverse};
+pub use self::sort::{Sort, SortReverse};
 pub use self::tab_operations::{CloseTab, NewTab};
 pub use self::tab_switch::TabSwitch;
 
@@ -49,7 +49,7 @@ use std::path::PathBuf;
 use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::io::Options;
+use crate::io::IOWorkerOptions;
 use crate::ui::TuiBackend;
 use crate::util::sort::SortType;
 
@@ -78,7 +78,7 @@ pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug 
 
 pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
     let (command, arg) = match s.find(' ') {
-        Some(i) => (&s[..i], s[i+1..].trim_start()),
+        Some(i) => (&s[..i], s[i + 1..].trim_start()),
         None => (s, ""),
     };
 
@@ -94,10 +94,13 @@ pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
             },
             ".." => Ok(Box::new(self::ParentDirectory::new())),
             arg => Ok(Box::new(self::ChangeDirectory::new(PathBuf::from(arg)))),
-        }
+        },
         "close_tab" => Ok(Box::new(self::CloseTab::new())),
         "copy_files" => Ok(Box::new(self::CopyFiles::new())),
-        "console" => Ok(Box::new(self::CommandLine::new(arg.to_owned(), "".to_owned()))),
+        "console" => Ok(Box::new(self::CommandLine::new(
+            arg.to_owned(),
+            "".to_owned(),
+        ))),
         "cursor_move_home" => Ok(Box::new(self::CursorMoveHome::new())),
         "cursor_move_end" => Ok(Box::new(self::CursorMoveEnd::new())),
         "cursor_move_page_up" => Ok(Box::new(self::CursorMovePageUp::new())),
@@ -111,7 +114,7 @@ pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
                     e.to_string(),
                 )),
             },
-        }
+        },
         "cursor_move_up" => match arg {
             "" => Ok(Box::new(self::CursorMoveUp::new(1))),
             arg => match arg.parse::<usize>() {
@@ -121,7 +124,7 @@ pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
                     e.to_string(),
                 )),
             },
-        }
+        },
         "cut_files" => Ok(Box::new(self::CutFiles::new())),
         "delete_files" => Ok(Box::new(self::DeleteFiles::new())),
         "force_quit" => Ok(Box::new(self::ForceQuit::new())),
@@ -131,13 +134,13 @@ pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
                 format!("{}: missing additional parameter", command),
             )),
             arg => Ok(Box::new(self::NewDirectory::new(PathBuf::from(arg)))),
-        }
+        },
         "new_tab" => Ok(Box::new(self::NewTab::new())),
 
         "open_file" => Ok(Box::new(self::OpenFile::new())),
         "open_file_with" => Ok(Box::new(self::OpenFileWith::new())),
         "paste_files" => {
-            let mut options = Options::default();
+            let mut options = IOWorkerOptions::default();
             for arg in arg.split_whitespace() {
                 match arg {
                     "--overwrite" => options.overwrite = true,
@@ -157,7 +160,7 @@ pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
         "rename" => match arg {
             "" => Err(JoshutoError::new(
                 JoshutoErrorKind::IOInvalidData,
-                format!("rename_file: Expected 1, got 0"),
+                format!("{}: Expected 1, got 0", command),
             )),
             arg => {
                 let path: PathBuf = PathBuf::from(arg);
@@ -193,7 +196,17 @@ pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
             Ok(Box::new(self::SelectFiles::new(toggle, all)))
         }
         "set_mode" => Ok(Box::new(self::SetMode::new())),
-        "shell" => Ok(Box::new(self::ShellCommand::new(arg.to_owned()))),
+        "shell" => match shell_words::split(arg) {
+            Ok(s) if !s.is_empty() => Ok(Box::new(self::ShellCommand::new(s))),
+            Ok(_) => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("sort: args {}", arg),
+            )),
+            Err(e) => Err(JoshutoError::new(
+                JoshutoErrorKind::IOInvalidData,
+                format!("{}: {}", arg, e),
+            )),
+        },
         "sort" => match arg {
             "reverse" => Ok(Box::new(self::SortReverse::new())),
             arg => match SortType::parse(arg) {
@@ -215,8 +228,8 @@ pub fn parse_command(s: &str) -> JoshutoResult<Box<dyn JoshutoCommand>> {
                     JoshutoErrorKind::IOInvalidData,
                     format!("{}: {}", command, e.to_string()),
                 )),
-            }
-        }
+            },
+        },
         "toggle_hidden" => Ok(Box::new(self::ToggleHiddenFiles::new())),
         inp => Err(JoshutoError::new(
             JoshutoErrorKind::UnknownCommand,

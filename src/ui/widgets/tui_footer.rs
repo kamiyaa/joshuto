@@ -49,12 +49,9 @@ impl<'a> Widget for TuiFooter<'a> {
             Text::raw(mimetype),
         ];
 
-        match &self.entry.metadata.file_type {
-            FileType::Symlink(s) => {
-                text.push(Text::styled(" -> ", mode_style));
-                text.push(Text::styled(s, mode_style));
-            }
-            _ => {}
+        if let FileType::Symlink(s) = &self.entry.metadata.file_type {
+            text.push(Text::styled(" -> ", mode_style));
+            text.push(Text::styled(s, mode_style));
         }
 
         Paragraph::new(text.iter()).wrap(true).render(area, buf);

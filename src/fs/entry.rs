@@ -1,6 +1,6 @@
 use std::{fs, path};
 
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Modifier, Style};
 
 use crate::fs::JoshutoMetadata;
 

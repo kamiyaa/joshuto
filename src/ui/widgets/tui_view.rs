@@ -109,10 +109,6 @@ impl<'a> Widget for TuiView<'a> {
                     let text = [Text::styled(&self.context.message_queue[0], message_style)];
 
                     Paragraph::new(text.iter()).wrap(true).render(rect, buf);
-                } else if let Some(msg) = self.context.worker_msg.as_ref() {
-                    let text = [Text::styled(msg, message_style)];
-
-                    Paragraph::new(text.iter()).wrap(true).render(rect, buf);
                 } else if let Some(entry) = curr_list.get_curr_ref() {
                     TuiFooter::new(entry).render(rect, buf);
                 }

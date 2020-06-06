@@ -1,3 +1,5 @@
 mod io_worker;
+mod name_resolution;
 
-pub use self::io_worker::{IOWorkerObserver, IOWorkerThread, Options};
+pub use io_worker::{FileOp, IOWorkerObserver, IOWorkerOptions, IOWorkerThread};
+pub use name_resolution::rename_filename_conflict;

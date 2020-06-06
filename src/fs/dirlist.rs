@@ -8,7 +8,6 @@ pub struct JoshutoDirList {
     pub index: Option<usize>,
     path: path::PathBuf,
     content_outdated: bool,
-    order_outdated: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
 }
@@ -27,10 +26,20 @@ impl JoshutoDirList {
             index,
             path,
             content_outdated: false,
-            order_outdated: false,
             metadata,
             contents,
         })
+    }
+
+    pub fn modified(&self) -> bool {
+        let metadata = std::fs::symlink_metadata(self.path.as_path());
+        match metadata {
+            Ok(m) => match m.modified() {
+                Ok(s) => s > self.metadata.modified,
+                _ => false,
+            },
+            _ => false,
+        }
     }
 
     pub fn depreciate(&mut self) {
@@ -38,7 +47,7 @@ impl JoshutoDirList {
     }
 
     pub fn need_update(&self) -> bool {
-        self.content_outdated
+        self.content_outdated || self.modified()
     }
 
     pub fn file_path(&self) -> &path::PathBuf {

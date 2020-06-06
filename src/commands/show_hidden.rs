@@ -20,9 +20,8 @@ impl ToggleHiddenFiles {
 
         for tab in &mut context.tabs {
             tab.history.depreciate_all_entries();
-            match tab.curr_list_mut() {
-                Some(s) => s.depreciate(),
-                None => {}
+            if let Some(s) = tab.curr_list_mut() {
+                s.depreciate();
             }
         }
     }

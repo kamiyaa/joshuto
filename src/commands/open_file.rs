@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use crate::commands::{ChangeDirectory, JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;

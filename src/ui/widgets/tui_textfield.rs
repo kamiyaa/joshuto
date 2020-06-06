@@ -116,7 +116,7 @@ impl<'a> TuiTextField<'a> {
 
                     let prefix = &line_buffer.as_str()[..cursor_xpos];
 
-                    let curr = line_buffer.as_str()[cursor_xpos..].chars().nth(0);
+                    let curr = line_buffer.as_str()[cursor_xpos..].chars().next();
                     let (suffix, curr) = match curr {
                         Some(c) => {
                             let curr_len = c.len_utf8();

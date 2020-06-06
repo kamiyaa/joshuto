@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Color, Modifier};
 
 use crate::THEME_FILE;
 

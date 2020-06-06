@@ -2,7 +2,7 @@ use crate::commands::CommandKeybind;
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::history::DirectoryHistory;
-use crate::io::IOWorkerObserver;
+use crate::io::FileOp;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::widgets::{TuiCommandMenu, TuiView};
@@ -29,19 +29,10 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         backend.render(view);
     }
 
-    let mut io_observer = None;
     while !context.exit {
-        /* checking if there are workers that need to be run */
-        if !context.worker_queue.is_empty() {
-            if io_observer.is_none() {
-                let worker = context.worker_queue.pop_front().unwrap();
-                io_observer = {
-                    let event_tx = context.events.event_tx.clone();
-                    let observer = IOWorkerObserver::new(worker, event_tx);
-                    Some(observer)
-                };
-                context.worker_busy = true;
-            }
+        if !context.worker.is_empty() && !context.worker.is_busy() {
+            let tx = context.events.event_tx.clone();
+            context.worker.run_next_job(tx);
         }
 
         let event = match context.events.next() {
@@ -50,38 +41,44 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         };
 
         match event {
-            Event::IOWorkerProgress(p) => {
-                context.worker_msg = Some(format!("{} copied", format::file_size_to_string(p)));
+            Event::IOWorkerProgress((FileOp::Cut, p)) => {
+                context.push_msg(format!("{} moved", format::file_size_to_string(p)));
             }
-            Event::IOWorkerResult(res) => {
-                match io_observer {
-                    Some(handle) => {
-                        let src = handle.src.clone();
-                        let dest = handle.dest.clone();
-                        handle.join();
-                        let msg = match res {
-                            Ok(s) => {
-                                let size_string = format::file_size_to_string(s);
-                                format!(
-                                    "io_worker completed successfully: {} processed",
-                                    size_string
-                                )
-                            }
-                            Err(e) => format!("io_worker was not completed: {}", e.to_string()),
-                        };
-                        context.message_queue.push_back(msg);
-                        let options = &context.config_t.sort_option;
-                        for tab in context.tabs.iter_mut() {
-                            tab.history.reload(&src, options)?;
-                            tab.history.reload(&dest, options)?;
-                        }
-                        LoadChild::load_child(&mut context)?;
-                    }
-                    None => {}
+            Event::IOWorkerProgress((FileOp::Copy, p)) => {
+                context.push_msg(format!("{} copied", format::file_size_to_string(p)));
+            }
+            Event::IOWorkerResult((file_op, Ok(p))) => {
+                let observer = context.worker.observer.take().unwrap();
+                let options = &context.config_t.sort_option;
+                for tab in context.tabs.iter_mut() {
+                    tab.history.reload(&observer.src, options)?;
+                    tab.history.reload(&observer.dest, options)?;
                 }
-                io_observer = None;
-                context.worker_msg = None;
-                context.worker_busy = false;
+                let msg = match file_op {
+                    FileOp::Copy => format!(
+                        "copied {} to {:?}",
+                        format::file_size_to_string(p),
+                        observer.dest
+                    ),
+                    FileOp::Cut => format!(
+                        "moved {} to {:?}",
+                        format::file_size_to_string(p),
+                        observer.dest
+                    ),
+                };
+                context.push_msg(msg);
+                observer.join();
+            }
+            Event::IOWorkerResult((_, Err(e))) => {
+                let observer = context.worker.observer.take().unwrap();
+                let options = &context.config_t.sort_option;
+                for tab in context.tabs.iter_mut() {
+                    tab.history.reload(&observer.src, options)?;
+                    tab.history.reload(&observer.dest, options)?;
+                }
+                let msg = format!("{}", e);
+                context.push_msg(msg);
+                observer.join();
             }
             Event::Input(key) => {
                 /* Message handling */

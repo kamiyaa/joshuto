@@ -1,35 +1,33 @@
 use lazy_static::lazy_static;
 
-use std::path;
-use std::sync::{atomic, Mutex};
-
 use crate::fs::JoshutoDirList;
+use crate::io::FileOp;
+use std::path;
+use std::sync::Mutex;
 
 lazy_static! {
-    static ref SELECTED_FILES: Mutex<Option<Vec<path::PathBuf>>> = Mutex::new(None);
-    static ref FILE_OPERATION: Mutex<FileOp> = Mutex::new(FileOp::Copy);
-    static ref TAB_SRC: atomic::AtomicUsize = atomic::AtomicUsize::new(0);
+    static ref LOCAL_STATE: Mutex<LocalState> = Mutex::new(LocalState::new());
 }
 
-#[derive(Clone, Debug)]
-pub enum FileOp {
-    Cut,
-    Copy,
+pub struct LocalState {
+    pub paths: Vec<path::PathBuf>,
+    pub file_op: FileOp,
 }
-
-pub struct LocalState;
 
 impl LocalState {
+    pub fn new() -> Self {
+        Self {
+            paths: Vec::new(),
+            file_op: FileOp::Copy,
+        }
+    }
+
     pub fn set_file_op(operation: FileOp) {
-        let mut data = FILE_OPERATION.lock().unwrap();
-        *data = operation;
+        let mut data = LOCAL_STATE.lock().unwrap();
+        (*data).file_op = operation;
     }
 
-    pub fn set_tab_src(tab_index: usize) {
-        TAB_SRC.store(tab_index, atomic::Ordering::Release);
-    }
-
-    pub fn repopulated_selected_files(dirlist: &JoshutoDirList) -> std::io::Result<()> {
+    pub fn repopulate(dirlist: &JoshutoDirList) -> std::io::Result<()> {
         let selected = dirlist.get_selected_paths();
         if selected.is_empty() {
             Err(std::io::Error::new(
@@ -39,17 +37,16 @@ impl LocalState {
         } else {
             let selected_clone: Vec<path::PathBuf> =
                 selected.iter().map(|p| (*p).clone()).collect();
-            let mut data = SELECTED_FILES.lock().unwrap();
-            *data = Some(selected_clone);
+            let mut data = LOCAL_STATE.lock().unwrap();
+            (*data).paths = selected_clone;
             Ok(())
         }
     }
 
-    pub fn take_selected_files() -> Option<Vec<path::PathBuf>> {
-        SELECTED_FILES.lock().unwrap().take()
-    }
-
-    pub fn get_file_operation() -> FileOp {
-        (*FILE_OPERATION.lock().unwrap()).clone()
+    pub fn take() -> LocalState {
+        let mut m = LOCAL_STATE.lock().unwrap();
+        let mut v = LocalState::new();
+        std::mem::swap(&mut (*m), &mut v);
+        v
     }
 }

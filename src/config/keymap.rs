@@ -6,7 +6,7 @@ use termion::event::Key;
 
 use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::commands::{self, CommandKeybind, JoshutoCommand};
-use crate::io::Options;
+use crate::io::IOWorkerOptions;
 use crate::util::key_mapping::str_to_key;
 use crate::KEYMAP_FILE;
 
@@ -136,7 +136,7 @@ impl JoshutoCommandMapping {
         let keys = [Key::Char('y'), Key::Char('y')];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = Box::new(commands::PasteFiles::new(Options::default()));
+        let cmd = Box::new(commands::PasteFiles::new(IOWorkerOptions::default()));
         let keys = [Key::Char('p'), Key::Char('p')];
         insert_keycommand(&mut m, cmd, &keys)?;
 

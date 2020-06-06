@@ -72,4 +72,3 @@ impl JoshutoRunnable for SortReverse {
         Ok(())
     }
 }
-

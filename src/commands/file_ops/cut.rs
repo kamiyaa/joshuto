@@ -1,9 +1,10 @@
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
+use crate::io::FileOp;
 use crate::ui::TuiBackend;
 
-use super::local_state::{FileOp, LocalState};
+use super::local_state::LocalState;
 
 #[derive(Clone, Debug)]
 pub struct CutFiles;
@@ -28,13 +29,9 @@ impl std::fmt::Display for CutFiles {
 impl JoshutoRunnable for CutFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         let curr_tab = context.curr_tab_ref();
-        match curr_tab.curr_list_ref() {
-            Some(list) => {
-                LocalState::repopulated_selected_files(list)?;
-                LocalState::set_file_op(FileOp::Cut);
-                LocalState::set_tab_src(context.curr_tab_index);
-            }
-            None => {}
+        if let Some(list) = curr_tab.curr_list_ref() {
+            LocalState::repopulate(list)?;
+            LocalState::set_file_op(FileOp::Cut);
         }
         Ok(())
     }

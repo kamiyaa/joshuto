@@ -5,11 +5,13 @@ use std::thread;
 use termion::event::Key;
 use termion::input::TermRead;
 
+use crate::io::FileOp;
+
 #[derive(Debug)]
 pub enum Event {
     Input(Key),
-    IOWorkerProgress(u64),
-    IOWorkerResult(std::io::Result<u64>),
+    IOWorkerProgress((FileOp, u64)),
+    IOWorkerResult((FileOp, std::io::Result<u64>)),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -58,7 +60,6 @@ impl Events {
                 }
 
                 while let Ok(_) = input_rx.recv() {
-                    let stdin = io::stdin();
                     if let Some(key) = keys.next() {
                         if let Ok(key) = key {
                             if let Err(e) = event_tx.send(Event::Input(key)) {
