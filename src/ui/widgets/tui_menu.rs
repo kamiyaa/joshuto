@@ -3,8 +3,8 @@ use std::iter::Iterator;
 use termion::event::Key;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::Style;
-use tui::widgets::{Block, Borders, Widget};
+use tui::style::{Color, Style};
+use tui::widgets::{Block, Borders, Clear, Widget};
 use unicode_width::UnicodeWidthStr;
 
 use super::TuiView;
@@ -13,6 +13,7 @@ use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
 use crate::util::event::Event;
+use crate::util::worker;
 
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;
@@ -27,16 +28,17 @@ impl TuiCommandMenu {
     pub fn get_input<'a>(
         &mut self,
         backend: &mut TuiBackend,
-        context: &JoshutoContext,
+        context: &mut JoshutoContext,
         m: &'a JoshutoCommandMapping,
     ) -> Option<&'a Box<dyn JoshutoCommand>> {
         let mut map: &JoshutoCommandMapping = &m;
         let terminal = backend.terminal_mut();
-        context.events.flush();
+        context.flush_event();
 
         loop {
             terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
+
 
                 {
                     let view = TuiView::new(&context);
@@ -72,12 +74,19 @@ impl TuiCommandMenu {
                         height: (display_str_len + BORDER_HEIGHT) as u16,
                     };
 
+                    frame.render_widget(Clear, menu_rect);
                     frame.render_widget(TuiMenu::new(&display_str), menu_rect);
                 }
             });
 
-            if let Ok(event) = context.events.next() {
+            if let Ok(event) = context.poll_event() {
                 match event {
+                    Event::IOWorkerProgress(res) => {
+                        worker::process_worker_progress(context, res);
+                    }
+                    Event::IOWorkerResult(res) => {
+                        worker::process_finished_worker(context, res);
+                    }
                     Event::Input(key) => {
                         match key {
                             Key::Esc => return None,
@@ -91,9 +100,8 @@ impl TuiCommandMenu {
                                 None => return None,
                             },
                         }
-                        context.events.flush();
+                        context.flush_event();
                     }
-                    _ => {}
                 }
             }
         }
@@ -114,27 +122,22 @@ impl<'a> TuiMenu<'a> {
     }
 }
 
-const LONG_SPACE: &str = "                                                      ";
 
 impl<'a> Widget for TuiMenu<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let text_iter = self.options.iter();
-        let style = Style::default();
+        let text_iter = self.options.iter().chain(&[" "]);
+        let style = Style::default().fg(Color::Reset).bg(Color::Reset);
         let area_x = area.x + 1;
         let area_y = area.y + 1;
 
-        Block::default().borders(Borders::TOP).render(area, buf);
+        Block::default()
+            .style(style)
+            .borders(Borders::TOP)
+            .render(area, buf);
 
         for (i, text) in text_iter.enumerate() {
             let width = text.width();
             buf.set_stringn(area_x, area_y + i as u16, text, width, style);
-            buf.set_stringn(
-                area_x + width as u16,
-                area_y + i as u16,
-                LONG_SPACE,
-                area.width as usize,
-                style,
-            );
         }
     }
 }

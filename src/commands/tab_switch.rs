@@ -28,7 +28,7 @@ impl TabSwitch {
         context
             .tab_context_mut()
             .curr_tab_mut()
-            .history
+            .history_mut()
             .create_or_soft_update(path.as_path(), &options);
         Ok(())
     }

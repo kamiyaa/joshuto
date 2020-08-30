@@ -10,10 +10,10 @@ use crate::util::event::{Event, Events};
 pub struct JoshutoContext {
     pub exit: bool,
     pub config_t: config::JoshutoConfig,
-    local_state: Option<LocalStateContext>,
+    events: Events,
     tab_context: TabContext,
-    pub events: Events,
-    pub message_queue: VecDeque<String>,
+    local_state: Option<LocalStateContext>,
+    message_queue: VecDeque<String>,
     worker_queue: VecDeque<IOWorkerThread>,
     worker: Option<IOWorkerObserver>,
 }
@@ -22,10 +22,10 @@ impl JoshutoContext {
     pub fn new(config_t: config::JoshutoConfig) -> Self {
         Self {
             exit: false,
-            local_state: None,
-            tab_context: TabContext::default(),
-            message_queue: VecDeque::with_capacity(4),
             events: Events::new(),
+            tab_context: TabContext::new(),
+            local_state: None,
+            message_queue: VecDeque::with_capacity(4),
             worker_queue: VecDeque::new(),
             worker: None,
             config_t,
@@ -39,8 +39,14 @@ impl JoshutoContext {
         &mut self.tab_context
     }
 
+    pub fn message_queue_ref(&self) -> &VecDeque<String> {
+        &self.message_queue
+    }
     pub fn push_msg(&mut self, msg: String) {
         self.message_queue.push_back(msg);
+    }
+    pub fn pop_msg(&mut self) -> Option<String> {
+        self.message_queue.pop_front()
     }
 
     // event related
@@ -108,8 +114,7 @@ impl JoshutoContext {
                         let _ = tx.send(Event::IOWorkerResult((file_op, res)));
                     }
                     Err(e) => {
-                        let err = std::io::Error::new(std::io::ErrorKind::Other,
-                            "Sending Error");
+                        let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
                         let _ = tx.send(Event::IOWorkerResult((file_op, Err(err))));
                     }
                 }

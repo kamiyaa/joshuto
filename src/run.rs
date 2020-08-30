@@ -9,6 +9,7 @@ use crate::ui::widgets::{TuiCommandMenu, TuiView};
 use crate::util::event::Event;
 use crate::util::format;
 use crate::util::load_child::LoadChild;
+use crate::util::worker;
 
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
@@ -30,8 +31,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
 
     while !context.exit {
         if !context.worker_is_busy() && !context.worker_is_empty() {
-            context.push_msg("Starting new io_worker task".to_string());
             context.start_next_job();
+            context.push_msg("started new io_worker task".to_string());
         }
 
         let event = match context.poll_event() {
@@ -40,67 +41,34 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         };
 
         match event {
-            Event::IOWorkerProgress((FileOp::Cut, p)) => {
-                context.message_queue.clear();
-                context.set_worker_msg(format!("{} moved", format::file_size_to_string(p)));
+            Event::IOWorkerProgress(res) => {
+                worker::process_worker_progress(&mut context, res);
             }
-            Event::IOWorkerProgress((FileOp::Copy, p)) => {
-                context.message_queue.clear();
-                context.set_worker_msg(format!("{} copied", format::file_size_to_string(p)));
-            }
-            Event::IOWorkerResult((file_op, status)) => {
-                let observer = context.remove_job().unwrap();
-                let options = context.config_t.sort_option.clone();
-                for tab in context.tab_context_mut().iter_mut() {
-                    tab.history.reload(observer.get_dest_path(), &options);
-                    tab.history.reload(observer.get_src_path(), &options);
-                }
-                context.message_queue.clear();
-                match status {
-                    Ok(p) => {
-                        let msg = match file_op {
-                            FileOp::Copy => format!(
-                                "copied {} to {:?}",
-                                format::file_size_to_string(p),
-                                observer.get_dest_path()
-                            ),
-                            FileOp::Cut => format!(
-                                "moved {} to {:?}",
-                                format::file_size_to_string(p),
-                                observer.get_dest_path()
-                            ),
-                        };
-                        context.push_msg(msg);
-                    }
-                    Err(e) => {
-                        let msg = format!("{}", e);
-                        context.push_msg(msg);
-                    }
-                }
-                observer.join();
+            Event::IOWorkerResult(res) => {
+                worker::process_finished_worker(&mut context, res);
             }
             Event::Input(key) => {
-                context.message_queue.clear();
+                if !context.message_queue_ref().is_empty() {
+                    context.pop_msg();
+                }
                 match keymap_t.as_ref().get(&key) {
                     None => {
-                        context
-                            .message_queue
-                            .push_back(format!("Unknown keycode: {:?}", key));
+                        context.push_msg(format!("Unknown keycode: {:?}", key));
                     }
                     Some(CommandKeybind::SimpleKeybind(command)) => {
                         if let Err(e) = command.execute(&mut context, &mut backend) {
-                            context.message_queue.push_back(e.to_string());
+                            context.push_msg(e.to_string());
                         }
                     }
                     Some(CommandKeybind::CompositeKeybind(m)) => {
                         let cmd = {
                             let mut menu = TuiCommandMenu::new();
-                            menu.get_input(&mut backend, &context, &m)
+                            menu.get_input(&mut backend, &mut context, &m)
                         };
 
                         if let Some(command) = cmd {
                             if let Err(e) = command.execute(&mut context, &mut backend) {
-                                context.message_queue.push_back(e.to_string());
+                                context.push_msg(e.to_string());
                             }
                         }
                     }

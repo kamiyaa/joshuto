@@ -22,7 +22,10 @@ impl DeleteFiles {
         "delete_files"
     }
 
-    pub fn remove_files(paths: &[&path::Path]) -> std::io::Result<()> {
+    pub fn remove_files<'a, I>(paths: I) -> std::io::Result<()>
+    where
+        I: Iterator<Item = &'a path::Path>,
+    {
         for path in paths {
             if let Ok(metadata) = fs::symlink_metadata(path) {
                 if metadata.is_dir() {
@@ -53,7 +56,7 @@ impl DeleteFiles {
         let ch = {
             let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
             let mut prompt = TuiPrompt::new(&prompt_str);
-            prompt.get_key(backend, &context)
+            prompt.get_key(backend, context)
         };
 
         if ch == Key::Char('y') || ch == Key::Char('\n') {
@@ -61,19 +64,19 @@ impl DeleteFiles {
                 let ch = {
                     let prompt_str = "Are you sure? (y/N)";
                     let mut prompt = TuiPrompt::new(prompt_str);
-                    prompt.get_key(backend, &context)
+                    prompt.get_key(backend, context)
                 };
                 if ch == Key::Char('y') {
-                    Self::remove_files(&paths)?;
+                    Self::remove_files(paths.iter().map(|p| p.as_path()))?;
                     ReloadDirList::reload(tab_index, context)?;
                     let msg = format!("Deleted {} files", paths_len);
-                    context.message_queue.push_back(msg);
+                    context.push_msg(msg);
                 }
             } else {
-                Self::remove_files(&paths)?;
+                Self::remove_files(paths.iter().map(|p| p.as_path()))?;
                 ReloadDirList::reload(tab_index, context)?;
                 let msg = format!("Deleted {} files", paths_len);
-                context.message_queue.push_back(msg);
+                context.push_msg(msg);
             }
         }
         Ok(())
@@ -95,7 +98,7 @@ impl JoshutoRunnable for DeleteFiles {
         let options = context.config_t.sort_option.clone();
         let curr_path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
         for tab in context.tab_context_mut().iter_mut() {
-            tab.history.reload(&curr_path, &options)?;
+            tab.history_mut().reload(&curr_path, &options)?;
         }
         LoadChild::load_child(context)?;
         Ok(())

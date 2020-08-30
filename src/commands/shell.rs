@@ -61,9 +61,7 @@ impl JoshutoRunnable for ShellCommand {
         backend.terminal_drop();
         let res = self.shell_command(context);
         ReloadDirList::soft_reload(context.tab_context_ref().get_index(), context)?;
-        context
-            .message_queue
-            .push_back(format!("Finished: {}", self.words.join(" ")));
+        context.push_msg(format!("Finished: {}", self.words.join(" ")));
         backend.terminal_restore()?;
         res?;
         Ok(())

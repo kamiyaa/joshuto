@@ -27,7 +27,7 @@ impl CommandLine {
             .prompt(":")
             .prefix(self.prefix.as_str())
             .suffix(self.suffix.as_str())
-            .get_input(backend, &context);
+            .get_input(backend, context);
 
         if let Some(s) = user_input {
             let trimmed = s.trim_start();

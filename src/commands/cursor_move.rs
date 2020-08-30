@@ -30,7 +30,7 @@ pub fn cursor_move(new_index: usize, context: &mut JoshutoContext) -> JoshutoRes
             context
                 .tab_context_mut()
                 .curr_tab_mut()
-                .history
+                .history_mut()
                 .create_or_soft_update(path.as_path(), &sort_options)?;
         }
     }
@@ -154,7 +154,7 @@ impl JoshutoRunnable for CursorMovePageUp {
         };
 
         if let Some(s) = movement {
-            cursor_move(s, context);
+            cursor_move(s, context)?;
         }
         Ok(())
     }

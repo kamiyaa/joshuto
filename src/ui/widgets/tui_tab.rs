@@ -18,8 +18,7 @@ impl<'a> TuiTabBar<'a> {
 
 impl<'a> Widget for TuiTabBar<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let selected = Style::default()
-            .add_modifier(Modifier::REVERSED);
+        let selected = Style::default().add_modifier(Modifier::REVERSED);
 
         let text = Spans::from(vec![
             Span::styled(format!("{}: {}", self.curr + 1, self.name), selected),

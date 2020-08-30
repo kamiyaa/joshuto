@@ -5,7 +5,7 @@ use crate::history::{DirectoryHistory, JoshutoHistory};
 use crate::util::sort;
 
 pub struct JoshutoTab {
-    pub history: JoshutoHistory,
+    history: JoshutoHistory,
     curr_pwd: PathBuf,
 }
 
@@ -27,6 +27,10 @@ impl JoshutoTab {
 
     pub fn set_pwd(&mut self, pwd: &Path) {
         self.curr_pwd = pwd.to_path_buf();
+    }
+
+    pub fn history_mut(&mut self) -> &mut JoshutoHistory {
+        &mut self.history
     }
 
     pub fn curr_list_ref(&self) -> Option<&JoshutoDirList> {

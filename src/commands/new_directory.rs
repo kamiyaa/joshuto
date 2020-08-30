@@ -36,7 +36,7 @@ impl JoshutoRunnable for NewDirectory {
         let options = context.config_t.sort_option.clone();
         let curr_path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
         for tab in context.tab_context_mut().iter_mut() {
-            tab.history.reload(&curr_path, &options)?;
+            tab.history_mut().reload(&curr_path, &options)?;
         }
 
         LoadChild::load_child(context)?;

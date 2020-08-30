@@ -36,7 +36,7 @@ impl ChangeDirectory {
         context
             .tab_context_mut()
             .curr_tab_mut()
-            .history
+            .history_mut()
             .populate_to_root(&path, &sort_options)?;
 
         Ok(())

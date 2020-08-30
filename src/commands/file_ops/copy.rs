@@ -29,17 +29,7 @@ impl std::fmt::Display for CopyFiles {
 impl JoshutoRunnable for CopyFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-            let mut selected: Vec<&path::Path> = list
-                .iter()
-                .filter(|e| e.is_selected())
-                .map(|e| e.file_path())
-                .collect();
-            if selected.is_empty() {
-                selected = match list.get_curr_ref() {
-                    Some(s) => vec![s.file_path()],
-                    None => vec![],
-                }
-            }
+            let selected = list.get_selected_paths();
 
             let mut local_state = LocalStateContext::new();
             local_state.set_paths(selected.into_iter());

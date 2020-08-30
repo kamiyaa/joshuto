@@ -22,8 +22,8 @@ impl LocalStateContext {
 
     pub fn set_paths<'a, I>(&mut self, vals: I)
     where
-        I: Iterator<Item = &'a path::Path>,
+        I: Iterator<Item = path::PathBuf>,
     {
-        self.paths = vals.map(|p| p.to_path_buf()).collect();
+        self.paths = vals.collect();
     }
 }

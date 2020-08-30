@@ -7,6 +7,7 @@ use tui::widgets::{Paragraph, Wrap};
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
 use crate::util::event::Event;
+use crate::util::worker;
 
 use super::TuiView;
 
@@ -19,10 +20,10 @@ impl<'a> TuiPrompt<'a> {
         Self { prompt }
     }
 
-    pub fn get_key(&mut self, backend: &mut TuiBackend, context: &JoshutoContext) -> Key {
+    pub fn get_key(&mut self, backend: &mut TuiBackend, context: &mut JoshutoContext) -> Key {
         let terminal = backend.terminal_mut();
 
-        context.events.flush();
+        context.flush_event();
         loop {
             terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
@@ -49,15 +50,21 @@ impl<'a> TuiPrompt<'a> {
 
                 frame.render_widget(
                     Paragraph::new(text).wrap(Wrap { trim: true }),
-                    textfield_rect);
+                    textfield_rect,
+                );
             });
 
-            if let Ok(event) = context.events.next() {
+            if let Ok(event) = context.poll_event() {
                 match event {
+                    Event::IOWorkerProgress(res) => {
+                        worker::process_worker_progress(context, res);
+                    }
+                    Event::IOWorkerResult(res) => {
+                        worker::process_finished_worker(context, res);
+                    }
                     Event::Input(key) => {
                         return key;
                     }
-                    _ => {}
                 };
             }
         }

@@ -100,13 +100,16 @@ impl JoshutoDirList {
         self.contents.iter().filter(|entry| entry.is_selected())
     }
 
-    pub fn get_selected_paths(&self) -> Vec<&path::Path> {
-        let vec: Vec<&path::Path> = self.selected_entries().map(|e| e.file_path()).collect();
+    pub fn get_selected_paths(&self) -> Vec<path::PathBuf> {
+        let vec: Vec<path::PathBuf> = self
+            .selected_entries()
+            .map(|e| e.file_path().to_path_buf())
+            .collect();
         if !vec.is_empty() {
             vec
         } else {
             match self.get_curr_ref() {
-                Some(s) => vec![s.file_path()],
+                Some(s) => vec![s.file_path().to_path_buf()],
                 _ => vec![],
             }
         }
