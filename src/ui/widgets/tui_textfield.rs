@@ -4,7 +4,8 @@ use rustyline::line_buffer;
 use termion::event::Key;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Paragraph, Text};
+use tui::text::{Span, Spans};
+use tui::widgets::{Paragraph, Wrap};
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
@@ -38,22 +39,22 @@ pub struct TuiTextField<'a> {
 }
 
 impl<'a> TuiTextField<'a> {
-    pub fn menu(mut self, menu: TuiMenu<'a>) -> Self {
+    pub fn menu(&mut self, menu: TuiMenu<'a>) -> &mut Self {
         self._menu = Some(menu);
         self
     }
 
-    pub fn prompt(mut self, prompt: &'a str) -> Self {
+    pub fn prompt(&mut self, prompt: &'a str) -> &mut Self {
         self._prompt = prompt;
         self
     }
 
-    pub fn prefix(mut self, prefix: &'a str) -> Self {
+    pub fn prefix(&mut self, prefix: &'a str) -> &mut Self {
         self._prefix = prefix;
         self
     }
 
-    pub fn suffix(mut self, suffix: &'a str) -> Self {
+    pub fn suffix(&mut self, suffix: &'a str) -> &mut Self {
         self._suffix = suffix;
         self
     }
@@ -80,7 +81,7 @@ impl<'a> TuiTextField<'a> {
 
         loop {
             terminal
-                .draw(|mut frame| {
+                .draw(|frame| {
                     let f_size: Rect = frame.size();
                     if f_size.height == 0 {
                         return;
@@ -112,7 +113,8 @@ impl<'a> TuiTextField<'a> {
                     let cursor_xpos = line_buffer.pos();
 
                     let cmd_prompt_style = Style::default().fg(Color::LightGreen);
-                    let cursor_style = Style::default().modifier(Modifier::REVERSED);
+                    let cursor_style = Style::default()
+                        .add_modifier(Modifier::REVERSED);
 
                     let prefix = &line_buffer.as_str()[..cursor_xpos];
 
@@ -127,12 +129,12 @@ impl<'a> TuiTextField<'a> {
 
                     let curr_string = curr.to_string();
 
-                    let text = [
-                        Text::styled(self._prompt, cmd_prompt_style),
-                        Text::raw(prefix),
-                        Text::styled(curr_string, cursor_style),
-                        Text::raw(suffix),
-                    ];
+                    let text = Spans::from(vec![
+                        Span::styled(self._prompt, cmd_prompt_style),
+                        Span::raw(prefix),
+                        Span::styled(curr_string, cursor_style),
+                        Span::raw(suffix),
+                    ]);
 
                     let textfield_rect = Rect {
                         x: 0,
@@ -141,7 +143,9 @@ impl<'a> TuiTextField<'a> {
                         height: 1,
                     };
 
-                    frame.render_widget(Paragraph::new(text.iter()).wrap(true), textfield_rect);
+                    frame.render_widget(
+                        Paragraph::new(text).wrap(Wrap { trim: true }),
+                        textfield_rect);
                 })
                 .unwrap();
 

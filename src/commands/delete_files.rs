@@ -22,7 +22,7 @@ impl DeleteFiles {
         "delete_files"
     }
 
-    pub fn remove_files(paths: &[&path::PathBuf]) -> std::io::Result<()> {
+    pub fn remove_files(paths: &[&path::Path]) -> std::io::Result<()> {
         for path in paths {
             if let Ok(metadata) = fs::symlink_metadata(path) {
                 if metadata.is_dir() {
@@ -36,10 +36,10 @@ impl DeleteFiles {
     }
 
     fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::io::Result<()> {
-        let curr_tab = &context.tabs[context.curr_tab_index];
-        let paths = match curr_tab.curr_list_ref() {
+        let tab_index = context.tab_context_ref().get_index();
+        let paths = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
             Some(s) => s.get_selected_paths(),
-            None => Vec::new(),
+            None => vec![],
         };
         let paths_len = paths.len();
 
@@ -65,13 +65,13 @@ impl DeleteFiles {
                 };
                 if ch == Key::Char('y') {
                     Self::remove_files(&paths)?;
-                    ReloadDirList::reload(context.curr_tab_index, context)?;
+                    ReloadDirList::reload(tab_index, context)?;
                     let msg = format!("Deleted {} files", paths_len);
                     context.message_queue.push_back(msg);
                 }
             } else {
                 Self::remove_files(&paths)?;
-                ReloadDirList::reload(context.curr_tab_index, context)?;
+                ReloadDirList::reload(tab_index, context)?;
                 let msg = format!("Deleted {} files", paths_len);
                 context.message_queue.push_back(msg);
             }
@@ -92,10 +92,10 @@ impl JoshutoRunnable for DeleteFiles {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         Self::delete_files(context, backend)?;
 
-        let options = &context.config_t.sort_option;
-        let curr_path = context.tabs[context.curr_tab_index].curr_path.clone();
-        for tab in context.tabs.iter_mut() {
-            tab.history.reload(&curr_path, options)?;
+        let options = context.config_t.sort_option.clone();
+        let curr_path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
+        for tab in context.tab_context_mut().iter_mut() {
+            tab.history.reload(&curr_path, &options)?;
         }
         LoadChild::load_child(context)?;
         Ok(())

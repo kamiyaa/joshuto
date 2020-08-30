@@ -1,3 +1,4 @@
+use std::slice::{Iter, IterMut};
 use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
@@ -29,6 +30,14 @@ impl JoshutoDirList {
             metadata,
             contents,
         })
+    }
+
+    pub fn iter(&self) -> Iter<JoshutoDirEntry> {
+        self.contents.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<JoshutoDirEntry> {
+        self.contents.iter_mut()
     }
 
     pub fn modified(&self) -> bool {
@@ -91,8 +100,8 @@ impl JoshutoDirList {
         self.contents.iter().filter(|entry| entry.is_selected())
     }
 
-    pub fn get_selected_paths(&self) -> Vec<&path::PathBuf> {
-        let vec: Vec<&path::PathBuf> = self.selected_entries().map(|e| e.file_path()).collect();
+    pub fn get_selected_paths(&self) -> Vec<&path::Path> {
+        let vec: Vec<&path::Path> = self.selected_entries().map(|e| e.file_path()).collect();
         if !vec.is_empty() {
             vec
         } else {

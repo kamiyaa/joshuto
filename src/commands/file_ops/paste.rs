@@ -4,8 +4,6 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::{IOWorkerOptions, IOWorkerThread};
 use crate::ui::TuiBackend;
 
-use super::local_state::LocalState;
-
 pub struct PasteFiles {
     options: IOWorkerOptions,
 }
@@ -32,20 +30,20 @@ impl std::fmt::Debug for PasteFiles {
 
 impl JoshutoRunnable for PasteFiles {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let state = LocalState::take();
-        if state.paths.is_empty() {
-            Err(JoshutoError::new(
+        match context.take_local_state() {
+            Some(state) if !state.paths.is_empty() => {
+                let dest = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
+                let mut options = self.options.clone();
+                options.kind = state.file_op;
+                let worker_thread = IOWorkerThread::new(options, state.paths, dest);
+                context.add_worker(worker_thread);
+                Ok(())
+            }
+            _ => Err(JoshutoError::new(
                 JoshutoErrorKind::IOInvalidData,
                 "no files selected".to_string(),
-            ))?;
+            )),
         }
-        let tab_dest = context.curr_tab_index;
-        let dest = context.tabs[tab_dest].curr_path.clone();
-        let mut options = self.options.clone();
-        options.kind = state.file_op;
-        let worker_thread = IOWorkerThread::new(options, state.paths, dest);
-        context.push_worker_thread(worker_thread);
-        Ok(())
     }
 }
 

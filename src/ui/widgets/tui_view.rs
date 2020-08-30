@@ -1,7 +1,8 @@
 use tui::buffer::Buffer;
 use tui::layout::{Direction, Layout, Rect};
 use tui::style::{Color, Style};
-use tui::widgets::{Paragraph, Text, Widget};
+use tui::text::Span;
+use tui::widgets::{Paragraph, Widget, Wrap};
 
 use super::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
 use crate::context::JoshutoContext;
@@ -28,7 +29,7 @@ impl<'a> Widget for TuiView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let f_size = area;
 
-        let curr_tab = self.context.curr_tab_ref();
+        let curr_tab = self.context.tab_context_ref().curr_tab_ref();
 
         let curr_list = curr_tab.curr_list_ref();
         let parent_list = curr_tab.parent_list_ref();
@@ -45,9 +46,7 @@ impl<'a> Widget for TuiView<'a> {
             .split(f_size);
 
         {
-            let curr_path = curr_tab.curr_path.as_path();
-
-            if self.context.tabs.len() > 1 {
+            if self.context.tab_context_ref().len() > 1 {
                 let topbar_width = if f_size.width > TAB_VIEW_WIDTH {
                     f_size.width - TAB_VIEW_WIDTH
                 } else {
@@ -60,7 +59,7 @@ impl<'a> Widget for TuiView<'a> {
                     width: topbar_width,
                     height: 1,
                 };
-                TuiTopBar::new(curr_path).render(rect, buf);
+                TuiTopBar::new(curr_tab.pwd()).render(rect, buf);
 
                 let rect = Rect {
                     x: topbar_width,
@@ -68,13 +67,17 @@ impl<'a> Widget for TuiView<'a> {
                     width: TAB_VIEW_WIDTH,
                     height: 1,
                 };
-                let name = if let Some(ostr) = curr_path.file_name() {
+                let name = if let Some(ostr) = curr_tab.pwd().file_name() {
                     ostr.to_str().unwrap_or("")
                 } else {
                     ""
                 };
-                TuiTabBar::new(name, self.context.curr_tab_index, self.context.tabs.len())
-                    .render(rect, buf);
+                TuiTabBar::new(
+                    name,
+                    self.context.tab_context_ref().get_index(),
+                    self.context.tab_context_ref().len(),
+                )
+                .render(rect, buf);
             } else {
                 let topbar_width = f_size.width;
 
@@ -84,7 +87,7 @@ impl<'a> Widget for TuiView<'a> {
                     width: topbar_width,
                     height: 1,
                 };
-                TuiTopBar::new(curr_path).render(rect, buf);
+                TuiTopBar::new(curr_tab.pwd()).render(rect, buf);
             }
         }
 
@@ -105,10 +108,17 @@ impl<'a> Widget for TuiView<'a> {
 
             if self.show_bottom_status {
                 /* draw the bottom status bar */
-                if !self.context.message_queue.is_empty() {
-                    let text = [Text::styled(&self.context.message_queue[0], message_style)];
-
-                    Paragraph::new(text.iter()).wrap(true).render(rect, buf);
+                if let Some(msg) = self.context.worker_msg() {
+                    let text = Span::styled(msg.as_str(), message_style);
+                    Paragraph::new(text)
+                        .wrap(Wrap { trim: true })
+                        .render(rect, buf);
+                } else if !self.context.message_queue.is_empty() {
+                    let text = Span::styled(&self.context.message_queue[0],
+                        message_style);
+                    Paragraph::new(text)
+                        .wrap(Wrap { trim: true })
+                        .render(rect, buf);
                 } else if let Some(entry) = curr_list.get_curr_ref() {
                     TuiFooter::new(entry).render(rect, buf);
                 }

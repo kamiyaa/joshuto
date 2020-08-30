@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path;
 use std::sync::mpsc;
 use std::thread;
 
@@ -28,30 +28,53 @@ impl std::default::Default for IOWorkerOptions {
     }
 }
 
+#[derive(Debug)]
 pub struct IOWorkerObserver {
+    msg: Option<String>,
     pub handle: thread::JoinHandle<()>,
-    pub src: PathBuf,
-    pub dest: PathBuf,
+    src: path::PathBuf,
+    dest: path::PathBuf,
 }
 
 impl IOWorkerObserver {
-    pub fn new(handle: thread::JoinHandle<()>, src: PathBuf, dest: PathBuf) -> Self {
-        Self { handle, src, dest }
+    pub fn new(handle: thread::JoinHandle<()>, src: path::PathBuf, dest: path::PathBuf) -> Self {
+        Self {
+            handle,
+            src,
+            dest,
+            msg: None,
+        }
     }
 
     pub fn join(self) {
         self.handle.join();
     }
+    pub fn set_msg(&mut self, msg: String) {
+        self.msg = Some(msg)
+    }
+    pub fn get_msg(&self) -> Option<&String> {
+        self.msg.as_ref()
+    }
+    pub fn clear_msg(&mut self) {
+        self.msg = None
+    }
+    pub fn get_src_path(&self) -> &path::Path {
+        self.src.as_path()
+    }
+    pub fn get_dest_path(&self) -> &path::Path {
+        self.dest.as_path()
+    }
 }
 
+#[derive(Debug)]
 pub struct IOWorkerThread {
     pub options: IOWorkerOptions,
-    pub paths: Vec<PathBuf>,
-    pub dest: PathBuf,
+    pub paths: Vec<path::PathBuf>,
+    pub dest: path::PathBuf,
 }
 
 impl IOWorkerThread {
-    pub fn new(options: IOWorkerOptions, paths: Vec<PathBuf>, dest: PathBuf) -> Self {
+    pub fn new(options: IOWorkerOptions, paths: Vec<path::PathBuf>, dest: path::PathBuf) -> Self {
         Self {
             options,
             paths,
@@ -69,13 +92,13 @@ impl IOWorkerThread {
     fn paste_copy(&self, tx: mpsc::Sender<u64>) -> std::io::Result<u64> {
         let mut total = 0;
         for path in self.paths.iter() {
-            total += self.recursive_copy(self.dest.as_path(), path.as_path())?;
+            total += self.recursive_copy(path.as_path(), self.dest.as_path())?;
             tx.send(total);
         }
         Ok(total)
     }
 
-    fn recursive_copy(&self, dest: &Path, src: &Path) -> std::io::Result<u64> {
+    fn recursive_copy(&self, src: &path::Path, dest: &path::Path) -> std::io::Result<u64> {
         let mut dest_buf = dest.to_path_buf();
         if let Some(s) = src.file_name() {
             dest_buf.push(s);
@@ -88,7 +111,7 @@ impl IOWorkerThread {
             for entry in fs::read_dir(src)? {
                 let entry = entry?;
                 let entry_path = entry.path();
-                total += self.recursive_copy(dest_buf.as_path(), entry_path.as_path())?;
+                total += self.recursive_copy(entry_path.as_path(), dest_buf.as_path())?;
             }
             Ok(total)
         } else if file_type.is_file() {
@@ -105,13 +128,13 @@ impl IOWorkerThread {
     fn paste_cut(&self, tx: mpsc::Sender<u64>) -> std::io::Result<u64> {
         let mut total = 0;
         for path in self.paths.iter() {
-            total += self.recursive_cut(self.dest.as_path(), path.as_path())?;
+            total += self.recursive_cut(path.as_path(), self.dest.as_path())?;
             tx.send(total);
         }
         Ok(total)
     }
 
-    pub fn recursive_cut(&self, dest: &Path, src: &Path) -> std::io::Result<u64> {
+    pub fn recursive_cut(&self, src: &path::Path, dest: &path::Path) -> std::io::Result<u64> {
         let mut dest_buf = dest.to_path_buf();
         if let Some(s) = src.file_name() {
             dest_buf.push(s);
@@ -122,13 +145,13 @@ impl IOWorkerThread {
         if file_type.is_dir() {
             match fs::rename(src, dest_buf.as_path()) {
                 Ok(_) => Ok(metadata.len()),
-                Err(_) => {
+                Err(e) => {
                     let mut total = 0;
                     fs::create_dir(dest_buf.as_path())?;
                     for entry in fs::read_dir(src)? {
                         let entry = entry?;
                         let entry_path = entry.path();
-                        total += self.recursive_cut(dest_buf.as_path(), entry_path.as_path())?;
+                        total += self.recursive_cut(entry_path.as_path(), dest_buf.as_path())?;
                     }
                     fs::remove_dir(src)?;
                     Ok(total)

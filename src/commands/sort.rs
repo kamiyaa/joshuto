@@ -32,10 +32,10 @@ impl std::fmt::Display for Sort {
 impl JoshutoRunnable for Sort {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         context.config_t.sort_option.sort_method = self.sort_method;
-        for tab in context.tabs.iter_mut() {
+        for tab in context.tab_context_mut().iter_mut() {
             tab.history.depreciate_all_entries();
         }
-        ReloadDirList::soft_reload(context.curr_tab_index, context)?;
+        ReloadDirList::soft_reload(context.tab_context_ref().get_index(), context)?;
         LoadChild::load_child(context)?;
         Ok(())
     }
@@ -64,10 +64,10 @@ impl std::fmt::Display for SortReverse {
 impl JoshutoRunnable for SortReverse {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         context.config_t.sort_option.reverse = !context.config_t.sort_option.reverse;
-        for tab in context.tabs.iter_mut() {
+        for tab in context.tab_context_mut().iter_mut() {
             tab.history.depreciate_all_entries();
         }
-        ReloadDirList::soft_reload(context.curr_tab_index, context)?;
+        ReloadDirList::soft_reload(context.tab_context_ref().get_index(), context)?;
         LoadChild::load_child(context)?;
         Ok(())
     }

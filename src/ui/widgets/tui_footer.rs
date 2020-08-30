@@ -1,7 +1,8 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
-use tui::widgets::{Paragraph, Text, Widget};
+use tui::text::{Span, Spans};
+use tui::widgets::{Paragraph, Widget};
 
 use crate::fs::{FileType, JoshutoDirEntry};
 use crate::util::format;
@@ -38,22 +39,22 @@ impl<'a> Widget for TuiFooter<'a> {
         };
 
         let mut text = vec![
-            Text::styled(mode, mode_style),
-            Text::raw("  "),
-            Text::raw(mtime),
-            Text::raw("  "),
-            Text::raw(size),
+            Span::styled(mode, mode_style),
+            Span::raw("  "),
+            Span::raw(mtime),
+            Span::raw("  "),
+            Span::raw(size),
             #[cfg(unix)]
-            Text::raw("  "),
+            Span::raw("  "),
             #[cfg(unix)]
-            Text::raw(mimetype),
+            Span::raw(mimetype),
         ];
 
         if let FileType::Symlink(s) = &self.entry.metadata.file_type {
-            text.push(Text::styled(" -> ", mode_style));
-            text.push(Text::styled(s, mode_style));
+            text.push(Span::styled(" -> ", mode_style));
+            text.push(Span::styled(s, mode_style));
         }
 
-        Paragraph::new(text.iter()).wrap(true).render(area, buf);
+        Paragraph::new(Spans::from(text)).render(area, buf);
     }
 }

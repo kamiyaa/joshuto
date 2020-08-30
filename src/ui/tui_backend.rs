@@ -30,7 +30,7 @@ impl TuiBackend {
     where
         W: Widget,
     {
-        self.terminal_mut().draw(|mut frame| {
+        self.terminal_mut().draw(|frame| {
             let rect = frame.size();
             frame.render_widget(widget, rect);
         });

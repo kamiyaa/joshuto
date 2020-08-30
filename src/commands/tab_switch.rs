@@ -3,6 +3,7 @@ use std::env;
 use crate::commands::{JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
+use crate::history::DirectoryHistory;
 use crate::ui::TuiBackend;
 
 #[derive(Clone, Debug)]
@@ -19,10 +20,16 @@ impl TabSwitch {
     }
 
     pub fn tab_switch(new_index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
-        context.curr_tab_index = new_index;
-        let path = &context.curr_tab_ref().curr_path;
-        env::set_current_dir(path)?;
+        context.tab_context_mut().set_index(new_index);
+        let path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
+        env::set_current_dir(path.as_path())?;
 
+        let options = context.config_t.sort_option.clone();
+        context
+            .tab_context_mut()
+            .curr_tab_mut()
+            .history
+            .create_or_soft_update(path.as_path(), &options);
         Ok(())
     }
 }
@@ -37,14 +44,8 @@ impl std::fmt::Display for TabSwitch {
 
 impl JoshutoRunnable for TabSwitch {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let mut new_index = context.curr_tab_index as i32 + self.movement;
-        let tab_len = context.tabs.len() as i32;
-        while new_index < 0 {
-            new_index += tab_len;
-        }
-        while new_index >= tab_len {
-            new_index -= tab_len;
-        }
+        let new_index = (context.tab_context_ref().get_index() as i32 + self.movement)
+            % context.tab_context_ref().len() as i32;
         let new_index = new_index as usize;
         Self::tab_switch(new_index, context)?;
         Ok(())

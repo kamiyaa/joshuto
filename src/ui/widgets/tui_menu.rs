@@ -4,7 +4,7 @@ use termion::event::Key;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::Style;
-use tui::widgets::Widget;
+use tui::widgets::{Block, Borders, Widget};
 use unicode_width::UnicodeWidthStr;
 
 use super::TuiView;
@@ -35,7 +35,7 @@ impl TuiCommandMenu {
         context.events.flush();
 
         loop {
-            terminal.draw(|mut frame| {
+            terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
 
                 {
@@ -122,6 +122,8 @@ impl<'a> Widget for TuiMenu<'a> {
         let style = Style::default();
         let area_x = area.x + 1;
         let area_y = area.y + 1;
+
+        Block::default().borders(Borders::TOP).render(area, buf);
 
         for (i, text) in text_iter.enumerate() {
             let width = text.width();

@@ -44,26 +44,23 @@ impl OpenFile {
         let mut dirpath = None;
         let mut selected_entries = None;
 
-        {
-            let curr_tab = context.curr_tab_ref();
-            match curr_tab.curr_list_ref() {
+        match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+            None => return Ok(()),
+            Some(curr_list) => match curr_list.get_curr_ref() {
+                Some(entry) if entry.file_path().is_dir() => {
+                    let path = entry.file_path().to_path_buf();
+                    dirpath = Some(path);
+                }
+                Some(entry) => {
+                    let vec: Vec<&JoshutoDirEntry> = curr_list.selected_entries().collect();
+                    if vec.is_empty() {
+                        selected_entries = Some(vec![entry]);
+                    } else {
+                        selected_entries = Some(vec);
+                    }
+                }
                 None => return Ok(()),
-                Some(curr_list) => match curr_list.get_curr_ref() {
-                    Some(entry) if entry.file_path().is_dir() => {
-                        let path = entry.file_path().clone();
-                        dirpath = Some(path);
-                    }
-                    Some(entry) => {
-                        let vec: Vec<&JoshutoDirEntry> = curr_list.selected_entries().collect();
-                        if vec.is_empty() {
-                            selected_entries = Some(vec![entry]);
-                        } else {
-                            selected_entries = Some(vec);
-                        }
-                    }
-                    None => return Ok(()),
-                },
-            }
+            },
         }
 
         if let Some(path) = dirpath {
@@ -134,11 +131,11 @@ impl OpenFileWith {
             let menu_options_str: Vec<&str> = menu_options.iter().map(|e| e.as_str()).collect();
             let menu_widget = TuiMenu::new(&menu_options_str);
 
-            let mut textfield = TuiTextField::default()
+            TuiTextField::default()
                 .prompt(":")
                 .prefix(PROMPT)
-                .menu(menu_widget);
-            textfield.get_input(backend, &context)
+                .menu(menu_widget)
+                .get_input(backend, &context)
         };
         let entry_paths: Vec<&str> = entries.iter().map(|e| e.file_name()).collect();
 
@@ -194,8 +191,7 @@ impl std::fmt::Display for OpenFileWith {
 impl JoshutoRunnable for OpenFileWith {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let selected_entries = {
-            let curr_tab = context.curr_tab_ref();
-            match curr_tab.curr_list_ref() {
+            match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
                 None => vec![],
                 Some(curr_list) => match curr_list.get_curr_ref() {
                     Some(entry) => {

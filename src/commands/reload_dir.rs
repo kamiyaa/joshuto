@@ -16,42 +16,40 @@ impl ReloadDirList {
     }
 
     pub fn soft_reload(index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
-        let curr_tab = &mut context.tabs[index];
-        let sort_option = &context.config_t.sort_option;
-
-        if let Some(curr_list) = curr_tab.curr_list_mut() {
-            if curr_list.need_update() {
-                curr_list.reload_contents(sort_option)?;
+        let sort_option = context.config_t.sort_option.clone();
+        if let Some(curr_tab) = context.tab_context_mut().tab_mut(index) {
+            if let Some(curr_list) = curr_tab.curr_list_mut() {
+                if curr_list.need_update() {
+                    curr_list.reload_contents(&sort_option)?;
+                }
+            }
+            if let Some(curr_list) = curr_tab.parent_list_mut() {
+                if curr_list.need_update() {
+                    curr_list.reload_contents(&sort_option)?;
+                }
+            }
+            if let Some(curr_list) = curr_tab.child_list_mut() {
+                if curr_list.need_update() {
+                    curr_list.reload_contents(&sort_option)?;
+                }
             }
         }
-        if let Some(curr_list) = curr_tab.parent_list_mut() {
-            if curr_list.need_update() {
-                curr_list.reload_contents(sort_option)?;
-            }
-        }
-        if let Some(curr_list) = curr_tab.child_list_mut() {
-            if curr_list.need_update() {
-                curr_list.reload_contents(sort_option)?;
-            }
-        }
-
         Ok(())
     }
 
     pub fn reload(index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
-        let curr_tab = &mut context.tabs[index];
-        let sort_option = &context.config_t.sort_option;
-
-        if let Some(curr_list) = curr_tab.curr_list_mut() {
-            curr_list.reload_contents(sort_option)?;
+        let sort_option = context.config_t.sort_option.clone();
+        if let Some(curr_tab) = context.tab_context_mut().tab_mut(index) {
+            if let Some(curr_list) = curr_tab.curr_list_mut() {
+                curr_list.reload_contents(&sort_option)?;
+            }
+            if let Some(curr_list) = curr_tab.parent_list_mut() {
+                curr_list.reload_contents(&sort_option)?;
+            }
+            if let Some(curr_list) = curr_tab.child_list_mut() {
+                curr_list.reload_contents(&sort_option)?;
+            }
         }
-        if let Some(curr_list) = curr_tab.parent_list_mut() {
-            curr_list.reload_contents(sort_option)?;
-        }
-        if let Some(curr_list) = curr_tab.child_list_mut() {
-            curr_list.reload_contents(sort_option)?;
-        }
-
         Ok(())
     }
 }
@@ -66,7 +64,7 @@ impl std::fmt::Display for ReloadDirList {
 
 impl JoshutoRunnable for ReloadDirList {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        Self::reload(context.curr_tab_index, context)?;
+        Self::reload(context.tab_context_ref().get_index(), context)?;
         LoadChild::load_child(context)?;
         Ok(())
     }

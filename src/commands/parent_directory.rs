@@ -15,11 +15,10 @@ impl ParentDirectory {
     }
 
     pub fn parent_directory(context: &mut JoshutoContext) -> std::io::Result<()> {
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        if !curr_tab.curr_path.pop() {
-            return Ok(());
+        if context.tab_context_mut().curr_tab_mut().pwd_mut().pop() {
+            let path = context.tab_context_ref().curr_tab_ref().pwd();
+            std::env::set_current_dir(path)?;
         }
-        std::env::set_current_dir(&curr_tab.curr_path)?;
         Ok(())
     }
 }
@@ -35,7 +34,7 @@ impl std::fmt::Display for ParentDirectory {
 impl JoshutoRunnable for ParentDirectory {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         Self::parent_directory(context)?;
-        ReloadDirList::soft_reload(context.curr_tab_index, context)?;
+        ReloadDirList::soft_reload(context.tab_context_ref().get_index(), context)?;
         Ok(())
     }
 }

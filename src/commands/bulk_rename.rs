@@ -46,14 +46,16 @@ impl BulkRename {
         let mut file_path = path::PathBuf::from("/tmp");
         file_path.push(rand_str);
 
-        let curr_tab = &context.tabs[context.curr_tab_index];
-        let paths = match curr_tab.curr_list_ref() {
-            Some(s) => s.get_selected_paths(),
-            None => Vec::new(),
+        let paths = {
+            let curr_tab = context.tab_context_ref().curr_tab_ref();
+            match curr_tab.curr_list_ref() {
+                Some(s) => s.get_selected_paths(),
+                None => vec![],
+            }
         };
         {
             let mut file = std::fs::File::create(&file_path)?;
-            for path in &paths {
+            for path in paths.iter() {
                 let file_name = path.file_name().unwrap();
                 let file_name_as_bytes = file_name.to_str().unwrap().as_bytes();
                 file.write_all(file_name_as_bytes)?;
@@ -141,7 +143,7 @@ impl JoshutoRunnable for BulkRename {
         backend.terminal_drop();
         let res = Self::bulk_rename(context);
         backend.terminal_restore()?;
-        ReloadDirList::reload(context.curr_tab_index, context)?;
+        ReloadDirList::reload(context.tab_context_ref().get_index(), context)?;
         res
     }
 }

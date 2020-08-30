@@ -1,7 +1,8 @@
 use termion::event::Key;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
-use tui::widgets::{Paragraph, Text};
+use tui::text::Span;
+use tui::widgets::{Paragraph, Wrap};
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
@@ -23,7 +24,7 @@ impl<'a> TuiPrompt<'a> {
 
         context.events.flush();
         loop {
-            terminal.draw(|mut frame| {
+            terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
                 if f_size.height == 0 {
                     return;
@@ -37,7 +38,7 @@ impl<'a> TuiPrompt<'a> {
 
                 let prompt_style = Style::default().fg(Color::LightYellow);
 
-                let text = [Text::styled(self.prompt, prompt_style)];
+                let text = Span::styled(self.prompt, prompt_style);
 
                 let textfield_rect = Rect {
                     x: 0,
@@ -46,7 +47,9 @@ impl<'a> TuiPrompt<'a> {
                     height: 1,
                 };
 
-                frame.render_widget(Paragraph::new(text.iter()).wrap(true), textfield_rect);
+                frame.render_widget(
+                    Paragraph::new(text).wrap(Wrap { trim: true }),
+                    textfield_rect);
             });
 
             if let Ok(event) = context.events.next() {

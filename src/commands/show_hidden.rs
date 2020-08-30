@@ -18,7 +18,7 @@ impl ToggleHiddenFiles {
         let opposite = !context.config_t.sort_option.show_hidden;
         context.config_t.sort_option.show_hidden = opposite;
 
-        for tab in &mut context.tabs {
+        for tab in context.tab_context_mut().iter_mut() {
             tab.history.depreciate_all_entries();
             if let Some(s) = tab.curr_list_mut() {
                 s.depreciate();

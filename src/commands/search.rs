@@ -67,7 +67,7 @@ impl std::fmt::Display for Search {
 
 impl JoshutoRunnable for Search {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let index = Self::search(&context.tabs[context.curr_tab_index], &self.pattern);
+        let index = Self::search(context.tab_context_ref().curr_tab_ref(), &self.pattern);
         if let Some(index) = index {
             cursor_move::cursor_move(index, context);
         }
@@ -90,7 +90,7 @@ fn search_with_func(
 ) {
     let data = SEARCH_PATTERN.lock().unwrap();
     if let Some(s) = (*data).as_ref() {
-        let index = search_func(&context.tabs[context.curr_tab_index], s);
+        let index = search_func(context.tab_context_ref().curr_tab_ref(), s);
         if let Some(index) = index {
             cursor_move::cursor_move(index, context);
         }

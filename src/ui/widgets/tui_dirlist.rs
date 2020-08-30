@@ -55,7 +55,7 @@ impl<'a> Widget for TuiDirList<'a> {
             let name_width = name.width();
 
             let style = if i == screen_index {
-                entry.get_style().modifier(Modifier::REVERSED)
+                entry.get_style().add_modifier(Modifier::REVERSED)
             } else {
                 entry.get_style()
             };
@@ -74,6 +74,10 @@ impl<'a> Widget for TuiDirList<'a> {
                 match name.rfind('.') {
                     None => {
                         buf.set_stringn(x, y + i as u16, name, area_width, style);
+                    }
+                    Some(0) => {
+                        let file_name_width = area_width;
+                        buf.set_stringn(x, y + i as u16, &name, file_name_width, style);
                     }
                     Some(p_ind) => {
                         let ext_width = name[p_ind..].width();

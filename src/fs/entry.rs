@@ -44,8 +44,8 @@ impl JoshutoDirEntry {
         self.name.as_str()
     }
 
-    pub fn file_path(&self) -> &path::PathBuf {
-        &self.path
+    pub fn file_path(&self) -> &path::Path {
+        self.path.as_path()
     }
 
     /*
@@ -96,22 +96,22 @@ impl JoshutoDirEntry {
             Style::default()
                 .fg(THEME_T.selection.fg)
                 .bg(THEME_T.selection.bg)
-                .modifier(THEME_T.selection.modifier)
+                .add_modifier(THEME_T.selection.modifier)
         } else if filetype.is_dir() {
             Style::default()
                 .fg(THEME_T.directory.fg)
                 .bg(THEME_T.directory.bg)
-                .modifier(THEME_T.directory.modifier)
+                .add_modifier(THEME_T.directory.modifier)
         } else if filetype.is_symlink() {
             Style::default()
                 .fg(THEME_T.link.fg)
                 .bg(THEME_T.link.bg)
-                .modifier(THEME_T.link.modifier)
+                .add_modifier(THEME_T.link.modifier)
         } else if unix::is_executable(metadata.mode) {
             Style::default()
                 .fg(THEME_T.executable.fg)
                 .bg(THEME_T.executable.bg)
-                .modifier(THEME_T.executable.modifier)
+                .add_modifier(THEME_T.executable.modifier)
         } else {
             match self.file_path().extension() {
                 None => Style::default(),
@@ -119,7 +119,7 @@ impl JoshutoDirEntry {
                     None => Style::default(),
                     Some(s) => match THEME_T.ext.get(s) {
                         None => Style::default(),
-                        Some(t) => Style::default().fg(t.fg).bg(t.bg).modifier(t.modifier),
+                        Some(t) => Style::default().fg(t.fg).bg(t.bg).add_modifier(t.modifier),
                     },
                 },
             }

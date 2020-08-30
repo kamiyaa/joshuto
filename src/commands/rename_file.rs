@@ -31,9 +31,9 @@ impl RenameFile {
             return Err(err);
         }
         std::fs::rename(&path, &new_path)?;
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        if let Some(curr_list) = curr_tab.curr_list_mut() {
-            curr_list.reload_contents(&context.config_t.sort_option)?;
+        let options = context.config_t.sort_option.clone();
+        if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+            curr_list.reload_contents(&options)?;
         }
         Ok(())
     }
@@ -51,10 +51,13 @@ impl JoshutoRunnable for RenameFile {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         let mut path: Option<path::PathBuf> = None;
 
-        if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
-            if let Some(s) = curr_list.get_curr_ref() {
-                path = Some(s.file_path().clone());
-            }
+        if let Some(s) = context
+            .tab_context_ref()
+            .curr_tab_ref()
+            .curr_list_ref()
+            .and_then(|s| s.get_curr_ref())
+        {
+            path = Some(s.file_path().to_path_buf());
         }
 
         if let Some(path) = path {
@@ -109,7 +112,7 @@ impl JoshutoRunnable for RenameFileAppend {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let mut file_name: Option<String> = None;
 
-        if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
+        if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
             file_name = curr_list.get_curr_ref().map(|s| s.file_name().to_string());
         }
 
@@ -158,7 +161,7 @@ impl JoshutoRunnable for RenameFilePrepend {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         let mut file_name: Option<String> = None;
 
-        if let Some(curr_list) = context.curr_tab_ref().curr_list_ref() {
+        if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
             file_name = curr_list.get_curr_ref().map(|s| s.file_name().to_string());
         }
 

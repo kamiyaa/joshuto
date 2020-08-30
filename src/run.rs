@@ -15,11 +15,10 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
 
     let mut context = JoshutoContext::new(config_t);
     let curr_path = std::env::current_dir()?;
-
     {
         // Initialize an initial tab
         let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
-        context.push_tab(tab);
+        context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child
         LoadChild::load_child(&mut context)?;
@@ -30,61 +29,58 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
     }
 
     while !context.exit {
-        if !context.worker.is_empty() && !context.worker.is_busy() {
-            let tx = context.events.event_tx.clone();
-            context.worker.run_next_job(tx);
+        if !context.worker_is_busy() && !context.worker_is_empty() {
+            context.push_msg("Starting new io_worker task".to_string());
+            context.start_next_job();
         }
 
-        let event = match context.events.next() {
+        let event = match context.poll_event() {
             Ok(event) => event,
             Err(_) => return Ok(()), // TODO
         };
 
         match event {
             Event::IOWorkerProgress((FileOp::Cut, p)) => {
-                context.push_msg(format!("{} moved", format::file_size_to_string(p)));
+                context.message_queue.clear();
+                context.set_worker_msg(format!("{} moved", format::file_size_to_string(p)));
             }
             Event::IOWorkerProgress((FileOp::Copy, p)) => {
-                context.push_msg(format!("{} copied", format::file_size_to_string(p)));
+                context.message_queue.clear();
+                context.set_worker_msg(format!("{} copied", format::file_size_to_string(p)));
             }
-            Event::IOWorkerResult((file_op, Ok(p))) => {
-                let observer = context.worker.observer.take().unwrap();
-                let options = &context.config_t.sort_option;
-                for tab in context.tabs.iter_mut() {
-                    tab.history.reload(&observer.src, options)?;
-                    tab.history.reload(&observer.dest, options)?;
+            Event::IOWorkerResult((file_op, status)) => {
+                let observer = context.remove_job().unwrap();
+                let options = context.config_t.sort_option.clone();
+                for tab in context.tab_context_mut().iter_mut() {
+                    tab.history.reload(observer.get_dest_path(), &options);
+                    tab.history.reload(observer.get_src_path(), &options);
                 }
-                let msg = match file_op {
-                    FileOp::Copy => format!(
-                        "copied {} to {:?}",
-                        format::file_size_to_string(p),
-                        observer.dest
-                    ),
-                    FileOp::Cut => format!(
-                        "moved {} to {:?}",
-                        format::file_size_to_string(p),
-                        observer.dest
-                    ),
-                };
-                context.push_msg(msg);
-                observer.join();
-            }
-            Event::IOWorkerResult((_, Err(e))) => {
-                let observer = context.worker.observer.take().unwrap();
-                let options = &context.config_t.sort_option;
-                for tab in context.tabs.iter_mut() {
-                    tab.history.reload(&observer.src, options)?;
-                    tab.history.reload(&observer.dest, options)?;
+                context.message_queue.clear();
+                match status {
+                    Ok(p) => {
+                        let msg = match file_op {
+                            FileOp::Copy => format!(
+                                "copied {} to {:?}",
+                                format::file_size_to_string(p),
+                                observer.get_dest_path()
+                            ),
+                            FileOp::Cut => format!(
+                                "moved {} to {:?}",
+                                format::file_size_to_string(p),
+                                observer.get_dest_path()
+                            ),
+                        };
+                        context.push_msg(msg);
+                    }
+                    Err(e) => {
+                        let msg = format!("{}", e);
+                        context.push_msg(msg);
+                    }
                 }
-                let msg = format!("{}", e);
-                context.push_msg(msg);
                 observer.join();
             }
             Event::Input(key) => {
-                /* Message handling */
-                if !context.message_queue.is_empty() {
-                    let _ = context.message_queue.pop_front();
-                }
+                context.message_queue.clear();
                 match keymap_t.as_ref().get(&key) {
                     None => {
                         context
@@ -109,7 +105,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                         }
                     }
                 }
-                context.events.flush();
+                context.flush_event();
             }
         }
         let view = TuiView::new(&context);

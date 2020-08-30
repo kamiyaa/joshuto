@@ -55,7 +55,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             let name_width = name.width();
 
             let style = if i == screen_index {
-                entry.get_style().modifier(Modifier::REVERSED)
+                entry.get_style().add_modifier(Modifier::REVERSED)
             } else {
                 entry.get_style()
             };

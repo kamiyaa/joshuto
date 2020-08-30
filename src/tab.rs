@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
@@ -6,23 +6,35 @@ use crate::util::sort;
 
 pub struct JoshutoTab {
     pub history: JoshutoHistory,
-    pub curr_path: PathBuf,
+    curr_pwd: PathBuf,
 }
 
 impl JoshutoTab {
-    pub fn new(curr_path: PathBuf, sort_option: &sort::SortOption) -> std::io::Result<Self> {
+    pub fn new(curr_pwd: PathBuf, sort_option: &sort::SortOption) -> std::io::Result<Self> {
         let mut history = JoshutoHistory::new();
-        history.populate_to_root(&curr_path, sort_option)?;
+        history.populate_to_root(&curr_pwd, sort_option)?;
 
-        Ok(Self { curr_path, history })
+        Ok(Self { curr_pwd, history })
+    }
+
+    pub fn pwd(&self) -> &Path {
+        self.curr_pwd.as_path()
+    }
+
+    pub fn pwd_mut(&mut self) -> &mut PathBuf {
+        &mut self.curr_pwd
+    }
+
+    pub fn set_pwd(&mut self, pwd: &Path) {
+        self.curr_pwd = pwd.to_path_buf();
     }
 
     pub fn curr_list_ref(&self) -> Option<&JoshutoDirList> {
-        self.history.get(self.curr_path.as_path())
+        self.history.get(self.pwd())
     }
 
     pub fn parent_list_ref(&self) -> Option<&JoshutoDirList> {
-        let parent = self.curr_path.parent()?;
+        let parent = self.pwd().parent()?;
         self.history.get(parent)
     }
 
@@ -34,11 +46,11 @@ impl JoshutoTab {
     }
 
     pub fn curr_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
-        self.history.get_mut(self.curr_path.as_path())
+        self.history.get_mut(self.curr_pwd.as_path())
     }
 
     pub fn parent_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
-        let parent = self.curr_path.parent()?;
+        let parent = self.curr_pwd.parent()?;
         self.history.get_mut(parent)
     }
 
@@ -46,7 +58,7 @@ impl JoshutoTab {
         let path = {
             let curr_list = self.curr_list_ref()?;
             let index = curr_list.index?;
-            curr_list.contents[index].file_path().clone()
+            curr_list.contents[index].file_path().to_path_buf()
         };
 
         self.history.get_mut(path.as_path())

@@ -54,7 +54,9 @@ impl JoshutoRunnable for SetMode {
 
         const PREFIX: &str = "set_mode ";
 
-        let entry = context.tabs[context.curr_tab_index]
+        let entry = context
+            .tab_context_ref()
+            .curr_tab_ref()
             .curr_list_ref()
             .and_then(|x| x.get_curr_ref());
 
@@ -62,11 +64,11 @@ impl JoshutoRunnable for SetMode {
             Some(entry) => {
                 let mode = entry.metadata.permissions.mode();
                 let mode_string = unix::stringify_mode(mode);
-                let mut textfield = TuiTextField::default()
+                TuiTextField::default()
                     .prompt(":")
                     .prefix(PREFIX)
-                    .suffix(&mode_string.as_str()[1..]);
-                textfield.get_input(backend, context)
+                    .suffix(&mode_string.as_str()[1..])
+                    .get_input(backend, context)
             }
             None => None,
         };
@@ -76,12 +78,14 @@ impl JoshutoRunnable for SetMode {
                 let s = &s[PREFIX.len()..];
                 let mode = Self::str_to_mode(s);
 
-                let entry = context.tabs[context.curr_tab_index]
+                let entry = context
+                    .tab_context_mut()
+                    .curr_tab_mut()
                     .curr_list_mut()
                     .and_then(|x| x.get_curr_mut())
                     .unwrap();
 
-                unix::set_mode(entry.file_path().as_path(), mode);
+                unix::set_mode(entry.file_path(), mode);
                 entry.metadata.permissions.set_mode(mode);
                 CursorMoveDown::new(1).execute(context, backend)?;
             }

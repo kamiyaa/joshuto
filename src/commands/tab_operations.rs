@@ -28,9 +28,10 @@ impl NewTab {
         };
 
         let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
-        context.tabs.push(tab);
-        context.curr_tab_index = context.tabs.len() - 1;
-        TabSwitch::tab_switch(context.curr_tab_index, context)?;
+        context.tab_context_mut().push_tab(tab);
+        let new_index = context.tab_context_ref().len() - 1;
+        context.tab_context_mut().set_index(new_index);
+        TabSwitch::tab_switch(new_index, context)?;
         LoadChild::load_child(context)?;
         Ok(())
     }
@@ -62,15 +63,17 @@ impl CloseTab {
     }
 
     pub fn close_tab(context: &mut JoshutoContext) -> JoshutoResult<()> {
-        if context.tabs.len() <= 1 {
+        if context.tab_context_ref().len() <= 1 {
             return Quit::quit(context);
         }
+        let mut tab_index = context.tab_context_ref().get_index();
 
-        let _ = context.tabs.remove(context.curr_tab_index);
-        if context.curr_tab_index > 0 {
-            context.curr_tab_index -= 1;
+        let _ = context.tab_context_mut().pop_tab(tab_index);
+        if tab_index > 0 {
+            tab_index -= 1;
+            context.tab_context_mut().set_index(tab_index);
         }
-        TabSwitch::tab_switch(context.curr_tab_index, context)?;
+        TabSwitch::tab_switch(tab_index, context)?;
         Ok(())
     }
 }

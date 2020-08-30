@@ -23,11 +23,11 @@ impl CommandLine {
         context: &mut JoshutoContext,
         backend: &mut TuiBackend,
     ) -> JoshutoResult<()> {
-        let mut textfield = TuiTextField::default()
+        let user_input: Option<String> = TuiTextField::default()
             .prompt(":")
             .prefix(self.prefix.as_str())
-            .suffix(self.suffix.as_str());
-        let user_input: Option<String> = textfield.get_input(backend, &context);
+            .suffix(self.suffix.as_str())
+            .get_input(backend, &context);
 
         if let Some(s) = user_input {
             let trimmed = s.trim_start();

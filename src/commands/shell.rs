@@ -23,8 +23,9 @@ impl ShellCommand {
         for word in self.words.iter().skip(1) {
             match word.as_str() {
                 "%s" => {
-                    let curr_tab = context.curr_tab_ref();
-                    if let Some(curr_list) = curr_tab.curr_list_ref() {
+                    if let Some(curr_list) =
+                        context.tab_context_ref().curr_tab_ref().curr_list_ref()
+                    {
                         let mut i = 0;
                         for entry in curr_list.selected_entries().map(|e| e.file_name()) {
                             command.arg(entry);
@@ -59,7 +60,7 @@ impl JoshutoRunnable for ShellCommand {
     fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         backend.terminal_drop();
         let res = self.shell_command(context);
-        ReloadDirList::soft_reload(context.curr_tab_index, context)?;
+        ReloadDirList::soft_reload(context.tab_context_ref().get_index(), context)?;
         context
             .message_queue
             .push_back(format!("Finished: {}", self.words.join(" ")));

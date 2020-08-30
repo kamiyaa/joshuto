@@ -32,11 +32,13 @@ impl JoshutoMimetypeEntry {
         }
     }
 
+    #[allow(dead_code)]
     pub fn arg<S: std::convert::Into<String>>(&mut self, arg: S) -> &mut Self {
         self._args.push(arg.into());
         self
     }
 
+    #[allow(dead_code)]
     pub fn args<I, S>(&mut self, args: I) -> &mut Self
     where
         I: Iterator<Item = S>,
@@ -46,41 +48,50 @@ impl JoshutoMimetypeEntry {
         self
     }
 
+    #[allow(dead_code)]
     pub fn fork(&mut self, fork: bool) -> &mut Self {
         self._fork = fork;
         self
     }
 
+    #[allow(dead_code)]
     pub fn silent(&mut self, silent: bool) -> &mut Self {
         self._silent = silent;
         self
     }
 
+    #[allow(dead_code)]
     pub fn confirm_exit(&mut self, confirm_exit: bool) -> &mut Self {
         self._confirm_exit = confirm_exit;
         self
     }
 
+    #[allow(dead_code)]
     pub fn get_command(&self) -> &str {
         self._command.as_str()
     }
 
+    #[allow(dead_code)]
     pub fn get_args(&self) -> &[String] {
         &self._args
     }
 
+    #[allow(dead_code)]
     pub fn get_fork(&self) -> bool {
         self._fork
     }
 
+    #[allow(dead_code)]
     pub fn get_silent(&self) -> bool {
         self._silent
     }
 
+    #[allow(dead_code)]
     pub fn get_confirm_exit(&self) -> bool {
         self._confirm_exit
     }
 
+    #[allow(dead_code)]
     pub fn execute_with<I, S>(&self, paths: I) -> std::io::Result<()>
     where
         I: IntoIterator<Item = S>,

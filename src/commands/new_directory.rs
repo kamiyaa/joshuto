@@ -33,10 +33,10 @@ impl JoshutoRunnable for NewDirectory {
     fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
         std::fs::create_dir_all(&self.path)?;
 
-        let options = &context.config_t.sort_option;
-        let curr_path = context.tabs[context.curr_tab_index].curr_path.clone();
-        for tab in context.tabs.iter_mut() {
-            tab.history.reload(&curr_path, options)?;
+        let options = context.config_t.sort_option.clone();
+        let curr_path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
+        for tab in context.tab_context_mut().iter_mut() {
+            tab.history.reload(&curr_path, &options)?;
         }
 
         LoadChild::load_child(context)?;

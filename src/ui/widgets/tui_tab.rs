@@ -1,7 +1,8 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Modifier, Style};
-use tui::widgets::{Paragraph, Text, Widget};
+use tui::text::{Span, Spans};
+use tui::widgets::{Paragraph, Widget, Wrap};
 
 pub struct TuiTabBar<'a> {
     name: &'a str,
@@ -17,13 +18,16 @@ impl<'a> TuiTabBar<'a> {
 
 impl<'a> Widget for TuiTabBar<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let selected = Style::default().modifier(Modifier::REVERSED);
+        let selected = Style::default()
+            .add_modifier(Modifier::REVERSED);
 
-        let text = [
-            Text::styled(format!("{}: {}", self.curr + 1, self.name), selected),
-            Text::raw(format!("/{}", self.len)),
-        ];
+        let text = Spans::from(vec![
+            Span::styled(format!("{}: {}", self.curr + 1, self.name), selected),
+            Span::raw(format!("/{}", self.len)),
+        ]);
 
-        Paragraph::new(text.iter()).wrap(true).render(area, buf);
+        Paragraph::new(text)
+            .wrap(Wrap { trim: true })
+            .render(area, buf);
     }
 }

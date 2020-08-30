@@ -22,10 +22,7 @@ impl ChangeDirectory {
 
     pub fn cd(path: &path::Path, context: &mut JoshutoContext) -> std::io::Result<()> {
         std::env::set_current_dir(path)?;
-
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab.curr_path = path.to_path_buf();
-
+        context.tab_context_mut().curr_tab_mut().set_pwd(path);
         Ok(())
     }
 
@@ -35,10 +32,12 @@ impl ChangeDirectory {
     ) -> std::io::Result<()> {
         Self::cd(path, context)?;
 
-        let curr_tab = &mut context.tabs[context.curr_tab_index];
-        curr_tab
+        let sort_options = context.config_t.sort_option.clone();
+        context
+            .tab_context_mut()
+            .curr_tab_mut()
             .history
-            .populate_to_root(&path, &context.config_t.sort_option)?;
+            .populate_to_root(&path, &sort_options)?;
 
         Ok(())
     }
