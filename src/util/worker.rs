@@ -1,47 +1,44 @@
 use crate::context::JoshutoContext;
 use crate::history::DirectoryHistory;
-use crate::io::FileOp;
+use crate::io::{FileOp, IOWorkerProgress};
 
 use super::format;
 
-pub fn process_worker_progress(context: &mut JoshutoContext, res: (FileOp, u64)) {
-    let (file_op, progress) = res;
-    let prog_str = format::file_size_to_string(progress);
-    match file_op {
+pub fn process_worker_progress(context: &mut JoshutoContext, res: IOWorkerProgress) {
+    let size_str = format::file_size_to_string(res.processed);
+    match res.kind {
         FileOp::Cut => {
-            context.set_worker_msg(format!("{} moved", prog_str));
+            let msg = format!("moving ({}/{}) {} completed",
+                res.index + 1, res.len, size_str);
+            context.set_worker_msg(msg);
         }
         FileOp::Copy => {
-            context.set_worker_msg(format!("{} copied", prog_str));
+            let msg = format!("copying ({}/{}) {} completed",
+                res.index + 1, res.len, size_str);
+            context.set_worker_msg(msg);
         }
     }
 }
 
 pub fn process_finished_worker(
     context: &mut JoshutoContext,
-    res: (FileOp, Result<u64, std::io::Error>),
+    res: std::io::Result<IOWorkerProgress>,
 ) {
-    let (file_op, status) = res;
     let observer = context.remove_job().unwrap();
     let options = context.config_t.sort_option.clone();
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().reload(observer.get_dest_path(), &options);
         tab.history_mut().reload(observer.get_src_path(), &options);
     }
-    match status {
-        Ok(p) => {
-            let msg = match file_op {
-                FileOp::Copy => format!(
-                    "copied {} to {:?}",
-                    format::file_size_to_string(p),
-                    observer.get_dest_path()
-                ),
-                FileOp::Cut => format!(
-                    "moved {} to {:?}",
-                    format::file_size_to_string(p),
-                    observer.get_dest_path()
-                ),
+    match res {
+        Ok(progress) => {
+            let op = match progress.kind {
+                FileOp::Copy => "copied",
+                FileOp::Cut => "moved",
             };
+            let size_str = format::file_size_to_string(progress.processed);
+            let msg = format!("successfully {} {} items ({})",
+                op, progress.len, size_str);
             context.push_msg(msg);
         }
         Err(e) => {

@@ -31,8 +31,8 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
 
     while !context.exit {
         if !context.worker_is_busy() && !context.worker_is_empty() {
-            context.start_next_job();
             context.push_msg("started new io_worker task".to_string());
+            context.start_next_job();
         }
 
         let event = match context.poll_event() {

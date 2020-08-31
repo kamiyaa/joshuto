@@ -5,13 +5,13 @@ use std::thread;
 use termion::event::Key;
 use termion::input::TermRead;
 
-use crate::io::FileOp;
+use crate::io::{FileOp, IOWorkerProgress};
 
 #[derive(Debug)]
 pub enum Event {
     Input(Key),
-    IOWorkerProgress((FileOp, u64)),
-    IOWorkerResult((FileOp, std::io::Result<u64>)),
+    IOWorkerProgress(IOWorkerProgress),
+    IOWorkerResult(io::Result<IOWorkerProgress>),
 }
 
 #[derive(Debug, Clone, Copy)]

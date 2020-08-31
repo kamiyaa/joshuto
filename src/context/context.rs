@@ -4,7 +4,7 @@ use std::thread;
 
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
-use crate::io::{IOWorkerObserver, IOWorkerThread};
+use crate::io::{IOWorkerObserver, IOWorkerProgress, IOWorkerThread};
 use crate::util::event::{Event, Events};
 
 pub struct JoshutoContext {
@@ -103,19 +103,26 @@ impl JoshutoContext {
             let handle = thread::spawn(move || {
                 let (wtx, wrx) = mpsc::channel();
                 // start worker
+                tx.send(Event::IOWorkerProgress(IOWorkerProgress {
+                    kind: worker.options.kind,
+                    index: 0,
+                    len: worker.paths.len(),
+                    processed: 0,
+                }));
                 let worker_handle = thread::spawn(move || worker.start(wtx));
                 // relay worker info to event loop
                 while let Ok(progress) = wrx.recv() {
-                    tx.send(Event::IOWorkerProgress((file_op, progress)));
+                    tx.send(Event::IOWorkerProgress(progress));
                 }
                 let result = worker_handle.join();
+
                 match result {
                     Ok(res) => {
-                        let _ = tx.send(Event::IOWorkerResult((file_op, res)));
+                        let _ = tx.send(Event::IOWorkerResult(res));
                     }
                     Err(e) => {
                         let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
-                        let _ = tx.send(Event::IOWorkerResult((file_op, Err(err))));
+                        let _ = tx.send(Event::IOWorkerResult(Err(err)));
                     }
                 }
             });

@@ -28,6 +28,14 @@ impl std::default::Default for IOWorkerOptions {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct IOWorkerProgress {
+    pub kind: FileOp,
+    pub index: usize,
+    pub len: usize,
+    pub processed: u64,
+}
+
 #[derive(Debug)]
 pub struct IOWorkerThread {
     pub options: IOWorkerOptions,
@@ -44,20 +52,32 @@ impl IOWorkerThread {
         }
     }
 
-    pub fn start(&self, tx: mpsc::Sender<u64>) -> std::io::Result<u64> {
+    pub fn start(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
         match self.options.kind {
             FileOp::Cut => self.paste_cut(tx),
             FileOp::Copy => self.paste_copy(tx),
         }
     }
 
-    fn paste_copy(&self, tx: mpsc::Sender<u64>) -> std::io::Result<u64> {
+    fn paste_copy(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
         let mut total = 0;
-        for path in self.paths.iter() {
+        let len = self.paths.len();
+        for (i, path) in self.paths.iter().enumerate() {
             total += self.recursive_copy(path.as_path(), self.dest.as_path())?;
-            tx.send(total);
+            let progress = IOWorkerProgress {
+                kind: FileOp::Copy,
+                index: i,
+                processed: total,
+                len,
+            };
+            tx.send(progress);
         }
-        Ok(total)
+        Ok(IOWorkerProgress {
+            kind: FileOp::Copy,
+            index: len,
+            processed: total,
+            len,
+        })
     }
 
     fn recursive_copy(&self, src: &path::Path, dest: &path::Path) -> std::io::Result<u64> {
@@ -87,13 +107,25 @@ impl IOWorkerThread {
         }
     }
 
-    fn paste_cut(&self, tx: mpsc::Sender<u64>) -> std::io::Result<u64> {
+    fn paste_cut(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
         let mut total = 0;
-        for path in self.paths.iter() {
+        let len = self.paths.len();
+        for (i, path) in self.paths.iter().enumerate() {
             total += self.recursive_cut(path.as_path(), self.dest.as_path())?;
-            tx.send(total);
+            let progress = IOWorkerProgress {
+                kind: FileOp::Copy,
+                index: i,
+                processed: total,
+                len,
+            };
+            tx.send(progress);
         }
-        Ok(total)
+        Ok(IOWorkerProgress {
+            kind: FileOp::Copy,
+            index: len,
+            processed: total,
+            len,
+        })
     }
 
     pub fn recursive_cut(&self, src: &path::Path, dest: &path::Path) -> std::io::Result<u64> {
