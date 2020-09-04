@@ -4,7 +4,7 @@ use std::thread;
 #[derive(Debug)]
 pub struct IOWorkerObserver {
     pub handle: thread::JoinHandle<()>,
-    msg: Option<String>,
+    msg: String,
     src: path::PathBuf,
     dest: path::PathBuf,
 }
@@ -15,7 +15,7 @@ impl IOWorkerObserver {
             handle,
             src,
             dest,
-            msg: None,
+            msg: String::new(),
         }
     }
 
@@ -23,13 +23,10 @@ impl IOWorkerObserver {
         self.handle.join();
     }
     pub fn set_msg(&mut self, msg: String) {
-        self.msg = Some(msg)
+        self.msg = msg
     }
-    pub fn get_msg(&self) -> Option<&String> {
-        self.msg.as_ref()
-    }
-    pub fn clear_msg(&mut self) {
-        self.msg = None
+    pub fn get_msg(&self) -> &str {
+        self.msg.as_str()
     }
     pub fn get_src_path(&self) -> &path::Path {
         self.src.as_path()

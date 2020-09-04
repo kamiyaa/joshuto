@@ -4,8 +4,7 @@ use crate::commands::{ChangeDirectory, JoshutoCommand, JoshutoRunnable};
 use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::fs::JoshutoDirEntry;
-use crate::ui::widgets::{TuiMenu, TuiTextField};
+use crate::ui::widgets::TuiTextField;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
 
@@ -92,13 +91,13 @@ impl JoshutoRunnable for OpenFile {
 
                 if !options.is_empty() {
                     if options[0].get_fork() {
-                        options[0].execute_with(files.as_slice())
+                        options[0].execute_with(files.as_slice())?;
                     } else {
                         backend.terminal_drop();
                         let res = options[0].execute_with(files.as_slice());
                         backend.terminal_restore()?;
-                        res
-                    };
+                        res?;
+                    }
                 } else {
                     OpenFileWith::open_with(context, backend, options, files)?;
                 }

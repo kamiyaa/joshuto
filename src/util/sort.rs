@@ -90,7 +90,7 @@ impl SortOption {
                 s => s,
             };
         }
-        return res;
+        res
     }
 
     pub fn filter_func(&self) -> fn(&Result<fs::DirEntry, std::io::Error>) -> bool {

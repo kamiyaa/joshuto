@@ -39,7 +39,6 @@ impl TuiCommandMenu {
             terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
 
-
                 {
                     let view = TuiView::new(&context);
                     frame.render_widget(view, f_size);
@@ -121,7 +120,6 @@ impl<'a> TuiMenu<'a> {
         self.options.len()
     }
 }
-
 
 impl<'a> Widget for TuiMenu<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {

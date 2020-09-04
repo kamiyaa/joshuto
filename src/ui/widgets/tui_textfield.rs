@@ -41,7 +41,9 @@ pub struct TuiTextField<'a> {
 
 impl<'a> TuiTextField<'a> {
     pub fn menu_items<I>(&mut self, items: I) -> &mut Self
-        where I: Iterator<Item = &'a str> {
+    where
+        I: Iterator<Item = &'a str>,
+    {
         self._menu_items = Some(items.collect());
         self
     }

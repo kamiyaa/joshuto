@@ -1,8 +1,6 @@
 use tui::buffer::Buffer;
-use tui::layout::{Direction, Layout, Rect};
-use tui::style::{Color, Style};
-use tui::text::Span;
-use tui::widgets::{Paragraph, Widget, Wrap};
+use tui::layout::Rect;
+use tui::widgets::Widget;
 
 use super::TuiFolderView;
 use crate::context::JoshutoContext;
@@ -13,8 +11,6 @@ pub struct TuiView<'a> {
     pub context: &'a JoshutoContext,
     pub show_bottom_status: bool,
 }
-
-use super::super::{DEFAULT_LAYOUT, NO_PREVIEW_LAYOUT};
 
 impl<'a> TuiView<'a> {
     pub fn new(context: &'a JoshutoContext) -> Self {

@@ -1,13 +1,10 @@
 use crate::commands::CommandKeybind;
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
-use crate::history::DirectoryHistory;
-use crate::io::FileOp;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::widgets::{TuiCommandMenu, TuiView};
 use crate::util::event::Event;
-use crate::util::format;
 use crate::util::load_child::LoadChild;
 use crate::util::worker;
 
@@ -31,7 +28,6 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
 
     while !context.exit {
         if !context.worker_is_busy() && !context.worker_is_empty() {
-            context.push_msg("started new io_worker task".to_string());
             context.start_next_job();
         }
 

@@ -63,12 +63,11 @@ impl JoshutoRunnable for SelectFiles {
                 s.set_selected(!s.is_selected());
                 CursorMoveDown::new(1).execute(context, backend)?;
             }
-        } else {
-            if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-                for curr in &mut curr_list.contents {
-                    curr.set_selected(true);
-                }
-            }
+        } else if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+            curr_list
+                .contents
+                .iter_mut()
+                .for_each(|c| c.set_selected(true));
         }
         Ok(())
     }

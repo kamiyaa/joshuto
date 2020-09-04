@@ -4,7 +4,7 @@ use std::thread;
 
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
-use crate::io::{IOWorkerObserver, IOWorkerProgress, IOWorkerThread};
+use crate::io::{IOWorkerObserver, IOWorkerThread};
 use crate::util::event::{Event, Events};
 
 pub struct JoshutoContext {
@@ -89,8 +89,9 @@ impl JoshutoContext {
             s.set_msg(msg);
         }
     }
-    pub fn worker_msg(&self) -> Option<&String> {
-        self.worker.as_ref().and_then(|s| s.get_msg())
+    pub fn worker_msg(&self) -> Option<&str> {
+        let worker = self.worker.as_ref()?;
+        Some(worker.get_msg())
     }
 
     pub fn start_next_job(&mut self) {
@@ -99,16 +100,9 @@ impl JoshutoContext {
         if let Some(worker) = self.worker_queue.pop_front() {
             let src = worker.paths[0].clone();
             let dest = worker.dest.clone();
-            let file_op = worker.options.kind;
             let handle = thread::spawn(move || {
                 let (wtx, wrx) = mpsc::channel();
                 // start worker
-                tx.send(Event::IOWorkerProgress(IOWorkerProgress {
-                    kind: worker.options.kind,
-                    index: 0,
-                    len: worker.paths.len(),
-                    processed: 0,
-                }));
                 let worker_handle = thread::spawn(move || worker.start(wtx));
                 // relay worker info to event loop
                 while let Ok(progress) = wrx.recv() {

@@ -2,7 +2,7 @@ use termion::event::Key;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
 use tui::text::Span;
-use tui::widgets::{Paragraph, Wrap};
+use tui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
@@ -48,6 +48,7 @@ impl<'a> TuiPrompt<'a> {
                     height: 1,
                 };
 
+                frame.render_widget(Clear, textfield_rect);
                 frame.render_widget(
                     Paragraph::new(text).wrap(Wrap { trim: true }),
                     textfield_rect,

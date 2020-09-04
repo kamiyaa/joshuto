@@ -5,7 +5,7 @@ use std::thread;
 use termion::event::Key;
 use termion::input::TermRead;
 
-use crate::io::{FileOp, IOWorkerProgress};
+use crate::io::IOWorkerProgress;
 
 #[derive(Debug)]
 pub enum Event {
