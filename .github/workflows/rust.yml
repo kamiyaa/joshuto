@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [1.41.0, stable, beta]
+        rust: [1.46.0, stable, beta]
     steps:
       - uses: actions/checkout@v2
       - name: Install minimal ${{ matrix.rust }} rust
