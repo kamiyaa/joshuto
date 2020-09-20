@@ -108,18 +108,18 @@ impl JoshutoDirList {
         if !vec.is_empty() {
             vec
         } else {
-            match self.get_curr_ref() {
+            match self.curr_entry_ref() {
                 Some(s) => vec![s.file_path().to_path_buf()],
                 _ => vec![],
             }
         }
     }
 
-    pub fn get_curr_ref(&self) -> Option<&JoshutoDirEntry> {
+    pub fn curr_entry_ref(&self) -> Option<&JoshutoDirEntry> {
         self.get_curr_ref_(self.index?)
     }
 
-    pub fn get_curr_mut(&mut self) -> Option<&mut JoshutoDirEntry> {
+    pub fn curr_entry_mut(&mut self) -> Option<&mut JoshutoDirEntry> {
         self.get_curr_mut_(self.index?)
     }
 

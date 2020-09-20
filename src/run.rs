@@ -1,4 +1,4 @@
-use crate::commands::CommandKeybind;
+use crate::commands::{CommandKeybind, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;

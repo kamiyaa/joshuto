@@ -45,6 +45,7 @@ impl<'a> Widget for TuiFolderView<'a> {
             .constraints(constraints.as_ref())
             .split(f_size);
 
+        // render tabs
         if self.context.tab_context_ref().len() > 1 {
             let topbar_width = if f_size.width > TAB_VIEW_WIDTH {
                 f_size.width - TAB_VIEW_WIDTH
@@ -89,10 +90,12 @@ impl<'a> Widget for TuiFolderView<'a> {
             TuiTopBar::new(curr_tab.pwd()).render(rect, buf);
         }
 
+        // render parent view
         if let Some(list) = parent_list.as_ref() {
             TuiDirList::new(&list).render(layout_rect[0], buf);
         };
 
+        // render current view
         if let Some(list) = curr_list.as_ref() {
             TuiDirListDetailed::new(&list).render(layout_rect[1], buf);
             let rect = Rect {
@@ -116,12 +119,13 @@ impl<'a> Widget for TuiFolderView<'a> {
                     Paragraph::new(text)
                         .wrap(Wrap { trim: true })
                         .render(rect, buf);
-                } else if let Some(entry) = list.get_curr_ref() {
-                    TuiFooter::new(entry).render(rect, buf);
+                } else {
+                    TuiFooter::new(list).render(rect, buf);
                 }
             }
         };
 
+        // render preview
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(&list).render(layout_rect[2], buf);
         };

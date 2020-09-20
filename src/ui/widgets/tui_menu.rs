@@ -8,7 +8,7 @@ use tui::widgets::{Block, Borders, Clear, Widget};
 use unicode_width::UnicodeWidthStr;
 
 use super::TuiView;
-use crate::commands::{CommandKeybind, JoshutoCommand};
+use crate::commands::{CommandKeybind, KeyCommand};
 use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::ui::TuiBackend;
@@ -30,7 +30,7 @@ impl TuiCommandMenu {
         backend: &mut TuiBackend,
         context: &mut JoshutoContext,
         m: &'a JoshutoCommandMapping,
-    ) -> Option<&'a Box<dyn JoshutoCommand>> {
+    ) -> Option<&'a KeyCommand> {
         let mut map: &JoshutoCommandMapping = &m;
         let terminal = backend.terminal_mut();
         context.flush_event();

@@ -13,6 +13,7 @@ pub struct JoshutoContext {
     events: Events,
     tab_context: TabContext,
     local_state: Option<LocalStateContext>,
+    search_state: Option<String>,
     message_queue: VecDeque<String>,
     worker_queue: VecDeque<IOWorkerThread>,
     worker: Option<IOWorkerObserver>,
@@ -25,6 +26,7 @@ impl JoshutoContext {
             events: Events::new(),
             tab_context: TabContext::new(),
             local_state: None,
+            search_state: None,
             message_queue: VecDeque::with_capacity(4),
             worker_queue: VecDeque::new(),
             worker: None,
@@ -71,6 +73,14 @@ impl JoshutoContext {
         self.local_state.take()
     }
 
+    pub fn set_search_state(&mut self, pattern: String) {
+        self.search_state = Some(pattern);
+    }
+
+    pub fn get_search_state(&self) -> Option<&String> {
+        self.search_state.as_ref()
+    }
+
     // worker related
     pub fn add_worker(&mut self, thread: IOWorkerThread) {
         self.worker_queue.push_back(thread);
@@ -114,7 +124,7 @@ impl JoshutoContext {
                     Ok(res) => {
                         let _ = tx.send(Event::IOWorkerResult(res));
                     }
-                    Err(e) => {
+                    Err(_) => {
                         let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
                         let _ = tx.send(Event::IOWorkerResult(Err(err)));
                     }

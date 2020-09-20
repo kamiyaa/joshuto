@@ -68,7 +68,12 @@ impl IOWorkerThread {
         for (i, path) in self.paths.iter().enumerate() {
             progress.index = i;
             tx.send(progress.clone());
-            self.recursive_copy(path.as_path(), self.dest.as_path(), tx.clone(), &mut progress)?;
+            self.recursive_copy(
+                path.as_path(),
+                self.dest.as_path(),
+                tx.clone(),
+                &mut progress,
+            )?;
         }
         Ok(IOWorkerProgress {
             kind: FileOp::Copy,
@@ -78,7 +83,13 @@ impl IOWorkerThread {
         })
     }
 
-    fn recursive_copy(&self, src: &path::Path, dest: &path::Path, tx: mpsc::Sender<IOWorkerProgress>, progress: &mut IOWorkerProgress) -> std::io::Result<()> {
+    fn recursive_copy(
+        &self,
+        src: &path::Path,
+        dest: &path::Path,
+        tx: mpsc::Sender<IOWorkerProgress>,
+        progress: &mut IOWorkerProgress,
+    ) -> std::io::Result<()> {
         let mut dest_buf = dest.to_path_buf();
         if let Some(s) = src.file_name() {
             dest_buf.push(s);
@@ -90,8 +101,12 @@ impl IOWorkerThread {
             for entry in fs::read_dir(src)? {
                 let entry = entry?;
                 let entry_path = entry.path();
-                self.recursive_copy(entry_path.as_path(), dest_buf.as_path(),
-                    tx.clone(), progress)?;
+                self.recursive_copy(
+                    entry_path.as_path(),
+                    dest_buf.as_path(),
+                    tx.clone(),
+                    progress,
+                )?;
                 tx.send(progress.clone());
             }
             Ok(())
@@ -115,9 +130,14 @@ impl IOWorkerThread {
             len: self.paths.len(),
         };
         for (i, path) in self.paths.iter().enumerate() {
+            progress.index = i;
             tx.send(progress.clone());
-            self.recursive_cut(path.as_path(), self.dest.as_path(),
-                tx.clone(), &mut progress)?;
+            self.recursive_cut(
+                path.as_path(),
+                self.dest.as_path(),
+                tx.clone(),
+                &mut progress,
+            )?;
         }
         Ok(IOWorkerProgress {
             kind: FileOp::Cut,
@@ -127,7 +147,13 @@ impl IOWorkerThread {
         })
     }
 
-    pub fn recursive_cut(&self, src: &path::Path, dest: &path::Path, tx: mpsc::Sender<IOWorkerProgress>, progress: &mut IOWorkerProgress) -> std::io::Result<()> {
+    pub fn recursive_cut(
+        &self,
+        src: &path::Path,
+        dest: &path::Path,
+        tx: mpsc::Sender<IOWorkerProgress>,
+        progress: &mut IOWorkerProgress,
+    ) -> std::io::Result<()> {
         let mut dest_buf = dest.to_path_buf();
         if let Some(s) = src.file_name() {
             dest_buf.push(s);
@@ -140,12 +166,16 @@ impl IOWorkerThread {
                 Ok(_) => {
                     progress.processed += metadata.len();
                 }
-                Err(e) => {
+                Err(_) => {
                     fs::create_dir(dest_buf.as_path())?;
                     for entry in fs::read_dir(src)? {
                         let entry_path = entry?.path();
-                        self.recursive_cut(entry_path.as_path(),
-                            dest_buf.as_path(), tx.clone(), progress)?;
+                        self.recursive_cut(
+                            entry_path.as_path(),
+                            dest_buf.as_path(),
+                            tx.clone(),
+                            progress,
+                        )?;
                     }
                     fs::remove_dir(src)?;
                 }

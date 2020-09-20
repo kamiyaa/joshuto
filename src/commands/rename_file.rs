@@ -1,173 +1,108 @@
 use std::path;
 
-use crate::commands::{CommandLine, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
 
-#[derive(Clone, Debug)]
-pub struct RenameFile {
-    path: path::PathBuf,
+use super::command_line;
+
+pub fn _rename_file(
+    context: &mut JoshutoContext,
+    src: &path::Path,
+    dest: &path::Path,
+) -> std::io::Result<()> {
+    let new_path = dest;
+    if new_path.exists() {
+        let err = std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Filename already exists");
+        return Err(err);
+    }
+    std::fs::rename(&src, &dest)?;
+    let options = context.config_t.sort_option.clone();
+    if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+        curr_list.reload_contents(&options)?;
+    }
+    Ok(())
 }
 
-impl RenameFile {
-    pub fn new(path: path::PathBuf) -> Self {
-        RenameFile { path }
-    }
-    pub const fn command() -> &'static str {
-        "rename"
+pub fn rename_file(context: &mut JoshutoContext, dest: &path::Path) -> JoshutoResult<()> {
+    let mut path: Option<path::PathBuf> = None;
+
+    if let Some(s) = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|s| s.curr_entry_ref())
+    {
+        path = Some(s.file_path().to_path_buf());
     }
 
-    pub fn rename_file(
-        &self,
-        path: &path::PathBuf,
-        context: &mut JoshutoContext,
-    ) -> std::io::Result<()> {
-        let new_path = &self.path;
-        if new_path.exists() {
-            let err =
-                std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Filename already exists");
-            return Err(err);
-        }
-        std::fs::rename(&path, &new_path)?;
-        let options = context.config_t.sort_option.clone();
-        if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-            curr_list.reload_contents(&options)?;
-        }
-        Ok(())
+    if let Some(path) = path {
+        _rename_file(context, path.as_path(), dest)?;
     }
+    LoadChild::load_child(context)?;
+    Ok(())
 }
 
-impl JoshutoCommand for RenameFile {}
-
-impl std::fmt::Display for RenameFile {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", Self::command())
+pub fn _rename_file_append(
+    context: &mut JoshutoContext,
+    backend: &mut TuiBackend,
+    file_name: &str,
+) -> JoshutoResult<()> {
+    let prefix;
+    let suffix;
+    if let Some(ext) = file_name.rfind('.') {
+        prefix = format!("rename {}", &file_name[0..ext]);
+        suffix = String::from(&file_name[ext..]);
+    } else {
+        prefix = format!("rename {}", file_name);
+        suffix = String::new();
     }
+    command_line::readline(context, backend, &prefix, &suffix)
 }
 
-impl JoshutoRunnable for RenameFile {
-    fn execute(&self, context: &mut JoshutoContext, _: &mut TuiBackend) -> JoshutoResult<()> {
-        let mut path: Option<path::PathBuf> = None;
+pub fn rename_file_append(
+    context: &mut JoshutoContext,
+    backend: &mut TuiBackend,
+) -> JoshutoResult<()> {
+    let mut file_name: Option<String> = None;
 
-        if let Some(s) = context
-            .tab_context_ref()
-            .curr_tab_ref()
-            .curr_list_ref()
-            .and_then(|s| s.get_curr_ref())
-        {
-            path = Some(s.file_path().to_path_buf());
-        }
-
-        if let Some(path) = path {
-            self.rename_file(&path, context)?;
-        }
-        LoadChild::load_child(context)?;
-        Ok(())
+    if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+        file_name = curr_list
+            .curr_entry_ref()
+            .map(|s| s.file_name().to_string());
     }
+
+    if let Some(file_name) = file_name {
+        _rename_file_append(context, backend, file_name.as_str())?;
+    }
+    Ok(())
 }
 
-#[derive(Clone, Debug)]
-pub struct RenameFileAppend;
-
-impl RenameFileAppend {
-    pub fn new() -> Self {
-        RenameFileAppend {}
-    }
-    pub const fn command() -> &'static str {
-        "rename_append"
-    }
-
-    pub fn rename_file(
-        &self,
-        context: &mut JoshutoContext,
-        backend: &mut TuiBackend,
-        file_name: &str,
-    ) -> JoshutoResult<()> {
-        let prefix;
-        let suffix;
-        if let Some(ext) = file_name.rfind('.') {
-            prefix = format!("rename {}", &file_name[0..ext]);
-            suffix = String::from(&file_name[ext..]);
-        } else {
-            prefix = format!("rename {}", file_name);
-            suffix = String::new();
-        }
-
-        let command = CommandLine::new(prefix, suffix);
-        command.readline(context, backend)
-    }
+pub fn _rename_file_prepend(
+    context: &mut JoshutoContext,
+    backend: &mut TuiBackend,
+    file_name: String,
+) -> JoshutoResult<()> {
+    let prefix = String::from("rename ");
+    let suffix = file_name;
+    command_line::readline(context, backend, &prefix, &suffix)
 }
 
-impl JoshutoCommand for RenameFileAppend {}
+pub fn rename_file_prepend(
+    context: &mut JoshutoContext,
+    backend: &mut TuiBackend,
+) -> JoshutoResult<()> {
+    let mut file_name: Option<String> = None;
 
-impl std::fmt::Display for RenameFileAppend {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", Self::command())
-    }
-}
-
-impl JoshutoRunnable for RenameFileAppend {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        let mut file_name: Option<String> = None;
-
-        if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-            file_name = curr_list.get_curr_ref().map(|s| s.file_name().to_string());
-        }
-
-        if let Some(file_name) = file_name {
-            self.rename_file(context, backend, file_name.as_str())?;
-        }
-
-        Ok(())
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct RenameFilePrepend;
-
-impl RenameFilePrepend {
-    pub fn new() -> Self {
-        RenameFilePrepend {}
-    }
-    pub const fn command() -> &'static str {
-        "rename_prepend"
+    if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+        file_name = curr_list
+            .curr_entry_ref()
+            .map(|s| s.file_name().to_string());
     }
 
-    pub fn rename_file(
-        &self,
-        context: &mut JoshutoContext,
-        backend: &mut TuiBackend,
-        file_name: String,
-    ) -> JoshutoResult<()> {
-        let prefix = String::from("rename ");
-        let suffix = file_name;
-
-        let command = CommandLine::new(prefix, suffix);
-        command.readline(context, backend)
+    if let Some(file_name) = file_name {
+        _rename_file_prepend(context, backend, file_name)?;
     }
-}
-
-impl JoshutoCommand for RenameFilePrepend {}
-
-impl std::fmt::Display for RenameFilePrepend {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", Self::command())
-    }
-}
-
-impl JoshutoRunnable for RenameFilePrepend {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        let mut file_name: Option<String> = None;
-
-        if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-            file_name = curr_list.get_curr_ref().map(|s| s.file_name().to_string());
-        }
-
-        if let Some(file_name) = file_name {
-            self.rename_file(context, backend, file_name)?;
-        }
-        Ok(())
-    }
+    Ok(())
 }

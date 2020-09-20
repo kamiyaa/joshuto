@@ -1,9 +1,10 @@
-use crate::commands::{CursorMoveDown, JoshutoCommand, JoshutoRunnable};
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::widgets::TuiTextField;
 use crate::ui::TuiBackend;
 use crate::util::unix;
+
+use super::cursor_move;
 
 #[derive(Clone, Debug)]
 pub struct SetMode;
@@ -20,77 +21,56 @@ const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
     (libc::S_IXOTH, 'x'),
 ];
 
-impl SetMode {
-    pub fn new() -> Self {
-        SetMode
-    }
-    pub const fn command() -> &'static str {
-        "set_mode"
-    }
-
-    pub fn str_to_mode(s: &str) -> u32 {
-        let mut mode: u32 = 0;
-        for (i, ch) in s.chars().enumerate() {
-            if ch == LIBC_PERMISSION_VALS[i].1 {
-                let val: u32 = LIBC_PERMISSION_VALS[i].0 as u32;
-                mode |= val;
-            }
+pub fn str_to_mode(s: &str) -> u32 {
+    let mut mode: u32 = 0;
+    for (i, ch) in s.chars().enumerate() {
+        if ch == LIBC_PERMISSION_VALS[i].1 {
+            let val: u32 = LIBC_PERMISSION_VALS[i].0 as u32;
+            mode |= val;
         }
-        mode
     }
+    mode
 }
 
-impl JoshutoCommand for SetMode {}
+pub fn set_mode(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    use std::os::unix::fs::PermissionsExt;
 
-impl std::fmt::Display for SetMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", Self::command())
-    }
-}
+    const PREFIX: &str = "set_mode ";
+    let entry = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|x| x.curr_entry_ref());
 
-impl JoshutoRunnable for SetMode {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-        use std::os::unix::fs::PermissionsExt;
-
-        const PREFIX: &str = "set_mode ";
-
-        let entry = context
-            .tab_context_ref()
-            .curr_tab_ref()
-            .curr_list_ref()
-            .and_then(|x| x.get_curr_ref());
-
-        let user_input = match entry {
-            Some(entry) => {
-                let mode = entry.metadata.permissions.mode();
-                let mode_string = unix::stringify_mode(mode);
-                TuiTextField::default()
-                    .prompt(":")
-                    .prefix(PREFIX)
-                    .suffix(&mode_string.as_str()[1..])
-                    .get_input(backend, context)
-            }
-            None => None,
-        };
-
-        if let Some(s) = user_input {
-            if s.starts_with(PREFIX) {
-                let s = &s[PREFIX.len()..];
-                let mode = Self::str_to_mode(s);
-
-                let entry = context
-                    .tab_context_mut()
-                    .curr_tab_mut()
-                    .curr_list_mut()
-                    .and_then(|x| x.get_curr_mut())
-                    .unwrap();
-
-                unix::set_mode(entry.file_path(), mode);
-                entry.metadata.permissions.set_mode(mode);
-                CursorMoveDown::new(1).execute(context, backend)?;
-            }
+    let user_input = match entry {
+        Some(entry) => {
+            let mode = entry.metadata.permissions.mode();
+            let mode_string = unix::stringify_mode(mode);
+            TuiTextField::default()
+                .prompt(":")
+                .prefix(PREFIX)
+                .suffix(&mode_string.as_str()[1..])
+                .get_input(backend, context)
         }
+        None => None,
+    };
 
-        Ok(())
+    if let Some(s) = user_input {
+        if s.starts_with(PREFIX) {
+            let s = &s[PREFIX.len()..];
+            let mode = str_to_mode(s);
+
+            let entry = context
+                .tab_context_mut()
+                .curr_tab_mut()
+                .curr_list_mut()
+                .and_then(|x| x.curr_entry_mut())
+                .unwrap();
+
+            unix::set_mode(entry.file_path(), mode);
+            entry.metadata.permissions.set_mode(mode);
+            cursor_move::down(context, 1)?;
+        }
     }
+    Ok(())
 }
