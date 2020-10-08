@@ -150,3 +150,17 @@ where
         .collect();
     Ok(results)
 }
+
+fn read_dir_list_icons<F>(
+    path: &path::Path,
+    filter_func: F,
+) -> std::io::Result<Vec<JoshutoDirEntry>>
+where
+    F: Fn(&Result<fs::DirEntry, std::io::Error>) -> bool,
+{
+    let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
+        .filter(filter_func)
+        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?).ok())
+        .collect();
+    Ok(results)
+}
