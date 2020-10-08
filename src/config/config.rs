@@ -21,6 +21,8 @@ const fn default_column_ratio() -> (usize, usize, usize) {
 #[derive(Clone, Debug, Deserialize)]
 struct SortRawOption {
     #[serde(default)]
+    show_icons: bool,
+    #[serde(default)]
     show_hidden: bool,
     #[serde(default = "default_true")]
     directories_first: bool,
@@ -33,6 +35,7 @@ struct SortRawOption {
 impl SortRawOption {
     pub fn into_sort_option(self, sort_method: sort::SortType) -> sort::SortOption {
         sort::SortOption {
+            show_icons: self.show_icons,
             show_hidden: self.show_hidden,
             directories_first: self.directories_first,
             case_sensitive: self.case_sensitive,
@@ -45,6 +48,7 @@ impl SortRawOption {
 impl std::default::Default for SortRawOption {
     fn default() -> Self {
         Self {
+            show_icons: bool::default(),
             show_hidden: bool::default(),
             directories_first: default_true(),
             case_sensitive: bool::default(),

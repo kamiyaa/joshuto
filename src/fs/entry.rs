@@ -18,30 +18,7 @@ pub struct JoshutoDirEntry {
 }
 
 impl JoshutoDirEntry {
-    // pub fn from(direntry: &fs::DirEntry) -> std::io::Result<Self> {
-    //     let name = match direntry.file_name().into_string() {
-    //         Ok(s) => s,
-    //         Err(_) => {
-    //             return Err(std::io::Error::new(
-    //                 std::io::ErrorKind::Other,
-    //                 "Failed converting OsString to String",
-    //             ));
-    //         }
-    //     };
-
-    //     let path = direntry.path();
-    //     let metadata = JoshutoMetadata::from(&path)?;
-
-    //     Ok(Self {
-    //         name,
-    //         path,
-    //         metadata,
-    //         selected: false,
-    //         marked: false,
-    //     })
-    // }
-
-    pub fn from(direntry: &fs::DirEntry) -> std::io::Result<Self> {
+    pub fn from(direntry: &fs::DirEntry, show_icons: bool) -> std::io::Result<Self> {
         let path = direntry.path();
         let metadata = JoshutoMetadata::from(&path)?;
 
@@ -55,31 +32,34 @@ impl JoshutoDirEntry {
             }
         };
 
-        let icon = match metadata.file_type {
-            FileType::Directory => DIR_NODE_EXACT_MATCHES
-                .get(name.as_str())
-                .cloned()
-                .unwrap_or(DEFAULT_DIR),
-            _ => FILE_NODE_EXACT_MATCHES
-                .get(name.as_str())
-                .cloned()
-                .unwrap_or(match path.extension() {
-                    Some(s) => FILE_NODE_EXTENSIONS
-                        .get(match s.to_str() {
-                            Some(s) => s,
-                            None => {
-                                return Err(std::io::Error::new(
-                                    std::io::ErrorKind::Other,
-                                    "Failed converting OsStr to str",
-                                ))
-                            }
-                        })
-                        .unwrap_or(&DEFAULT_FILE),
-                    None => DEFAULT_FILE,
-                }),
+        let name = if show_icons {
+            let icon = match metadata.file_type {
+                FileType::Directory => DIR_NODE_EXACT_MATCHES
+                    .get(name.as_str())
+                    .cloned()
+                    .unwrap_or(DEFAULT_DIR),
+                _ => FILE_NODE_EXACT_MATCHES
+                    .get(name.as_str())
+                    .cloned()
+                    .unwrap_or(match path.extension() {
+                        Some(s) => FILE_NODE_EXTENSIONS
+                            .get(match s.to_str() {
+                                Some(s) => s,
+                                None => {
+                                    return Err(std::io::Error::new(
+                                        std::io::ErrorKind::Other,
+                                        "Failed converting OsStr to str",
+                                    ))
+                                }
+                            })
+                            .unwrap_or(&DEFAULT_FILE),
+                        None => DEFAULT_FILE,
+                    }),
+            };
+            format!(" {} {}", icon, name)
+        } else {
+            name
         };
-
-        let name = format!("{} {}", icon, name);
 
         Ok(Self {
             name,

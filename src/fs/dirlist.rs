@@ -16,7 +16,7 @@ pub struct JoshutoDirList {
 impl JoshutoDirList {
     pub fn new(path: path::PathBuf, sort_option: &SortOption) -> std::io::Result<Self> {
         let filter_func = sort_option.filter_func();
-        let mut contents = read_dir_list(path.as_path(), filter_func)?;
+        let mut contents = read_dir_list(path.as_path(), filter_func, sort_option.show_icons)?;
         contents.sort_by(|f1, f2| sort_option.compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
@@ -65,7 +65,7 @@ impl JoshutoDirList {
 
     pub fn reload_contents(&mut self, sort_option: &SortOption) -> std::io::Result<()> {
         let filter_func = sort_option.filter_func();
-        let mut contents = read_dir_list(&self.path, filter_func)?;
+        let mut contents = read_dir_list(&self.path, filter_func, sort_option.show_icons)?;
         contents.sort_by(|f1, f2| sort_option.compare(f1, f2));
 
         let contents_len = contents.len();
@@ -140,27 +140,17 @@ impl JoshutoDirList {
     }
 }
 
-fn read_dir_list<F>(path: &path::Path, filter_func: F) -> std::io::Result<Vec<JoshutoDirEntry>>
-where
-    F: Fn(&Result<fs::DirEntry, std::io::Error>) -> bool,
-{
-    let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
-        .filter(filter_func)
-        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?).ok())
-        .collect();
-    Ok(results)
-}
-
-fn read_dir_list_icons<F>(
+fn read_dir_list<F>(
     path: &path::Path,
     filter_func: F,
+    show_icons: bool,
 ) -> std::io::Result<Vec<JoshutoDirEntry>>
 where
     F: Fn(&Result<fs::DirEntry, std::io::Error>) -> bool,
 {
     let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
         .filter(filter_func)
-        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?).ok())
+        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, show_icons).ok())
         .collect();
     Ok(results)
 }
