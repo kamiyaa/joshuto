@@ -2,7 +2,8 @@ use std::{fs, path};
 
 use tui::style::{Modifier, Style};
 
-use crate::fs::JoshutoMetadata;
+use crate::fs::{FileType, JoshutoMetadata};
+use crate::util::devicons::*;
 
 use crate::util::unix;
 use crate::THEME_T;
@@ -10,6 +11,7 @@ use crate::THEME_T;
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
     name: String,
+    label: String,
     path: path::PathBuf,
     pub metadata: JoshutoMetadata,
     selected: bool,
@@ -17,18 +19,54 @@ pub struct JoshutoDirEntry {
 }
 
 impl JoshutoDirEntry {
-    pub fn from(direntry: &fs::DirEntry) -> std::io::Result<Self> {
-        let name = direntry
-            .file_name()
-            .as_os_str()
-            .to_string_lossy()
-            .to_string();
-
+    pub fn from(direntry: &fs::DirEntry, show_icons: bool) -> std::io::Result<Self> {
         let path = direntry.path();
         let metadata = JoshutoMetadata::from(&path)?;
 
+        let name = match direntry.file_name().into_string() {
+            Ok(s) => s,
+            Err(_) => {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Failed converting OsString to String",
+                ));
+            }
+        };
+
+        let label = name.clone();
+
+        let label = if show_icons {
+            let icon = match metadata.file_type {
+                FileType::Directory => DIR_NODE_EXACT_MATCHES
+                    .get(label.as_str())
+                    .cloned()
+                    .unwrap_or(DEFAULT_DIR),
+                _ => FILE_NODE_EXACT_MATCHES
+                    .get(label.as_str())
+                    .cloned()
+                    .unwrap_or(match path.extension() {
+                        Some(s) => FILE_NODE_EXTENSIONS
+                            .get(match s.to_str() {
+                                Some(s) => s,
+                                None => {
+                                    return Err(std::io::Error::new(
+                                        std::io::ErrorKind::Other,
+                                        "Failed converting OsStr to str",
+                                    ))
+                                }
+                            })
+                            .unwrap_or(&DEFAULT_FILE),
+                        None => DEFAULT_FILE,
+                    }),
+            };
+            format!(" {} {}", icon, label)
+        } else {
+            label
+        };
+
         Ok(Self {
             name,
+            label,
             path,
             metadata,
             selected: false,
@@ -38,6 +76,10 @@ impl JoshutoDirEntry {
 
     pub fn file_name(&self) -> &str {
         self.name.as_str()
+    }
+
+    pub fn label(&self) -> &str {
+        self.label.as_str()
     }
 
     pub fn file_path(&self) -> &path::Path {

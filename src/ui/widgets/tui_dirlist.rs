@@ -52,7 +52,7 @@ impl<'a> Widget for TuiDirList<'a> {
             .enumerate()
             .take(area.height as usize)
         {
-            let name = entry.file_name();
+            let name = entry.label();
             let name_width = name.width();
 
             let style = if i == screen_index {

@@ -28,6 +28,7 @@ unicode-width = "^0"
 users = "^0"
 whoami = "^0"
 xdg = "^2"
+phf = { version = "0.8", features = ["macros"] }
 
 # fs_extra = "*"
 # lazy_static = "*"
