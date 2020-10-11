@@ -18,15 +18,11 @@ pub struct JoshutoDirEntry {
 
 impl JoshutoDirEntry {
     pub fn from(direntry: &fs::DirEntry) -> std::io::Result<Self> {
-        let name = match direntry.file_name().into_string() {
-            Ok(s) => s,
-            Err(_) => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "Failed converting OsString to String",
-                ));
-            }
-        };
+        let name = direntry
+            .file_name()
+            .as_os_str()
+            .to_string_lossy()
+            .to_string();
 
         let path = direntry.path();
         let metadata = JoshutoMetadata::from(&path)?;

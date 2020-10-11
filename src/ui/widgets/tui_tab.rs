@@ -20,9 +20,23 @@ impl<'a> Widget for TuiTabBar<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let selected = Style::default().add_modifier(Modifier::REVERSED);
 
+        let str1 = format!("{}/{}", self.curr + 1, self.len);
+        let str2 = {
+            let space_avail = if str1.len() >= area.width as usize {
+                0
+            } else {
+                area.width as usize - str1.len()
+            };
+            if space_avail >= self.name.len() {
+                self.name
+            } else {
+                &self.name[..space_avail]
+            }
+        };
         let text = Spans::from(vec![
-            Span::styled(format!("{}: {}", self.curr + 1, self.name), selected),
-            Span::raw(format!("/{}", self.len)),
+            Span::styled(str1, selected),
+            Span::styled(": ", selected),
+            Span::styled(str2, selected),
         ]);
 
         Paragraph::new(text)

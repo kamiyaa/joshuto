@@ -313,9 +313,7 @@ impl JoshutoRunnable for KeyCommand {
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
 
-            Self::SelectFiles { toggle, all } => {
-                selection::select_files(context, *toggle, *all)
-            }
+            Self::SelectFiles { toggle, all } => selection::select_files(context, *toggle, *all),
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShellCommand(v) => shell::shell(context, backend, v.as_slice()),
 

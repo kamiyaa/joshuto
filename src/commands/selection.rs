@@ -3,11 +3,7 @@ use crate::error::JoshutoResult;
 
 use super::cursor_move;
 
-pub fn select_files(
-    context: &mut JoshutoContext,
-    toggle: bool,
-    all: bool,
-) -> JoshutoResult<()> {
+pub fn select_files(context: &mut JoshutoContext, toggle: bool, all: bool) -> JoshutoResult<()> {
     if toggle {
         if !all {
             if let Some(s) = context
