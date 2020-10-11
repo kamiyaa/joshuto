@@ -22,19 +22,13 @@ impl JoshutoDirEntry {
     pub fn from(direntry: &fs::DirEntry, show_icons: bool) -> std::io::Result<Self> {
         let path = direntry.path();
         let metadata = JoshutoMetadata::from(&path)?;
-
-        let name = match direntry.file_name().into_string() {
-            Ok(s) => s,
-            Err(_) => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "Failed converting OsString to String",
-                ));
-            }
-        };
+        let name = direntry
+            .file_name()
+            .as_os_str()
+            .to_string_lossy()
+            .to_string();
 
         let label = name.clone();
-
         let label = if show_icons {
             let icon = match metadata.file_type {
                 FileType::Directory => DIR_NODE_EXACT_MATCHES
