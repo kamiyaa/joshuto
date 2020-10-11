@@ -1,3 +1,4 @@
+pub mod devicons;
 pub mod event;
 pub mod format;
 pub mod key_mapping;

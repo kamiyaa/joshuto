@@ -36,6 +36,7 @@ impl SortType {
 
 #[derive(Clone, Debug)]
 pub struct SortOption {
+    pub show_icons: bool,
     pub show_hidden: bool,
     pub directories_first: bool,
     pub case_sensitive: bool,
@@ -105,6 +106,7 @@ impl SortOption {
 impl std::default::Default for SortOption {
     fn default() -> Self {
         SortOption {
+            show_icons: false,
             show_hidden: false,
             directories_first: true,
             case_sensitive: false,
