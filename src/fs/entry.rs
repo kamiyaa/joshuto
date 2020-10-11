@@ -11,6 +11,7 @@ use crate::THEME_T;
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
     name: String,
+    raw: String,
     path: path::PathBuf,
     pub metadata: JoshutoMetadata,
     selected: bool,
@@ -31,6 +32,8 @@ impl JoshutoDirEntry {
                 ));
             }
         };
+
+        let raw = name.clone();
 
         let name = if show_icons {
             let icon = match metadata.file_type {
@@ -63,6 +66,7 @@ impl JoshutoDirEntry {
 
         Ok(Self {
             name,
+            raw,
             path,
             metadata,
             selected: false,
@@ -72,6 +76,10 @@ impl JoshutoDirEntry {
 
     pub fn file_name(&self) -> &str {
         self.name.as_str()
+    }
+
+    pub fn raw_file_name(&self) -> &str {
+        self.raw.as_str()
     }
 
     pub fn file_path(&self) -> &path::Path {
