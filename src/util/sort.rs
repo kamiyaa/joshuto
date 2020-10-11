@@ -59,8 +59,8 @@ impl SortOption {
 
         let mut res = match self.sort_method {
             SortType::Lexical => {
-                let f1_name = f1.raw_file_name();
-                let f2_name = f2.raw_file_name();
+                let f1_name = f1.file_name();
+                let f2_name = f2.file_name();
                 if self.case_sensitive {
                     f1_name.cmp(&f2_name)
                 } else {
@@ -70,8 +70,8 @@ impl SortOption {
                 }
             }
             SortType::Natural => {
-                let f1_name = f1.raw_file_name();
-                let f2_name = f2.raw_file_name();
+                let f1_name = f1.file_name();
+                let f2_name = f2.file_name();
                 if self.case_sensitive {
                     alphanumeric_sort::compare_str(&f1_name, &f2_name)
                 } else {
