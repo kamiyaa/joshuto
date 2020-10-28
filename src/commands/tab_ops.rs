@@ -10,7 +10,7 @@ use crate::HOME_DIR;
 
 use super::quit;
 
-pub fn tab_switch(new_index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
+fn _tab_switch(new_index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
     context.tab_context_mut().set_index(new_index);
     let path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
     std::env::set_current_dir(path.as_path())?;
@@ -24,6 +24,14 @@ pub fn tab_switch(new_index: usize, context: &mut JoshutoContext) -> std::io::Re
     Ok(())
 }
 
+pub fn tab_switch(offset: i32, context: &mut JoshutoContext) -> std::io::Result<()> {
+    let index = context.tab_context_ref().get_index();
+    let num_tabs = context.tab_context_ref().len();
+    let new_index = (index as i32 + num_tabs as i32 + offset) as usize % num_tabs;
+
+    _tab_switch(new_index, context)
+}
+
 pub fn new_tab(context: &mut JoshutoContext) -> JoshutoResult<()> {
     /* start the new tab in $HOME or root */
     let curr_path = match HOME_DIR.as_ref() {
@@ -35,7 +43,7 @@ pub fn new_tab(context: &mut JoshutoContext) -> JoshutoResult<()> {
     context.tab_context_mut().push_tab(tab);
     let new_index = context.tab_context_ref().len() - 1;
     context.tab_context_mut().set_index(new_index);
-    tab_switch(new_index, context)?;
+    _tab_switch(new_index, context)?;
     LoadChild::load_child(context)?;
     Ok(())
 }
@@ -47,10 +55,10 @@ pub fn close_tab(context: &mut JoshutoContext) -> JoshutoResult<()> {
     let mut tab_index = context.tab_context_ref().get_index();
 
     let _ = context.tab_context_mut().pop_tab(tab_index);
-    if tab_index > 0 {
-        tab_index -= 1;
-        context.tab_context_mut().set_index(tab_index);
+    let num_tabs = context.tab_context_ref().len();
+    if tab_index >= num_tabs {
+        tab_index = num_tabs - 1;
     }
-    tab_switch(tab_index, context)?;
+    _tab_switch(tab_index, context)?;
     Ok(())
 }

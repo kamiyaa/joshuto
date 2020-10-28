@@ -323,10 +323,7 @@ impl JoshutoRunnable for KeyCommand {
             Self::SortReverse => sort::toggle_reverse(context),
 
             Self::TabSwitch(i) => {
-                let new_index = (context.tab_context_ref().get_index() as i32 + i)
-                    % context.tab_context_ref().len() as i32;
-                let new_index = new_index as usize;
-                tab_ops::tab_switch(new_index, context)?;
+                tab_ops::tab_switch(*i, context)?;
                 Ok(())
             }
         }
