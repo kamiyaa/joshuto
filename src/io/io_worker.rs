@@ -12,7 +12,6 @@ pub enum FileOp {
 
 #[derive(Clone, Debug)]
 pub struct IOWorkerOptions {
-    pub kind: FileOp,
     pub overwrite: bool,
     pub skip_exist: bool,
 }
@@ -20,10 +19,15 @@ pub struct IOWorkerOptions {
 impl std::default::Default for IOWorkerOptions {
     fn default() -> Self {
         Self {
-            kind: FileOp::Copy,
             overwrite: false,
             skip_exist: false,
         }
+    }
+}
+
+impl std::fmt::Display for IOWorkerOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "overwrite={} skip_exist={}", self.overwrite, self.skip_exist)
     }
 }
 
@@ -37,14 +41,16 @@ pub struct IOWorkerProgress {
 
 #[derive(Debug)]
 pub struct IOWorkerThread {
+    pub kind: FileOp,
     pub options: IOWorkerOptions,
     pub paths: Vec<path::PathBuf>,
     pub dest: path::PathBuf,
 }
 
 impl IOWorkerThread {
-    pub fn new(options: IOWorkerOptions, paths: Vec<path::PathBuf>, dest: path::PathBuf) -> Self {
+    pub fn new(kind: FileOp, paths: Vec<path::PathBuf>, dest: path::PathBuf, options: IOWorkerOptions) -> Self {
         Self {
+            kind,
             options,
             paths,
             dest,
@@ -52,7 +58,7 @@ impl IOWorkerThread {
     }
 
     pub fn start(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
-        match self.options.kind {
+        match self.kind {
             FileOp::Cut => self.paste_cut(tx),
             FileOp::Copy => self.paste_copy(tx),
         }
@@ -60,7 +66,7 @@ impl IOWorkerThread {
 
     fn paste_copy(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
         let mut progress = IOWorkerProgress {
-            kind: FileOp::Copy,
+            kind: self.kind,
             index: 0,
             processed: 0,
             len: self.paths.len(),
@@ -76,7 +82,7 @@ impl IOWorkerThread {
             )?;
         }
         Ok(IOWorkerProgress {
-            kind: FileOp::Copy,
+            kind: self.kind,
             index: self.paths.len(),
             processed: progress.processed,
             len: self.paths.len(),
@@ -124,7 +130,7 @@ impl IOWorkerThread {
 
     fn paste_cut(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
         let mut progress = IOWorkerProgress {
-            kind: FileOp::Cut,
+            kind: self.kind,
             index: 0,
             processed: 0,
             len: self.paths.len(),
@@ -140,7 +146,7 @@ impl IOWorkerThread {
             )?;
         }
         Ok(IOWorkerProgress {
-            kind: FileOp::Cut,
+            kind: self.kind,
             index: self.paths.len(),
             processed: progress.processed,
             len: self.paths.len(),

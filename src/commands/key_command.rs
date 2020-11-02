@@ -63,7 +63,7 @@ impl KeyCommand {
     pub fn command(&self) -> &'static str {
         match self {
             Self::BulkRename => "bulk_rename",
-            Self::ChangeDirectory(_) => "change_directory",
+            Self::ChangeDirectory(_) => "cd",
             Self::NewTab => "new_tab",
             Self::CloseTab => "close_tab",
             Self::CommandLine(_, _) => "console",
@@ -79,7 +79,7 @@ impl KeyCommand {
             Self::CursorMovePageUp => "cursor_move_page_up",
             Self::CursorMovePageDown => "cursor_move_page_down",
 
-            Self::DeleteFiles => "cursor_move_delete",
+            Self::DeleteFiles => "delete_files",
             Self::NewDirectory(_) => "new_directory",
             Self::OpenFile => "open",
             Self::OpenFileWith => "open_with",
@@ -103,7 +103,7 @@ impl KeyCommand {
             Self::ToggleHiddenFiles => "toggle_hidden",
 
             Self::Sort(_) => "sort",
-            Self::SortReverse => "sort_reverse",
+            Self::SortReverse => "sort reverse",
 
             Self::TabSwitch(_) => "tab_switch",
         }
@@ -248,10 +248,6 @@ impl KeyCommand {
                 },
             },
             "tab_switch" => match arg {
-                "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
-                    format!("{}: {}", command, "No option provided"),
-                )),
                 arg => match arg.parse::<i32>() {
                     Ok(s) => Ok(Self::TabSwitch(s)),
                     Err(e) => Err(JoshutoError::new(
@@ -333,7 +329,20 @@ impl JoshutoRunnable for KeyCommand {
 impl std::fmt::Display for KeyCommand {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &*self {
-            Self::ChangeDirectory(p) => write!(f, "{} {}", self.command(), p.to_str().unwrap()),
+            Self::ChangeDirectory(p) => write!(f, "{}    {:?}", self.command(), p),
+            Self::CommandLine(s, p) => write!(f, "{} {} {}", self.command(), s, p),
+            Self::PasteFiles(options) => write!(f, "{}    {}", self.command(), options),
+            Self::CursorMoveUp(i) => write!(f, "{} {}", self.command(), i),
+            Self::CursorMoveDown(i) => write!(f, "{} {}", self.command(), i),
+            Self::NewDirectory(d) => write!(f, "{} {:?}", self.command(), d),
+            Self::RenameFile(name) => write!(f, "{} {:?}", self.command(), name),
+
+            Self::Search(s) => write!(f, "{} {}", self.command(), s),
+            Self::SelectFiles { toggle, all } => write!(f, "{} toggle={} all={}",
+                self.command(), toggle, all),
+            Self::ShellCommand(c) => write!(f, "{} {:?}", self.command(), c),
+            Self::Sort(t) => write!(f, "{} {}", self.command(), t),
+            Self::TabSwitch(i) => write!(f, "{} {}", self.command(), i),
             _ => write!(f, "{}", self.command()),
         }
     }

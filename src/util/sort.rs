@@ -24,13 +24,19 @@ impl SortType {
             _ => None,
         }
     }
-    pub fn as_str(&self) -> &str {
+    pub const fn as_str(&self) -> &str {
         match *self {
             SortType::Lexical => "lexical",
             SortType::Mtime => "mtime",
             SortType::Natural => "natural",
             SortType::Size => "size",
         }
+    }
+}
+
+impl std::fmt::Display for SortType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
 

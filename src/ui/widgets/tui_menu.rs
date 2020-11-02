@@ -20,6 +20,34 @@ const BOTTOM_MARGIN: usize = 1;
 
 pub struct TuiCommandMenu;
 
+trait ToString {
+    fn to_string(&self) -> String;
+}
+
+impl ToString for Key {
+    fn to_string(&self) -> String {
+        match *self {
+            Key::Char(c) => format!("{}", c),
+            Key::Ctrl(c) => format!("ctrl+{}", c),
+            Key::Left => format!("arrow_left"),
+            Key::Right => format!("arrow_right"),
+            Key::Up => format!("arrow_up"),
+            Key::Down => format!("arrow_down"),
+            Key::Backspace => format!("backspace"),
+            Key::Home => format!("home"),
+            Key::End => format!("end"),
+            Key::PageUp => format!("page_up"),
+            Key::PageDown => format!("page_down"),
+            Key::BackTab => format!("backtab"),
+            Key::Insert => format!("insert"),
+            Key::Delete => format!("delete"),
+            Key::Esc => format!("escape"),
+            Key::F(i) => format!("f{}", i),
+            k => format!("{:?}", k),
+        }
+    }
+}
+
 impl TuiCommandMenu {
     pub fn new() -> Self {
         Self {}
@@ -49,7 +77,7 @@ impl TuiCommandMenu {
                     let mut display_vec: Vec<String> = map
                         .as_ref()
                         .iter()
-                        .map(|(k, v)| format!("  {:?}    {}", k, v))
+                        .map(|(k, v)| format!("  {}    {}", k.to_string(), v))
                         .collect();
                     display_vec.sort();
                     let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
