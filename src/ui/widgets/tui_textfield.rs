@@ -105,14 +105,15 @@ impl<'a> TuiTextField<'a> {
                             (f_size.height as usize - menu_len - 2) as u16
                         };
 
-                        let rect = Rect {
+                        let menu_rect = Rect {
                             x: 0,
                             y: menu_y,
                             width: f_size.width,
                             height: menu_len as u16,
                         };
                         let menu_widget = TuiMenu::new(items);
-                        frame.render_widget(menu_widget, rect);
+                        frame.render_widget(Clear, menu_rect);
+                        frame.render_widget(menu_widget, menu_rect);
                     }
 
                     let cursor_xpos = line_buffer.pos();

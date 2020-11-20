@@ -162,8 +162,7 @@ impl<'a> Widget for TuiMenu<'a> {
             .render(area, buf);
 
         for (i, text) in text_iter.enumerate() {
-            let width = text.width();
-            buf.set_stringn(area_x, area_y + i as u16, text, width, style);
+            buf.set_string(area_x, area_y + i as u16, text, style);
         }
     }
 }
