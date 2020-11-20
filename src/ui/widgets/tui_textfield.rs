@@ -109,7 +109,7 @@ impl<'a> TuiTextField<'a> {
                             x: 0,
                             y: menu_y,
                             width: f_size.width,
-                            height: menu_len as u16,
+                            height: menu_len as u16 + 1,
                         };
                         let menu_widget = TuiMenu::new(items);
                         frame.render_widget(Clear, menu_rect);
