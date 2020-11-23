@@ -27,7 +27,11 @@ impl std::default::Default for IOWorkerOptions {
 
 impl std::fmt::Display for IOWorkerOptions {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "overwrite={} skip_exist={}", self.overwrite, self.skip_exist)
+        write!(
+            f,
+            "overwrite={} skip_exist={}",
+            self.overwrite, self.skip_exist
+        )
     }
 }
 
@@ -48,7 +52,12 @@ pub struct IOWorkerThread {
 }
 
 impl IOWorkerThread {
-    pub fn new(kind: FileOp, paths: Vec<path::PathBuf>, dest: path::PathBuf, options: IOWorkerOptions) -> Self {
+    pub fn new(
+        kind: FileOp,
+        paths: Vec<path::PathBuf>,
+        dest: path::PathBuf,
+        options: IOWorkerOptions,
+    ) -> Self {
         Self {
             kind,
             options,

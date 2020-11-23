@@ -28,6 +28,9 @@ pub enum KeyCommand {
     CursorMovePageUp,
     CursorMovePageDown,
 
+    ParentCursorMoveUp(usize),
+    ParentCursorMoveDown(usize),
+
     DeleteFiles,
     NewDirectory(path::PathBuf),
     OpenFile,
@@ -78,6 +81,9 @@ impl KeyCommand {
             Self::CursorMoveEnd => "cursor_move_end",
             Self::CursorMovePageUp => "cursor_move_page_up",
             Self::CursorMovePageDown => "cursor_move_page_down",
+
+            Self::ParentCursorMoveUp(_) => "parent_cursor_move_up",
+            Self::ParentCursorMoveDown(_) => "parent_cursor_move_down",
 
             Self::DeleteFiles => "delete_files",
             Self::NewDirectory(_) => "new_directory",
@@ -149,6 +155,26 @@ impl KeyCommand {
                 "" => Ok(Self::CursorMoveUp(1)),
                 arg => match arg.parse::<usize>() {
                     Ok(s) => Ok(Self::CursorMoveUp(s)),
+                    Err(e) => Err(JoshutoError::new(
+                        JoshutoErrorKind::ParseError,
+                        e.to_string(),
+                    )),
+                },
+            },
+            "parent_cursor_move_down" => match arg {
+                "" => Ok(Self::ParentCursorMoveDown(1)),
+                arg => match arg.parse::<usize>() {
+                    Ok(s) => Ok(Self::ParentCursorMoveDown(s)),
+                    Err(e) => Err(JoshutoError::new(
+                        JoshutoErrorKind::ParseError,
+                        e.to_string(),
+                    )),
+                },
+            },
+            "parent_cursor_move_up" => match arg {
+                "" => Ok(Self::ParentCursorMoveUp(1)),
+                arg => match arg.parse::<usize>() {
+                    Ok(s) => Ok(Self::ParentCursorMoveUp(s)),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
@@ -290,6 +316,9 @@ impl JoshutoRunnable for KeyCommand {
             Self::CursorMovePageUp => cursor_move::page_up(context, backend),
             Self::CursorMovePageDown => cursor_move::page_down(context, backend),
 
+            Self::ParentCursorMoveUp(u) => parent_cursor_move::parent_up(context, *u),
+            Self::ParentCursorMoveDown(u) => parent_cursor_move::parent_down(context, *u),
+
             Self::DeleteFiles => {
                 delete_files::delete_selected_files(context, backend)?;
                 Ok(())
@@ -338,8 +367,9 @@ impl std::fmt::Display for KeyCommand {
             Self::RenameFile(name) => write!(f, "{} {:?}", self.command(), name),
 
             Self::Search(s) => write!(f, "{} {}", self.command(), s),
-            Self::SelectFiles { toggle, all } => write!(f, "{} toggle={} all={}",
-                self.command(), toggle, all),
+            Self::SelectFiles { toggle, all } => {
+                write!(f, "{} toggle={} all={}", self.command(), toggle, all)
+            }
             Self::ShellCommand(c) => write!(f, "{} {:?}", self.command(), c),
             Self::Sort(t) => write!(f, "{} {}", self.command(), t),
             Self::TabSwitch(i) => write!(f, "{} {}", self.command(), i),
