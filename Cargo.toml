@@ -1,6 +1,6 @@
 [package]
 name = "joshuto"
-version = "0.8.4"
+version = "0.8.5"
 authors = ["Jiayi Zhao <jeff.no.zhao@gmail.com>"]
 description = "Terminal file manager inspired by ranger"
 homepage = "https://github.com/kamiyaa/joshuto"
@@ -28,7 +28,7 @@ unicode-width = "^0"
 users = "^0"
 whoami = "^0"
 xdg = "^2"
-phf = { version = "0.8", features = ["macros"] }
+phf = { version = "^0", features = ["macros"] }
 
 # fs_extra = "*"
 # lazy_static = "*"

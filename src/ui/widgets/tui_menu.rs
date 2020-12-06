@@ -5,7 +5,6 @@ use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, Clear, Widget};
-use unicode_width::UnicodeWidthStr;
 
 use super::TuiView;
 use crate::commands::{CommandKeybind, KeyCommand};

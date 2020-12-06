@@ -172,7 +172,7 @@ dependencies = [
 
 [[package]]
 name = "joshuto"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "alphanumeric-sort",
  "chrono",

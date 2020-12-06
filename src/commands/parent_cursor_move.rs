@@ -1,7 +1,6 @@
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
-use crate::ui::TuiBackend;
 use std::path::PathBuf;
 
 pub fn parent_cursor_move(new_index: usize, context: &mut JoshutoContext) -> JoshutoResult<()> {
@@ -9,7 +8,7 @@ pub fn parent_cursor_move(new_index: usize, context: &mut JoshutoContext) -> Jos
     let mut new_index = new_index;
 
     {
-        let mut curr_tab = context.tab_context_mut().curr_tab_mut();
+        let curr_tab = context.tab_context_mut().curr_tab_mut();
         if let Some(curr_list) = curr_tab.parent_list_mut() {
             if curr_list.index.is_some() {
                 let dir_len = curr_list.contents.len();

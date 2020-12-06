@@ -104,6 +104,45 @@ impl std::default::Default for JoshutoStyleThemeRaw {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct JoshutoStyleTheme {
+    pub fg: Color,
+    pub bg: Color,
+    pub modifier: Modifier,
+    pub prefix: Option<JoshutoPrefix>,
+}
+
+impl JoshutoStyleTheme {
+    pub fn set_bg(mut self, bg: Color) -> Self {
+        self.bg = bg;
+        self
+    }
+    pub fn set_fg(mut self, fg: Color) -> Self {
+        self.fg = fg;
+        self
+    }
+    pub fn set_prefix(mut self, prefix: JoshutoPrefix) -> Self {
+        self.prefix = Some(prefix);
+        self
+    }
+
+    pub fn insert(mut self, modifier: Modifier) -> Self {
+        self.modifier.insert(modifier);
+        self
+    }
+}
+
+impl std::default::Default for JoshutoStyleTheme {
+    fn default() -> Self {
+        Self {
+            fg: default_color(),
+            bg: default_color(),
+            modifier: Modifier::empty(),
+            prefix: None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct JoshutoRawTheme {
     #[serde(default)]
@@ -161,45 +200,6 @@ impl Flattenable<JoshutoTheme> for JoshutoRawTheme {
             link,
             socket,
             ext,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct JoshutoStyleTheme {
-    pub fg: Color,
-    pub bg: Color,
-    pub modifier: Modifier,
-    pub prefix: Option<JoshutoPrefix>,
-}
-
-impl JoshutoStyleTheme {
-    pub fn set_bg(mut self, bg: Color) -> Self {
-        self.bg = bg;
-        self
-    }
-    pub fn set_fg(mut self, fg: Color) -> Self {
-        self.fg = fg;
-        self
-    }
-    pub fn set_prefix(mut self, prefix: JoshutoPrefix) -> Self {
-        self.prefix = Some(prefix);
-        self
-    }
-
-    pub fn insert(mut self, modifier: Modifier) -> Self {
-        self.modifier.insert(modifier);
-        self
-    }
-}
-
-impl std::default::Default for JoshutoStyleTheme {
-    fn default() -> Self {
-        Self {
-            fg: default_color(),
-            bg: default_color(),
-            modifier: Modifier::empty(),
-            prefix: None,
         }
     }
 }
