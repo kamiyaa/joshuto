@@ -1,5 +1,8 @@
 use std::time;
 
+use tui::buffer::Buffer;
+use tui::style::Style;
+
 use super::unix;
 
 pub fn file_size_to_string(file_size: u64) -> String {
@@ -32,3 +35,5 @@ pub fn mtime_to_string(mtime: time::SystemTime) -> String {
     let datetime: chrono::DateTime<chrono::offset::Utc> = mtime.into();
     datetime.format(MTIME_FORMATTING).to_string()
 }
+
+pub fn write_str_to_buf(buf: &mut Buffer, s: &str, width: usize, x: u16, y: u16, style: Style) {}
