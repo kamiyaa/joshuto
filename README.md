@@ -51,8 +51,8 @@ Joshuto can currently be configured using the following files:
 
 #### [keymap.toml](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.toml)
 
-- for keybindings, please take a look at [keymap.rs](https://github.com/kamiyaa/joshuto/blob/master/src/config/keymap.rs#L102) for non-printable keys
-- for commands, please take a look at commands/[mod.rs](https://github.com/kamiyaa/joshuto/blob/master/src/commands/mod.rs#L73) for available commands
+- for keybindings, please take a look at [src/util/key_mapping.rs](https://github.com/kamiyaa/joshuto/blob/master/src/util/key_mapping.rs#L3) for non-printable keys
+- for commands, please take a look at [src/commands/key_command.rs](https://github.com/kamiyaa/joshuto/blob/master/src/commands/key_command.rs#L124)
 
 #### [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml)
 
