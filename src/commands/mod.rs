@@ -16,6 +16,7 @@ pub mod selection;
 pub mod set_mode;
 pub mod shell;
 pub mod show_hidden;
+pub mod show_workers;
 pub mod sort;
 pub mod tab_ops;
 

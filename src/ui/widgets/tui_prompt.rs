@@ -5,11 +5,10 @@ use tui::text::Span;
 use tui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::context::JoshutoContext;
+use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
 use crate::util::event::Event;
 use crate::util::worker;
-
-use super::TuiView;
 
 pub struct TuiPrompt<'a> {
     prompt: &'a str,
@@ -25,7 +24,7 @@ impl<'a> TuiPrompt<'a> {
 
         context.flush_event();
         loop {
-            terminal.draw(|frame| {
+            let _ = terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
                 if f_size.height == 0 {
                     return;

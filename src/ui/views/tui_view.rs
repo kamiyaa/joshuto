@@ -5,8 +5,6 @@ use tui::widgets::Widget;
 use super::TuiFolderView;
 use crate::context::JoshutoContext;
 
-const TAB_VIEW_WIDTH: u16 = 15;
-
 pub struct TuiView<'a> {
     pub context: &'a JoshutoContext,
     pub show_bottom_status: bool,

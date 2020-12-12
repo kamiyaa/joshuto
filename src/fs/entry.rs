@@ -99,15 +99,12 @@ impl JoshutoDirEntry {
     }
 
     pub fn get_modifier(&self) -> Modifier {
-        let metadata = &self.metadata;
-        let filetype = &metadata.file_type;
+        let filetype = &self.metadata.file_type;
 
-        if filetype.is_dir() {
-            THEME_T.directory.modifier
-        } else if filetype.is_symlink() {
-            THEME_T.link.modifier
-        } else {
-            match self.file_path().extension() {
+        match filetype {
+            FileType::Directory => THEME_T.directory.modifier,
+            FileType::Symlink(_) => THEME_T.link.modifier,
+            _ => match self.file_path().extension() {
                 None => Modifier::empty(),
                 Some(os_str) => match os_str.to_str() {
                     None => Modifier::empty(),
@@ -116,7 +113,7 @@ impl JoshutoDirEntry {
                         Some(t) => t.modifier,
                     },
                 },
-            }
+            },
         }
     }
 
@@ -124,28 +121,24 @@ impl JoshutoDirEntry {
         let metadata = &self.metadata;
         let filetype = &metadata.file_type;
 
-        if self.is_selected() {
-            Style::default()
+        match filetype {
+            _ if self.is_selected() => Style::default()
                 .fg(THEME_T.selection.fg)
                 .bg(THEME_T.selection.bg)
-                .add_modifier(THEME_T.selection.modifier)
-        } else if filetype.is_dir() {
-            Style::default()
+                .add_modifier(THEME_T.selection.modifier),
+            FileType::Directory => Style::default()
                 .fg(THEME_T.directory.fg)
                 .bg(THEME_T.directory.bg)
-                .add_modifier(THEME_T.directory.modifier)
-        } else if filetype.is_symlink() {
-            Style::default()
+                .add_modifier(THEME_T.directory.modifier),
+            FileType::Symlink(_) => Style::default()
                 .fg(THEME_T.link.fg)
                 .bg(THEME_T.link.bg)
-                .add_modifier(THEME_T.link.modifier)
-        } else if unix::is_executable(metadata.mode) {
-            Style::default()
+                .add_modifier(THEME_T.link.modifier),
+            _ if unix::is_executable(metadata.mode) => Style::default()
                 .fg(THEME_T.executable.fg)
                 .bg(THEME_T.executable.bg)
-                .add_modifier(THEME_T.executable.modifier)
-        } else {
-            match self.file_path().extension() {
+                .add_modifier(THEME_T.executable.modifier),
+            _ => match self.file_path().extension() {
                 None => Style::default(),
                 Some(os_str) => match os_str.to_str() {
                     None => Style::default(),
@@ -154,7 +147,7 @@ impl JoshutoDirEntry {
                         Some(t) => Style::default().fg(t.fg).bg(t.bg).add_modifier(t.modifier),
                     },
                 },
-            }
+            },
         }
     }
 }

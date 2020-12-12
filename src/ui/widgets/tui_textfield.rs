@@ -8,11 +8,11 @@ use tui::text::{Span, Spans};
 use tui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::context::JoshutoContext;
+use crate::ui::views::TuiView;
+use crate::ui::widgets::TuiMenu;
 use crate::ui::TuiBackend;
 use crate::util::event::Event;
 use crate::util::worker;
-
-use super::{TuiMenu, TuiView};
 
 struct CompletionTracker {
     pub index: usize,
@@ -40,6 +40,15 @@ pub struct TuiTextField<'a> {
 }
 
 impl<'a> TuiTextField<'a> {
+    pub fn new() -> Self {
+        Self {
+            _prompt: "",
+            _prefix: "",
+            _suffix: "",
+            _menu_items: None,
+        }
+    }
+
     pub fn menu_items<I>(&mut self, items: I) -> &mut Self
     where
         I: Iterator<Item = &'a str>,
@@ -90,7 +99,6 @@ impl<'a> TuiTextField<'a> {
                     if f_size.height == 0 {
                         return;
                     }
-
                     {
                         let mut view = TuiView::new(&context);
                         view.show_bottom_status = false;
@@ -98,7 +106,8 @@ impl<'a> TuiTextField<'a> {
                     }
 
                     if let Some(items) = self._menu_items.as_ref() {
-                        let menu_len = items.len();
+                        let menu_widget = TuiMenu::new(items);
+                        let menu_len = menu_widget.len();
                         let menu_y = if menu_len + 2 > f_size.height as usize {
                             0
                         } else {
@@ -111,13 +120,11 @@ impl<'a> TuiTextField<'a> {
                             width: f_size.width,
                             height: menu_len as u16 + 1,
                         };
-                        let menu_widget = TuiMenu::new(items);
                         frame.render_widget(Clear, menu_rect);
                         frame.render_widget(menu_widget, menu_rect);
                     }
 
                     let cursor_xpos = line_buffer.pos();
-
                     let prefix = &line_buffer.as_str()[..cursor_xpos];
 
                     let curr = line_buffer.as_str()[cursor_xpos..].chars().next();

@@ -30,7 +30,7 @@ impl TuiBackend {
     where
         W: Widget,
     {
-        self.terminal_mut().draw(|frame| {
+        let _ = self.terminal_mut().draw(|frame| {
             let rect = frame.size();
             frame.render_widget(widget, rect);
         });
@@ -44,7 +44,7 @@ impl TuiBackend {
 
     pub fn terminal_drop(&mut self) {
         let _ = self.terminal.take();
-        stdout().flush();
+        let _ = stdout().flush();
     }
 
     pub fn terminal_restore(&mut self) -> std::io::Result<()> {

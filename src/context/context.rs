@@ -1,10 +1,11 @@
+use std::collections::vec_deque::Iter;
 use std::collections::VecDeque;
 use std::sync::mpsc;
 use std::thread;
 
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
-use crate::io::{IOWorkerObserver, IOWorkerThread};
+use crate::io::{IOWorkerObserver, IOWorkerProgress, IOWorkerThread};
 use crate::util::event::{Event, Events};
 
 pub struct JoshutoContext {
@@ -88,15 +89,27 @@ impl JoshutoContext {
     pub fn worker_is_busy(&self) -> bool {
         self.worker.is_some()
     }
-    pub fn worker_len(&self) -> usize {
-        self.worker_queue.len()
-    }
     pub fn worker_is_empty(&self) -> bool {
         self.worker_queue.is_empty()
     }
-    pub fn set_worker_msg(&mut self, msg: String) {
+
+    pub fn worker_iter(&self) -> Iter<IOWorkerThread> {
+        self.worker_queue.iter()
+    }
+
+    pub fn worker_ref(&self) -> Option<&IOWorkerObserver> {
+        self.worker.as_ref()
+    }
+
+    pub fn set_worker_progress(&mut self, res: IOWorkerProgress) {
         if let Some(s) = self.worker.as_mut() {
-            s.set_msg(msg);
+            s.set_progress(res);
+        }
+    }
+
+    pub fn update_worker_msg(&mut self) {
+        if let Some(s) = self.worker.as_mut() {
+            s.update_msg();
         }
     }
     pub fn worker_msg(&self) -> Option<&str> {
@@ -116,7 +129,7 @@ impl JoshutoContext {
                 let worker_handle = thread::spawn(move || worker.start(wtx));
                 // relay worker info to event loop
                 while let Ok(progress) = wrx.recv() {
-                    tx.send(Event::IOWorkerProgress(progress));
+                    let _ = tx.send(Event::IOWorkerProgress(progress));
                 }
                 let result = worker_handle.join();
 

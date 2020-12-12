@@ -6,10 +6,10 @@ use tui::layout::Rect;
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, Clear, Widget};
 
-use super::TuiView;
 use crate::commands::{CommandKeybind, KeyCommand};
 use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
+use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
 use crate::util::event::Event;
 use crate::util::worker;
@@ -63,7 +63,7 @@ impl TuiCommandMenu {
         context.flush_event();
 
         loop {
-            terminal.draw(|frame| {
+            let _ = terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
 
                 {

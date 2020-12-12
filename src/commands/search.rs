@@ -38,7 +38,7 @@ pub fn _search_rev(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
 pub fn search(context: &mut JoshutoContext, pattern: &str) -> JoshutoResult<()> {
     let index = _search(context.tab_context_ref().curr_tab_ref(), pattern);
     if let Some(index) = index {
-        cursor_move::cursor_move(index, context);
+        let _ = cursor_move::cursor_move(index, context);
     }
     context.set_search_state(pattern.to_string());
     Ok(())
@@ -51,7 +51,7 @@ fn search_with_func(
     if let Some(s) = context.get_search_state() {
         let index = search_func(context.tab_context_ref().curr_tab_ref(), s);
         if let Some(index) = index {
-            cursor_move::cursor_move(index, context);
+            let _ = cursor_move::cursor_move(index, context);
         }
     }
 }

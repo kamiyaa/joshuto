@@ -4,8 +4,8 @@ use tui::style::{Color, Style};
 use tui::text::Span;
 use tui::widgets::{Paragraph, Widget, Wrap};
 
-use super::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
 use crate::context::JoshutoContext;
+use crate::ui::widgets::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
 
 const TAB_VIEW_WIDTH: u16 = 15;
 

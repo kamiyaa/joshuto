@@ -51,6 +51,7 @@ pub enum KeyCommand {
     SelectFiles { toggle: bool, all: bool },
     SetMode,
     ShellCommand(Vec<String>),
+    ShowWorkers,
 
     ToggleHiddenFiles,
 
@@ -105,6 +106,7 @@ impl KeyCommand {
             Self::SelectFiles { toggle: _, all: _ } => "select",
             Self::SetMode => "set_mode",
             Self::ShellCommand(_) => "shell",
+            Self::ShowWorkers => "show_workers",
 
             Self::ToggleHiddenFiles => "toggle_hidden",
 
@@ -263,6 +265,7 @@ impl KeyCommand {
                     format!("{}: {}", arg, e),
                 )),
             },
+            "show_workers" => Ok(Self::ShowWorkers),
             "sort" => match arg {
                 "reverse" => Ok(Self::SortReverse),
                 arg => match SortType::parse(arg) {
@@ -341,6 +344,7 @@ impl JoshutoRunnable for KeyCommand {
             Self::SelectFiles { toggle, all } => selection::select_files(context, *toggle, *all),
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShellCommand(v) => shell::shell(context, backend, v.as_slice()),
+            Self::ShowWorkers => show_workers::show_workers(context, backend),
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 

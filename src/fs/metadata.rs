@@ -7,29 +7,6 @@ pub enum FileType {
     File,
 }
 
-impl FileType {
-    pub fn is_dir(&self) -> bool {
-        match *self {
-            Self::Directory => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_symlink(&self) -> bool {
-        match *self {
-            Self::Symlink(_) => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_file(&self) -> bool {
-        match *self {
-            Self::File => true,
-            _ => false,
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
     pub len: u64,

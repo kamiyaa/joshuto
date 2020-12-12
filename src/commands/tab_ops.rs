@@ -20,7 +20,7 @@ fn _tab_switch(new_index: usize, context: &mut JoshutoContext) -> std::io::Resul
         .tab_context_mut()
         .curr_tab_mut()
         .history_mut()
-        .create_or_soft_update(path.as_path(), &options);
+        .create_or_soft_update(path.as_path(), &options)?;
     Ok(())
 }
 

@@ -66,7 +66,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                         buf.set_string(x + area_width as u16 - 1, y + i as u16, "…", style);
                     }
                 }
-                FileType::Symlink(p) => {
+                FileType::Symlink(_) => {
                     if name_width < area_width - 4 {
                         buf.set_string(x, y + i as u16, name, style);
                         buf.set_string(x + area_width as u16 - 4, y + i as u16, "->", style);

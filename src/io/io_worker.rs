@@ -37,15 +37,50 @@ impl std::fmt::Display for IOWorkerOptions {
 
 #[derive(Clone, Debug)]
 pub struct IOWorkerProgress {
-    pub kind: FileOp,
-    pub index: usize,
-    pub len: usize,
-    pub processed: u64,
+    _kind: FileOp,
+    _index: usize,
+    _len: usize,
+    _processed: u64,
+}
+
+impl IOWorkerProgress {
+    pub fn new(_kind: FileOp, _index: usize, _len: usize, _processed: u64) -> Self {
+        Self {
+            _kind,
+            _index,
+            _len,
+            _processed,
+        }
+    }
+
+    pub fn kind(&self) -> FileOp {
+        self._kind
+    }
+
+    pub fn index(&self) -> usize {
+        self._index
+    }
+
+    pub fn set_index(&mut self, _index: usize) {
+        self._index = _index;
+    }
+
+    pub fn len(&self) -> usize {
+        self._len
+    }
+
+    pub fn processed(&self) -> u64 {
+        self._processed
+    }
+
+    pub fn set_processed(&mut self, _processed: u64) {
+        self._processed = _processed;
+    }
 }
 
 #[derive(Debug)]
 pub struct IOWorkerThread {
-    pub kind: FileOp,
+    _kind: FileOp,
     pub options: IOWorkerOptions,
     pub paths: Vec<path::PathBuf>,
     pub dest: path::PathBuf,
@@ -53,36 +88,35 @@ pub struct IOWorkerThread {
 
 impl IOWorkerThread {
     pub fn new(
-        kind: FileOp,
+        _kind: FileOp,
         paths: Vec<path::PathBuf>,
         dest: path::PathBuf,
         options: IOWorkerOptions,
     ) -> Self {
         Self {
-            kind,
+            _kind,
             options,
             paths,
             dest,
         }
     }
 
+    pub fn kind(&self) -> FileOp {
+        self._kind
+    }
+
     pub fn start(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
-        match self.kind {
+        match self.kind() {
             FileOp::Cut => self.paste_cut(tx),
             FileOp::Copy => self.paste_copy(tx),
         }
     }
 
     fn paste_copy(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
-        let mut progress = IOWorkerProgress {
-            kind: self.kind,
-            index: 0,
-            processed: 0,
-            len: self.paths.len(),
-        };
+        let mut progress = IOWorkerProgress::new(self.kind(), 0, self.paths.len(), 0);
         for (i, path) in self.paths.iter().enumerate() {
-            progress.index = i;
-            tx.send(progress.clone());
+            progress.set_index(i);
+            let _ = tx.send(progress.clone());
             self.recursive_copy(
                 path.as_path(),
                 self.dest.as_path(),
@@ -90,12 +124,12 @@ impl IOWorkerThread {
                 &mut progress,
             )?;
         }
-        Ok(IOWorkerProgress {
-            kind: self.kind,
-            index: self.paths.len(),
-            processed: progress.processed,
-            len: self.paths.len(),
-        })
+        Ok(IOWorkerProgress::new(
+            self.kind(),
+            self.paths.len(),
+            self.paths.len(),
+            progress.processed(),
+        ))
     }
 
     fn recursive_copy(
@@ -122,11 +156,11 @@ impl IOWorkerThread {
                     tx.clone(),
                     progress,
                 )?;
-                tx.send(progress.clone());
+                let _ = tx.send(progress.clone());
             }
             Ok(())
         } else if file_type.is_file() {
-            progress.processed += fs::copy(src, dest_buf)?;
+            progress._processed += fs::copy(src, dest_buf)?;
             Ok(())
         } else if file_type.is_symlink() {
             let link_path = fs::read_link(src)?;
@@ -138,15 +172,10 @@ impl IOWorkerThread {
     }
 
     fn paste_cut(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
-        let mut progress = IOWorkerProgress {
-            kind: self.kind,
-            index: 0,
-            processed: 0,
-            len: self.paths.len(),
-        };
+        let mut progress = IOWorkerProgress::new(self.kind(), 0, self.paths.len(), 0);
         for (i, path) in self.paths.iter().enumerate() {
-            progress.index = i;
-            tx.send(progress.clone());
+            progress.set_index(i);
+            let _ = tx.send(progress.clone());
             self.recursive_cut(
                 path.as_path(),
                 self.dest.as_path(),
@@ -154,12 +183,12 @@ impl IOWorkerThread {
                 &mut progress,
             )?;
         }
-        Ok(IOWorkerProgress {
-            kind: self.kind,
-            index: self.paths.len(),
-            processed: progress.processed,
-            len: self.paths.len(),
-        })
+        Ok(IOWorkerProgress::new(
+            self.kind(),
+            self.paths.len(),
+            self.paths.len(),
+            progress.processed(),
+        ))
     }
 
     pub fn recursive_cut(
@@ -179,7 +208,7 @@ impl IOWorkerThread {
         if file_type.is_dir() {
             match fs::rename(src, dest_buf.as_path()) {
                 Ok(_) => {
-                    progress.processed += metadata.len();
+                    progress._processed += metadata.len();
                 }
                 Err(_) => {
                     fs::create_dir(dest_buf.as_path())?;
@@ -199,13 +228,13 @@ impl IOWorkerThread {
             if fs::rename(src, dest_buf.as_path()).is_err() {
                 fs::copy(src, dest_buf.as_path())?;
                 fs::remove_file(src)?;
-                progress.processed += metadata.len();
+                progress._processed += metadata.len();
             }
         } else if file_type.is_symlink() {
             let link_path = fs::read_link(src)?;
             std::os::unix::fs::symlink(link_path, dest_buf)?;
             fs::remove_file(src)?;
-            progress.processed += metadata.len();
+            progress._processed += metadata.len();
         }
         Ok(())
     }
