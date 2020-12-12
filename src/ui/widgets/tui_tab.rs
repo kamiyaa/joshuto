@@ -4,6 +4,8 @@ use tui::style::{Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget, Wrap};
 
+use unicode_width::UnicodeWidthStr;
+
 pub struct TuiTabBar<'a> {
     name: &'a str,
     curr: usize,
@@ -22,7 +24,7 @@ impl<'a> Widget for TuiTabBar<'a> {
 
         let str1 = format!("{}/{}", self.curr + 1, self.len);
         let str2 = {
-            let space_avail = if str1.len() >= area.width as usize {
+            let space_avail = if str1.width() >= area.width as usize {
                 0
             } else {
                 area.width as usize - str1.len()
@@ -30,7 +32,7 @@ impl<'a> Widget for TuiTabBar<'a> {
             if space_avail >= self.name.len() {
                 self.name
             } else {
-                &self.name[..space_avail]
+                ""
             }
         };
         let text = Spans::from(vec![
