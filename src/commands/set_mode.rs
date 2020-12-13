@@ -56,8 +56,8 @@ pub fn set_mode(context: &mut JoshutoContext, backend: &mut TuiBackend) -> Joshu
     };
 
     if let Some(s) = user_input {
-        if s.starts_with(PREFIX) {
-            let s = &s[PREFIX.len()..];
+        if let Some(stripped) = s.strip_prefix(PREFIX) {
+            let s = stripped;
             let mode = str_to_mode(s);
 
             let entry = context

@@ -1,7 +1,6 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::text::Span;
 use tui::widgets::{Paragraph, Widget, Wrap};
 
 use crate::context::JoshutoContext;
@@ -34,53 +33,46 @@ impl<'a> Widget for TuiWorker<'a> {
         TuiTopBar::new(curr_tab.pwd()).render(rect, buf);
 
         match self.context.worker_ref() {
-            Some(io_obs) => match io_obs.progress.as_ref() {
-                Some(progress) => {
-                    let msg = match progress.kind() {
-                        FileOp::Copy => format!(
-                            "Copying ({}/{}) {:?} -> {:?}",
-                            progress.index() + 1,
-                            progress.len(),
-                            io_obs.src_path(),
-                            io_obs.dest_path()
-                        ),
-                        FileOp::Cut => format!(
-                            "Moving ({}/{}) {:?} -> {:?}",
-                            progress.index() + 1,
-                            progress.len(),
-                            io_obs.src_path(),
-                            io_obs.dest_path()
-                        ),
+            Some(io_obs) => {
+                if let Some(progress) = io_obs.progress.as_ref() {
+                    let op_str = match progress.kind() {
+                        FileOp::Copy => "Copying",
+                        FileOp::Cut => "Moving",
                     };
+                    let msg = format!(
+                        "{} ({}/{}) {:?} -> {:?}",
+                        op_str,
+                        progress.index() + 1,
+                        progress.len(),
+                        io_obs.src_path(),
+                        io_obs.dest_path()
+                    );
                     let style = Style::default();
                     buf.set_stringn(0, 2, msg, area.width as usize, style);
+
                     let style = Style::default()
                         .fg(Color::Yellow)
                         .add_modifier(Modifier::BOLD);
                     buf.set_stringn(0, 4, "Queue:", area.width as usize, style);
+
                     let style = Style::default();
                     for (i, worker) in self.context.worker_iter().enumerate() {
-                        let msg = match worker.kind() {
-                            FileOp::Copy => format!(
-                                "{:02} Copy {} items {:?} -> {:?}",
-                                i + 1,
-                                worker.paths.len(),
-                                worker.paths[0].parent().unwrap(),
-                                worker.dest
-                            ),
-                            FileOp::Cut => format!(
-                                "{:02} Moving {} items {:?} -> {:?}",
-                                i + 1,
-                                worker.paths.len(),
-                                worker.paths[0].parent().unwrap(),
-                                worker.dest
-                            ),
+                        let op_str = match worker.kind() {
+                            FileOp::Copy => "Copy",
+                            FileOp::Cut => "Cut",
                         };
+                        let msg = format!(
+                            "{:02} {} {} items {:?} -> {:?}",
+                            i + 1,
+                            op_str,
+                            worker.paths.len(),
+                            worker.paths[0].parent().unwrap(),
+                            worker.dest
+                        );
                         buf.set_stringn(0, (4 + i + 2) as u16, msg, area.width as usize, style);
                     }
                 }
-                _ => {}
-            },
+            }
             _ => {
                 let style = Style::default();
                 buf.set_stringn(0, 2, "No operations running", area.width as usize, style);

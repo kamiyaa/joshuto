@@ -15,11 +15,9 @@ pub fn select_files(context: &mut JoshutoContext, toggle: bool, all: bool) -> Jo
                 s.set_selected(!s.is_selected());
                 cursor_move::down(context, 1)?;
             }
-        } else {
-            if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-                for curr in &mut curr_list.contents {
-                    curr.set_selected(!curr.is_selected());
-                }
+        } else if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+            for curr in &mut curr_list.contents {
+                curr.set_selected(!curr.is_selected());
             }
         }
     } else if !all {

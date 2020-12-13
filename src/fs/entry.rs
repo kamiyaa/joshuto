@@ -1,6 +1,6 @@
 use std::{fs, path};
 
-use tui::style::{Modifier, Style};
+use tui::style::Style;
 
 use crate::fs::{FileType, JoshutoMetadata};
 use crate::util::devicons::*;
@@ -96,25 +96,6 @@ impl JoshutoDirEntry {
 
     pub fn set_selected(&mut self, selected: bool) {
         self.selected = selected;
-    }
-
-    pub fn get_modifier(&self) -> Modifier {
-        let filetype = &self.metadata.file_type;
-
-        match filetype {
-            FileType::Directory => THEME_T.directory.modifier,
-            FileType::Symlink(_) => THEME_T.link.modifier,
-            _ => match self.file_path().extension() {
-                None => Modifier::empty(),
-                Some(os_str) => match os_str.to_str() {
-                    None => Modifier::empty(),
-                    Some(s) => match THEME_T.ext.get(s) {
-                        None => Modifier::empty(),
-                        Some(t) => t.modifier,
-                    },
-                },
-            },
-        }
     }
 
     pub fn get_style(&self) -> Style {

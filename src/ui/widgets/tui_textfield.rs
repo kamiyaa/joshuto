@@ -40,15 +40,6 @@ pub struct TuiTextField<'a> {
 }
 
 impl<'a> TuiTextField<'a> {
-    pub fn new() -> Self {
-        Self {
-            _prompt: "",
-            _prefix: "",
-            _suffix: "",
-            _menu_items: None,
-        }
-    }
-
     pub fn menu_items<I>(&mut self, items: I) -> &mut Self
     where
         I: Iterator<Item = &'a str>,

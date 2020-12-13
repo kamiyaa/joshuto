@@ -1,7 +1,7 @@
 use phf::phf_map;
 
-pub const DEFAULT_DIR: &'static str = "";
-pub const DEFAULT_FILE: &'static str = "";
+pub const DEFAULT_DIR: &str = "";
+pub const DEFAULT_FILE: &str = "";
 
 // all those glyphs will show as weird squares if you don't have the correct patched font
 // My advice is to use NerdFonts which can be found here:

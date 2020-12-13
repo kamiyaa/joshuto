@@ -20,7 +20,7 @@ impl LocalStateContext {
         self.file_op = operation;
     }
 
-    pub fn set_paths<'a, I>(&mut self, vals: I)
+    pub fn set_paths<I>(&mut self, vals: I)
     where
         I: Iterator<Item = path::PathBuf>,
     {

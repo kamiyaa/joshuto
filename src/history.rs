@@ -90,7 +90,7 @@ impl DirectoryHistory for JoshutoHistory {
         match self.entry(path.to_path_buf()) {
             Entry::Occupied(mut entry) => {
                 let dirlist = entry.get_mut();
-                if let Err(_) = dirlist.reload_contents(sort_option) {
+                if dirlist.reload_contents(sort_option).is_err() {
                     entry.remove_entry();
                 }
             }
@@ -105,7 +105,7 @@ impl DirectoryHistory for JoshutoHistory {
     fn reload(&mut self, path: &Path, sort_option: &sort::SortOption) -> std::io::Result<()> {
         if let Entry::Occupied(mut entry) = self.entry(path.to_path_buf()) {
             let dirlist = entry.get_mut();
-            if let Err(_) = dirlist.reload_contents(sort_option) {
+            if dirlist.reload_contents(sort_option).is_err() {
                 entry.remove_entry();
             }
         }

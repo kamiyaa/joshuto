@@ -9,6 +9,8 @@ use crate::util::format;
 
 const FILE_SIZE_WIDTH: usize = 8;
 
+const ELLIPSIS: &str = "…";
+
 pub struct TuiDirListDetailed<'a> {
     dirlist: &'a JoshutoDirList,
 }
@@ -63,7 +65,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                         buf.set_string(x, y + i as u16, name, style);
                     } else {
                         buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
-                        buf.set_string(x + area_width as u16 - 1, y + i as u16, "…", style);
+                        buf.set_string(x + area_width as u16 - 1, y + i as u16, ELLIPSIS, style);
                     }
                 }
                 FileType::Symlink(_) => {
@@ -72,7 +74,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                         buf.set_string(x + area_width as u16 - 4, y + i as u16, "->", style);
                     } else {
                         buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
-                        buf.set_string(x + area_width as u16 - 1, y + i as u16, "…", style);
+                        buf.set_string(x + area_width as u16 - 1, y + i as u16, ELLIPSIS, style);
                     }
                 }
                 FileType::File => {
@@ -108,7 +110,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                                 buf.set_string(
                                     x + file_name_width as u16,
                                     y + i as u16,
-                                    "…",
+                                    ELLIPSIS,
                                     style,
                                 );
 

@@ -41,36 +41,34 @@ impl Events {
         let (input_tx, input_rx) = mpsc::sync_channel(1);
         let (event_tx, event_rx) = mpsc::channel();
 
-        {
-            let event_tx = event_tx.clone();
-            thread::spawn(move || {
-                let stdin = io::stdin();
-                let mut keys = stdin.keys();
-                match keys.next() {
-                    Some(key) => match key {
-                        Ok(key) => {
-                            if let Err(e) = event_tx.send(Event::Input(key)) {
-                                eprintln!("Input thread send err: {:#?}", e);
-                                return;
-                            }
+        let event_tx2 = event_tx.clone();
+        thread::spawn(move || {
+            let stdin = io::stdin();
+            let mut keys = stdin.keys();
+            match keys.next() {
+                Some(key) => match key {
+                    Ok(key) => {
+                        if let Err(e) = event_tx2.send(Event::Input(key)) {
+                            eprintln!("Input thread send err: {:#?}", e);
+                            return;
                         }
-                        _ => return,
-                    },
+                    }
                     _ => return,
-                }
+                },
+                _ => return,
+            }
 
-                while let Ok(_) = input_rx.recv() {
-                    if let Some(key) = keys.next() {
-                        if let Ok(key) = key {
-                            if let Err(e) = event_tx.send(Event::Input(key)) {
-                                eprintln!("Input thread send err: {:#?}", e);
-                                return;
-                            }
+            while input_rx.recv().is_ok() {
+                if let Some(key) = keys.next() {
+                    if let Ok(key) = key {
+                        if let Err(e) = event_tx2.send(Event::Input(key)) {
+                            eprintln!("Input thread send err: {:#?}", e);
+                            return;
                         }
                     }
                 }
-            })
-        };
+            }
+        });
 
         Events {
             event_tx,

@@ -25,10 +25,7 @@ impl IOWorkerObserver {
     }
 
     pub fn join(self) -> bool {
-        match self.handle.join() {
-            Ok(_) => true,
-            _ => false,
-        }
+        matches!(self.handle.join(), Ok(_))
     }
     pub fn set_progress(&mut self, progress: IOWorkerProgress) {
         self.progress = Some(progress);
@@ -38,26 +35,19 @@ impl IOWorkerObserver {
             None => {}
             Some(progress) => {
                 let size_str = format::file_size_to_string(progress.processed());
-                match progress.kind() {
-                    FileOp::Cut => {
-                        let msg = format!(
-                            "moving ({}/{}) {} completed",
-                            progress.index() + 1,
-                            progress.len(),
-                            size_str
-                        );
-                        self.msg = msg;
-                    }
-                    FileOp::Copy => {
-                        let msg = format!(
-                            "copying ({}/{}) {} completed",
-                            progress.index() + 1,
-                            progress.len(),
-                            size_str
-                        );
-                        self.msg = msg;
-                    }
-                }
+                let op_str = match progress.kind() {
+                    FileOp::Cut => "Moving",
+                    FileOp::Copy => "Copying",
+                };
+
+                let msg = format!(
+                    "{} ({}/{}) {} completed",
+                    op_str,
+                    progress.index() + 1,
+                    progress.len(),
+                    size_str
+                );
+                self.msg = msg;
             }
         }
     }

@@ -160,7 +160,8 @@ impl IOWorkerThread {
             }
             Ok(())
         } else if file_type.is_file() {
-            progress._processed += fs::copy(src, dest_buf)?;
+            let processed = progress.processed() + fs::copy(src, dest_buf)?;
+            progress.set_processed(processed);
             Ok(())
         } else if file_type.is_symlink() {
             let link_path = fs::read_link(src)?;
@@ -208,7 +209,8 @@ impl IOWorkerThread {
         if file_type.is_dir() {
             match fs::rename(src, dest_buf.as_path()) {
                 Ok(_) => {
-                    progress._processed += metadata.len();
+                    let processed = progress.processed() + metadata.len();
+                    progress.set_processed(processed);
                 }
                 Err(_) => {
                     fs::create_dir(dest_buf.as_path())?;
@@ -228,13 +230,15 @@ impl IOWorkerThread {
             if fs::rename(src, dest_buf.as_path()).is_err() {
                 fs::copy(src, dest_buf.as_path())?;
                 fs::remove_file(src)?;
-                progress._processed += metadata.len();
+                let processed = progress.processed() + metadata.len();
+                progress.set_processed(processed);
             }
         } else if file_type.is_symlink() {
             let link_path = fs::read_link(src)?;
             std::os::unix::fs::symlink(link_path, dest_buf)?;
             fs::remove_file(src)?;
-            progress._processed += metadata.len();
+            let processed = progress.processed() + metadata.len();
+            progress.set_processed(processed);
         }
         Ok(())
     }

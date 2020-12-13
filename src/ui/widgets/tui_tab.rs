@@ -29,10 +29,10 @@ impl<'a> Widget for TuiTabBar<'a> {
             } else {
                 area.width as usize - str1.len()
             };
-            if space_avail >= self.name.len() {
+            if space_avail >= self.name.width() {
                 self.name
             } else {
-                ""
+                "…"
             }
         };
         let text = Spans::from(vec![

@@ -276,14 +276,12 @@ impl KeyCommand {
                     )),
                 },
             },
-            "tab_switch" => match arg {
-                arg => match arg.parse::<i32>() {
-                    Ok(s) => Ok(Self::TabSwitch(s)),
-                    Err(e) => Err(JoshutoError::new(
-                        JoshutoErrorKind::IOInvalidData,
-                        format!("{}: {}", command, e.to_string()),
-                    )),
-                },
+            "tab_switch" => match arg.parse::<i32>() {
+                Ok(s) => Ok(Self::TabSwitch(s)),
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::IOInvalidData,
+                    format!("{}: {}", command, e.to_string()),
+                )),
             },
             "toggle_hidden" => Ok(Self::ToggleHiddenFiles),
             inp => Err(JoshutoError::new(
@@ -348,7 +346,7 @@ impl JoshutoRunnable for KeyCommand {
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
-            Self::Sort(t) => sort::set_sort(context, t.clone()),
+            Self::Sort(t) => sort::set_sort(context, *t),
             Self::SortReverse => sort::toggle_reverse(context),
 
             Self::TabSwitch(i) => {
