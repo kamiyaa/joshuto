@@ -42,7 +42,6 @@ impl<'a> Widget for TuiDirList<'a> {
         let space_fill = " ".repeat(drawing_width + 1);
 
         let x_start = x + 1;
-
         for (i, entry) in self
             .dirlist
             .iter()

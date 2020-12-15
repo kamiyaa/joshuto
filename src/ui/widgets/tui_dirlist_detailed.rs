@@ -42,11 +42,10 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         let skip_dist = curr_index / area.height as usize * area.height as usize;
         let screen_index = curr_index % area.height as usize;
 
-        let drawing_width = area.width as usize;
-        let space_fill = " ".repeat(drawing_width);
+        let drawing_width = area.width as usize - 2;
+        let space_fill = " ".repeat(drawing_width + 1);
 
         let x_start = x + 1;
-
         for (i, entry) in self
             .dirlist
             .iter()
@@ -58,12 +57,12 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             let name_width = name.width();
 
             let style = if i == screen_index {
-                entry.get_style().add_modifier(Modifier::REVERSED)
+                let s = entry.get_style().add_modifier(Modifier::REVERSED);
+                buf.set_string(x, y + i as u16, space_fill.as_str(), s);
+                s
             } else {
                 entry.get_style()
             };
-
-            buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
             match entry.metadata.file_type() {
                 FileType::Directory => {
