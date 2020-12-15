@@ -2,206 +2,280 @@
 
 ## image formats
 bmp = [
-    { command = "qimgv", fork = true, silent = true },
-    { command = "krita", fork = true, silent = true } ]
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 gif = [
-    { command = "qimgv", fork = true, silent = true },
-    { command = "krita", fork = true, silent = true } ]
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 jpeg = [
-    { command = "qimgv", fork = true, silent = true },
-    { command = "krita", fork = true, silent = true } ]
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+	{ command = "ruiji", args = [ "-T" ], confirm_exit = true } ]
 jpg = [
-    { command = "qimgv", fork = true, silent = true },
-    { command = "krita", fork = true, silent = true } ]
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+	{ command = "ruiji", args = [ "-T" ], confirm_exit = true } ]
+ppm = [
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+	{ command = "ruiji", args = [ "-T" ], confirm_exit = true } ]
 png = [
-    { command = "qimgv", fork = true, silent = true },
-    { command = "krita", fork = true, silent = true } ]
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+	{ command = "ruiji", args = [ "-T" ], confirm_exit = true } ]
 svg = [
-    { command = "qimgv", fork = true, silent = true },
-    { command = "krita", fork = true, silent = true } ]
+	{ command = "inkview", fork = true, silent = true },
+	{ command = "inkscape", fork = true, silent = true } ]
 tiff = [
-    { command = "qimgv", fork = true, silent = true },
-    { command = "krita", fork = true, silent = true } ]
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true } ]
 
 ## audio formats
 flac = [
-    { command = "mpv" },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv" },
+	{ command = "mediainfo", confirm_exit = true } ]
+m4a = [
+	{ command = "mpv" },
+	{ command = "mediainfo", confirm_exit = true } ]
 mp3 = [
-    { command = "mpv" },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv" },
+	{ command = "mediainfo", confirm_exit = true } ]
 ogg = [
-    { command = "mpv" },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv" },
+	{ command = "mediainfo", confirm_exit = true } ]
+wav = [
+	{ command = "mpv" },
+	{ command = "mediainfo", confirm_exit = true } ]
+ts = [
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mpv" },
+	{ command = "mediainfo", confirm_exit = true } ]
 
 ## video formats
 avi = [
-    { command = "mpv", fork = true, silent = true },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
 av1 = [
-    { command = "mpv", fork = true, silent = true },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+flv = [
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
 mkv = [
-    { command = "mpv", fork = true, silent = true },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+mov = [
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
 mp4 = [
-    { command = "mpv", fork = true, silent = true },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
 webm = [
-    { command = "mpv", fork = true, silent = true },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
 wmv = [
-    { command = "mpv", fork = true, silent = true },
-    { command = "mediainfo", confirm_exit = true } ]
+	{ command = "mpv", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
 
 ## text formats
 build = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 c = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 cmake = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 conf = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 cpp = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 css = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+csv = [
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 eex = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 ex = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 exs = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 go = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 h = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 hpp = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 hs = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 html = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 ini = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 java = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 js = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+json = [
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 kt = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 log = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 md = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 ninja = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 py = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 rs = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+scss = [
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 sh = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+srt = [
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+svelte = [
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 toml = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+tsx = [
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 txt = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 xml = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+yml = [
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
 
 # archive formats
+7z = [
+	{ command = "7z", args = [ "x" ], confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
 bz2 = [
-    { command = "tar", args = [ "-xvjf" ], confirm_exit = true }, 
-    { command = "file-roller", fork = true, silent = true } ]
+	{ command = "tar", args = [ "-xvjf" ], confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
 gz = [
-    { command = "tar", args = [ "-xvzf" ], confirm_exit = true },
-    { command = "file-roller", fork = true, silent = true } ]
+	{ command = "tar", args = [ "-xvzf" ], confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
+tar = [
+	{ command = "tar", args = [ "-xvf" ], confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
+tgz = [
+	{ command = "tar", args = [ "-xvzf" ], confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
 rar = [
-    { command = "unrar", args = [ "e" ], confirm_exit = true },
-    { command = "file-roller", fork = true, silent = true } ]
+	{ command = "unrar", args = [ "e" ], confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
 xz = [
-    { command = "tar", args = [ "-xvJf" ], confirm_exit = true },
-    { command = "file-roller", fork = true, silent = true } ]
+	{ command = "tar", args = [ "-xvJf" ], confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
 zip = [
-    { command = "unzip", confirm_exit = true },
-    { command = "file-roller", fork = true, silent = true } ]
+	{ command = "unzip", confirm_exit = true },
+	{ command = "file-roller", fork = true, silent = true } ]
 
 # misc formats
+aup = [
+	{ command = "audacity", fork = true, silent = true } ]
+
 m3u = [
-    { command = "nano" },
-    { command = "mpv" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "mpv" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+docx = [
+	{ command = "libreoffice", fork = true, silent = true } ]
 odt = [
-    { command = "libreoffice", fork = true, silent = true } ]
+	{ command = "libreoffice", fork = true, silent = true } ]
 odf = [
-    { command = "libreoffice", fork = true, silent = true } ]
+	{ command = "libreoffice", fork = true, silent = true } ]
 pdf = [
-    { command = "evince", fork = true, silent = true } ]
+	{ command = "evince", fork = true, silent = true } ]
 
 tex = [
-    { command = "nano" },
-    { command = "pdflatex" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true },
+	{ command = "pdflatex" } ]
+
+torrent = [
+	{ command = "transmission-gtk" } ]
 
 [mimetype]
 text = [
-    { command = "nano" },
-    { command = "gedit", fork = true, silent = true },
-    { command = "bat", confirm_exit = true } ]
+	{ command = "nano" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]

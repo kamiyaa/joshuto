@@ -17,11 +17,11 @@ fg = "light_blue"
 bold = true
 
 [link]
-fg = "cyan"
+fg = "light_cyan"
 bold = true
 
 [socket]
-fg = "cyan"
+fg = "light_magenta"
 bold = true
 
 [ext]
@@ -33,6 +33,8 @@ fg = "yellow"
 [ext.jpeg]
 fg = "yellow"
 [ext.png]
+fg = "yellow"
+[ext.ppm]
 fg = "yellow"
 [ext.svg]
 fg = "yellow"
@@ -48,6 +50,8 @@ fg = "magenta"
 [ext.avi]
 fg = "magenta"
 [ext.m3u]
+fg = "magenta"
+[ext.mov]
 fg = "magenta"
 [ext.mp4]
 fg = "magenta"
@@ -69,6 +73,10 @@ fg = "red"
 [ext.bz2]
 fg = "red"
 [ext.gz]
+fg = "red"
+[ext.tar]
+fg = "red"
+[ext.tgz]
 fg = "red"
 [ext.xz]
 fg = "red"
