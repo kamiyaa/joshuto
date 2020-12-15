@@ -67,7 +67,12 @@ impl<'a> Widget for TuiDirList<'a> {
                         buf.set_stringn(x_start, y + i as u16, name, drawing_width, style);
                     } else {
                         buf.set_stringn(x_start, y + i as u16, name, drawing_width - 1, style);
-                        buf.set_string(x_start + drawing_width as u16 - 1, y + i as u16, "…", style);
+                        buf.set_string(
+                            x_start + drawing_width as u16 - 1,
+                            y + i as u16,
+                            "…",
+                            style,
+                        );
                     }
                 }
                 _ => {

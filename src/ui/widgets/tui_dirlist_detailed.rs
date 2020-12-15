@@ -71,21 +71,42 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                         buf.set_string(x_start, y + i as u16, name, style);
                     } else {
                         buf.set_stringn(x_start, y + i as u16, name, drawing_width - 1, style);
-                        buf.set_string(x_start + drawing_width as u16 - 1, y + i as u16, ELLIPSIS, style);
+                        buf.set_string(
+                            x_start + drawing_width as u16 - 1,
+                            y + i as u16,
+                            ELLIPSIS,
+                            style,
+                        );
                     }
                 }
                 FileType::Symlink(_) => {
                     if name_width < drawing_width - 4 {
                         buf.set_string(x_start, y + i as u16, name, style);
-                        buf.set_string(x_start + drawing_width as u16 - 4, y + i as u16, "->", style);
+                        buf.set_string(
+                            x_start + drawing_width as u16 - 4,
+                            y + i as u16,
+                            "->",
+                            style,
+                        );
                     } else {
                         buf.set_stringn(x_start, y + i as u16, name, drawing_width - 1, style);
-                        buf.set_string(x_start + drawing_width as u16 - 1, y + i as u16, ELLIPSIS, style);
+                        buf.set_string(
+                            x_start + drawing_width as u16 - 1,
+                            y + i as u16,
+                            ELLIPSIS,
+                            style,
+                        );
                     }
                 }
                 FileType::File => {
                     if name_width < drawing_width - FILE_SIZE_WIDTH {
-                        buf.set_stringn(x_start, y + i as u16, name, drawing_width - FILE_SIZE_WIDTH, style);
+                        buf.set_stringn(
+                            x_start,
+                            y + i as u16,
+                            name,
+                            drawing_width - FILE_SIZE_WIDTH,
+                            style,
+                        );
                     } else {
                         match name.rfind('.') {
                             None => {
