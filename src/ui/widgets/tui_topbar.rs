@@ -6,15 +6,17 @@ use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 
-use crate::{HOSTNAME, USERNAME};
+use crate::context::JoshutoContext;
+use crate::{HOME_DIR, HOSTNAME, USERNAME};
 
 pub struct TuiTopBar<'a> {
+    pub context: &'a JoshutoContext,
     path: &'a Path,
 }
 
 impl<'a> TuiTopBar<'a> {
-    pub fn new(path: &'a Path) -> Self {
-        Self { path }
+    pub fn new(context: &'a JoshutoContext, path: &'a Path) -> Self {
+        Self { context, path }
     }
 }
 
@@ -29,15 +31,21 @@ impl<'a> Widget for TuiTopBar<'a> {
             .add_modifier(Modifier::BOLD);
 
         let mut ellipses = None;
-        let mut curr_path_str = self.path.to_string_lossy();
+        let mut curr_path_str = self.path.to_string_lossy().into_owned();
 
         if curr_path_str.len() > area.width as usize {
             match self.path.file_name() {
                 Some(s) => {
-                    curr_path_str = s.to_string_lossy();
+                    curr_path_str = s.to_string_lossy().into_owned();
                     ellipses = Some(Span::styled("…", path_style));
                 }
                 None => {}
+            }
+        }
+        if self.context.config_ref().tilde_in_titlebar {
+            if let Some(home_dir) = HOME_DIR.as_ref() {
+                let home_dir_str = home_dir.to_string_lossy().into_owned();
+                curr_path_str = curr_path_str.replace(&home_dir_str, "~");
             }
         }
 

@@ -16,7 +16,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
-        let tab = JoshutoTab::new(curr_path, &context.config_t.sort_option)?;
+        let tab = JoshutoTab::new(curr_path, &context.config_ref().sort_option)?;
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child

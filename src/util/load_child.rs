@@ -18,7 +18,7 @@ impl LoadChild {
         // get preview
         if let Some(path) = path {
             if path.is_dir() {
-                let options = context.config_t.sort_option.clone();
+                let options = context.config_ref().sort_option.clone();
                 context
                     .tab_context_mut()
                     .curr_tab_mut()

@@ -10,7 +10,7 @@ use crate::util::event::{Event, Events};
 
 pub struct JoshutoContext {
     pub exit: bool,
-    pub config_t: config::JoshutoConfig,
+    config: config::JoshutoConfig,
     events: Events,
     tab_context: TabContext,
     local_state: Option<LocalStateContext>,
@@ -21,7 +21,7 @@ pub struct JoshutoContext {
 }
 
 impl JoshutoContext {
-    pub fn new(config_t: config::JoshutoConfig) -> Self {
+    pub fn new(config: config::JoshutoConfig) -> Self {
         Self {
             exit: false,
             events: Events::new(),
@@ -31,8 +31,16 @@ impl JoshutoContext {
             message_queue: VecDeque::with_capacity(4),
             worker_queue: VecDeque::new(),
             worker: None,
-            config_t,
+            config,
         }
+    }
+
+    pub fn config_ref(&self) -> &config::JoshutoConfig {
+        &self.config
+    }
+
+    pub fn config_mut(&mut self) -> &mut config::JoshutoConfig {
+        &mut self.config
     }
 
     pub fn tab_context_ref(&self) -> &TabContext {

@@ -35,10 +35,15 @@ impl<'a> Widget for TuiFolderView<'a> {
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
 
-        let constraints = match child_list {
-            Some(_) => DEFAULT_LAYOUT,
-            None => NO_PREVIEW_LAYOUT,
+        let constraints = if !self.context.config_ref().collapse_preview {
+            DEFAULT_LAYOUT
+        } else {
+            match child_list {
+                Some(_) => DEFAULT_LAYOUT,
+                None => NO_PREVIEW_LAYOUT,
+            }
         };
+
         let layout_rect = Layout::default()
             .direction(Direction::Horizontal)
             .vertical_margin(1)
@@ -59,7 +64,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                 width: topbar_width,
                 height: 1,
             };
-            TuiTopBar::new(curr_tab.pwd()).render(rect, buf);
+            TuiTopBar::new(self.context, curr_tab.pwd()).render(rect, buf);
 
             let rect = Rect {
                 x: topbar_width,
@@ -87,7 +92,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                 width: topbar_width,
                 height: 1,
             };
-            TuiTopBar::new(curr_tab.pwd()).render(rect, buf);
+            TuiTopBar::new(self.context, curr_tab.pwd()).render(rect, buf);
         }
 
         // render parent view

@@ -14,7 +14,7 @@ pub fn process_finished_worker(
     res: std::io::Result<IOWorkerProgress>,
 ) {
     let observer = context.remove_job().unwrap();
-    let options = context.config_t.sort_option.clone();
+    let options = context.config_ref().sort_option.clone();
     for tab in context.tab_context_mut().iter_mut() {
         let _ = tab.history_mut().reload(observer.dest_path(), &options);
         let _ = tab.history_mut().reload(observer.src_path(), &options);

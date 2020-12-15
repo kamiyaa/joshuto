@@ -8,7 +8,7 @@ use crate::util::sort::SortType;
 use super::reload;
 
 pub fn set_sort(context: &mut JoshutoContext, method: SortType) -> JoshutoResult<()> {
-    context.config_t.sort_option.sort_method = method;
+    context.config_mut().sort_option.sort_method = method;
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
     }
@@ -18,7 +18,7 @@ pub fn set_sort(context: &mut JoshutoContext, method: SortType) -> JoshutoResult
 }
 
 pub fn toggle_reverse(context: &mut JoshutoContext) -> JoshutoResult<()> {
-    context.config_t.sort_option.reverse = !context.config_t.sort_option.reverse;
+    context.config_mut().sort_option.reverse = !context.config_ref().sort_option.reverse;
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
     }

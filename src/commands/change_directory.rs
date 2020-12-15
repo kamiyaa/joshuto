@@ -13,7 +13,7 @@ pub fn cd(path: &path::Path, context: &mut JoshutoContext) -> std::io::Result<()
 
 pub fn change_directories(path: &path::Path, context: &mut JoshutoContext) -> std::io::Result<()> {
     cd(path, context)?;
-    let sort_options = context.config_t.sort_option.clone();
+    let sort_options = context.config_ref().sort_option.clone();
     context
         .tab_context_mut()
         .curr_tab_mut()

@@ -2,6 +2,7 @@ tilde_in_titlebar = true
 
 # ratios for parent view, current view and preview
 column_ratio = [1, 4, 4]
+collapse_preview = true
 
 scroll_offset = 6
 

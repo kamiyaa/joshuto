@@ -12,6 +12,7 @@ pub enum Event {
     Input(Key),
     IOWorkerProgress(IOWorkerProgress),
     IOWorkerResult(io::Result<IOWorkerProgress>),
+    //    Filesystem(notify::Result),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -29,7 +30,7 @@ pub struct Events {
     pub event_tx: mpsc::Sender<Event>,
     event_rx: mpsc::Receiver<Event>,
     pub input_tx: mpsc::SyncSender<()>,
-    // fileio_handle: thread::JoinHandle<()>,
+    fileio_handle: thread::JoinHandle<()>,
 }
 
 impl Events {
@@ -42,7 +43,8 @@ impl Events {
         let (event_tx, event_rx) = mpsc::channel();
 
         let event_tx2 = event_tx.clone();
-        thread::spawn(move || {
+
+        let fileio_handle = thread::spawn(move || {
             let stdin = io::stdin();
             let mut keys = stdin.keys();
             match keys.next() {
@@ -53,9 +55,9 @@ impl Events {
                             return;
                         }
                     }
-                    _ => return,
+                    Err(_) => return,
                 },
-                _ => return,
+                None => return,
             }
 
             while input_rx.recv().is_ok() {
@@ -74,6 +76,7 @@ impl Events {
             event_tx,
             event_rx,
             input_tx,
+            fileio_handle,
         }
     }
 

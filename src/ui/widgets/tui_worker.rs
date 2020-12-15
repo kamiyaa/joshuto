@@ -30,7 +30,7 @@ impl<'a> Widget for TuiWorker<'a> {
             width: topbar_width,
             height: 1,
         };
-        TuiTopBar::new(curr_tab.pwd()).render(rect, buf);
+        TuiTopBar::new(self.context, curr_tab.pwd()).render(rect, buf);
 
         match self.context.worker_ref() {
             Some(io_obs) => {
