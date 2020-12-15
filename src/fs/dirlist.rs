@@ -40,7 +40,7 @@ impl JoshutoDirList {
         let metadata = std::fs::symlink_metadata(self.file_path());
         match metadata {
             Ok(m) => match m.modified() {
-                Ok(s) => s > self.metadata.modified,
+                Ok(s) => s > self.metadata.modified(),
                 _ => false,
             },
             _ => false,

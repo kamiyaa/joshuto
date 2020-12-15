@@ -41,7 +41,7 @@ impl<'a> Widget for TuiFolderView<'a> {
         };
         let layout_rect = Layout::default()
             .direction(Direction::Horizontal)
-            .margin(1)
+            .vertical_margin(1)
             .constraints(constraints.as_ref())
             .split(f_size);
 

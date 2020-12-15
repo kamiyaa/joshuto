@@ -161,5 +161,5 @@ fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering
 }
 
 fn size_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
-    file1.metadata.len.cmp(&file2.metadata.len)
+    file1.metadata.len().cmp(&file2.metadata.len())
 }

@@ -28,8 +28,7 @@ impl<'a> Widget for TuiDirList<'a> {
         let x = area.left();
         let y = area.top();
 
-        let dir_len = self.dirlist.contents.len();
-        if dir_len == 0 {
+        if self.dirlist.contents.len() == 0 {
             let style = Style::default().bg(Color::Red).fg(Color::White);
             buf.set_stringn(x, y, "empty", area.width as usize, style);
             return;
@@ -39,8 +38,10 @@ impl<'a> Widget for TuiDirList<'a> {
         let skip_dist = curr_index / area.height as usize * area.height as usize;
         let screen_index = curr_index % area.height as usize;
 
-        let area_width = area.width as usize - 1;
-        let space_fill = " ".repeat(area_width);
+        let drawing_width = area.width as usize - 2;
+        let space_fill = " ".repeat(drawing_width + 1);
+
+        let x_start = x + 1;
 
         for (i, entry) in self
             .dirlist
@@ -60,46 +61,45 @@ impl<'a> Widget for TuiDirList<'a> {
                 entry.get_style()
             };
 
-            let file_type = &entry.metadata.file_type;
-            match file_type {
+            match entry.metadata.file_type() {
                 FileType::Directory => {
-                    if name_width <= area_width {
-                        buf.set_stringn(x, y + i as u16, name, area_width, style);
+                    if name_width <= drawing_width {
+                        buf.set_stringn(x_start, y + i as u16, name, drawing_width, style);
                     } else {
-                        buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
-                        buf.set_string(x + area_width as u16 - 1, y + i as u16, "…", style);
+                        buf.set_stringn(x_start, y + i as u16, name, drawing_width - 1, style);
+                        buf.set_string(x_start + drawing_width as u16 - 1, y + i as u16, "…", style);
                     }
                 }
                 _ => {
-                    if name_width < area_width {
-                        buf.set_stringn(x, y + i as u16, name, area_width, style);
+                    if name_width < drawing_width {
+                        buf.set_stringn(x_start, y + i as u16, name, drawing_width, style);
                     } else {
                         match name.rfind('.') {
                             None => {
-                                buf.set_stringn(x, y + i as u16, name, area_width, style);
+                                buf.set_stringn(x_start, y + i as u16, name, drawing_width, style);
                             }
                             Some(p_ind) => {
                                 let ext_width = name[p_ind..].width();
-                                let file_name_width = area_width - ext_width - 1;
+                                let file_name_width = drawing_width - ext_width - 1;
 
                                 buf.set_stringn(
-                                    x,
+                                    x_start,
                                     y + i as u16,
                                     &name[..p_ind],
                                     file_name_width,
                                     style,
                                 );
                                 buf.set_string(
-                                    x + file_name_width as u16,
+                                    x_start + file_name_width as u16,
                                     y + i as u16,
                                     "…",
                                     style,
                                 );
                                 buf.set_stringn(
-                                    x + file_name_width as u16 + 1,
+                                    x_start + file_name_width as u16 + 1,
                                     y + i as u16,
                                     &name[p_ind..],
-                                    area_width - file_name_width,
+                                    drawing_width - file_name_width,
                                     style,
                                 );
                             }

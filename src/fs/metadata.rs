@@ -1,4 +1,4 @@
-use std::{fs, path, process, time};
+use std::{fs, io, path, process, time};
 
 #[derive(Clone, Debug)]
 pub enum FileType {
@@ -9,10 +9,10 @@ pub enum FileType {
 
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
-    pub len: u64,
-    pub modified: time::SystemTime,
-    pub permissions: fs::Permissions,
-    pub file_type: FileType,
+    _len: u64,
+    _modified: time::SystemTime,
+    _permissions: fs::Permissions,
+    _file_type: FileType,
     pub mimetype: Option<String>,
     #[cfg(unix)]
     pub uid: u32,
@@ -23,15 +23,15 @@ pub struct JoshutoMetadata {
 }
 
 impl JoshutoMetadata {
-    pub fn from(path: &path::Path) -> std::io::Result<Self> {
+    pub fn from(path: &path::Path) -> io::Result<Self> {
         #[cfg(unix)]
         use std::os::unix::fs::MetadataExt;
 
         let metadata = fs::symlink_metadata(path)?;
 
-        let len = metadata.len();
-        let modified = metadata.modified()?;
-        let permissions = metadata.permissions();
+        let _len = metadata.len();
+        let _modified = metadata.modified()?;
+        let _permissions = metadata.permissions();
         let file_type = metadata.file_type();
 
         let file_type = if file_type.is_dir() {
@@ -65,10 +65,10 @@ impl JoshutoMetadata {
         let mode = metadata.mode();
 
         Ok(Self {
-            len,
-            modified,
-            permissions,
-            file_type,
+            _len,
+            _modified,
+            _permissions,
+            _file_type: file_type,
             mimetype,
             #[cfg(unix)]
             uid,
@@ -77,6 +77,26 @@ impl JoshutoMetadata {
             #[cfg(unix)]
             mode,
         })
+    }
+
+    pub fn len(&self) -> u64 {
+        self._len
+    }
+
+    pub fn modified(&self) -> time::SystemTime {
+        self._modified
+    }
+
+    pub fn permissions_ref(&self) -> &fs::Permissions {
+        &self._permissions
+    }
+
+    pub fn permissions_mut(&mut self) -> &mut fs::Permissions {
+        &mut self._permissions
+    }
+
+    pub fn file_type(&self) -> &FileType {
+        &self._file_type
     }
 }
 

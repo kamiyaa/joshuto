@@ -28,15 +28,14 @@ impl JoshutoDirEntry {
             .to_string_lossy()
             .to_string();
 
-        let label = name.clone();
         let label = if show_icons {
-            let icon = match metadata.file_type {
+            let icon = match metadata.file_type() {
                 FileType::Directory => DIR_NODE_EXACT_MATCHES
-                    .get(label.as_str())
+                    .get(name.as_str())
                     .cloned()
                     .unwrap_or(DEFAULT_DIR),
                 _ => FILE_NODE_EXACT_MATCHES
-                    .get(label.as_str())
+                    .get(name.as_str())
                     .cloned()
                     .unwrap_or(match path.extension() {
                         Some(s) => FILE_NODE_EXTENSIONS
@@ -53,9 +52,9 @@ impl JoshutoDirEntry {
                         None => DEFAULT_FILE,
                     }),
             };
-            format!(" {} {}", icon, label)
+            format!("{} {}", icon, name)
         } else {
-            label
+            name.clone()
         };
 
         Ok(Self {
@@ -100,7 +99,7 @@ impl JoshutoDirEntry {
 
     pub fn get_style(&self) -> Style {
         let metadata = &self.metadata;
-        let filetype = &metadata.file_type;
+        let filetype = &metadata.file_type();
 
         match filetype {
             _ if self.is_selected() => Style::default()

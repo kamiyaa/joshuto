@@ -44,7 +44,7 @@ pub fn set_mode(context: &mut JoshutoContext, backend: &mut TuiBackend) -> Joshu
 
     let user_input = match entry {
         Some(entry) => {
-            let mode = entry.metadata.permissions.mode();
+            let mode = entry.metadata.permissions_ref().mode();
             let mode_string = unix::stringify_mode(mode);
             TuiTextField::default()
                 .prompt(":")
@@ -68,7 +68,7 @@ pub fn set_mode(context: &mut JoshutoContext, backend: &mut TuiBackend) -> Joshu
                 .unwrap();
 
             unix::set_mode(entry.file_path(), mode);
-            entry.metadata.permissions.set_mode(mode);
+            entry.metadata.permissions_mut().set_mode(mode);
             cursor_move::down(context, 1)?;
         }
     }

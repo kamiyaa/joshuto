@@ -42,8 +42,10 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         let skip_dist = curr_index / area.height as usize * area.height as usize;
         let screen_index = curr_index % area.height as usize;
 
-        let area_width = area.width as usize;
-        let space_fill = " ".repeat(area_width);
+        let drawing_width = area.width as usize;
+        let space_fill = " ".repeat(drawing_width);
+
+        let x_start = x + 1;
 
         for (i, entry) in self
             .dirlist
@@ -63,67 +65,66 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
 
             buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
-            let file_type = &entry.metadata.file_type;
-            match file_type {
+            match entry.metadata.file_type() {
                 FileType::Directory => {
-                    if name_width <= area_width {
-                        buf.set_string(x, y + i as u16, name, style);
+                    if name_width <= drawing_width {
+                        buf.set_string(x_start, y + i as u16, name, style);
                     } else {
-                        buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
-                        buf.set_string(x + area_width as u16 - 1, y + i as u16, ELLIPSIS, style);
+                        buf.set_stringn(x_start, y + i as u16, name, drawing_width - 1, style);
+                        buf.set_string(x_start + drawing_width as u16 - 1, y + i as u16, ELLIPSIS, style);
                     }
                 }
                 FileType::Symlink(_) => {
-                    if name_width < area_width - 4 {
-                        buf.set_string(x, y + i as u16, name, style);
-                        buf.set_string(x + area_width as u16 - 4, y + i as u16, "->", style);
+                    if name_width < drawing_width - 4 {
+                        buf.set_string(x_start, y + i as u16, name, style);
+                        buf.set_string(x_start + drawing_width as u16 - 4, y + i as u16, "->", style);
                     } else {
-                        buf.set_stringn(x, y + i as u16, name, area_width - 1, style);
-                        buf.set_string(x + area_width as u16 - 1, y + i as u16, ELLIPSIS, style);
+                        buf.set_stringn(x_start, y + i as u16, name, drawing_width - 1, style);
+                        buf.set_string(x_start + drawing_width as u16 - 1, y + i as u16, ELLIPSIS, style);
                     }
                 }
                 FileType::File => {
-                    if name_width < area_width - FILE_SIZE_WIDTH {
-                        buf.set_stringn(x, y + i as u16, name, area_width - FILE_SIZE_WIDTH, style);
+                    if name_width < drawing_width - FILE_SIZE_WIDTH {
+                        buf.set_stringn(x_start, y + i as u16, name, drawing_width - FILE_SIZE_WIDTH, style);
                     } else {
                         match name.rfind('.') {
                             None => {
                                 buf.set_stringn(
-                                    x,
+                                    x_start,
                                     y + i as u16,
                                     name,
-                                    area_width - FILE_SIZE_WIDTH,
+                                    drawing_width - FILE_SIZE_WIDTH,
                                     style,
                                 );
                             }
                             Some(p_ind) => {
                                 let ext_width = name[p_ind..].width();
                                 let file_name_width =
-                                    if ext_width > area_width - FILE_SIZE_WIDTH - 2 {
+                                    if ext_width > drawing_width - FILE_SIZE_WIDTH - 2 {
                                         0
                                     } else {
-                                        area_width - FILE_SIZE_WIDTH - ext_width - 2
+                                        drawing_width - FILE_SIZE_WIDTH - ext_width - 2
                                     };
 
                                 buf.set_stringn(
-                                    x,
+                                    x_start,
                                     y + i as u16,
                                     &name[..p_ind],
                                     file_name_width,
                                     style,
                                 );
                                 buf.set_string(
-                                    x + file_name_width as u16,
+                                    x_start + file_name_width as u16,
                                     y + i as u16,
                                     ELLIPSIS,
                                     style,
                                 );
 
                                 let file_ext_width =
-                                    area_width - file_name_width - FILE_SIZE_WIDTH - 2;
+                                    drawing_width - file_name_width - FILE_SIZE_WIDTH - 2;
 
                                 buf.set_stringn(
-                                    x + file_name_width as u16 + 1,
+                                    x_start + file_name_width as u16 + 1,
                                     y + i as u16,
                                     &name[p_ind..],
                                     file_ext_width,
@@ -132,9 +133,9 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                             }
                         }
                     }
-                    let file_size_string = format::file_size_to_string(entry.metadata.len);
+                    let file_size_string = format::file_size_to_string(entry.metadata.len());
                     buf.set_string(
-                        x + (area_width - FILE_SIZE_WIDTH) as u16,
+                        x_start + (drawing_width - FILE_SIZE_WIDTH) as u16,
                         y + i as u16,
                         file_size_string,
                         style,
