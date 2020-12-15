@@ -33,6 +33,15 @@ Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 ~# cargo install --path=. --force --root=/usr/local     # /usr also works
 ```
 
+#### Packaging status
+
+##### Fedora ([COPR](https://copr.fedorainfracloud.org/coprs/atim/joshuto/))
+
+```
+sudo dnf copr enable atim/joshuto -y
+sudo dnf install joshuto
+```
+
 ## Usage
 
 ```
