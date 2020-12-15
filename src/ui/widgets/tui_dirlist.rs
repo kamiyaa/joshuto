@@ -40,6 +40,8 @@ impl<'a> Widget for TuiDirList<'a> {
         let screen_index = curr_index % area.height as usize;
 
         let area_width = area.width as usize - 1;
+        let space_fill = " ".repeat(area_width);
+
         for (i, entry) in self
             .dirlist
             .iter()
@@ -51,7 +53,9 @@ impl<'a> Widget for TuiDirList<'a> {
             let name_width = name.width();
 
             let style = if i == screen_index {
-                entry.get_style().add_modifier(Modifier::REVERSED)
+                let s = entry.get_style().add_modifier(Modifier::REVERSED);
+                buf.set_string(x, y + i as u16, space_fill.as_str(), s);
+                s
             } else {
                 entry.get_style()
             };

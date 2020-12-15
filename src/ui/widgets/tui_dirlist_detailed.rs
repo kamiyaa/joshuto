@@ -1,6 +1,7 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
+use tui::symbols::block;
 use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
@@ -42,6 +43,8 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         let screen_index = curr_index % area.height as usize;
 
         let area_width = area.width as usize;
+        let space_fill = " ".repeat(area_width);
+
         for (i, entry) in self
             .dirlist
             .iter()
@@ -57,6 +60,8 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             } else {
                 entry.get_style()
             };
+
+            buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
             let file_type = &entry.metadata.file_type;
             match file_type {

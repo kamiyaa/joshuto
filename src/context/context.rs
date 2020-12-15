@@ -67,9 +67,6 @@ impl JoshutoContext {
     pub fn set_local_state(&mut self, state: LocalStateContext) {
         self.local_state = Some(state);
     }
-    pub fn get_local_state(&self) -> Option<&LocalStateContext> {
-        self.local_state.as_ref()
-    }
     pub fn take_local_state(&mut self) -> Option<LocalStateContext> {
         self.local_state.take()
     }

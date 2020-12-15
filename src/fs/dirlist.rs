@@ -1,4 +1,4 @@
-use std::slice::{Iter, IterMut};
+use std::slice::Iter;
 use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
@@ -36,12 +36,8 @@ impl JoshutoDirList {
         self.contents.iter()
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<JoshutoDirEntry> {
-        self.contents.iter_mut()
-    }
-
     pub fn modified(&self) -> bool {
-        let metadata = std::fs::symlink_metadata(self.path.as_path());
+        let metadata = std::fs::symlink_metadata(self.file_path());
         match metadata {
             Ok(m) => match m.modified() {
                 Ok(s) => s > self.metadata.modified,
@@ -65,7 +61,7 @@ impl JoshutoDirList {
 
     pub fn reload_contents(&mut self, sort_option: &SortOption) -> std::io::Result<()> {
         let filter_func = sort_option.filter_func();
-        let mut contents = read_dir_list(&self.path, filter_func, sort_option.show_icons)?;
+        let mut contents = read_dir_list(self.file_path(), filter_func, sort_option.show_icons)?;
         contents.sort_by(|f1, f2| sort_option.compare(f1, f2));
 
         let contents_len = contents.len();
@@ -87,7 +83,7 @@ impl JoshutoDirList {
             }
         };
 
-        let metadata = JoshutoMetadata::from(&self.path)?;
+        let metadata = JoshutoMetadata::from(self.file_path())?;
         self.metadata = metadata;
         self.contents = contents;
         self.index = index;
