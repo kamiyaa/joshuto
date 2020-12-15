@@ -13,7 +13,6 @@ chrono = "^0"
 dirs = "^1"
 lazy_static = "^1"
 libc = "^0"
-# notify = "^4"
 open = "^1"
 rand = "^0"
 rustyline = "^4"
@@ -29,6 +28,7 @@ users = "^0"
 whoami = "^0"
 xdg = "^2"
 phf = { version = "^0", features = ["macros"] }
+# notify = { version = "5.0.0-pre.2" }
 
 # fs_extra = "*"
 # lazy_static = "*"
