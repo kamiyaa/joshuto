@@ -30,7 +30,7 @@ pub fn _bulk_rename(context: &mut JoshutoContext) -> JoshutoResult<()> {
     rand::thread_rng()
         .sample_iter(&rand::distributions::Alphanumeric)
         .take(10)
-        .for_each(|ch| rand_str.push(ch));
+        .for_each(|ch| rand_str.push(ch as char));
 
     /* create this file in a temporary folder */
     let mut file_path = path::PathBuf::from("/tmp");
@@ -43,6 +43,7 @@ pub fn _bulk_rename(context: &mut JoshutoContext) -> JoshutoResult<()> {
             None => vec![],
         }
     };
+
     {
         let mut file = std::fs::File::create(&file_path)?;
         for path in paths.iter() {

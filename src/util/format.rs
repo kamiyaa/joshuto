@@ -23,7 +23,7 @@ pub fn file_size_to_string(file_size: u64) -> String {
 }
 
 pub fn mode_to_string(mode: u32) -> String {
-    unix::stringify_mode(mode)
+    unix::mode_to_string(mode)
 }
 
 pub fn mtime_to_string(mtime: time::SystemTime) -> String {
