@@ -45,7 +45,7 @@ pub fn set_mode(context: &mut JoshutoContext, backend: &mut TuiBackend) -> Joshu
     let user_input = match entry {
         Some(entry) => {
             let mode = entry.metadata.permissions_ref().mode();
-            let mode_string = unix::stringify_mode(mode);
+            let mode_string = unix::mode_to_string(mode);
             TuiTextField::default()
                 .prompt(":")
                 .prefix(PREFIX)
