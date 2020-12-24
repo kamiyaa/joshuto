@@ -24,7 +24,6 @@ impl<'a> Widget for TuiDirList<'a> {
         if area.width < 4 {
             return;
         }
-
         let x = area.left();
         let y = area.top();
 

@@ -19,6 +19,7 @@ pub fn process_finished_worker(
         let _ = tab.history_mut().reload(observer.dest_path(), &options);
         let _ = tab.history_mut().reload(observer.src_path(), &options);
     }
+    observer.join();
     match res {
         Ok(progress) => {
             let op = match progress.kind() {
@@ -39,5 +40,4 @@ pub fn process_finished_worker(
             context.push_msg(msg);
         }
     }
-    observer.join();
 }

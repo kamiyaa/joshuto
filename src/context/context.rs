@@ -126,7 +126,7 @@ impl JoshutoContext {
         let tx = self.get_event_tx();
 
         if let Some(worker) = self.worker_queue.pop_front() {
-            let src = worker.paths[0].clone();
+            let src = worker.paths[0].parent().unwrap().to_path_buf();
             let dest = worker.dest.clone();
             let handle = thread::spawn(move || {
                 let (wtx, wrx) = mpsc::channel();

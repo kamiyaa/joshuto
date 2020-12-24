@@ -1,5 +1,3 @@
-use phf::phf_map;
-
 use std::path::Path;
 
 pub fn is_executable(mode: u32) -> bool {

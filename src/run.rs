@@ -21,13 +21,11 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
 
         // trigger a preview of child
         LoadChild::load_child(&mut context)?;
-
-        // render our view
-        let view = TuiView::new(&context);
-        backend.render(view);
     }
 
     while !context.exit {
+        backend.render(TuiView::new(&context));
+
         if !context.worker_is_busy() && !context.worker_is_empty() {
             context.start_next_job();
         }
@@ -73,8 +71,6 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 context.flush_event();
             }
         }
-        let view = TuiView::new(&context);
-        backend.render(view);
     }
 
     Ok(())
