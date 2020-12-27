@@ -195,6 +195,7 @@ dependencies = [
  "structopt",
  "termion",
  "toml",
+ "trash",
  "tui",
  "unicode-width",
  "users",
@@ -589,6 +590,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75cf45bb0bef80604d001caaec0d09da99611b3c0fd39d3080468875cdb65645"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "trash"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbf511f5673142be74cd6a46cfb7e3da8d2b95bc08d2d46c072798e6ce8b5b9f"
+dependencies = [
+ "winapi",
 ]
 
 [[package]]

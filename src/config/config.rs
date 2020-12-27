@@ -69,6 +69,8 @@ pub struct JoshutoRawConfig {
     collapse_preview: bool,
     #[serde(default)]
     xdg_open: bool,
+    #[serde(default = "default_true")]
+    use_trash: bool,
     #[serde(default = "default_max_preview_size")]
     max_preview_size: u64,
     column_ratio: Option<[usize; 3]>,
@@ -99,6 +101,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
             show_preview: self.show_preview,
             collapse_preview: self.collapse_preview,
             xdg_open: self.xdg_open,
+            use_trash: self.use_trash,
             max_preview_size: self.max_preview_size,
             column_ratio,
             sort_option,
@@ -113,6 +116,7 @@ pub struct JoshutoConfig {
     pub show_preview: bool,
     pub collapse_preview: bool,
     pub xdg_open: bool,
+    pub use_trash: bool,
     pub max_preview_size: u64,
     pub sort_option: sort::SortOption,
     pub column_ratio: (usize, usize, usize),
@@ -135,6 +139,7 @@ impl std::default::Default for JoshutoConfig {
             show_preview: true,
             collapse_preview: true,
             xdg_open: false,
+            use_trash: true,
             max_preview_size: default_max_preview_size(),
             sort_option,
             column_ratio: default_column_ratio(),

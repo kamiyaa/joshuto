@@ -11,9 +11,26 @@ use crate::util::load_child::LoadChild;
 
 use super::reload;
 
-pub fn remove_files<'a, I>(paths: I) -> std::io::Result<()>
+fn trash_error_to_io_error(err: trash::Error) -> std::io::Error {
+    match err {
+        trash::Error::Unknown => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
+        trash::Error::TargetedRoot => {
+            std::io::Error::new(std::io::ErrorKind::Other, "Targeted Root")
+        }
+        trash::Error::CanonicalizePath { code: _ } => {
+            std::io::Error::new(std::io::ErrorKind::NotFound, "Not found")
+        }
+        trash::Error::Remove { code: Some(1) } => std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Cannot move files to trash from mounted system",
+        ),
+        _ => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
+    }
+}
+
+pub fn remove_files<P>(paths: &[P]) -> std::io::Result<()>
 where
-    I: Iterator<Item = &'a path::Path>,
+    P: AsRef<path::Path>,
 {
     for path in paths {
         if let Ok(metadata) = fs::symlink_metadata(path) {
@@ -27,6 +44,18 @@ where
     Ok(())
 }
 
+pub fn trash_files<P>(paths: &[P]) -> std::io::Result<()>
+where
+    P: AsRef<path::Path>,
+{
+    for path in paths {
+        if let Err(e) = trash::delete(path) {
+            return Err(trash_error_to_io_error(e));
+        }
+    }
+    Ok(())
+}
+
 fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::io::Result<()> {
     let tab_index = context.tab_context_ref().get_index();
     let paths = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
@@ -34,13 +63,18 @@ fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::
         None => vec![],
     };
     let paths_len = paths.len();
-
     if paths_len == 0 {
         return Err(std::io::Error::new(
             std::io::ErrorKind::Other,
             "no files selected",
         ));
     }
+
+    let delete_func = if context.config_ref().use_trash {
+        trash_files
+    } else {
+        remove_files
+    };
 
     let ch = {
         let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
@@ -56,13 +90,13 @@ fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::
                 prompt.get_key(backend, context)
             };
             if ch == Key::Char('y') {
-                remove_files(paths.iter().map(|p| p.as_path()))?;
+                delete_func(&paths)?;
                 reload::reload(context, tab_index)?;
                 let msg = format!("Deleted {} files", paths_len);
                 context.push_msg(msg);
             }
         } else {
-            remove_files(paths.iter().map(|p| p.as_path()))?;
+            delete_func(&paths)?;
             reload::reload(context, tab_index)?;
             let msg = format!("Deleted {} files", paths_len);
             context.push_msg(msg);

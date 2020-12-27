@@ -8,6 +8,7 @@ scroll_offset = 6
 
 show_preview = true
 xdg_open = false
+use_trash = true
 max_preview_size = 2097152 # 2MB
 
 # lexical, mtime, natural
