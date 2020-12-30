@@ -1,5 +1,7 @@
 use serde_derive::Deserialize;
 
+use tui::layout::Constraint;
+
 use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::util::sort;
 
@@ -95,6 +97,19 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
         };
         let sort_option = self.sort_option.into_sort_option(sort_method);
 
+        let total = (column_ratio.0 + column_ratio.1 + column_ratio.2) as u32;
+
+        let default_layout = [
+            Constraint::Ratio(column_ratio.0 as u32, total),
+            Constraint::Ratio(column_ratio.1 as u32, total),
+            Constraint::Ratio(column_ratio.2 as u32, total),
+        ];
+        let no_preview_layout = [
+            Constraint::Ratio(column_ratio.0 as u32, total),
+            Constraint::Ratio(column_ratio.1 as u32 + column_ratio.2 as u32, total),
+            Constraint::Ratio(0, total),
+        ];
+
         JoshutoConfig {
             scroll_offset: self.scroll_offset,
             tilde_in_titlebar: self.tilde_in_titlebar,
@@ -105,6 +120,8 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
             max_preview_size: self.max_preview_size,
             column_ratio,
             sort_option,
+            default_layout,
+            no_preview_layout,
         }
     }
 }
@@ -120,6 +137,8 @@ pub struct JoshutoConfig {
     pub max_preview_size: u64,
     pub sort_option: sort::SortOption,
     pub column_ratio: (usize, usize, usize),
+    pub default_layout: [Constraint; 3],
+    pub no_preview_layout: [Constraint; 3],
 }
 
 impl ConfigStructure for JoshutoConfig {
@@ -133,6 +152,20 @@ impl std::default::Default for JoshutoConfig {
     fn default() -> Self {
         let sort_option = sort::SortOption::default();
 
+        let column_ratio = default_column_ratio();
+
+        let total = (column_ratio.0 + column_ratio.1 + column_ratio.2) as u32;
+        let default_layout = [
+            Constraint::Ratio(column_ratio.0 as u32, total),
+            Constraint::Ratio(column_ratio.1 as u32, total),
+            Constraint::Ratio(column_ratio.2 as u32, total),
+        ];
+        let no_preview_layout = [
+            Constraint::Ratio(column_ratio.0 as u32, total),
+            Constraint::Ratio(column_ratio.1 as u32 + column_ratio.2 as u32, total),
+            Constraint::Ratio(0, total),
+        ];
+
         Self {
             scroll_offset: default_scroll_offset(),
             tilde_in_titlebar: true,
@@ -142,7 +175,9 @@ impl std::default::Default for JoshutoConfig {
             use_trash: true,
             max_preview_size: default_max_preview_size(),
             sort_option,
-            column_ratio: default_column_ratio(),
+            column_ratio,
+            default_layout,
+            no_preview_layout,
         }
     }
 }

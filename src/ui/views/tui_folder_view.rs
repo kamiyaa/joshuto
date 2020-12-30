@@ -33,32 +33,12 @@ impl<'a> Widget for TuiFolderView<'a> {
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
 
-        let column_ratio = self.context.config_ref().column_ratio;
-        let column_ratio = (
-            column_ratio.0 as u32,
-            column_ratio.1 as u32,
-            column_ratio.2 as u32,
-        );
-        let total = column_ratio.0 + column_ratio.1 + column_ratio.2;
-
-        let default_layout = [
-            Constraint::Ratio(column_ratio.0, total),
-            Constraint::Ratio(column_ratio.1, total),
-            Constraint::Ratio(column_ratio.2, total),
-        ];
-
-        let no_preview_layout = [
-            Constraint::Ratio(column_ratio.0, total),
-            Constraint::Ratio(column_ratio.1 + column_ratio.2, total),
-            Constraint::Ratio(0, total),
-        ];
-
-        let constraints: [Constraint; 3] = if !self.context.config_ref().collapse_preview {
-            default_layout
+        let constraints: &[Constraint; 3] = if !self.context.config_ref().collapse_preview {
+            &self.context.config_ref().default_layout
         } else {
             match child_list {
-                Some(_) => default_layout,
-                None => no_preview_layout,
+                Some(_) => &self.context.config_ref().default_layout,
+                None => &self.context.config_ref().no_preview_layout,
             }
         };
 
