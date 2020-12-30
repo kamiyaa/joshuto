@@ -1,5 +1,5 @@
 use tui::buffer::Buffer;
-use tui::layout::{Direction, Layout, Rect};
+use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
 use tui::text::Span;
 use tui::widgets::{Paragraph, Widget, Wrap};
@@ -13,8 +13,6 @@ pub struct TuiFolderView<'a> {
     pub context: &'a JoshutoContext,
     pub show_bottom_status: bool,
 }
-
-use super::super::{DEFAULT_LAYOUT, NO_PREVIEW_LAYOUT};
 
 impl<'a> TuiFolderView<'a> {
     pub fn new(context: &'a JoshutoContext) -> Self {
@@ -35,12 +33,32 @@ impl<'a> Widget for TuiFolderView<'a> {
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
 
-        let constraints = if !self.context.config_ref().collapse_preview {
-            DEFAULT_LAYOUT
+        let column_ratio = self.context.config_ref().column_ratio;
+        let column_ratio = (
+            column_ratio.0 as u32,
+            column_ratio.1 as u32,
+            column_ratio.2 as u32,
+        );
+        let total = column_ratio.0 + column_ratio.1 + column_ratio.2;
+
+        let default_layout = [
+            Constraint::Ratio(column_ratio.0, total),
+            Constraint::Ratio(column_ratio.1, total),
+            Constraint::Ratio(column_ratio.2, total),
+        ];
+
+        let no_preview_layout = [
+            Constraint::Ratio(column_ratio.0, total),
+            Constraint::Ratio(column_ratio.1 + column_ratio.2, total),
+            Constraint::Ratio(0, total),
+        ];
+
+        let constraints: [Constraint; 3] = if !self.context.config_ref().collapse_preview {
+            default_layout
         } else {
             match child_list {
-                Some(_) => DEFAULT_LAYOUT,
-                None => NO_PREVIEW_LAYOUT,
+                Some(_) => default_layout,
+                None => no_preview_layout,
             }
         };
 
