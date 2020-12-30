@@ -1,8 +1,20 @@
+use signal_hook::consts::signal;
+
 use crate::context::JoshutoContext;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOp, IOWorkerProgress};
+use crate::ui;
+use crate::util::event::JoshutoEvent;
+use crate::util::format;
 
-use super::format;
+pub fn process_noninteractive(event: JoshutoEvent, context: &mut JoshutoContext) {
+    match event {
+        JoshutoEvent::IOWorkerProgress(res) => process_worker_progress(context, res),
+        JoshutoEvent::IOWorkerResult(res) => process_finished_worker(context, res),
+        JoshutoEvent::Signal(signal::SIGWINCH) => {}
+        _ => {}
+    }
+}
 
 pub fn process_worker_progress(context: &mut JoshutoContext, res: IOWorkerProgress) {
     context.set_worker_progress(res);

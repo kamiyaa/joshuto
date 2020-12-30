@@ -1,20 +1,23 @@
 use std::io::stdout;
 use std::io::Write;
 
+use termion::input::MouseTerminal;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::widgets::Widget;
 
+pub type JoshutoTerminal =
+    tui::Terminal<TermionBackend<MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>>>;
+
 pub struct TuiBackend {
-    pub terminal:
-        Option<tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>>>,
+    pub terminal: Option<JoshutoTerminal>,
 }
 
 impl TuiBackend {
     pub fn new() -> std::io::Result<Self> {
         let stdout = std::io::stdout().into_raw_mode()?;
-        let mut alt_screen = AlternateScreen::from(stdout);
+        let mut alt_screen = MouseTerminal::from(AlternateScreen::from(stdout));
         // clears the screen of artifacts
         write!(alt_screen, "{}", termion::clear::All)?;
 
@@ -36,9 +39,7 @@ impl TuiBackend {
         });
     }
 
-    pub fn terminal_mut(
-        &mut self,
-    ) -> &mut tui::Terminal<TermionBackend<AlternateScreen<RawTerminal<std::io::Stdout>>>> {
+    pub fn terminal_mut(&mut self) -> &mut JoshutoTerminal {
         self.terminal.as_mut().unwrap()
     }
 

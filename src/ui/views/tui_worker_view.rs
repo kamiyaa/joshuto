@@ -1,12 +1,12 @@
-use termion::event::Key;
+use termion::event::{Event, Key};
 
 use tui::layout::Rect;
 
 use crate::context::JoshutoContext;
 use crate::ui::widgets::TuiWorker;
 use crate::ui::TuiBackend;
-use crate::util::event::Event;
-use crate::util::worker;
+use crate::util::event::JoshutoEvent;
+use crate::util::input_process;
 
 pub struct TuiWorkerView {}
 
@@ -33,21 +33,16 @@ impl TuiWorkerView {
 
             if let Ok(event) = context.poll_event() {
                 match event {
-                    Event::IOWorkerProgress(res) => {
-                        worker::process_worker_progress(context, res);
-                    }
-                    Event::IOWorkerResult(res) => {
-                        worker::process_finished_worker(context, res);
-                    }
-                    Event::Input(key) => {
-                        match key {
-                            Key::Esc => {
+                    JoshutoEvent::Termion(event) => {
+                        match event {
+                            Event::Key(Key::Esc) => {
                                 break;
                             }
                             _ => {}
                         }
                         context.flush_event();
                     }
+                    event => input_process::process_noninteractive(event, context),
                 };
             }
         }

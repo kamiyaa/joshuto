@@ -6,7 +6,7 @@ use std::thread;
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
 use crate::io::{IOWorkerObserver, IOWorkerProgress, IOWorkerThread};
-use crate::util::event::{Event, Events};
+use crate::util::event::{Events, JoshutoEvent};
 
 pub struct JoshutoContext {
     pub exit: bool,
@@ -61,10 +61,10 @@ impl JoshutoContext {
     }
 
     // event related
-    pub fn poll_event(&self) -> Result<Event, mpsc::RecvError> {
+    pub fn poll_event(&self) -> Result<JoshutoEvent, mpsc::RecvError> {
         self.events.next()
     }
-    pub fn get_event_tx(&self) -> mpsc::Sender<Event> {
+    pub fn get_event_tx(&self) -> mpsc::Sender<JoshutoEvent> {
         self.events.event_tx.clone()
     }
     pub fn flush_event(&self) {
@@ -134,17 +134,17 @@ impl JoshutoContext {
                 let worker_handle = thread::spawn(move || worker.start(wtx));
                 // relay worker info to event loop
                 while let Ok(progress) = wrx.recv() {
-                    let _ = tx.send(Event::IOWorkerProgress(progress));
+                    let _ = tx.send(JoshutoEvent::IOWorkerProgress(progress));
                 }
                 let result = worker_handle.join();
 
                 match result {
                     Ok(res) => {
-                        let _ = tx.send(Event::IOWorkerResult(res));
+                        let _ = tx.send(JoshutoEvent::IOWorkerResult(res));
                     }
                     Err(_) => {
                         let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
-                        let _ = tx.send(Event::IOWorkerResult(Err(err)));
+                        let _ = tx.send(JoshutoEvent::IOWorkerResult(Err(err)));
                     }
                 }
             });

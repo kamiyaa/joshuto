@@ -1,6 +1,6 @@
 use std::iter::Iterator;
 
-use termion::event::Key;
+use termion::event::{Event, Key};
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
@@ -11,41 +11,14 @@ use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
-use crate::util::event::Event;
-use crate::util::worker;
+use crate::util::event::JoshutoEvent;
+use crate::util::input_process;
+use crate::util::key_mapping::ToString;
 
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;
 
 pub struct TuiCommandMenu;
-
-trait ToString {
-    fn to_string(&self) -> String;
-}
-
-impl ToString for Key {
-    fn to_string(&self) -> String {
-        match *self {
-            Key::Char(c) => format!("{}", c),
-            Key::Ctrl(c) => format!("ctrl+{}", c),
-            Key::Left => "arrow_left".to_string(),
-            Key::Right => "arrow_right".to_string(),
-            Key::Up => "arrow_up".to_string(),
-            Key::Down => "arrow_down".to_string(),
-            Key::Backspace => "backspace".to_string(),
-            Key::Home => "home".to_string(),
-            Key::End => "end".to_string(),
-            Key::PageUp => "page_up".to_string(),
-            Key::PageDown => "page_down".to_string(),
-            Key::BackTab => "backtab".to_string(),
-            Key::Insert => "insert".to_string(),
-            Key::Delete => "delete".to_string(),
-            Key::Esc => "escape".to_string(),
-            Key::F(i) => format!("f{}", i),
-            k => format!("{:?}", k),
-        }
-    }
-}
 
 impl TuiCommandMenu {
     pub fn new() -> Self {
@@ -107,16 +80,10 @@ impl TuiCommandMenu {
 
             if let Ok(event) = context.poll_event() {
                 match event {
-                    Event::IOWorkerProgress(res) => {
-                        worker::process_worker_progress(context, res);
-                    }
-                    Event::IOWorkerResult(res) => {
-                        worker::process_finished_worker(context, res);
-                    }
-                    Event::Input(key) => {
-                        match key {
-                            Key::Esc => return None,
-                            key => match map.as_ref().get(&key) {
+                    JoshutoEvent::Termion(event) => {
+                        match event {
+                            Event::Key(Key::Esc) => return None,
+                            event => match map.as_ref().get(&event) {
                                 Some(CommandKeybind::SimpleKeybind(s)) => {
                                     return Some(s);
                                 }
@@ -128,6 +95,7 @@ impl TuiCommandMenu {
                         }
                         context.flush_event();
                     }
+                    event => input_process::process_noninteractive(event, context),
                 }
             }
         }

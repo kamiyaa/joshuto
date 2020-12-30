@@ -1,13 +1,15 @@
-use crate::commands::{CommandKeybind, JoshutoRunnable};
+use termion::event::{Event, MouseButton, MouseEvent};
+
+use crate::commands::{CommandKeybind, JoshutoRunnable, KeyCommand};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiCommandMenu;
-use crate::util::event::Event;
+use crate::util::event::JoshutoEvent;
+use crate::util::input_process;
 use crate::util::load_child::LoadChild;
-use crate::util::worker;
 
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
@@ -34,21 +36,34 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
             Ok(event) => event,
             Err(_) => return Ok(()), // TODO
         };
-
         match event {
-            Event::IOWorkerProgress(res) => {
-                worker::process_worker_progress(&mut context, res);
+            JoshutoEvent::Termion(Event::Mouse(event)) => {
+                let command = match event {
+                    MouseEvent::Press(MouseButton::WheelUp, _, _) => {
+                        Some(KeyCommand::CursorMoveUp(1))
+                    }
+                    MouseEvent::Press(MouseButton::WheelDown, _, _) => {
+                        Some(KeyCommand::CursorMoveDown(1))
+                    }
+                    e => None,
+                };
+                match command {
+                    Some(c) => {
+                        if let Err(e) = c.execute(&mut context, &mut backend) {
+                            context.push_msg(e.to_string());
+                        }
+                    }
+                    None => context.push_msg(format!("Unmapped input: {:?}", event)),
+                }
+                context.flush_event();
             }
-            Event::IOWorkerResult(res) => {
-                worker::process_finished_worker(&mut context, res);
-            }
-            Event::Input(key) => {
+            JoshutoEvent::Termion(key) => {
                 if !context.message_queue_ref().is_empty() {
                     context.pop_msg();
                 }
                 match keymap_t.as_ref().get(&key) {
                     None => {
-                        context.push_msg(format!("Unknown keycode: {:?}", key));
+                        context.push_msg(format!("Unmapped input: {:?}", key));
                     }
                     Some(CommandKeybind::SimpleKeybind(command)) => {
                         if let Err(e) = command.execute(&mut context, &mut backend) {
@@ -70,6 +85,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 }
                 context.flush_event();
             }
+            event => input_process::process_noninteractive(event, &mut context),
         }
     }
 
