@@ -1,6 +1,6 @@
-use termion::event::{Event, MouseButton, MouseEvent};
+use termion::event::Event;
 
-use crate::commands::{CommandKeybind, JoshutoRunnable, KeyCommand};
+use crate::commands::{CommandKeybind, JoshutoRunnable};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
@@ -38,24 +38,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         };
         match event {
             JoshutoEvent::Termion(Event::Mouse(event)) => {
-                let command = match event {
-                    MouseEvent::Press(MouseButton::WheelUp, _, _) => {
-                        Some(KeyCommand::CursorMoveUp(1))
-                    }
-                    MouseEvent::Press(MouseButton::WheelDown, _, _) => {
-                        Some(KeyCommand::CursorMoveDown(1))
-                    }
-                    e => None,
-                };
-                match command {
-                    Some(c) => {
-                        if let Err(e) = c.execute(&mut context, &mut backend) {
-                            context.push_msg(e.to_string());
-                        }
-                    }
-                    None => context.push_msg(format!("Unmapped input: {:?}", event)),
-                }
-                context.flush_event();
+                input_process::process_mouse(event, &mut context, &mut backend);
             }
             JoshutoEvent::Termion(key) => {
                 if !context.message_queue_ref().is_empty() {

@@ -31,6 +31,9 @@ pub enum KeyCommand {
     ParentCursorMoveUp(usize),
     ParentCursorMoveDown(usize),
 
+    // ChildCursorMoveUp(usize),
+    // ChildCursorMoveDown(usize),
+
     DeleteFiles,
     NewDirectory(path::PathBuf),
     OpenFile,
