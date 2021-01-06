@@ -123,6 +123,6 @@ pub fn str_to_mouse(s: &str) -> Option<MouseEvent> {
     match s {
         "scroll_up" => Some(MouseEvent::Press(MouseButton::WheelUp, 0, 0)),
         "scroll_down" => Some(MouseEvent::Press(MouseButton::WheelDown, 0, 0)),
-        s => None,
+        _ => None,
     }
 }

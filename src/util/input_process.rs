@@ -1,6 +1,6 @@
 use signal_hook::consts::signal;
-use tui::layout::{Constraint, Direction, Layout, Rect};
 use termion::event::{MouseButton, MouseEvent};
+use tui::layout::{Constraint, Direction, Layout};
 
 use crate::commands::{JoshutoRunnable, KeyCommand};
 use crate::context::JoshutoContext;
@@ -10,7 +10,11 @@ use crate::ui;
 use crate::util::event::JoshutoEvent;
 use crate::util::format;
 
-pub fn process_mouse(event: MouseEvent, context: &mut JoshutoContext, backend: &mut ui::TuiBackend) {
+pub fn process_mouse(
+    event: MouseEvent,
+    context: &mut JoshutoContext,
+    backend: &mut ui::TuiBackend,
+) {
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
 
     let constraints: &[Constraint; 3] = &context.config_ref().default_layout;
@@ -21,21 +25,23 @@ pub fn process_mouse(event: MouseEvent, context: &mut JoshutoContext, backend: &
         .split(f_size);
 
     let command = match event {
-        MouseEvent::Press(MouseButton::WheelUp, x, y) => {
+        MouseEvent::Press(MouseButton::WheelUp, x, _) => {
             if x < layout_rect[1].x {
                 Some(KeyCommand::ParentCursorMoveUp(1))
             } else if x < layout_rect[2].x {
                 Some(KeyCommand::CursorMoveUp(1))
-            } else {    // TODO: scroll in child list
+            } else {
+                // TODO: scroll in child list
                 Some(KeyCommand::CursorMoveUp(1))
             }
         }
-        MouseEvent::Press(MouseButton::WheelDown, x, y) => {
+        MouseEvent::Press(MouseButton::WheelDown, x, _) => {
             if x < layout_rect[1].x {
                 Some(KeyCommand::ParentCursorMoveDown(1))
             } else if x < layout_rect[2].x {
                 Some(KeyCommand::CursorMoveDown(1))
-            } else {    // TODO: scroll in child list
+            } else {
+                // TODO: scroll in child list
                 Some(KeyCommand::CursorMoveDown(1))
             }
         }
