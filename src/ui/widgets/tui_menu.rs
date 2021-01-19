@@ -12,8 +12,8 @@ use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
 use crate::util::event::JoshutoEvent;
-use crate::util::input_process;
-use crate::util::key_mapping::ToString;
+use crate::util::input;
+use crate::util::to_string::ToString;
 
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;
@@ -95,7 +95,7 @@ impl TuiCommandMenu {
                         }
                         context.flush_event();
                     }
-                    event => input_process::process_noninteractive(event, context),
+                    event => input::process_noninteractive(event, context),
                 }
             }
         }

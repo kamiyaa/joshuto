@@ -8,7 +8,7 @@ use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
 use crate::util::event::JoshutoEvent;
-use crate::util::input_process;
+use crate::util::input;
 
 pub struct TuiPrompt<'a> {
     prompt: &'a str,
@@ -62,7 +62,7 @@ impl<'a> TuiPrompt<'a> {
                     JoshutoEvent::Termion(_) => {
                         context.flush_event();
                     }
-                    event => input_process::process_noninteractive(event, context),
+                    event => input::process_noninteractive(event, context),
                 };
             }
         }

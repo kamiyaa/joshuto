@@ -12,7 +12,7 @@ use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
 use crate::ui::TuiBackend;
 use crate::util::event::JoshutoEvent;
-use crate::util::input_process;
+use crate::util::input;
 
 struct CompletionTracker {
     pub index: usize,
@@ -240,7 +240,7 @@ impl<'a> TuiTextField<'a> {
                     JoshutoEvent::Termion(_) => {
                         context.flush_event();
                     }
-                    event => input_process::process_noninteractive(event, context),
+                    event => input::process_noninteractive(event, context),
                 };
             }
         }

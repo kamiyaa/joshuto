@@ -3,6 +3,8 @@ use std::{fs, path};
 use tui::style::Style;
 
 use crate::fs::{FileType, JoshutoMetadata};
+
+#[cfg(feature = "devicons")]
 use crate::util::devicons::*;
 
 use crate::util::unix;
@@ -28,6 +30,7 @@ impl JoshutoDirEntry {
             .to_string_lossy()
             .to_string();
 
+        #[cfg(feature = "devicons")]
         let label = if show_icons {
             let icon = match metadata.file_type() {
                 FileType::Directory => DIR_NODE_EXACT_MATCHES
@@ -56,6 +59,8 @@ impl JoshutoDirEntry {
         } else {
             name.clone()
         };
+        #[cfg(not(feature = "devicons"))]
+        let label = name.clone();
 
         Ok(Self {
             name,

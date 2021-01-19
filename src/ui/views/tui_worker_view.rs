@@ -6,7 +6,7 @@ use crate::context::JoshutoContext;
 use crate::ui::widgets::TuiWorker;
 use crate::ui::TuiBackend;
 use crate::util::event::JoshutoEvent;
-use crate::util::input_process;
+use crate::util::input;
 
 pub struct TuiWorkerView {}
 
@@ -42,7 +42,7 @@ impl TuiWorkerView {
                         }
                         context.flush_event();
                     }
-                    event => input_process::process_noninteractive(event, context),
+                    event => input::process_noninteractive(event, context),
                 };
             }
         }

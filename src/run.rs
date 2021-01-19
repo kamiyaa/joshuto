@@ -8,8 +8,9 @@ use crate::ui;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiCommandMenu;
 use crate::util::event::JoshutoEvent;
-use crate::util::input_process;
+use crate::util::input;
 use crate::util::load_child::LoadChild;
+use crate::util::to_string::ToString;
 
 pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
     let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
@@ -38,7 +39,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         };
         match event {
             JoshutoEvent::Termion(Event::Mouse(event)) => {
-                input_process::process_mouse(event, &mut context, &mut backend);
+                input::process_mouse(event, &mut context, &mut backend);
             }
             JoshutoEvent::Termion(key) => {
                 if !context.message_queue_ref().is_empty() {
@@ -46,7 +47,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 }
                 match keymap_t.as_ref().get(&key) {
                     None => {
-                        context.push_msg(format!("Unmapped input: {:?}", key));
+                        context.push_msg(format!("Unmapped input: {}", key.to_string()));
                     }
                     Some(CommandKeybind::SimpleKeybind(command)) => {
                         if let Err(e) = command.execute(&mut context, &mut backend) {
@@ -68,7 +69,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 }
                 context.flush_event();
             }
-            event => input_process::process_noninteractive(event, &mut context),
+            event => input::process_noninteractive(event, &mut context),
         }
     }
 

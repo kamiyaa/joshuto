@@ -29,8 +29,7 @@ unicode-width = "^0"
 users = "^0"
 whoami = "^0"
 xdg = "^2"
-phf = { version = "^0", features = ["macros"] }
-# notify = { version = "5.0.0-pre.2" }
+phf = { version = "^0", features = ["macros"], optional = true }
 
 # fs_extra = "*"
 # lazy_static = "*"
@@ -49,5 +48,7 @@ phf = { version = "^0", features = ["macros"] }
 # path = "lib/wordexp-rs"
 
 [features]
+devicons = [ "phf" ]
 file_mimetype = []
-default = []
+mouse = []
+default = [ "phf", "mouse" ]
