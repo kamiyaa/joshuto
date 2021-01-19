@@ -8,6 +8,8 @@ use crate::util::load_child::LoadChild;
 use crate::util::sort::SortType;
 
 use crate::HOME_DIR;
+use dirs_next::home_dir;
+use shellexpand::tilde_with_context;
 
 use super::*;
 
@@ -136,7 +138,10 @@ impl KeyCommand {
                     )),
                 },
                 ".." => Ok(Self::ParentDirectory),
-                arg => Ok(Self::ChangeDirectory(path::PathBuf::from(arg))),
+                arg => Ok({
+                    let path_accepts_tilde = tilde_with_context(arg, home_dir);
+                    Self::ChangeDirectory(path::PathBuf::from(path_accepts_tilde.as_ref()))
+                }),
             },
             "close_tab" => Ok(Self::CloseTab),
             "copy_files" => Ok(Self::CopyFiles),
