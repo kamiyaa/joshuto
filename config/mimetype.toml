@@ -60,28 +60,28 @@ ts = [
 ## video formats
 avi = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 av1 = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 flv = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 mkv = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 mov = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 mp4 = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 webm = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 wmv = [
 	{ command = "mpv", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 
 ## text formats
 build = [

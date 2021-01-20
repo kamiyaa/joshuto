@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 alphanumeric-sort = "^1"
 chrono = "^0"
-dirs = "^1"
+dirs-next = "^2"
 lazy_static = "^1"
 libc = "^0"
 open = "^1"
@@ -30,6 +30,7 @@ users = "^0"
 whoami = "^0"
 xdg = "^2"
 phf = { version = "^0", features = ["macros"] }
+shellexpand = "^2"
 # notify = { version = "5.0.0-pre.2" }
 
 # fs_extra = "*"
