@@ -33,16 +33,11 @@ impl<'a> Widget for TuiProgressView<'a> {
         let terminal = backend.terminal_mut();
 
         loop {
-            terminal
-                .draw(|mut frame| {
-                })
-                .unwrap();
+            terminal.draw(|mut frame| {}).unwrap();
 
             if let Ok(event) = context.events.next() {
                 match event {
-                    Event::IOWorkerProgress(_) => {
-
-                    }
+                    Event::IOWorkerProgress(_) => {}
                     Event::Input(key) => {
                         match key {
                             Key::Backspace => {
@@ -125,6 +120,5 @@ impl<'a> Widget for TuiProgressView<'a> {
                 };
             }
         }
-
     }
 }
