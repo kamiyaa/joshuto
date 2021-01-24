@@ -7,8 +7,36 @@ use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::widgets::Widget;
 
-pub type JoshutoTerminal =
-    tui::Terminal<TermionBackend<MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>>>;
+trait New {
+    fn new() -> std::io::Result<Self>
+    where
+        Self: Sized;
+}
+
+#[cfg(feature = "mouse")]
+type Screen = MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>;
+#[cfg(feature = "mouse")]
+impl New for Screen {
+    fn new() -> std::io::Result<Self> {
+        let stdout = std::io::stdout().into_raw_mode()?;
+
+        let mut alt_screen = MouseTerminal::from(AlternateScreen::from(stdout));
+        return Ok(alt_screen);
+    }
+}
+#[cfg(not(feature = "mouse"))]
+type Screen = AlternateScreen<RawTerminal<std::io::Stdout>>;
+#[cfg(not(feature = "mouse"))]
+impl New for Screen {
+    fn new() -> std::io::Result<Self> {
+        let stdout = std::io::stdout().into_raw_mode()?;
+
+        let mut alt_screen = AlternateScreen::from(stdout);
+        return Ok(alt_screen);
+    }
+}
+
+pub type JoshutoTerminal = tui::Terminal<TermionBackend<Screen>>;
 
 pub struct TuiBackend {
     pub terminal: Option<JoshutoTerminal>,
@@ -16,8 +44,7 @@ pub struct TuiBackend {
 
 impl TuiBackend {
     pub fn new() -> std::io::Result<Self> {
-        let stdout = std::io::stdout().into_raw_mode()?;
-        let mut alt_screen = MouseTerminal::from(AlternateScreen::from(stdout));
+        let mut alt_screen = Screen::new()?;
         // clears the screen of artifacts
         write!(alt_screen, "{}", termion::clear::All)?;
 

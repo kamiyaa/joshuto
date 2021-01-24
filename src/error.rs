@@ -27,6 +27,10 @@ pub enum JoshutoErrorKind {
     EnvVarNotPresent,
 
     ParseError,
+
+    #[cfg(feature = "clipboard")]
+    ClipboardError,
+
     UnknownCommand,
 }
 

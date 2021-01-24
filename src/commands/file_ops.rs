@@ -44,3 +44,26 @@ pub fn paste(context: &mut JoshutoContext, options: IOWorkerOptions) -> JoshutoR
         )),
     }
 }
+
+#[cfg(feature = "clipboard")]
+pub fn copy_filename(context: &mut JoshutoContext) -> JoshutoResult<()> {
+    if let Some(entry) = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|c| c.curr_entry_ref())
+    {
+        let ret = match cli_clipboard::set_contents(entry.file_name().to_string()) {
+            Err(e) => Err(JoshutoError::new(
+                JoshutoErrorKind::ClipboardError,
+                format!("{:?}", e),
+            )),
+            s => {
+                context.push_msg(format!("Copied '{}' to clipboard", entry.file_name()));
+                Ok(())
+            }
+        };
+        return ret;
+    }
+    Ok(())
+}

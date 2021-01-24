@@ -23,7 +23,6 @@ shellexpand = "^2"
 signal-hook = "^0"
 structopt = "^0"
 termion = "^1"
-trash = "^1"
 toml = "^0"
 tui = "^0"
 unicode-width = "^0"
@@ -31,6 +30,8 @@ users = "^0"
 whoami = "^0"
 xdg = "^2"
 phf = { version = "^0", features = ["macros"], optional = true }
+cli-clipboard = { version = "^0", optional = true }
+trash = { version = "^1", optional = true }
 
 # [dependencies.wordexp]
 # version = "^0"
@@ -39,7 +40,9 @@ phf = { version = "^0", features = ["macros"], optional = true }
 # path = "lib/wordexp-rs"
 
 [features]
+clipboard = [ "cli-clipboard" ]
 devicons = [ "phf" ]
 file_mimetype = []
 mouse = []
-default = [ "phf", "mouse" ]
+recycle_bin = [ "trash" ]
+default = [ "clipboard", "mouse", "phf", "recycle_bin" ]

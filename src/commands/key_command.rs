@@ -22,6 +22,8 @@ pub enum KeyCommand {
     CutFiles,
     CopyFiles,
     PasteFiles(IOWorkerOptions),
+    #[cfg(feature = "clipboard")]
+    CopyFileName,
 
     CursorMoveUp(usize),
     CursorMoveDown(usize),
@@ -52,7 +54,10 @@ pub enum KeyCommand {
     SearchNext,
     SearchPrev,
 
-    SelectFiles { toggle: bool, all: bool },
+    SelectFiles {
+        toggle: bool,
+        all: bool,
+    },
     SetMode,
     ShellCommand(Vec<String>),
     ShowWorkers,
@@ -79,6 +84,8 @@ impl KeyCommand {
             Self::CutFiles => "cut_files",
             Self::CopyFiles => "copy_files",
             Self::PasteFiles(_) => "paste_files",
+            #[cfg(feature = "clipboard")]
+            Self::CopyFileName => "copy_filename",
 
             Self::CursorMoveUp(_) => "cursor_move_up",
             Self::CursorMoveDown(_) => "cursor_move_down",
@@ -145,6 +152,8 @@ impl KeyCommand {
             },
             "close_tab" => Ok(Self::CloseTab),
             "copy_files" => Ok(Self::CopyFiles),
+            #[cfg(feature = "clipboard")]
+            "copy_filename" => Ok(Self::CopyFileName),
             "console" => Ok(Self::CommandLine(arg.to_owned(), "".to_owned())),
             "cursor_move_home" => Ok(Self::CursorMoveHome),
             "cursor_move_end" => Ok(Self::CursorMoveEnd),
@@ -316,6 +325,8 @@ impl JoshutoRunnable for KeyCommand {
             Self::CutFiles => file_ops::cut(context),
             Self::CopyFiles => file_ops::copy(context),
             Self::PasteFiles(options) => file_ops::paste(context, options.clone()),
+            #[cfg(feature = "clipboard")]
+            Self::CopyFileName => file_ops::copy_filename(context),
 
             Self::CursorMoveUp(u) => cursor_move::up(context, *u),
             Self::CursorMoveDown(u) => cursor_move::down(context, *u),
