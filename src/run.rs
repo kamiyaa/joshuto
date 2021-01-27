@@ -1,6 +1,6 @@
 use termion::event::Event;
 
-use crate::commands::{CommandKeybind, JoshutoRunnable};
+use crate::commands::{CommandKeybind, JoshutoRunnable, KeyCommand};
 use crate::config::{JoshutoCommandMapping, JoshutoConfig};
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
@@ -45,24 +45,38 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 if !context.message_queue_ref().is_empty() {
                     context.pop_msg();
                 }
-                match keymap_t.as_ref().get(&key) {
-                    None => {
-                        context.push_msg(format!("Unmapped input: {}", key.to_string()));
-                    }
-                    Some(CommandKeybind::SimpleKeybind(command)) => {
+                match key {
+                    Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
+                        let command = KeyCommand::CursorMoveUp(1);
                         if let Err(e) = command.execute(&mut context, &mut backend) {
                             context.push_msg(e.to_string());
                         }
                     }
-                    Some(CommandKeybind::CompositeKeybind(m)) => {
-                        let cmd = {
-                            let mut menu = TuiCommandMenu::new();
-                            menu.get_input(&mut backend, &mut context, &m)
-                        };
-
-                        if let Some(command) = cmd {
+                    Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
+                        let command = KeyCommand::CursorMoveDown(1);
+                        if let Err(e) = command.execute(&mut context, &mut backend) {
+                            context.push_msg(e.to_string());
+                        }
+                    }
+                    key => match keymap_t.as_ref().get(&key) {
+                        None => {
+                            context.push_msg(format!("Unmapped input: {}", key.to_string()));
+                        }
+                        Some(CommandKeybind::SimpleKeybind(command)) => {
                             if let Err(e) = command.execute(&mut context, &mut backend) {
                                 context.push_msg(e.to_string());
+                            }
+                        }
+                        Some(CommandKeybind::CompositeKeybind(m)) => {
+                            let cmd = {
+                                let mut menu = TuiCommandMenu::new();
+                                menu.get_input(&mut backend, &mut context, &m)
+                            };
+
+                            if let Some(command) = cmd {
+                                if let Err(e) = command.execute(&mut context, &mut backend) {
+                                    context.push_msg(e.to_string());
+                                }
                             }
                         }
                     }
