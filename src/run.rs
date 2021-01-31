@@ -12,10 +12,7 @@ use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
 
-pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
-    let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
-
-    let mut context = JoshutoContext::new(config_t);
+pub fn run(backend: &mut ui::TuiBackend, context: &mut JoshutoContext, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
@@ -23,7 +20,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child
-        LoadChild::load_child(&mut context)?;
+        LoadChild::load_child(context)?;
     }
 
     while !context.exit {
@@ -39,7 +36,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
         };
         match event {
             JoshutoEvent::Termion(Event::Mouse(event)) => {
-                input::process_mouse(event, &mut context, &mut backend);
+                input::process_mouse(event, context, backend);
             }
             JoshutoEvent::Termion(key) => {
                 if !context.message_queue_ref().is_empty() {
@@ -48,13 +45,13 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 match key {
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
                         let command = KeyCommand::CursorMoveUp(1);
-                        if let Err(e) = command.execute(&mut context, &mut backend) {
+                        if let Err(e) = command.execute(context, backend) {
                             context.push_msg(e.to_string());
                         }
                     }
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
                         let command = KeyCommand::CursorMoveDown(1);
-                        if let Err(e) = command.execute(&mut context, &mut backend) {
+                        if let Err(e) = command.execute(context, backend) {
                             context.push_msg(e.to_string());
                         }
                     }
@@ -63,18 +60,18 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                             context.push_msg(format!("Unmapped input: {}", key.to_string()));
                         }
                         Some(CommandKeybind::SimpleKeybind(command)) => {
-                            if let Err(e) = command.execute(&mut context, &mut backend) {
+                            if let Err(e) = command.execute(context, backend) {
                                 context.push_msg(e.to_string());
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
                             let cmd = {
                                 let mut menu = TuiCommandMenu::new();
-                                menu.get_input(&mut backend, &mut context, &m)
+                                menu.get_input(backend, context, &m)
                             };
 
                             if let Some(command) = cmd {
-                                if let Err(e) = command.execute(&mut context, &mut backend) {
+                                if let Err(e) = command.execute(context, backend) {
                                     context.push_msg(e.to_string());
                                 }
                             }
@@ -83,7 +80,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                 }
                 context.flush_event();
             }
-            event => input::process_noninteractive(event, &mut context),
+            event => input::process_noninteractive(event, context),
         }
     }
 
