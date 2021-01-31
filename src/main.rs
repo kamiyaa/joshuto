@@ -21,9 +21,9 @@ use crate::config::{
     ConfigStructure, JoshutoCommandMapping, JoshutoConfig, JoshutoMimetype, JoshutoPreview,
     JoshutoTheme,
 };
+use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::run::run;
-use crate::context::JoshutoContext;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_FILE: &str = "joshuto.toml";
@@ -69,8 +69,10 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     if args.version {
         let version = env!("CARGO_PKG_VERSION");
         println!("{}", version);
-        let err = JoshutoError::new(JoshutoErrorKind::EnvVarNotPresent,
-            "CARGO_PKG_VERSION variable not found".to_string());
+        let err = JoshutoError::new(
+            JoshutoErrorKind::EnvVarNotPresent,
+            "CARGO_PKG_VERSION variable not found".to_string(),
+        );
         return Err(err);
     }
     if let Some(p) = args.path.as_ref() {
@@ -96,7 +98,13 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     if let Some(p) = args.last_dir {
         let curr_path = std::env::current_dir()?;
         let mut file = File::create(p)?;
-        file.write_all(curr_path.into_os_string().as_os_str().to_string_lossy().as_bytes())?;
+        file.write_all(
+            curr_path
+                .into_os_string()
+                .as_os_str()
+                .to_string_lossy()
+                .as_bytes(),
+        )?;
         file.write_all("\n".as_bytes())?;
     }
 
@@ -107,7 +115,7 @@ fn main() {
     let args = Args::from_args();
 
     match run_joshuto(args) {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(e) => {
             eprintln!("{}", e.to_string());
             process::exit(1);

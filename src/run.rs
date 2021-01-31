@@ -12,7 +12,11 @@ use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
 
-pub fn run(backend: &mut ui::TuiBackend, context: &mut JoshutoContext, keymap_t: JoshutoCommandMapping) -> std::io::Result<()> {
+pub fn run(
+    backend: &mut ui::TuiBackend,
+    context: &mut JoshutoContext,
+    keymap_t: JoshutoCommandMapping,
+) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
