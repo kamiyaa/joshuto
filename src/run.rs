@@ -79,7 +79,7 @@ pub fn run(config_t: JoshutoConfig, keymap_t: JoshutoCommandMapping) -> std::io:
                                 }
                             }
                         }
-                    }
+                    },
                 }
                 context.flush_event();
             }
