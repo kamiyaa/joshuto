@@ -2,7 +2,9 @@ use std::collections::{hash_map::Entry, HashMap};
 
 use serde_derive::Deserialize;
 
-use termion::event::{Event, Key, MouseEvent};
+#[cfg(feature = "mouse")]
+use termion::event::MouseEvent;
+use termion::event::{Event, Key};
 
 use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::commands::{CommandKeybind, KeyCommand};

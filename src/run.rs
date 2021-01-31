@@ -1,7 +1,7 @@
 use termion::event::Event;
 
 use crate::commands::{CommandKeybind, JoshutoRunnable, KeyCommand};
-use crate::config::{JoshutoCommandMapping, JoshutoConfig};
+use crate::config::JoshutoCommandMapping;
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
