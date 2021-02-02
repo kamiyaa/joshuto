@@ -1,3 +1,5 @@
+use std::process::Command;
+
 use crate::context::{JoshutoContext, LocalStateContext};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::FileOp;
@@ -45,7 +47,6 @@ pub fn paste(context: &mut JoshutoContext, options: IOWorkerOptions) -> JoshutoR
     }
 }
 
-#[cfg(feature = "clipboard")]
 pub fn copy_filename(context: &mut JoshutoContext) -> JoshutoResult<()> {
     let entry_file_name = match context
         .tab_context_ref()
@@ -56,18 +57,26 @@ pub fn copy_filename(context: &mut JoshutoContext) -> JoshutoResult<()> {
         Some(entry) => Some(entry.file_name().to_string()),
         None => None,
     };
-    if let Some(content) = entry_file_name {
-        let ret = match cli_clipboard::set_contents(content.clone()) {
-            Ok(_) => {
-                context.push_msg(format!("Copied '{}' to clipboard", content.as_str()));
-                Ok(())
+    if let Some(file_name) = entry_file_name {
+        let clipboards = [
+            ("wl-copy", format!("printf '%s' {} | {} 2> /dev/null", file_name, "wl-copy")),
+            ("xsel", format!("printf '%s' {} | {} -ib 2> /dev/null", file_name, "xsel")),
+            ("xclip", format!("printf '%s' {} | {} -selection clipboard 2> /dev/null", file_name, "xclip")),
+        ];
+
+        for (clipboard, command) in clipboards.iter() {
+            match Command::new("sh")
+                .args(&["-c", command.as_str()])
+                .status() {
+                Ok(s) if s.success() => return Ok(()),
+                _ => {},
             }
-            Err(e) => Err(JoshutoError::new(
-                JoshutoErrorKind::ClipboardError,
-                format!("{:?}", e),
-            )),
-        };
-        return ret;
+        }
+        let err = Err(JoshutoError::new(
+            JoshutoErrorKind::ClipboardError,
+            "Failed to copy to clipboard".to_string()
+        ));
+        return err;
     }
     Ok(())
 }

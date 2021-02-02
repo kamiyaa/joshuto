@@ -104,7 +104,7 @@ fn print_entry(
                 let stem_width = stem.width();
                 buf.set_stringn(x, y, stem, file_drawing_width, style);
                 if stem_width > file_drawing_width {
-                    buf.set_string(x + stem_width as u16, y, ELLIPSIS, style);
+                    buf.set_string(x + file_drawing_width as u16 - 1, y, ELLIPSIS, style);
                 }
             } else {
                 let stem_width = stem.width();
