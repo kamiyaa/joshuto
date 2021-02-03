@@ -38,7 +38,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             }
         };
 
-        let drawing_width = area.width as usize - 2;
+        let drawing_width = area.width as usize;
         let skip_dist = curr_index / area.height as usize * area.height as usize;
         for (i, entry) in self
             .dirlist
@@ -48,15 +48,15 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             .take(area.height as usize)
         {
             let style = entry.get_style();
-            print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width);
+            print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width - 1);
         }
         {
             let screen_index = curr_index % area.height as usize;
-            let space_fill = " ".repeat(drawing_width + 1);
 
             let entry = self.dirlist.curr_entry_ref().unwrap();
             let style = {
                 let s = entry.get_style().add_modifier(Modifier::REVERSED);
+                let space_fill = " ".repeat(drawing_width);
                 buf.set_string(x, y + screen_index as u16, space_fill.as_str(), s);
                 s
             };
@@ -65,7 +65,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                 entry,
                 style,
                 (x + 1, y + screen_index as u16),
-                drawing_width,
+                drawing_width - 1,
             );
         }
     }
@@ -84,14 +84,14 @@ fn print_entry(
     match entry.metadata.file_type() {
         FileType::Directory => {
             // print filename
-            buf.set_stringn(x, y, name, drawing_width - 1, style);
+            buf.set_stringn(x, y, name, drawing_width, style);
             if name_width > drawing_width {
                 buf.set_string(x + drawing_width as u16 - 1, y, ELLIPSIS, style);
             }
         }
         FileType::Symlink(_) => {
             // print filename
-            buf.set_stringn(x, y, name, drawing_width - 1, style);
+            buf.set_stringn(x, y, name, drawing_width, style);
             buf.set_string(x + drawing_width as u16 - 4, y, "->", style);
             if name_width >= drawing_width - 4 {
                 buf.set_string(x + drawing_width as u16 - 1, y, ELLIPSIS, style);

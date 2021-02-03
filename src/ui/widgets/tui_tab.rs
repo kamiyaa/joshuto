@@ -1,6 +1,6 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::{Modifier, Style};
+use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget, Wrap};
 
@@ -20,7 +20,9 @@ impl<'a> TuiTabBar<'a> {
 
 impl<'a> Widget for TuiTabBar<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let selected = Style::default().add_modifier(Modifier::REVERSED);
+        let selected = Style::default()
+            .fg(Color::White)
+            .add_modifier(Modifier::REVERSED);
 
         let str1 = format!("{}/{}", self.curr + 1, self.len);
         let str2 = {
@@ -35,13 +37,8 @@ impl<'a> Widget for TuiTabBar<'a> {
                 "…"
             }
         };
-        let text = Spans::from(vec![
-            Span::styled(str1, selected),
-            Span::styled(": ", selected),
-            Span::styled(str2, selected),
-        ]);
 
-        Paragraph::new(text)
+        Paragraph::new(Span::styled(format!("{}: {}", str1, str2), selected))
             .wrap(Wrap { trim: true })
             .render(area, buf);
     }
