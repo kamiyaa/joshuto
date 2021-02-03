@@ -59,22 +59,32 @@ pub fn copy_filename(context: &mut JoshutoContext) -> JoshutoResult<()> {
     };
     if let Some(file_name) = entry_file_name {
         let clipboards = [
-            ("wl-copy", format!("printf '%s' {} | {} 2> /dev/null", file_name, "wl-copy")),
-            ("xsel", format!("printf '%s' {} | {} -ib 2> /dev/null", file_name, "xsel")),
-            ("xclip", format!("printf '%s' {} | {} -selection clipboard 2> /dev/null", file_name, "xclip")),
+            (
+                "wl-copy",
+                format!("printf '%s' {} | {} 2> /dev/null", file_name, "wl-copy"),
+            ),
+            (
+                "xsel",
+                format!("printf '%s' {} | {} -ib 2> /dev/null", file_name, "xsel"),
+            ),
+            (
+                "xclip",
+                format!(
+                    "printf '%s' {} | {} -selection clipboard 2> /dev/null",
+                    file_name, "xclip"
+                ),
+            ),
         ];
 
         for (clipboard, command) in clipboards.iter() {
-            match Command::new("sh")
-                .args(&["-c", command.as_str()])
-                .status() {
+            match Command::new("sh").args(&["-c", command.as_str()]).status() {
                 Ok(s) if s.success() => return Ok(()),
-                _ => {},
+                _ => {}
             }
         }
         let err = Err(JoshutoError::new(
             JoshutoErrorKind::ClipboardError,
-            "Failed to copy to clipboard".to_string()
+            "Failed to copy to clipboard".to_string(),
         ));
         return err;
     }
