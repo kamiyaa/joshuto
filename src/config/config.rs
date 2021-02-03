@@ -61,18 +61,20 @@ impl std::default::Default for SortRawOption {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct JoshutoRawConfig {
+    #[serde(default = "default_true")]
+    collapse_preview: bool,
     #[serde(default = "default_scroll_offset")]
     scroll_offset: usize,
-    #[serde(default = "default_true")]
-    tilde_in_titlebar: bool,
+    #[serde(default)]
+    show_borders: bool,
     #[serde(default = "default_true")]
     show_preview: bool,
     #[serde(default = "default_true")]
-    collapse_preview: bool,
-    #[serde(default)]
-    xdg_open: bool,
+    tilde_in_titlebar: bool,
     #[serde(default = "default_true")]
     use_trash: bool,
+    #[serde(default)]
+    xdg_open: bool,
     #[serde(default = "default_max_preview_size")]
     max_preview_size: u64,
     column_ratio: Option<[usize; 3]>,
@@ -111,13 +113,14 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
         ];
 
         JoshutoConfig {
-            scroll_offset: self.scroll_offset,
-            tilde_in_titlebar: self.tilde_in_titlebar,
-            show_preview: self.show_preview,
             collapse_preview: self.collapse_preview,
-            xdg_open: self.xdg_open,
-            use_trash: self.use_trash,
             max_preview_size: self.max_preview_size,
+            scroll_offset: self.scroll_offset,
+            show_borders: self.show_borders,
+            show_preview: self.show_preview,
+            tilde_in_titlebar: self.tilde_in_titlebar,
+            use_trash: self.use_trash,
+            xdg_open: self.xdg_open,
             column_ratio,
             sort_option,
             default_layout,
@@ -128,13 +131,14 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 
 #[derive(Debug, Clone)]
 pub struct JoshutoConfig {
+    pub collapse_preview: bool,
+    pub max_preview_size: u64,
+    pub show_preview: bool,
+    pub show_borders: bool,
     pub scroll_offset: usize,
     pub tilde_in_titlebar: bool,
-    pub show_preview: bool,
-    pub collapse_preview: bool,
-    pub xdg_open: bool,
     pub use_trash: bool,
-    pub max_preview_size: u64,
+    pub xdg_open: bool,
     pub sort_option: sort::SortOption,
     pub column_ratio: (usize, usize, usize),
     pub default_layout: [Constraint; 3],
@@ -167,13 +171,14 @@ impl std::default::Default for JoshutoConfig {
         ];
 
         Self {
+            collapse_preview: true,
+            max_preview_size: default_max_preview_size(),
+            show_preview: true,
+            show_borders: false,
             scroll_offset: default_scroll_offset(),
             tilde_in_titlebar: true,
-            show_preview: true,
-            collapse_preview: true,
-            xdg_open: false,
             use_trash: true,
-            max_preview_size: default_max_preview_size(),
+            xdg_open: false,
             sort_option,
             column_ratio,
             default_layout,
