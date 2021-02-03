@@ -80,7 +80,6 @@ impl KeyCommand {
             Self::CutFiles => "cut_files",
             Self::CopyFiles => "copy_files",
             Self::PasteFiles(_) => "paste_files",
-            #[cfg(feature = "clipboard")]
             Self::CopyFileName => "copy_filename",
 
             Self::CursorMoveUp(_) => "cursor_move_up",
