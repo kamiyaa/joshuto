@@ -5,11 +5,11 @@ use termion::event::{Event, Key};
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
-use tui::widgets::{Clear, Paragraph, Wrap};
+use tui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
 use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;
-use crate::ui::widgets::TuiMenu;
+use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::TuiBackend;
 use crate::util::event::JoshutoEvent;
 use crate::util::input;
@@ -36,7 +36,7 @@ pub struct TuiTextField<'a> {
     _prompt: &'a str,
     _prefix: &'a str,
     _suffix: &'a str,
-    _menu_items: Option<Vec<&'a str>>,
+    _menu_items: Vec<&'a str>,
 }
 
 impl<'a> TuiTextField<'a> {
@@ -44,7 +44,7 @@ impl<'a> TuiTextField<'a> {
     where
         I: Iterator<Item = &'a str>,
     {
-        self._menu_items = Some(items.collect());
+        self._menu_items = items.collect();
         self
     }
 
@@ -86,74 +86,53 @@ impl<'a> TuiTextField<'a> {
         loop {
             terminal
                 .draw(|frame| {
-                    let f_size: Rect = frame.size();
-                    if f_size.height == 0 {
+                    let area: Rect = frame.size();
+                    if area.height == 0 {
                         return;
                     }
                     {
                         let mut view = TuiView::new(&context);
                         view.show_bottom_status = false;
-                        frame.render_widget(view, f_size);
+                        frame.render_widget(view, area);
                     }
 
-                    if let Some(items) = self._menu_items.as_ref() {
-                        let menu_widget = TuiMenu::new(items);
+                    let cursor_xpos = line_buffer.pos();
+
+                    let area_width = area.width as usize;
+                    let buffer_str = line_buffer.as_str();
+                    let line_str = format!("{}{}", self._prompt, buffer_str);
+                    let multiline =
+                        TuiMultilineText::new(line_str.as_str(), area_width, Some(cursor_xpos));
+                    let multiline_height = multiline.len();
+
+                    {
+                        let menu_widget = TuiMenu::new(self._menu_items.as_slice());
                         let menu_len = menu_widget.len();
-                        let menu_y = if menu_len + 2 > f_size.height as usize {
+                        let menu_y = if menu_len + 1 > area.height as usize {
                             0
                         } else {
-                            (f_size.height as usize - menu_len - 2) as u16
+                            (area.height as usize - menu_len - 1) as u16
                         };
 
                         let menu_rect = Rect {
                             x: 0,
-                            y: menu_y,
-                            width: f_size.width,
+                            y: menu_y - multiline_height as u16,
+                            width: area.width,
                             height: menu_len as u16 + 1,
                         };
                         frame.render_widget(Clear, menu_rect);
                         frame.render_widget(menu_widget, menu_rect);
                     }
 
-                    let cursor_xpos = line_buffer.pos();
-                    let prefix = &line_buffer.as_str()[..cursor_xpos];
-
-                    let curr = line_buffer.as_str()[cursor_xpos..].chars().next();
-                    let (suffix, curr) = match curr {
-                        Some(c) => {
-                            let curr_len = c.len_utf8();
-                            (&line_buffer.as_str()[(cursor_xpos + curr_len)..], c)
-                        }
-                        None => ("", ' '),
-                    };
-
-                    let cmd_prompt_style = Style::default().fg(Color::LightGreen);
-                    let cursor_style = Style::default().add_modifier(Modifier::REVERSED);
-                    let default_style = Style::default().fg(Color::Reset).bg(Color::Reset);
-
-                    let curr_string = curr.to_string();
-
-                    let text = Spans::from(vec![
-                        Span::styled(self._prompt, cmd_prompt_style),
-                        Span::styled(prefix, default_style),
-                        Span::styled(curr_string, cursor_style),
-                        Span::styled(suffix, default_style),
-                        Span::styled(" ", default_style),
-                        Span::styled(".", Style::default().fg(Color::Black).bg(Color::Reset)),
-                    ]);
-
-                    let textfield_rect = Rect {
+                    let multiline_rect = Rect {
                         x: 0,
-                        y: f_size.height - 1,
-                        width: f_size.width,
-                        height: 1,
+                        y: area.height - multiline_height as u16,
+                        width: area.width,
+                        height: multiline_height as u16,
                     };
 
-                    frame.render_widget(Clear, textfield_rect);
-                    frame.render_widget(
-                        Paragraph::new(text).wrap(Wrap { trim: true }),
-                        textfield_rect,
-                    );
+                    frame.render_widget(Clear, multiline_rect);
+                    frame.render_widget(multiline, multiline_rect);
                 })
                 .unwrap();
 
@@ -259,7 +238,7 @@ impl<'a> std::default::Default for TuiTextField<'a> {
             _prompt: "",
             _prefix: "",
             _suffix: "",
-            _menu_items: None,
+            _menu_items: vec![],
         }
     }
 }

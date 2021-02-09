@@ -1,7 +1,7 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::text::{Span, Spans};
+use tui::text::Span;
 use tui::widgets::{Paragraph, Widget, Wrap};
 
 use unicode_width::UnicodeWidthStr;

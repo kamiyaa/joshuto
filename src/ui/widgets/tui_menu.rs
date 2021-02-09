@@ -53,7 +53,6 @@ impl TuiCommandMenu {
                         .collect();
                     display_vec.sort();
                     let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
-
                     let display_str_len = display_str.len();
 
                     let y = if (f_size.height as usize)
