@@ -3,9 +3,7 @@ use rustyline::line_buffer;
 
 use termion::event::{Event, Key};
 use tui::layout::Rect;
-use tui::style::{Color, Modifier, Style};
-use tui::text::{Span, Spans};
-use tui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
+use tui::widgets::Clear;
 
 use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;

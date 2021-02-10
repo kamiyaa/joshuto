@@ -1,13 +1,8 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::text::{Span, Spans};
-use tui::widgets::{Paragraph, Widget, Wrap};
+use tui::widgets::Widget;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
-
-use crate::context::JoshutoContext;
-use crate::io::FileOp;
-use crate::ui::widgets::TuiTopBar;
 
 #[derive(Clone, Debug)]
 struct IndexInfo {
@@ -40,6 +35,9 @@ impl<'a> TuiMultilineText<'a> {
             Some((i, c, w))
         };
 
+        // TODO: This is a very hacky way of doing it and I would like
+        // to clean this up more
+
         let mut lines = Vec::with_capacity(s.len() / area_width + 1);
         let mut start = 0;
         let mut end = 0;
@@ -47,7 +45,7 @@ impl<'a> TuiMultilineText<'a> {
 
         for (i, c, w) in s.char_indices().filter_map(filter) {
             end = i + c.len_utf8();
-            if (line_width + w < area_width) {
+            if line_width + w < area_width {
                 line_width += w;
                 continue;
             }
@@ -59,7 +57,7 @@ impl<'a> TuiMultilineText<'a> {
             start = end;
             line_width = 0;
         }
-        if (start < end) {
+        if start < end {
             lines.push(LineInfo {
                 start,
                 end: end,
@@ -72,13 +70,13 @@ impl<'a> TuiMultilineText<'a> {
             let (row, line_info) = lines
                 .iter()
                 .enumerate()
-                .find(|(r, li)| li.start <= idx && li.end > idx)
+                .find(|(_, li)| li.start <= idx && li.end > idx)
                 .unwrap();
 
             let mut s_width = 0;
             let substr = &s[line_info.start..line_info.end];
             for (i, c, w) in substr.char_indices().filter_map(filter) {
-                if (line_info.start + i <= idx) {
+                if line_info.start + i <= idx {
                     s_width += w;
                     continue;
                 }
@@ -96,7 +94,7 @@ impl<'a> TuiMultilineText<'a> {
                 index_info = Some(IndexInfo {
                     index: idx,
                     x: s_width % area_width,
-                    y: row + 1,
+                    y: row + s_width / area_width,
                     c: ' ',
                 });
             }

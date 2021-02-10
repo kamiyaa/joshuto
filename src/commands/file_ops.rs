@@ -76,7 +76,7 @@ pub fn copy_filename(context: &mut JoshutoContext) -> JoshutoResult<()> {
             ),
         ];
 
-        for (clipboard, command) in clipboards.iter() {
+        for (_, command) in clipboards.iter() {
             match Command::new("sh").args(&["-c", command.as_str()]).status() {
                 Ok(s) if s.success() => return Ok(()),
                 _ => {}

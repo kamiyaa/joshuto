@@ -3,7 +3,7 @@ use std::path;
 use crate::config::mimetype::JoshutoMimetypeEntry;
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::ui::widgets::TuiTextField;
+use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
 

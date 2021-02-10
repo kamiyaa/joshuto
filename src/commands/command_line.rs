@@ -1,7 +1,7 @@
 use crate::commands::KeyCommand;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::ui::widgets::TuiTextField;
+use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
 
 use super::JoshutoRunnable;

@@ -1,7 +1,7 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Paragraph, Widget, Wrap};
+use tui::widgets::Widget;
 
 use crate::context::JoshutoContext;
 use crate::io::FileOp;

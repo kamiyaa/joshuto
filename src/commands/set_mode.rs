@@ -1,6 +1,6 @@
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
-use crate::ui::widgets::TuiTextField;
+use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
 use crate::util::unix;
 
