@@ -32,6 +32,8 @@ impl<'a> Widget for TuiWorker<'a> {
         };
         TuiTopBar::new(self.context, curr_tab.pwd()).render(rect, buf);
 
+        // TODO: could be styled better
+
         match self.context.worker_ref() {
             Some(io_obs) => {
                 if let Some(progress) = io_obs.progress.as_ref() {
@@ -59,7 +61,7 @@ impl<'a> Widget for TuiWorker<'a> {
                     for (i, worker) in self.context.worker_iter().enumerate() {
                         let op_str = match worker.kind() {
                             FileOp::Copy => "Copy",
-                            FileOp::Cut => "Cut",
+                            FileOp::Cut => "Move",
                         };
                         let msg = format!(
                             "{:02} {} {} items {:?} -> {:?}",

@@ -4,6 +4,7 @@ use rustyline::line_buffer;
 use termion::event::{Event, Key};
 use tui::layout::Rect;
 use tui::widgets::Clear;
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;
@@ -28,6 +29,11 @@ impl CompletionTracker {
             candidates,
         }
     }
+}
+
+pub struct CursorInfo {
+    pub x: usize,
+    pub y: usize,
 }
 
 pub struct TuiTextField<'a> {
@@ -81,6 +87,8 @@ impl<'a> TuiTextField<'a> {
 
         let terminal = backend.terminal_mut();
 
+        terminal.show_cursor();
+
         loop {
             terminal
                 .draw(|frame| {
@@ -94,14 +102,14 @@ impl<'a> TuiTextField<'a> {
                         frame.render_widget(view, area);
                     }
 
-                    let cursor_xpos = line_buffer.pos();
-
                     let area_width = area.width as usize;
                     let buffer_str = line_buffer.as_str();
+                    let cursor_xpos = line_buffer.pos();
+
                     let line_str = format!("{}{}", self._prompt, buffer_str);
                     let multiline =
-                        TuiMultilineText::new(line_str.as_str(), area_width, Some(cursor_xpos));
-                    let multiline_height = multiline.len();
+                        TuiMultilineText::new(line_str.as_str(), area_width);
+                    let multiline_height = multiline.height();
 
                     {
                         let menu_widget = TuiMenu::new(self._menu_items.as_slice());
@@ -128,9 +136,29 @@ impl<'a> TuiTextField<'a> {
                         width: area.width,
                         height: multiline_height as u16,
                     };
+                    let mut cursor_info = CursorInfo {
+                        x: 0,
+                        y: area.height as usize,
+                    };
+                    for (i, line_info) in multiline.iter().enumerate() {
+                        if line_info.start <= cursor_xpos && line_info.end > cursor_xpos {
+                            cursor_info.y = area.height as usize - multiline_height + i;
+                            let mut s_width = 0;
+                            for (i, c) in line_str[line_info.start..line_info.end].char_indices() {
+                                if (line_info.start + i == cursor_xpos + self._prompt.len()) {
+                                    break;
+                                }
+                                s_width += c.width().unwrap();
+                            }
+                            cursor_info.x = s_width;
+                            break;
+                        }
+                    }
 
                     frame.render_widget(Clear, multiline_rect);
                     frame.render_widget(multiline, multiline_rect);
+                    frame.set_cursor(cursor_info.x as u16, cursor_info.y as u16);
+
                 })
                 .unwrap();
 
@@ -169,6 +197,7 @@ impl<'a> TuiTextField<'a> {
                             Key::Up => {}
                             Key::Down => {}
                             Key::Esc => {
+                                terminal.hide_cursor();
                                 return None;
                             }
                             Key::Char('\t') => {
@@ -221,6 +250,8 @@ impl<'a> TuiTextField<'a> {
                 };
             }
         }
+        terminal.hide_cursor();
+
         if line_buffer.as_str().is_empty() {
             None
         } else {
