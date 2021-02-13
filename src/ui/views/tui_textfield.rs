@@ -111,6 +111,7 @@ impl<'a> TuiTextField<'a> {
                         TuiMultilineText::new(line_str.as_str(), area_width);
                     let multiline_height = multiline.height();
 
+                    // render menu
                     {
                         let menu_widget = TuiMenu::new(self._menu_items.as_slice());
                         let menu_len = menu_widget.len();
@@ -140,23 +141,18 @@ impl<'a> TuiTextField<'a> {
                         x: 0,
                         y: area.height as usize,
                     };
-                    for (i, line_info) in multiline.iter().enumerate() {
-                        if line_info.start <= cursor_xpos && line_info.end > cursor_xpos {
-                            cursor_info.y = area.height as usize - multiline_height + i;
-                            let mut s_width = 0;
-                            for (i, c) in line_str[line_info.start..line_info.end].char_indices() {
-                                if (line_info.start + i == cursor_xpos + self._prompt.len()) {
-                                    break;
-                                }
-                                s_width += c.width().unwrap();
-                            }
-                            cursor_info.x = s_width;
-                            break;
-                        }
-                    }
 
+                    // get cursor render position
+                    let cursor_prefix_width = buffer_str[0..cursor_xpos].width() + self._prompt.len();
+                    let y_offset = cursor_prefix_width / area_width;
+                    cursor_info.y = area.height as usize - multiline_height + y_offset;
+                    cursor_info.x = cursor_prefix_width % area_width + y_offset;
+
+                    // render multiline textfield
                     frame.render_widget(Clear, multiline_rect);
                     frame.render_widget(multiline, multiline_rect);
+
+                    // render cursor
                     frame.set_cursor(cursor_info.x as u16, cursor_info.y as u16);
 
                 })
