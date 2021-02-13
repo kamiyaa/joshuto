@@ -32,7 +32,11 @@ impl<'a> TuiMultilineText<'a> {
         if s_width < area_width {
             return Self {
                 _s: s,
-                _lines: vec![LineInfo { start: 0, end: s.len(), width: s_width }],
+                _lines: vec![LineInfo {
+                    start: 0,
+                    end: s.len(),
+                    width: s_width,
+                }],
                 _width: area_width,
                 _style: default_style,
             };

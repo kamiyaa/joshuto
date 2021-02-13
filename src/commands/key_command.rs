@@ -371,9 +371,9 @@ impl JoshutoRunnable for KeyCommand {
 impl std::fmt::Display for KeyCommand {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &*self {
-            Self::ChangeDirectory(p) => write!(f, "{}    {:?}", self.command(), p),
+            Self::ChangeDirectory(p) => write!(f, "{} {:?}", self.command(), p),
             Self::CommandLine(s, p) => write!(f, "{} {} {}", self.command(), s, p),
-            Self::PasteFiles(options) => write!(f, "{}    {}", self.command(), options),
+            Self::PasteFiles(options) => write!(f, "{}  {}", self.command(), options),
             Self::CursorMoveUp(i) => write!(f, "{} {}", self.command(), i),
             Self::CursorMoveDown(i) => write!(f, "{} {}", self.command(), i),
             Self::NewDirectory(d) => write!(f, "{} {:?}", self.command(), d),

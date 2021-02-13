@@ -107,8 +107,7 @@ impl<'a> TuiTextField<'a> {
                     let cursor_xpos = line_buffer.pos();
 
                     let line_str = format!("{}{}", self._prompt, buffer_str);
-                    let multiline =
-                        TuiMultilineText::new(line_str.as_str(), area_width);
+                    let multiline = TuiMultilineText::new(line_str.as_str(), area_width);
                     let multiline_height = multiline.height();
 
                     // render menu
@@ -143,7 +142,8 @@ impl<'a> TuiTextField<'a> {
                     };
 
                     // get cursor render position
-                    let cursor_prefix_width = buffer_str[0..cursor_xpos].width() + self._prompt.len();
+                    let cursor_prefix_width =
+                        buffer_str[0..cursor_xpos].width() + self._prompt.len();
                     let y_offset = cursor_prefix_width / area_width;
                     cursor_info.y = area.height as usize - multiline_height + y_offset;
                     cursor_info.x = cursor_prefix_width % area_width + y_offset;
@@ -154,7 +154,6 @@ impl<'a> TuiTextField<'a> {
 
                     // render cursor
                     frame.set_cursor(cursor_info.x as u16, cursor_info.y as u16);
-
                 })
                 .unwrap();
 
