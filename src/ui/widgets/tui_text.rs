@@ -95,17 +95,13 @@ impl<'a> TuiMultilineText<'a> {
     pub fn iter(&self) -> impl Iterator<Item = &LineInfo> {
         self._lines.iter()
     }
-
-    pub fn style(&mut self, style: Style) {
-        self._style = style;
-    }
 }
 
 impl<'a> Widget for TuiMultilineText<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let area_left = area.left();
         let area_top = area.top();
-        for (i, line_info) in self._lines.iter().enumerate().take(self._lines.len() - 1) {
+        for (i, line_info) in self.iter().enumerate() {
             buf.set_string(
                 area_left,
                 area_top + i as u16,
@@ -113,12 +109,5 @@ impl<'a> Widget for TuiMultilineText<'a> {
                 self._style,
             );
         }
-        let line_info = &self._lines[self._lines.len() - 1];
-        buf.set_string(
-            area_left,
-            area_top + (self._lines.len() - 1) as u16,
-            &self._s[line_info.start..line_info.end],
-            self._style,
-        );
     }
 }
