@@ -24,9 +24,6 @@ impl<'a> TuiMultilineText<'a> {
         // to clean this up more
 
         let default_style = Style::default().fg(Color::Reset).bg(Color::Reset);
-        let cursor_style = Style::default()
-            .fg(Color::White)
-            .add_modifier(Modifier::REVERSED);
 
         let s_width = s.width();
         if s_width < area_width {
@@ -51,7 +48,7 @@ impl<'a> TuiMultilineText<'a> {
 
         let mut start = 0;
         let mut line_width = 0;
-        for (i, c, w) in s.char_indices().filter_map(filter) {
+        for (i, _, w) in s.char_indices().filter_map(filter) {
             if line_width + w < area_width {
                 line_width += w;
                 continue;

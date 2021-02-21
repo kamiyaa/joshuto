@@ -4,7 +4,7 @@ use rustyline::line_buffer;
 use termion::event::{Event, Key};
 use tui::layout::Rect;
 use tui::widgets::Clear;
-use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use unicode_width::UnicodeWidthStr;
 
 use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;
