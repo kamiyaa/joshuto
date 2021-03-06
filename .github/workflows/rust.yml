@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install minimal ${{ matrix.rust }} rust
-        uses: actions-rs/toolchain@1.0.6
+        uses: actions-rs/toolchain@v1
         with:
           override: true
           profile: minimal
