@@ -10,6 +10,7 @@
 
 - [cargo](https://github.com/rust-lang/cargo/)
 - [rustc](https://www.rust-lang.org/)
+- xsel/xclip/wl-clipboard (optional, for clipboard support)
 
 Also see [Cargo.toml](https://github.com/kamiyaa/joshuto/blob/master/Cargo.toml)
 
@@ -60,8 +61,8 @@ Joshuto can currently be configured using the following files:
 
 #### [keymap.toml](https://github.com/kamiyaa/joshuto/blob/master/config/keymap.toml)
 
-- for keybindings, please take a look at [src/util/key_mapping.rs](https://github.com/kamiyaa/joshuto/blob/master/src/util/key_mapping.rs#L3) for non-printable keys
-- for commands, please take a look at [src/commands/key_command.rs](https://github.com/kamiyaa/joshuto/blob/master/src/commands/key_command.rs#L124)
+- for keybindings, please take a look at [src/util/key_mapping.rs](https://github.com/kamiyaa/joshuto/blob/master/src/util/key_mapping.rs#L18) for non-printable keys
+- for commands, please take a look at [src/commands/key_command.rs](https://github.com/kamiyaa/joshuto/blob/master/src/commands/key_command.rs#L132)
 
 #### [mimetype.toml](https://github.com/kamiyaa/joshuto/blob/master/config/mimetype.toml)
 
