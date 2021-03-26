@@ -36,11 +36,12 @@ pub fn _search_rev(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> {
 }
 
 pub fn search(context: &mut JoshutoContext, pattern: &str) -> JoshutoResult<()> {
-    let index = _search(context.tab_context_ref().curr_tab_ref(), pattern);
+    let pattern = pattern.to_lowercase();
+    let index = _search(context.tab_context_ref().curr_tab_ref(), pattern.as_str());
     if let Some(index) = index {
         let _ = cursor_move::cursor_move(index, context);
     }
-    context.set_search_state(pattern.to_string());
+    context.set_search_state(pattern);
     Ok(())
 }
 
