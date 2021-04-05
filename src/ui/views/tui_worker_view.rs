@@ -3,7 +3,7 @@ use termion::event::{Event, Key};
 use tui::layout::Rect;
 
 use crate::context::JoshutoContext;
-use crate::ui::widgets::TuiWorker;
+use crate::ui::widgets::{TuiTopBar, TuiWorker};
 use crate::ui::TuiBackend;
 use crate::util::event::JoshutoEvent;
 use crate::util::input;
@@ -16,19 +16,31 @@ impl TuiWorkerView {
     }
 
     pub fn display(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) {
-        context.flush_event();
         let terminal = backend.terminal_mut();
 
         loop {
             let _ = terminal.draw(|frame| {
-                let f_size: Rect = frame.size();
-                if f_size.height == 0 {
+                let area: Rect = frame.size();
+                if area.height == 0 {
                     return;
                 }
-                {
-                    let view = TuiWorker::new(&context);
-                    frame.render_widget(view, f_size);
-                }
+
+                let rect = Rect {
+                    height: 1,
+                    ..area
+                };
+                let curr_tab = context.tab_context_ref().curr_tab_ref();
+                let view = TuiTopBar::new(context, curr_tab.pwd());
+                frame.render_widget(view, rect);
+
+                let rect = Rect {
+                    x: 0,
+                    y: 1,
+                    width: area.width,
+                    height: area.height - 1,
+                };
+                let view = TuiWorker::new(&context);
+                frame.render_widget(view, rect);
             });
 
             if let Ok(event) = context.poll_event() {

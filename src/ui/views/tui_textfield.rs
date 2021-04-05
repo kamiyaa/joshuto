@@ -72,8 +72,6 @@ impl<'a> TuiTextField<'a> {
         backend: &mut TuiBackend,
         context: &mut JoshutoContext,
     ) -> Option<String> {
-        context.flush_event();
-
         let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
         let completer = FilenameCompleter::new();
 

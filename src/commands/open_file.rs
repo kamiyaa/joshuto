@@ -77,6 +77,8 @@ where
     const PROMPT: &str = "open_with ";
 
     let user_input: Option<String> = {
+        context.flush_event();
+
         let menu_options: Vec<String> = options
             .iter()
             .enumerate()

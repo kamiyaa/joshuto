@@ -5,7 +5,6 @@ use tui::widgets::Widget;
 
 use crate::context::JoshutoContext;
 use crate::io::FileOp;
-use crate::ui::widgets::TuiTopBar;
 
 pub struct TuiWorker<'a> {
     pub context: &'a JoshutoContext,
@@ -19,19 +18,6 @@ impl<'a> TuiWorker<'a> {
 
 impl<'a> Widget for TuiWorker<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let f_size = area;
-
-        let topbar_width = f_size.width;
-
-        let curr_tab = self.context.tab_context_ref().curr_tab_ref();
-        let rect = Rect {
-            x: 0,
-            y: 0,
-            width: topbar_width,
-            height: 1,
-        };
-        TuiTopBar::new(self.context, curr_tab.pwd()).render(rect, buf);
-
         // TODO: could be styled better
 
         match self.context.worker_ref() {

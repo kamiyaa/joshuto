@@ -12,6 +12,7 @@ pub fn readline(
     prefix: &str,
     suffix: &str,
 ) -> JoshutoResult<()> {
+    context.flush_event();
     let user_input: Option<String> = TuiTextField::default()
         .prompt(":")
         .prefix(prefix)
