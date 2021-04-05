@@ -65,7 +65,7 @@ pub struct JoshutoRawConfig {
     collapse_preview: bool,
     #[serde(default = "default_scroll_offset")]
     scroll_offset: usize,
-    #[serde(default)]
+    #[serde(default = "default_true")]
     show_borders: bool,
     #[serde(default = "default_true")]
     show_preview: bool,
