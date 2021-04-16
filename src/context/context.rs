@@ -5,7 +5,7 @@ use std::thread;
 
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
-use crate::io::{IOWorkerObserver, IOWorkerProgress, IOWorkerThread};
+use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
 use crate::util::event::{Events, JoshutoEvent};
 
 pub struct JoshutoContext {
@@ -16,8 +16,8 @@ pub struct JoshutoContext {
     local_state: Option<LocalStateContext>,
     search_state: Option<String>,
     message_queue: VecDeque<String>,
-    worker_queue: VecDeque<IOWorkerThread>,
-    worker: Option<IOWorkerObserver>,
+    worker_queue: VecDeque<IoWorkerThread>,
+    worker: Option<IoWorkerObserver>,
 }
 
 impl JoshutoContext {
@@ -88,7 +88,7 @@ impl JoshutoContext {
     }
 
     // worker related
-    pub fn add_worker(&mut self, thread: IOWorkerThread) {
+    pub fn add_worker(&mut self, thread: IoWorkerThread) {
         self.worker_queue.push_back(thread);
     }
     pub fn worker_is_busy(&self) -> bool {
@@ -98,15 +98,15 @@ impl JoshutoContext {
         self.worker_queue.is_empty()
     }
 
-    pub fn worker_iter(&self) -> Iter<IOWorkerThread> {
+    pub fn worker_iter(&self) -> Iter<IoWorkerThread> {
         self.worker_queue.iter()
     }
 
-    pub fn worker_ref(&self) -> Option<&IOWorkerObserver> {
+    pub fn worker_ref(&self) -> Option<&IoWorkerObserver> {
         self.worker.as_ref()
     }
 
-    pub fn set_worker_progress(&mut self, res: IOWorkerProgress) {
+    pub fn set_worker_progress(&mut self, res: IoWorkerProgress) {
         if let Some(s) = self.worker.as_mut() {
             s.set_progress(res);
         }
@@ -134,26 +134,26 @@ impl JoshutoContext {
                 let worker_handle = thread::spawn(move || worker.start(wtx));
                 // relay worker info to event loop
                 while let Ok(progress) = wrx.recv() {
-                    let _ = tx.send(JoshutoEvent::IOWorkerProgress(progress));
+                    let _ = tx.send(JoshutoEvent::IoWorkerProgress(progress));
                 }
                 let result = worker_handle.join();
 
                 match result {
                     Ok(res) => {
-                        let _ = tx.send(JoshutoEvent::IOWorkerResult(res));
+                        let _ = tx.send(JoshutoEvent::IoWorkerResult(res));
                     }
                     Err(_) => {
                         let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
-                        let _ = tx.send(JoshutoEvent::IOWorkerResult(Err(err)));
+                        let _ = tx.send(JoshutoEvent::IoWorkerResult(Err(err)));
                     }
                 }
             });
-            let observer = IOWorkerObserver::new(handle, src, dest);
+            let observer = IoWorkerObserver::new(handle, src, dest);
             self.worker = Some(observer);
         }
     }
 
-    pub fn remove_job(&mut self) -> Option<IOWorkerObserver> {
+    pub fn remove_job(&mut self) -> Option<IoWorkerObserver> {
         self.worker.take()
     }
 }

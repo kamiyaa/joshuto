@@ -85,7 +85,7 @@ pub fn _bulk_rename(context: &mut JoshutoContext) -> JoshutoResult<()> {
     }
     if paths_renamed.len() < paths.len() {
         return Err(JoshutoError::new(
-            JoshutoErrorKind::IOInvalidInput,
+            JoshutoErrorKind::IoInvalidInput,
             "Insufficient inputs".to_string(),
         ));
     }

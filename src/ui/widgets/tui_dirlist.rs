@@ -29,7 +29,7 @@ impl<'a> Widget for TuiDirList<'a> {
         let x = area.left();
         let y = area.top();
 
-        if self.dirlist.contents.len() == 0 {
+        if self.dirlist.contents.is_empty() {
             let style = Style::default().bg(Color::Red).fg(Color::White);
             buf.set_stringn(x, y, "empty", area.width as usize, style);
             return;

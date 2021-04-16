@@ -4,7 +4,7 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 pub fn quit(context: &mut JoshutoContext) -> JoshutoResult<()> {
     if context.worker_is_busy() {
         Err(JoshutoError::new(
-            JoshutoErrorKind::IOOther,
+            JoshutoErrorKind::IoOther,
             String::from("operations running in background, use force_quit to quit"),
         ))
     } else {

@@ -4,7 +4,7 @@ use crate::context::{JoshutoContext, LocalStateContext};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::FileOp;
 
-use crate::io::{IOWorkerOptions, IOWorkerThread};
+use crate::io::{IoWorkerOptions, IoWorkerThread};
 
 pub fn cut(context: &mut JoshutoContext) -> JoshutoResult<()> {
     if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
@@ -32,16 +32,16 @@ pub fn copy(context: &mut JoshutoContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn paste(context: &mut JoshutoContext, options: IOWorkerOptions) -> JoshutoResult<()> {
+pub fn paste(context: &mut JoshutoContext, options: IoWorkerOptions) -> JoshutoResult<()> {
     match context.take_local_state() {
         Some(state) if !state.paths.is_empty() => {
             let dest = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
-            let worker_thread = IOWorkerThread::new(state.file_op, state.paths, dest, options);
+            let worker_thread = IoWorkerThread::new(state.file_op, state.paths, dest, options);
             context.add_worker(worker_thread);
             Ok(())
         }
         _ => Err(JoshutoError::new(
-            JoshutoErrorKind::IOInvalidData,
+            JoshutoErrorKind::IoInvalidData,
             "no files selected".to_string(),
         )),
     }

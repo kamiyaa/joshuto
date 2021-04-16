@@ -9,13 +9,13 @@ use signal_hook::iterator::SignalsInfo;
 use termion::event::Event;
 use termion::input::TermRead;
 
-use crate::io::IOWorkerProgress;
+use crate::io::IoWorkerProgress;
 
 #[derive(Debug)]
 pub enum JoshutoEvent {
     Termion(Event),
-    IOWorkerProgress(IOWorkerProgress),
-    IOWorkerResult(io::Result<IOWorkerProgress>),
+    IoWorkerProgress(IoWorkerProgress),
+    IoWorkerResult(io::Result<IoWorkerProgress>),
     Signal(i32),
     //    Filesystem(notify::Result),
 }
@@ -78,12 +78,10 @@ impl Events {
             }
 
             while input_rx.recv().is_ok() {
-                if let Some(event) = events.next() {
-                    if let Ok(event) = event {
-                        if let Err(e) = event_tx2.send(JoshutoEvent::Termion(event)) {
-                            eprintln!("Input thread send err: {:#?}", e);
-                            return;
-                        }
+                if let Some(Ok(event)) = events.next() {
+                    if let Err(e) = event_tx2.send(JoshutoEvent::Termion(event)) {
+                        eprintln!("Input thread send err: {:#?}", e);
+                        return;
                     }
                 }
             }

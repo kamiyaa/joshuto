@@ -2,7 +2,7 @@ use std::path;
 
 use crate::context::JoshutoContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::io::IOWorkerOptions;
+use crate::io::IoWorkerOptions;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
 use crate::util::sort::SortType;
@@ -21,7 +21,7 @@ pub enum KeyCommand {
 
     CutFiles,
     CopyFiles,
-    PasteFiles(IOWorkerOptions),
+    PasteFiles(IoWorkerOptions),
     CopyFileName,
 
     CursorMoveUp(usize),
@@ -198,7 +198,7 @@ impl KeyCommand {
             "force_quit" => Ok(Self::ForceQuit),
             "mkdir" => match arg {
                 "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
+                    JoshutoErrorKind::IoInvalidData,
                     format!("{}: missing additional parameter", command),
                 )),
                 arg => Ok(Self::NewDirectory(path::PathBuf::from(arg))),
@@ -208,14 +208,14 @@ impl KeyCommand {
             "open_file" => Ok(Self::OpenFile),
             "open_file_with" => Ok(Self::OpenFileWith),
             "paste_files" => {
-                let mut options = IOWorkerOptions::default();
+                let mut options = IoWorkerOptions::default();
                 for arg in arg.split_whitespace() {
                     match arg {
                         "--overwrite" => options.overwrite = true,
                         "--skip_exist" => options.skip_exist = true,
                         _ => {
                             return Err(JoshutoError::new(
-                                JoshutoErrorKind::IOInvalidData,
+                                JoshutoErrorKind::IoInvalidData,
                                 format!("{}: unknown option {}", command, arg),
                             ));
                         }
@@ -227,7 +227,7 @@ impl KeyCommand {
             "reload_dir_list" => Ok(Self::ReloadDirList),
             "rename" => match arg {
                 "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
+                    JoshutoErrorKind::IoInvalidData,
                     format!("{}: Expected 1, got 0", command),
                 )),
                 arg => {
@@ -239,7 +239,7 @@ impl KeyCommand {
             "rename_prepend" => Ok(Self::RenameFilePrepend),
             "search" => match arg {
                 "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
+                    JoshutoErrorKind::IoInvalidData,
                     format!("{}: Expected 1, got 0", command),
                 )),
                 arg => Ok(Self::Search(arg.to_string())),
@@ -255,7 +255,7 @@ impl KeyCommand {
                         "--all" => all = true,
                         _ => {
                             return Err(JoshutoError::new(
-                                JoshutoErrorKind::IOInvalidData,
+                                JoshutoErrorKind::IoInvalidData,
                                 format!("{}: unknown option {}", command, arg),
                             ));
                         }
@@ -267,11 +267,11 @@ impl KeyCommand {
             "shell" => match shell_words::split(arg) {
                 Ok(s) if !s.is_empty() => Ok(Self::ShellCommand(s)),
                 Ok(_) => Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
+                    JoshutoErrorKind::IoInvalidData,
                     format!("sort: args {}", arg),
                 )),
                 Err(e) => Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
+                    JoshutoErrorKind::IoInvalidData,
                     format!("{}: {}", arg, e),
                 )),
             },
@@ -281,7 +281,7 @@ impl KeyCommand {
                 arg => match SortType::parse(arg) {
                     Some(s) => Ok(Self::Sort(s)),
                     None => Err(JoshutoError::new(
-                        JoshutoErrorKind::IOInvalidData,
+                        JoshutoErrorKind::IoInvalidData,
                         format!("sort: Unknown option {}", arg),
                     )),
                 },
@@ -289,7 +289,7 @@ impl KeyCommand {
             "tab_switch" => match arg.parse::<i32>() {
                 Ok(s) => Ok(Self::TabSwitch(s)),
                 Err(e) => Err(JoshutoError::new(
-                    JoshutoErrorKind::IOInvalidData,
+                    JoshutoErrorKind::IoInvalidData,
                     format!("{}: {}", command, e.to_string()),
                 )),
             },

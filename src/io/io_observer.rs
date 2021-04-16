@@ -1,19 +1,19 @@
 use std::path;
 use std::thread;
 
-use crate::io::{FileOp, IOWorkerProgress};
+use crate::io::{FileOp, IoWorkerProgress};
 use crate::util::format;
 
 #[derive(Debug)]
-pub struct IOWorkerObserver {
+pub struct IoWorkerObserver {
     pub handle: thread::JoinHandle<()>,
-    pub progress: Option<IOWorkerProgress>,
+    pub progress: Option<IoWorkerProgress>,
     msg: String,
     src: path::PathBuf,
     dest: path::PathBuf,
 }
 
-impl IOWorkerObserver {
+impl IoWorkerObserver {
     pub fn new(handle: thread::JoinHandle<()>, src: path::PathBuf, dest: path::PathBuf) -> Self {
         Self {
             handle,
@@ -27,7 +27,7 @@ impl IOWorkerObserver {
     pub fn join(self) -> bool {
         matches!(self.handle.join(), Ok(_))
     }
-    pub fn set_progress(&mut self, progress: IOWorkerProgress) {
+    pub fn set_progress(&mut self, progress: IoWorkerProgress) {
         self.progress = Some(progress);
     }
     pub fn update_msg(&mut self) {

@@ -32,7 +32,7 @@ impl<'a> Widget for TuiFooter<'a> {
 
                 #[cfg(unix)]
                 let mimetype = match entry.metadata.mimetype.as_ref() {
-                    Some(s) => s,
+                    Some(s) => s.as_str(),
                     None => "",
                 };
 

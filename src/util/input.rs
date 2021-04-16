@@ -5,7 +5,7 @@ use tui::layout::{Constraint, Direction, Layout};
 use crate::commands::{cursor_move, parent_cursor_move, JoshutoRunnable, KeyCommand};
 use crate::context::JoshutoContext;
 use crate::history::DirectoryHistory;
-use crate::io::{FileOp, IOWorkerProgress};
+use crate::io::{FileOp, IoWorkerProgress};
 use crate::ui;
 use crate::util::event::JoshutoEvent;
 use crate::util::format;
@@ -102,21 +102,21 @@ pub fn process_mouse(
 
 pub fn process_noninteractive(event: JoshutoEvent, context: &mut JoshutoContext) {
     match event {
-        JoshutoEvent::IOWorkerProgress(res) => process_worker_progress(context, res),
-        JoshutoEvent::IOWorkerResult(res) => process_finished_worker(context, res),
+        JoshutoEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
+        JoshutoEvent::IoWorkerResult(res) => process_finished_worker(context, res),
         JoshutoEvent::Signal(signal::SIGWINCH) => {}
         _ => {}
     }
 }
 
-pub fn process_worker_progress(context: &mut JoshutoContext, res: IOWorkerProgress) {
+pub fn process_worker_progress(context: &mut JoshutoContext, res: IoWorkerProgress) {
     context.set_worker_progress(res);
     context.update_worker_msg();
 }
 
 pub fn process_finished_worker(
     context: &mut JoshutoContext,
-    res: std::io::Result<IOWorkerProgress>,
+    res: std::io::Result<IoWorkerProgress>,
 ) {
     let observer = context.remove_job().unwrap();
     let options = context.config_ref().sort_option.clone();

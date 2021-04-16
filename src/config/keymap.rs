@@ -8,7 +8,7 @@ use termion::event::{Event, Key};
 
 use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::commands::{CommandKeybind, KeyCommand};
-use crate::io::IOWorkerOptions;
+use crate::io::IoWorkerOptions;
 use crate::util::key_mapping::str_to_event;
 use crate::KEYMAP_FILE;
 
@@ -138,7 +138,7 @@ impl JoshutoCommandMapping {
         let keys = [Event::Key(Key::Char('y')), Event::Key(Key::Char('y'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::PasteFiles(IOWorkerOptions::default());
+        let cmd = KeyCommand::PasteFiles(IoWorkerOptions::default());
         let keys = [Event::Key(Key::Char('p')), Event::Key(Key::Char('p'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 

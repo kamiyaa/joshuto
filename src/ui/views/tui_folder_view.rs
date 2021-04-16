@@ -47,8 +47,8 @@ impl<'a> Widget for TuiFolderView<'a> {
                 ..area
             };
             let block = Block::default().borders(Borders::ALL);
-            let inner = block.inner(area.clone());
-            block.render(area.clone(), buf);
+            let inner = block.inner(area);
+            block.render(area, buf);
 
             let layout_rect = Layout::default()
                 .direction(Direction::Horizontal)
@@ -56,12 +56,12 @@ impl<'a> Widget for TuiFolderView<'a> {
                 .split(inner);
 
             let block = Block::default().borders(Borders::RIGHT);
-            let inner1 = block.inner(layout_rect[0].clone());
-            block.render(layout_rect[0].clone(), buf);
+            let inner1 = block.inner(layout_rect[0]);
+            block.render(layout_rect[0], buf);
 
             let block = Block::default().borders(Borders::LEFT);
-            let inner3 = block.inner(layout_rect[2].clone());
-            block.render(layout_rect[2].clone(), buf);
+            let inner3 = block.inner(layout_rect[2]);
+            block.render(layout_rect[2], buf);
 
             vec![inner1, layout_rect[1], inner3]
         } else {

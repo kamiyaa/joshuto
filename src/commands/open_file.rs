@@ -41,7 +41,7 @@ pub fn open(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoRe
                 };
             if paths.is_empty() {
                 return Err(JoshutoError::new(
-                    JoshutoErrorKind::IONotFound,
+                    JoshutoErrorKind::IoNotFound,
                     String::from("No files selected"),
                 ));
             }
@@ -138,7 +138,7 @@ pub fn open_with(context: &mut JoshutoContext, backend: &mut TuiBackend) -> Josh
     };
     if paths.is_empty() {
         return Err(JoshutoError::new(
-            JoshutoErrorKind::IONotFound,
+            JoshutoErrorKind::IoNotFound,
             String::from("No files selected"),
         ));
     }

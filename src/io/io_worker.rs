@@ -2,7 +2,7 @@ use std::fs;
 use std::path;
 use std::sync::mpsc;
 
-use super::rename_filename_conflict;
+use crate::util::name_resolution::rename_filename_conflict;
 
 #[derive(Clone, Copy, Debug)]
 pub enum FileOp {
@@ -11,12 +11,12 @@ pub enum FileOp {
 }
 
 #[derive(Clone, Debug)]
-pub struct IOWorkerOptions {
+pub struct IoWorkerOptions {
     pub overwrite: bool,
     pub skip_exist: bool,
 }
 
-impl std::default::Default for IOWorkerOptions {
+impl std::default::Default for IoWorkerOptions {
     fn default() -> Self {
         Self {
             overwrite: false,
@@ -25,7 +25,7 @@ impl std::default::Default for IOWorkerOptions {
     }
 }
 
-impl std::fmt::Display for IOWorkerOptions {
+impl std::fmt::Display for IoWorkerOptions {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
@@ -36,14 +36,14 @@ impl std::fmt::Display for IOWorkerOptions {
 }
 
 #[derive(Clone, Debug)]
-pub struct IOWorkerProgress {
+pub struct IoWorkerProgress {
     _kind: FileOp,
     _index: usize,
     _len: usize,
     _processed: u64,
 }
 
-impl IOWorkerProgress {
+impl IoWorkerProgress {
     pub fn new(_kind: FileOp, _index: usize, _len: usize, _processed: u64) -> Self {
         Self {
             _kind,
@@ -79,19 +79,19 @@ impl IOWorkerProgress {
 }
 
 #[derive(Debug)]
-pub struct IOWorkerThread {
+pub struct IoWorkerThread {
     _kind: FileOp,
-    pub options: IOWorkerOptions,
+    pub options: IoWorkerOptions,
     pub paths: Vec<path::PathBuf>,
     pub dest: path::PathBuf,
 }
 
-impl IOWorkerThread {
+impl IoWorkerThread {
     pub fn new(
         _kind: FileOp,
         paths: Vec<path::PathBuf>,
         dest: path::PathBuf,
-        options: IOWorkerOptions,
+        options: IoWorkerOptions,
     ) -> Self {
         Self {
             _kind,
@@ -105,15 +105,15 @@ impl IOWorkerThread {
         self._kind
     }
 
-    pub fn start(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
+    pub fn start(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
         match self.kind() {
             FileOp::Cut => self.paste_cut(tx),
             FileOp::Copy => self.paste_copy(tx),
         }
     }
 
-    fn paste_copy(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
-        let mut progress = IOWorkerProgress::new(self.kind(), 0, self.paths.len(), 0);
+    fn paste_copy(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
+        let mut progress = IoWorkerProgress::new(self.kind(), 0, self.paths.len(), 0);
         for (i, path) in self.paths.iter().enumerate() {
             progress.set_index(i);
             let _ = tx.send(progress.clone());
@@ -124,7 +124,7 @@ impl IOWorkerThread {
                 &mut progress,
             )?;
         }
-        Ok(IOWorkerProgress::new(
+        Ok(IoWorkerProgress::new(
             self.kind(),
             self.paths.len(),
             self.paths.len(),
@@ -132,8 +132,8 @@ impl IOWorkerThread {
         ))
     }
 
-    fn paste_cut(&self, tx: mpsc::Sender<IOWorkerProgress>) -> std::io::Result<IOWorkerProgress> {
-        let mut progress = IOWorkerProgress::new(self.kind(), 0, self.paths.len(), 0);
+    fn paste_cut(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
+        let mut progress = IoWorkerProgress::new(self.kind(), 0, self.paths.len(), 0);
         for (i, path) in self.paths.iter().enumerate() {
             progress.set_index(i);
             let _ = tx.send(progress.clone());
@@ -144,7 +144,7 @@ impl IOWorkerThread {
                 &mut progress,
             )?;
         }
-        Ok(IOWorkerProgress::new(
+        Ok(IoWorkerProgress::new(
             self.kind(),
             self.paths.len(),
             self.paths.len(),
@@ -156,8 +156,8 @@ impl IOWorkerThread {
 pub fn recursive_copy(
     src: &path::Path,
     dest: &path::Path,
-    tx: mpsc::Sender<IOWorkerProgress>,
-    progress: &mut IOWorkerProgress,
+    tx: mpsc::Sender<IoWorkerProgress>,
+    progress: &mut IoWorkerProgress,
 ) -> std::io::Result<()> {
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
@@ -195,8 +195,8 @@ pub fn recursive_copy(
 pub fn recursive_cut(
     src: &path::Path,
     dest: &path::Path,
-    tx: mpsc::Sender<IOWorkerProgress>,
-    progress: &mut IOWorkerProgress,
+    tx: mpsc::Sender<IoWorkerProgress>,
+    progress: &mut IoWorkerProgress,
 ) -> std::io::Result<()> {
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
