@@ -28,7 +28,7 @@ impl<'a> Widget for TuiWorker<'a> {
                     let msg = format!(
                         "{} ({}/{}) {:?}",
                         op_str,
-                        progress.index() + 1,
+                        progress.completed() + 1,
                         progress.len(),
                         io_obs.dest_path()
                     );
@@ -36,7 +36,7 @@ impl<'a> Widget for TuiWorker<'a> {
                     buf.set_stringn(0, 2, msg, area.width as usize, style);
 
                     // draw a progress bar
-                    let progress_bar_width = (progress.index() as f32 / progress.len() as f32
+                    let progress_bar_width = (progress.completed() as f32 / progress.len() as f32
                         * area.width as f32) as usize;
                     let progress_bar_space = " ".repeat(progress_bar_width);
                     let style = Style::default().bg(Color::Blue);

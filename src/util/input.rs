@@ -131,7 +131,7 @@ pub fn process_finished_worker(
                 FileOp::Copy => "copied",
                 FileOp::Cut => "moved",
             };
-            let size_str = format::file_size_to_string(progress.processed());
+            let size_str = format::file_size_to_string(progress.bytes_processed());
             let msg = format!(
                 "successfully {} {} items ({})",
                 op,
