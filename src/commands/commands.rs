@@ -50,7 +50,8 @@ pub enum KeyCommand {
     RenameFileAppend,
     RenameFilePrepend,
 
-    Search(String),
+    SearchGlob(String),
+    SearchString(String),
     SearchNext,
     SearchPrev,
 
@@ -106,7 +107,8 @@ impl KeyCommand {
             Self::RenameFileAppend => "rename_append",
             Self::RenameFilePrepend => "rename_prepend",
 
-            Self::Search(_) => "search",
+            Self::SearchString(_) => "search",
+            Self::SearchGlob(_) => "search_glob",
             Self::SearchNext => "search_next",
             Self::SearchPrev => "search_prev",
 
@@ -251,7 +253,14 @@ impl KeyCommand {
                     JoshutoErrorKind::IoInvalidData,
                     format!("{}: Expected 1, got 0", command),
                 )),
-                arg => Ok(Self::Search(arg.to_string())),
+                arg => Ok(Self::SearchString(arg.to_string())),
+            },
+            "search_glob" => match arg {
+                "" => Err(JoshutoError::new(
+                    JoshutoErrorKind::IoInvalidData,
+                    format!("{}: Expected 1, got 0", command),
+                )),
+                arg => Ok(Self::SearchGlob(arg.to_string())),
             },
             "search_next" => Ok(Self::SearchNext),
             "search_prev" => Ok(Self::SearchPrev),
@@ -362,7 +371,8 @@ impl JoshutoRunnable for KeyCommand {
             Self::RenameFile(p) => rename_file::rename_file(context, p.as_path()),
             Self::RenameFileAppend => rename_file::rename_file_append(context, backend),
             Self::RenameFilePrepend => rename_file::rename_file_prepend(context, backend),
-            Self::Search(pattern) => search::search(context, pattern.as_str()),
+            Self::SearchGlob(pattern) => search_glob::search_glob(context, pattern.as_str()),
+            Self::SearchString(pattern) => search_string::search_string(context, pattern.as_str()),
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
 
@@ -397,7 +407,8 @@ impl std::fmt::Display for KeyCommand {
             Self::NewDirectory(d) => write!(f, "{} {:?}", self.command(), d),
             Self::RenameFile(name) => write!(f, "{} {:?}", self.command(), name),
 
-            Self::Search(s) => write!(f, "{} {}", self.command(), s),
+            Self::SearchGlob(s) => write!(f, "{} {}", self.command(), s),
+            Self::SearchString(s) => write!(f, "{} {}", self.command(), s),
             Self::SelectFiles(pattern, options) => {
                 write!(f, "{} {} {}", self.command(), pattern, options)
             }

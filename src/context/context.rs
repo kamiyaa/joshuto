@@ -5,6 +5,7 @@ use std::thread;
 
 use globset::GlobMatcher;
 
+use crate::commands::SearchPattern;
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
@@ -16,7 +17,7 @@ pub struct JoshutoContext {
     events: Events,
     tab_context: TabContext,
     local_state: Option<LocalStateContext>,
-    search_state: Option<GlobMatcher>,
+    search_state: Option<SearchPattern>,
     message_queue: VecDeque<String>,
     worker_queue: VecDeque<IoWorkerThread>,
     worker: Option<IoWorkerObserver>,
@@ -81,11 +82,11 @@ impl JoshutoContext {
         self.local_state.take()
     }
 
-    pub fn set_search_state(&mut self, pattern: GlobMatcher) {
+    pub fn set_search_state(&mut self, pattern: SearchPattern) {
         self.search_state = Some(pattern);
     }
 
-    pub fn get_search_state(&self) -> Option<&GlobMatcher> {
+    pub fn get_search_state(&self) -> Option<&SearchPattern> {
         self.search_state.as_ref()
     }
 

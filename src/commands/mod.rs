@@ -12,6 +12,8 @@ pub mod quit;
 pub mod reload;
 pub mod rename_file;
 pub mod search;
+pub mod search_glob;
+pub mod search_string;
 pub mod selection;
 pub mod set_mode;
 pub mod shell;
@@ -25,3 +27,4 @@ pub mod commands;
 
 pub use self::command_keybind::{CommandKeybind, JoshutoCommand, JoshutoRunnable};
 pub use self::commands::KeyCommand;
+pub use self::search::SearchPattern;
