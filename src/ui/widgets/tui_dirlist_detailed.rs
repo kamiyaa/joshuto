@@ -40,16 +40,18 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
 
         let drawing_width = area.width as usize;
         let skip_dist = curr_index / area.height as usize * area.height as usize;
-        for (i, entry) in self
-            .dirlist
+
+        // draw every entry
+        self.dirlist
             .iter()
             .skip(skip_dist)
             .enumerate()
             .take(area.height as usize)
-        {
-            let style = entry.get_style();
-            print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width - 1);
-        }
+            .for_each(|(i, entry)| {
+                let style = entry.get_style();
+                print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width - 1);
+            });
+
         {
             let screen_index = curr_index % area.height as usize;
 

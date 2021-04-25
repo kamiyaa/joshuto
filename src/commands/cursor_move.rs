@@ -10,7 +10,7 @@ pub fn cursor_move(new_index: usize, context: &mut JoshutoContext) -> JoshutoRes
 
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         if curr_list.index.is_some() {
-            let dir_len = curr_list.contents.len();
+            let dir_len = curr_list.len();
             if new_index >= dir_len {
                 new_index = dir_len - 1;
             }
@@ -61,7 +61,7 @@ pub fn down(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
 pub fn home(context: &mut JoshutoContext) -> JoshutoResult<()> {
     let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
-            let len = curr_list.contents.len();
+            let len = curr_list.len();
             if len == 0 {
                 None
             } else {
@@ -80,7 +80,7 @@ pub fn home(context: &mut JoshutoContext) -> JoshutoResult<()> {
 pub fn end(context: &mut JoshutoContext) -> JoshutoResult<()> {
     let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
-            let len = curr_list.contents.len();
+            let len = curr_list.len();
             if len == 0 {
                 None
             } else {
@@ -127,7 +127,7 @@ pub fn page_down(context: &mut JoshutoContext, backend: &mut TuiBackend) -> Josh
 
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
-            let dir_len = curr_list.contents.len();
+            let dir_len = curr_list.len();
             curr_list.index.map(|idx| {
                 if idx + half_page > dir_len - 1 {
                     dir_len - 1

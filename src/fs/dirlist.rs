@@ -1,4 +1,4 @@
-use std::slice::Iter;
+use std::slice::{Iter, IterMut};
 use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
@@ -34,6 +34,14 @@ impl JoshutoDirList {
 
     pub fn iter(&self) -> Iter<JoshutoDirEntry> {
         self.contents.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<JoshutoDirEntry> {
+        self.contents.iter_mut()
+    }
+
+    pub fn len(&self) -> usize {
+        self.contents.len()
     }
 
     pub fn modified(&self) -> bool {

@@ -86,7 +86,7 @@ command = "open_file_with"
 keys = [ "r" ]
 
 [[mapcommand]]
-command = "console cd"
+command = ":cd"
 keys = [ "c", "d" ]
 [[mapcommand]]
 command = "cd .."
@@ -105,7 +105,7 @@ keys = [ "y", "y" ]
 command = "paste_files"
 keys = [ "p", "p" ]
 [[mapcommand]]
-command = "paste_files --overwrite"
+command = "paste_files --overwrite=true"
 keys = [ "p", "o" ]
 [[mapcommand]]
 command = "delete_files"
@@ -122,10 +122,10 @@ command = "rename_prepend"
 keys = [ "A" ]
 
 [[mapcommand]]
-command = "select_files --toggle"
+command = "select --toggle=true"
 keys = [ " " ]
 [[mapcommand]]
-command = "select_files --toggle --all"
+command = "select --toggle=true --all=true"
 keys = [ "t" ]
 
 [[mapcommand]]
@@ -146,13 +146,13 @@ command = "set_mode"
 keys = [ "=" ]
 
 [[mapcommand]]
-command = "console"
+command = ":"
 keys = [ ";" ]
 [[mapcommand]]
-command = "console mkdir "
+command = ":mkdir "
 keys = [ "m", "k" ]
 [[mapcommand]]
-command = "console rename "
+command = ":rename "
 keys = [ "c", "w" ]
 
 [[mapcommand]]

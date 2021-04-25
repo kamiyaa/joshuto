@@ -5,6 +5,7 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::IoWorkerOptions;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
+use crate::util::select::SelectOption;
 use crate::util::sort::SortType;
 
 use crate::HOME_DIR;
@@ -53,7 +54,7 @@ pub enum KeyCommand {
     SearchNext,
     SearchPrev,
 
-    SelectFiles { toggle: bool, all: bool },
+    SelectFiles(String, SelectOption),
     SetMode,
     ShellCommand(Vec<String>),
     ShowWorkers,
@@ -109,7 +110,7 @@ impl KeyCommand {
             Self::SearchNext => "search_next",
             Self::SearchPrev => "search_prev",
 
-            Self::SelectFiles { toggle: _, all: _ } => "select",
+            Self::SelectFiles(_, _) => "select",
             Self::SetMode => "set_mode",
             Self::ShellCommand(_) => "shell",
             Self::ShowWorkers => "show_workers",
@@ -124,8 +125,12 @@ impl KeyCommand {
     }
 
     pub fn parse_command(s: &str) -> JoshutoResult<Self> {
+        if s.starts_with(':') {
+            return Ok(Self::CommandLine(s[1..].to_owned(), "".to_owned()));
+        }
+
         let (command, arg) = match s.find(' ') {
-            Some(i) => (&s[..i], s[i + 1..].trim_start()),
+            Some(i) => (&s[..i], s[i..].trim_start()),
             None => (s, ""),
         };
 
@@ -148,14 +153,13 @@ impl KeyCommand {
             "close_tab" => Ok(Self::CloseTab),
             "copy_files" => Ok(Self::CopyFiles),
             "copy_filename" => Ok(Self::CopyFileName),
-            "console" => Ok(Self::CommandLine(arg.to_owned(), "".to_owned())),
             "cursor_move_home" => Ok(Self::CursorMoveHome),
             "cursor_move_end" => Ok(Self::CursorMoveEnd),
             "cursor_move_page_up" => Ok(Self::CursorMovePageUp),
             "cursor_move_page_down" => Ok(Self::CursorMovePageDown),
             "cursor_move_down" => match arg {
                 "" => Ok(Self::CursorMoveDown(1)),
-                arg => match arg.parse::<usize>() {
+                arg => match arg.trim().parse::<usize>() {
                     Ok(s) => Ok(Self::CursorMoveDown(s)),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
@@ -165,7 +169,7 @@ impl KeyCommand {
             },
             "cursor_move_up" => match arg {
                 "" => Ok(Self::CursorMoveUp(1)),
-                arg => match arg.parse::<usize>() {
+                arg => match arg.trim().parse::<usize>() {
                     Ok(s) => Ok(Self::CursorMoveUp(s)),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
@@ -175,7 +179,7 @@ impl KeyCommand {
             },
             "parent_cursor_move_down" => match arg {
                 "" => Ok(Self::ParentCursorMoveDown(1)),
-                arg => match arg.parse::<usize>() {
+                arg => match arg.trim().parse::<usize>() {
                     Ok(s) => Ok(Self::ParentCursorMoveDown(s)),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
@@ -185,7 +189,7 @@ impl KeyCommand {
             },
             "parent_cursor_move_up" => match arg {
                 "" => Ok(Self::ParentCursorMoveUp(1)),
-                arg => match arg.parse::<usize>() {
+                arg => match arg.trim().parse::<usize>() {
                     Ok(s) => Ok(Self::ParentCursorMoveUp(s)),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
@@ -196,13 +200,16 @@ impl KeyCommand {
             "cut_files" => Ok(Self::CutFiles),
             "delete_files" => Ok(Self::DeleteFiles),
             "force_quit" => Ok(Self::ForceQuit),
-            "mkdir" => match arg {
-                "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IoInvalidData,
-                    format!("{}: missing additional parameter", command),
-                )),
-                arg => Ok(Self::NewDirectory(path::PathBuf::from(arg))),
-            },
+            "mkdir" => {
+                if arg.is_empty() {
+                    Err(JoshutoError::new(
+                        JoshutoErrorKind::IoInvalidData,
+                        format!("{}: missing additional parameter", command),
+                    ))
+                } else {
+                    Ok(Self::NewDirectory(path::PathBuf::from(arg)))
+                }
+            }
             "new_tab" => Ok(Self::NewTab),
 
             "open_file" => Ok(Self::OpenFile),
@@ -211,8 +218,10 @@ impl KeyCommand {
                 let mut options = IoWorkerOptions::default();
                 for arg in arg.split_whitespace() {
                     match arg {
-                        "--overwrite" => options.overwrite = true,
-                        "--skip_exist" => options.skip_exist = true,
+                        "--overwrite=true" => options.overwrite = true,
+                        "--skip_exist=true" => options.skip_exist = true,
+                        "--overwrite=false" => options.overwrite = false,
+                        "--skip_exist=false" => options.skip_exist = false,
                         _ => {
                             return Err(JoshutoError::new(
                                 JoshutoErrorKind::IoInvalidData,
@@ -246,22 +255,29 @@ impl KeyCommand {
             },
             "search_next" => Ok(Self::SearchNext),
             "search_prev" => Ok(Self::SearchPrev),
-            "select_files" => {
-                let mut toggle = false;
-                let mut all = false;
-                for arg in arg.split_whitespace() {
-                    match arg {
-                        "--toggle" => toggle = true,
-                        "--all" => all = true,
-                        _ => {
-                            return Err(JoshutoError::new(
-                                JoshutoErrorKind::IoInvalidData,
-                                format!("{}: unknown option {}", command, arg),
-                            ));
+            "select" => {
+                let mut options = SelectOption::default();
+                let mut pattern = "";
+                match shell_words::split(arg) {
+                    Ok(args) => {
+                        for arg in args.iter() {
+                            match arg.as_str() {
+                                "--toggle=true" => options.toggle = true,
+                                "--all=true" => options.all = true,
+                                "--toggle=false" => options.toggle = false,
+                                "--all=false" => options.all = false,
+                                "--deselect=true" => options.reverse = true,
+                                "--deselect=false" => options.reverse = false,
+                                s => pattern = s,
+                            }
                         }
+                        Ok(Self::SelectFiles(pattern.to_string(), options))
                     }
+                    Err(e) => Err(JoshutoError::new(
+                        JoshutoErrorKind::IoInvalidData,
+                        format!("{}: {}", arg, e),
+                    )),
                 }
-                Ok(Self::SelectFiles { toggle, all })
             }
             "set_mode" => Ok(Self::SetMode),
             "shell" => match shell_words::split(arg) {
@@ -350,7 +366,9 @@ impl JoshutoRunnable for KeyCommand {
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
 
-            Self::SelectFiles { toggle, all } => selection::select_files(context, *toggle, *all),
+            Self::SelectFiles(pattern, options) => {
+                selection::select_files(context, pattern.as_str(), &options)
+            }
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShellCommand(v) => shell::shell(context, backend, v.as_slice()),
             Self::ShowWorkers => show_workers::show_workers(context, backend),
@@ -380,8 +398,8 @@ impl std::fmt::Display for KeyCommand {
             Self::RenameFile(name) => write!(f, "{} {:?}", self.command(), name),
 
             Self::Search(s) => write!(f, "{} {}", self.command(), s),
-            Self::SelectFiles { toggle, all } => {
-                write!(f, "{} toggle={} all={}", self.command(), toggle, all)
+            Self::SelectFiles(pattern, options) => {
+                write!(f, "{} {} {}", self.command(), pattern, options)
             }
             Self::ShellCommand(c) => write!(f, "{} {:?}", self.command(), c),
             Self::Sort(t) => write!(f, "{} {}", self.command(), t),

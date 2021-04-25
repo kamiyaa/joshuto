@@ -8,21 +8,21 @@ use crate::fs::{FileType, JoshutoDirList};
 use crate::util::format;
 
 pub struct TuiFooter<'a> {
-    list: &'a JoshutoDirList,
+    dirlist: &'a JoshutoDirList,
 }
 
 impl<'a> TuiFooter<'a> {
-    pub fn new(list: &'a JoshutoDirList) -> Self {
-        Self { list }
+    pub fn new(dirlist: &'a JoshutoDirList) -> Self {
+        Self { dirlist }
     }
 }
 
 impl<'a> Widget for TuiFooter<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         use std::os::unix::fs::PermissionsExt;
-        match self.list.index {
-            Some(i) if i < self.list.contents.len() => {
-                let entry = &self.list.contents[i];
+        match self.dirlist.index {
+            Some(i) if i < self.dirlist.len() => {
+                let entry = &self.dirlist.contents[i];
 
                 let mode_style = Style::default().fg(Color::Cyan);
                 let mode_str = format::mode_to_string(entry.metadata.permissions_ref().mode());
@@ -39,7 +39,7 @@ impl<'a> Widget for TuiFooter<'a> {
                 let mut text = vec![
                     Span::styled(mode_str, mode_style),
                     Span::raw("  "),
-                    Span::raw(format!("{}/{}", i + 1, self.list.contents.len())),
+                    Span::raw(format!("{}/{}", i + 1, self.dirlist.len())),
                     Span::raw("  "),
                     Span::raw(mtime_str),
                     Span::raw("  "),

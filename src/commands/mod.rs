@@ -21,7 +21,7 @@ pub mod sort;
 pub mod tab_ops;
 
 pub mod command_keybind;
-pub mod key_command;
+pub mod commands;
 
 pub use self::command_keybind::{CommandKeybind, JoshutoCommand, JoshutoRunnable};
-pub use self::key_command::KeyCommand;
+pub use self::commands::KeyCommand;
