@@ -3,6 +3,8 @@ use std::collections::VecDeque;
 use std::sync::mpsc;
 use std::thread;
 
+use globset::GlobMatcher;
+
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
@@ -14,7 +16,7 @@ pub struct JoshutoContext {
     events: Events,
     tab_context: TabContext,
     local_state: Option<LocalStateContext>,
-    search_state: Option<String>,
+    search_state: Option<GlobMatcher>,
     message_queue: VecDeque<String>,
     worker_queue: VecDeque<IoWorkerThread>,
     worker: Option<IoWorkerObserver>,
@@ -79,11 +81,11 @@ impl JoshutoContext {
         self.local_state.take()
     }
 
-    pub fn set_search_state(&mut self, pattern: String) {
+    pub fn set_search_state(&mut self, pattern: GlobMatcher) {
         self.search_state = Some(pattern);
     }
 
-    pub fn get_search_state(&self) -> Option<&String> {
+    pub fn get_search_state(&self) -> Option<&GlobMatcher> {
         self.search_state.as_ref()
     }
 
