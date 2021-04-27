@@ -86,7 +86,7 @@ command = "open_file_with"
 keys = [ "r" ]
 
 [[mapcommand]]
-command = ":cd"
+command = ":cd "
 keys = [ "c", "d" ]
 [[mapcommand]]
 command = "cd .."
@@ -129,8 +129,11 @@ command = "select --toggle=true --all=true"
 keys = [ "t" ]
 
 [[mapcommand]]
-command = "console search "
+command = ":search "
 keys = [ "/" ]
+[[mapcommand]]
+command = ":search_glob "
+keys = [ "\\" ]
 [[mapcommand]]
 command = "search_next"
 keys = [ "n" ]
