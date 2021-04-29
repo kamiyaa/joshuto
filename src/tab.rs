@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
-use crate::util::sort;
+use crate::util::display::DisplayOption;
 
 pub struct JoshutoTab {
     history: JoshutoHistory,
@@ -10,9 +10,9 @@ pub struct JoshutoTab {
 }
 
 impl JoshutoTab {
-    pub fn new(curr_pwd: PathBuf, sort_option: &sort::SortOption) -> std::io::Result<Self> {
+    pub fn new(curr_pwd: PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
         let mut history = JoshutoHistory::new();
-        history.populate_to_root(&curr_pwd, sort_option)?;
+        history.populate_to_root(&curr_pwd, options)?;
 
         Ok(Self { curr_pwd, history })
     }

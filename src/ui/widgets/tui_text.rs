@@ -1,6 +1,6 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Color, Style};
 use tui::widgets::Widget;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 

@@ -2,7 +2,7 @@ use std::slice::{Iter, IterMut};
 use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
-use crate::util::sort::SortOption;
+use crate::util::display::DisplayOption;
 
 #[derive(Debug)]
 pub struct JoshutoDirList {
@@ -14,10 +14,12 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
-    pub fn new(path: path::PathBuf, sort_option: &SortOption) -> std::io::Result<Self> {
-        let filter_func = sort_option.filter_func();
-        let mut contents = read_dir_list(path.as_path(), filter_func, sort_option.show_icons)?;
-        contents.sort_by(|f1, f2| sort_option.compare(f1, f2));
+    pub fn new(path: path::PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
+        let filter_func = options.filter_func();
+        let mut contents = read_dir_list(path.as_path(), filter_func, options.show_icons())?;
+
+        let sort_options = options.sort_options_ref();
+        contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
 
@@ -67,10 +69,12 @@ impl JoshutoDirList {
         &self.path
     }
 
-    pub fn reload_contents(&mut self, sort_option: &SortOption) -> std::io::Result<()> {
-        let filter_func = sort_option.filter_func();
-        let mut contents = read_dir_list(self.file_path(), filter_func, sort_option.show_icons)?;
-        contents.sort_by(|f1, f2| sort_option.compare(f1, f2));
+    pub fn reload_contents(&mut self, options: &DisplayOption) -> std::io::Result<()> {
+        let filter_func = options.filter_func();
+        let mut contents = read_dir_list(self.file_path(), filter_func, options.show_icons())?;
+
+        let sort_options = options.sort_options_ref();
+        contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
         let contents_len = contents.len();
         let index: Option<usize> = if contents_len == 0 {

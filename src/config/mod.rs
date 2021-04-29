@@ -1,10 +1,10 @@
-pub mod config;
+pub mod default;
 pub mod keymap;
 pub mod mimetype;
 pub mod preview;
 pub mod theme;
 
-pub use self::config::JoshutoConfig;
+pub use self::default::JoshutoConfig;
 pub use self::keymap::JoshutoCommandMapping;
 pub use self::mimetype::JoshutoMimetype;
 pub use self::preview::{JoshutoPreview, JoshutoPreviewEntry};

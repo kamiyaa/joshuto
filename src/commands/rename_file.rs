@@ -18,7 +18,7 @@ pub fn _rename_file(
         return Err(err);
     }
     std::fs::rename(&src, &dest)?;
-    let options = context.config_ref().sort_option.clone();
+    let options = context.display_options_ref().clone();
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         curr_list.reload_contents(&options)?;
     }

@@ -2,25 +2,17 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::path::{Path, PathBuf};
 
 use crate::fs::{JoshutoDirEntry, JoshutoDirList};
-use crate::util::sort;
+use crate::util::display::DisplayOption;
 
 pub trait DirectoryHistory {
-    fn populate_to_root(
-        &mut self,
-        path: &Path,
-        sort_option: &sort::SortOption,
-    ) -> std::io::Result<()>;
+    fn populate_to_root(&mut self, path: &Path, options: &DisplayOption) -> std::io::Result<()>;
     fn create_or_soft_update(
         &mut self,
         path: &Path,
-        sort_option: &sort::SortOption,
+        options: &DisplayOption,
     ) -> std::io::Result<()>;
-    fn create_or_reload(
-        &mut self,
-        path: &Path,
-        sort_option: &sort::SortOption,
-    ) -> std::io::Result<()>;
-    fn reload(&mut self, path: &Path, sort_option: &sort::SortOption) -> std::io::Result<()>;
+    fn create_or_reload(&mut self, path: &Path, options: &DisplayOption) -> std::io::Result<()>;
+    fn reload(&mut self, path: &Path, options: &DisplayOption) -> std::io::Result<()>;
     fn depreciate_all_entries(&mut self);
 
     fn depreciate_entry(&mut self, path: &Path);
@@ -29,17 +21,13 @@ pub trait DirectoryHistory {
 pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
 
 impl DirectoryHistory for JoshutoHistory {
-    fn populate_to_root(
-        &mut self,
-        path: &Path,
-        sort_option: &sort::SortOption,
-    ) -> std::io::Result<()> {
+    fn populate_to_root(&mut self, path: &Path, options: &DisplayOption) -> std::io::Result<()> {
         let mut prev: Option<&Path> = None;
         for curr in path.ancestors() {
             match self.entry(curr.to_path_buf()) {
                 Entry::Occupied(mut entry) => {
                     let dirlist = entry.get_mut();
-                    dirlist.reload_contents(sort_option)?;
+                    dirlist.reload_contents(options)?;
                     if let Some(ancestor) = prev.as_ref() {
                         if let Some(i) = get_index_of_value(&dirlist.contents, ancestor) {
                             dirlist.index = Some(i);
@@ -48,7 +36,7 @@ impl DirectoryHistory for JoshutoHistory {
                     prev = Some(curr);
                 }
                 Entry::Vacant(entry) => {
-                    let mut dirlist = JoshutoDirList::new(curr.to_path_buf().clone(), sort_option)?;
+                    let mut dirlist = JoshutoDirList::new(curr.to_path_buf().clone(), options)?;
                     if let Some(ancestor) = prev.as_ref() {
                         if let Some(i) = get_index_of_value(&dirlist.contents, ancestor) {
                             dirlist.index = Some(i);
@@ -65,47 +53,43 @@ impl DirectoryHistory for JoshutoHistory {
     fn create_or_soft_update(
         &mut self,
         path: &Path,
-        sort_option: &sort::SortOption,
+        options: &DisplayOption,
     ) -> std::io::Result<()> {
         match self.entry(path.to_path_buf()) {
             Entry::Occupied(mut entry) => {
                 let dirlist = entry.get_mut();
                 if dirlist.need_update() {
-                    dirlist.reload_contents(sort_option)?;
+                    dirlist.reload_contents(options)?;
                 }
             }
             Entry::Vacant(entry) => {
-                let dirlist = JoshutoDirList::new(path.to_path_buf(), sort_option)?;
+                let dirlist = JoshutoDirList::new(path.to_path_buf(), options)?;
                 entry.insert(dirlist);
             }
         }
         Ok(())
     }
 
-    fn create_or_reload(
-        &mut self,
-        path: &Path,
-        sort_option: &sort::SortOption,
-    ) -> std::io::Result<()> {
+    fn create_or_reload(&mut self, path: &Path, options: &DisplayOption) -> std::io::Result<()> {
         match self.entry(path.to_path_buf()) {
             Entry::Occupied(mut entry) => {
                 let dirlist = entry.get_mut();
-                if dirlist.reload_contents(sort_option).is_err() {
+                if dirlist.reload_contents(options).is_err() {
                     entry.remove_entry();
                 }
             }
             Entry::Vacant(entry) => {
-                let dirlist = JoshutoDirList::new(path.to_path_buf(), sort_option)?;
+                let dirlist = JoshutoDirList::new(path.to_path_buf(), options)?;
                 entry.insert(dirlist);
             }
         }
         Ok(())
     }
 
-    fn reload(&mut self, path: &Path, sort_option: &sort::SortOption) -> std::io::Result<()> {
+    fn reload(&mut self, path: &Path, options: &DisplayOption) -> std::io::Result<()> {
         if let Entry::Occupied(mut entry) = self.entry(path.to_path_buf()) {
             let dirlist = entry.get_mut();
-            if dirlist.reload_contents(sort_option).is_err() {
+            if dirlist.reload_contents(options).is_err() {
                 entry.remove_entry();
             }
         }

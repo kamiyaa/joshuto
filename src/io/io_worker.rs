@@ -141,7 +141,7 @@ impl IoWorkerThread {
     fn paste_copy(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
         let num_items = self.query_number_of_items()?;
         let mut progress = IoWorkerProgress::new(self.kind(), 0, num_items, 0);
-        for (i, path) in self.paths.iter().enumerate() {
+        for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_copy(
                 path.as_path(),
@@ -161,7 +161,7 @@ impl IoWorkerThread {
     fn paste_cut(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
         let num_items = self.query_number_of_items()?;
         let mut progress = IoWorkerProgress::new(self.kind(), 0, num_items, 0);
-        for (i, path) in self.paths.iter().enumerate() {
+        for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_cut(
                 path.as_path(),

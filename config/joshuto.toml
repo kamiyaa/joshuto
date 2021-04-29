@@ -1,26 +1,25 @@
-tilde_in_titlebar = true
-
-# ratios for parent view, current view and preview
-column_ratio = [1, 4, 4]
-collapse_preview = true
-
 # currently does not work
 scroll_offset = 6
 
-show_borders = true
-show_preview = true
 xdg_open = false
 use_trash = true
 
 # currently does not work
 max_preview_size = 2097152 # 2MB
 
-# lexical, mtime, natural
-sort_method = "natural"
-
-[sort_option]
-show_icons = true
+[display]
+# ratios for parent view, current view and preview
+collapse_preview = true
+column_ratio = [1, 4, 4]
+show_borders = true
 show_hidden = false
+show_icons = true
+show_preview = true
+tilde_in_titlebar = true
+
+[display.sort]
+# lexical, mtime, natural
+method = "natural"
 case_sensitive = false
 directories_first = true
 reverse = false

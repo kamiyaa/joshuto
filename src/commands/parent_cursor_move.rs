@@ -30,12 +30,12 @@ pub fn parent_cursor_move(new_index: usize, context: &mut JoshutoContext) -> Jos
     // get preview
     if let Some(path) = path {
         if path.is_dir() {
-            let sort_options = context.config_ref().sort_option.clone();
+            let options = context.display_options_ref().clone();
             context
                 .tab_context_mut()
                 .curr_tab_mut()
                 .history_mut()
-                .create_or_soft_update(path.as_path(), &sort_options)?;
+                .create_or_soft_update(path.as_path(), &options)?;
         }
     }
     Ok(())

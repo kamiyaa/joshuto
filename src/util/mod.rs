@@ -1,6 +1,7 @@
 #[cfg(feature = "devicons")]
 pub mod devicons;
 
+pub mod display;
 pub mod event;
 pub mod format;
 pub mod input;

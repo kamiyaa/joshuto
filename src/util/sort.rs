@@ -42,8 +42,6 @@ impl std::fmt::Display for SortType {
 
 #[derive(Clone, Debug)]
 pub struct SortOption {
-    pub show_icons: bool,
-    pub show_hidden: bool,
     pub directories_first: bool,
     pub case_sensitive: bool,
     pub reverse: bool,
@@ -99,43 +97,15 @@ impl SortOption {
         }
         res
     }
-
-    pub fn filter_func(&self) -> fn(&Result<fs::DirEntry, std::io::Error>) -> bool {
-        if self.show_hidden {
-            no_filter
-        } else {
-            filter_hidden
-        }
-    }
 }
 
 impl std::default::Default for SortOption {
     fn default() -> Self {
         SortOption {
-            show_icons: false,
-            show_hidden: false,
             directories_first: true,
             case_sensitive: false,
             reverse: false,
             sort_method: SortType::Natural,
-        }
-    }
-}
-
-const fn no_filter(_: &Result<fs::DirEntry, std::io::Error>) -> bool {
-    true
-}
-
-fn filter_hidden(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
-    match result {
-        Err(_) => false,
-        Ok(entry) => {
-            let file_name = entry.file_name();
-            if let Some(file_name) = file_name.to_str() {
-                !file_name.starts_with('.')
-            } else {
-                false
-            }
         }
     }
 }

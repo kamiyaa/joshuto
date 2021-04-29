@@ -33,12 +33,6 @@ xdg = "^2"
 phf = { version = "^0", features = ["macros"], optional = true }
 trash = { version = "^1", optional = true }
 
-# [dependencies.wordexp]
-# version = "^0"
-# git = "https://github.com/kamiyaa/wordexp-rs"
-# branch="dev"
-# path = "lib/wordexp-rs"
-
 [features]
 devicons = [ "phf" ]
 file_mimetype = []

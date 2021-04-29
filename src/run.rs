@@ -19,7 +19,7 @@ pub fn run(
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
-        let tab = JoshutoTab::new(curr_path, &context.config_ref().sort_option)?;
+        let tab = JoshutoTab::new(curr_path, &context.config_ref().display_options_ref())?;
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child

@@ -13,12 +13,12 @@ pub fn cd(path: &path::Path, context: &mut JoshutoContext) -> std::io::Result<()
 
 fn _change_directory(path: &path::Path, context: &mut JoshutoContext) -> std::io::Result<()> {
     cd(path, context)?;
-    let sort_options = context.config_ref().sort_option.clone();
+    let options = context.display_options_ref().clone();
     context
         .tab_context_mut()
         .curr_tab_mut()
         .history_mut()
-        .populate_to_root(&path, &sort_options)?;
+        .populate_to_root(&path, &options)?;
 
     Ok(())
 }

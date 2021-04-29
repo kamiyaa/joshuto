@@ -3,13 +3,13 @@ use std::collections::VecDeque;
 use std::sync::mpsc;
 use std::thread;
 
-use globset::GlobMatcher;
-
 use crate::commands::SearchPattern;
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
+use crate::util::display::DisplayOption;
 use crate::util::event::{Events, JoshutoEvent};
+use crate::util::sort;
 
 pub struct JoshutoContext {
     pub exit: bool,
@@ -44,6 +44,22 @@ impl JoshutoContext {
 
     pub fn config_mut(&mut self) -> &mut config::JoshutoConfig {
         &mut self.config
+    }
+
+    pub fn display_options_ref(&self) -> &DisplayOption {
+        self.config_ref().display_options_ref()
+    }
+
+    pub fn display_options_mut(&mut self) -> &mut DisplayOption {
+        self.config_mut().display_options_mut()
+    }
+
+    pub fn sort_options_ref(&self) -> &sort::SortOption {
+        self.config_ref().display_options_ref().sort_options_ref()
+    }
+
+    pub fn sort_options_mut(&mut self) -> &mut sort::SortOption {
+        self.config_mut().display_options_mut().sort_options_mut()
     }
 
     pub fn tab_context_ref(&self) -> &TabContext {
