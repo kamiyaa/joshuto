@@ -1,10 +1,7 @@
 use serde_derive::Deserialize;
-use std::collections::HashMap;
 use std::fmt;
 use std::io::Read;
 use std::process;
-
-use super::{parse_config_file, ConfigStructure};
 
 #[derive(Debug, Deserialize)]
 pub struct AppMimetypeEntry {
@@ -138,46 +135,5 @@ impl std::fmt::Display for AppMimetypeEntry {
             f.write_str("[confirm-exit]").unwrap();
         }
         f.write_str("")
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct AppMimetypeRegistry {
-    #[serde(default, skip)]
-    empty_vec: Vec<AppMimetypeEntry>,
-    #[serde(default)]
-    pub extension: HashMap<String, Vec<AppMimetypeEntry>>,
-    #[serde(default)]
-    pub mimetype: HashMap<String, Vec<AppMimetypeEntry>>,
-}
-
-impl AppMimetypeRegistry {
-    pub fn get_entries_for_ext(&self, extension: &str) -> &[AppMimetypeEntry] {
-        match self.extension.get(extension) {
-            Some(s) => s,
-            None => &self.empty_vec,
-        }
-    }
-    pub fn get_entries_for_mimetype(&self, mimetype: &str) -> &[AppMimetypeEntry] {
-        match self.mimetype.get(mimetype) {
-            Some(s) => s,
-            None => &self.empty_vec,
-        }
-    }
-}
-
-impl ConfigStructure for AppMimetypeRegistry {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_file::<AppMimetypeRegistry>(file_name).unwrap_or_else(Self::default)
-    }
-}
-
-impl std::default::Default for AppMimetypeRegistry {
-    fn default() -> Self {
-        Self {
-            empty_vec: Vec::new(),
-            mimetype: HashMap::new(),
-            extension: HashMap::new(),
-        }
     }
 }

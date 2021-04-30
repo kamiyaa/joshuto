@@ -6,11 +6,10 @@ use std::collections::{hash_map::Entry, HashMap};
 use termion::event::MouseEvent;
 use termion::event::{Event, Key};
 
+use super::keyparse::str_to_event;
 use crate::commands::{CommandKeybind, KeyCommand};
+use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::io::IoWorkerOptions;
-use crate::util::key_mapping::str_to_event;
-
-use super::{parse_to_config_file, ConfigStructure, Flattenable};
 
 #[derive(Debug, Deserialize)]
 struct CommandKeymap {
