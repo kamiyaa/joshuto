@@ -3,15 +3,15 @@ use tui::layout::Rect;
 use tui::widgets::Widget;
 
 use super::TuiFolderView;
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 
 pub struct TuiView<'a> {
-    pub context: &'a JoshutoContext,
+    pub context: &'a AppContext,
     pub show_bottom_status: bool,
 }
 
 impl<'a> TuiView<'a> {
-    pub fn new(context: &'a JoshutoContext) -> Self {
+    pub fn new(context: &'a AppContext) -> Self {
         Self {
             context,
             show_bottom_status: true,

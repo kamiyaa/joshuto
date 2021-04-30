@@ -1,20 +1,20 @@
 use termion::event::Event;
 
 use crate::commands::{CommandKeybind, JoshutoRunnable, KeyCommand};
-use crate::config::JoshutoKeyMapping;
-use crate::context::JoshutoContext;
+use crate::config::AppKeyMapping;
+use crate::context::AppContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::views::{TuiCommandMenu, TuiView};
-use crate::util::event::JoshutoEvent;
+use crate::util::event::AppEvent;
 use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
 
 pub fn run(
     backend: &mut ui::TuiBackend,
-    context: &mut JoshutoContext,
-    keymap_t: JoshutoKeyMapping,
+    context: &mut AppContext,
+    keymap_t: AppKeyMapping,
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
     {
@@ -38,10 +38,10 @@ pub fn run(
             Err(_) => return Ok(()), // TODO
         };
         match event {
-            JoshutoEvent::Termion(Event::Mouse(event)) => {
+            AppEvent::Termion(Event::Mouse(event)) => {
                 input::process_mouse(event, context, backend);
             }
-            JoshutoEvent::Termion(key) => {
+            AppEvent::Termion(key) => {
                 if !context.message_queue_ref().is_empty() {
                     context.pop_msg();
                 }

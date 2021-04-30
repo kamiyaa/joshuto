@@ -6,11 +6,11 @@ use tui::layout::Rect;
 use tui::widgets::Clear;
 use unicode_width::UnicodeWidthStr;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::TuiBackend;
-use crate::util::event::JoshutoEvent;
+use crate::util::event::AppEvent;
 use crate::util::input;
 
 struct CompletionTracker {
@@ -70,7 +70,7 @@ impl<'a> TuiTextField<'a> {
     pub fn get_input(
         &mut self,
         backend: &mut TuiBackend,
-        context: &mut JoshutoContext,
+        context: &mut AppContext,
     ) -> Option<String> {
         let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
         let completer = FilenameCompleter::new();
@@ -157,7 +157,7 @@ impl<'a> TuiTextField<'a> {
 
             if let Ok(event) = context.poll_event() {
                 match event {
-                    JoshutoEvent::Termion(Event::Key(key)) => {
+                    AppEvent::Termion(Event::Key(key)) => {
                         match key {
                             Key::Backspace => {
                                 if line_buffer.backspace(1) {
@@ -236,7 +236,7 @@ impl<'a> TuiTextField<'a> {
                         }
                         context.flush_event();
                     }
-                    JoshutoEvent::Termion(_) => {
+                    AppEvent::Termion(_) => {
                         context.flush_event();
                     }
                     event => input::process_noninteractive(event, context),

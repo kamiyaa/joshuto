@@ -4,18 +4,18 @@ use tui::style::{Color, Style};
 use tui::text::Span;
 use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::ui::widgets::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
 pub struct TuiFolderView<'a> {
-    pub context: &'a JoshutoContext,
+    pub context: &'a AppContext,
     pub show_bottom_status: bool,
 }
 
 impl<'a> TuiFolderView<'a> {
-    pub fn new(context: &'a JoshutoContext) -> Self {
+    pub fn new(context: &'a AppContext) -> Self {
         Self {
             context,
             show_bottom_status: true,

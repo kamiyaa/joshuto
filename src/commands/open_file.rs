@@ -1,7 +1,7 @@
 use std::path;
 
-use crate::config::mimetype::JoshutoMimetypeEntry;
-use crate::context::JoshutoContext;
+use crate::config::AppMimetypeEntry;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
@@ -11,8 +11,8 @@ use super::change_directory;
 
 use crate::MIMETYPE_T;
 
-pub fn get_options<'a>(path: &path::Path) -> Vec<&'a JoshutoMimetypeEntry> {
-    let mut options: Vec<&JoshutoMimetypeEntry> = Vec::new();
+pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
+    let mut options: Vec<&AppMimetypeEntry> = Vec::new();
     if let Some(file_ext) = path.extension() {
         if let Some(file_ext) = file_ext.to_str() {
             let ext_entries = MIMETYPE_T.get_entries_for_ext(file_ext);
@@ -22,7 +22,7 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a JoshutoMimetypeEntry> {
     options
 }
 
-pub fn open(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     if let Some(entry) = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -66,9 +66,9 @@ pub fn open(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoRe
 }
 
 pub fn open_with_helper<S>(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     backend: &mut TuiBackend,
-    options: Vec<&JoshutoMimetypeEntry>,
+    options: Vec<&AppMimetypeEntry>,
     files: Vec<S>,
 ) -> std::io::Result<()>
 where
@@ -116,7 +116,7 @@ where
                     match args_iter.next() {
                         Some(cmd) => {
                             backend.terminal_drop();
-                            let res = JoshutoMimetypeEntry::new(String::from(cmd))
+                            let res = AppMimetypeEntry::new(String::from(cmd))
                                 .args(args_iter)
                                 .execute_with(files.as_slice());
                             backend.terminal_restore()?;
@@ -131,7 +131,7 @@ where
     }
 }
 
-pub fn open_with(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn open_with(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     let paths: Vec<path::PathBuf> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(a) => a.get_selected_paths(),
         None => vec![],

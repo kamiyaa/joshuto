@@ -4,11 +4,11 @@ pub mod mimetype;
 pub mod preview;
 pub mod theme;
 
-pub use self::default::JoshutoConfig;
-pub use self::keymap::JoshutoKeyMapping;
-pub use self::mimetype::JoshutoMimetype;
+pub use self::default::AppConfig;
+pub use self::keymap::AppKeyMapping;
+pub use self::mimetype::{AppMimetypeEntry, AppMimetypeRegistry};
 pub use self::preview::{JoshutoPreview, JoshutoPreviewEntry};
-pub use self::theme::{JoshutoStyleTheme, JoshutoTheme};
+pub use self::theme::{AppStyle, AppTheme};
 
 use serde::de::DeserializeOwned;
 use std::fs;
@@ -17,7 +17,7 @@ use std::path::{Path, PathBuf};
 use crate::CONFIG_HIERARCHY;
 
 pub trait ConfigStructure {
-    fn get_config() -> Self;
+    fn get_config(file_name: &str) -> Self;
 }
 
 // implemented by config file implementations to turn a RawConfig into a Config

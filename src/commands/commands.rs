@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::IoWorkerOptions;
 use crate::ui::TuiBackend;
@@ -328,7 +328,7 @@ impl KeyCommand {
 }
 
 impl JoshutoRunnable for KeyCommand {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(&self, context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         match &*self {
             Self::BulkRename => bulk_rename::bulk_rename(context, backend),
             Self::ChangeDirectory(p) => {

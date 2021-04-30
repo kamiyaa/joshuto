@@ -3,7 +3,7 @@ use std::path;
 
 use termion::event::Key;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::history::DirectoryHistory;
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::TuiBackend;
@@ -56,7 +56,7 @@ where
     Ok(())
 }
 
-fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::io::Result<()> {
+fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::Result<()> {
     let tab_index = context.tab_context_ref().get_index();
     let paths = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(s) => s.get_selected_paths(),
@@ -106,7 +106,7 @@ fn delete_files(context: &mut JoshutoContext, backend: &mut TuiBackend) -> std::
 }
 
 pub fn delete_selected_files(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     backend: &mut TuiBackend,
 ) -> std::io::Result<()> {
     delete_files(context, backend)?;

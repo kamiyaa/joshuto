@@ -1,6 +1,6 @@
 use globset::GlobMatcher;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 
 use super::cursor_move;
@@ -13,7 +13,7 @@ pub enum SearchPattern {
     String(String),
 }
 
-pub fn search_next(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn search_next(context: &mut AppContext) -> JoshutoResult<()> {
     if let Some(s) = context.get_search_state() {
         let index = match s {
             SearchPattern::Glob(s) => {
@@ -30,7 +30,7 @@ pub fn search_next(context: &mut JoshutoContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn search_prev(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn search_prev(context: &mut AppContext) -> JoshutoResult<()> {
     if let Some(s) = context.get_search_state() {
         let index = match s {
             SearchPattern::Glob(s) => {

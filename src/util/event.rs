@@ -12,7 +12,7 @@ use termion::input::TermRead;
 use crate::io::IoWorkerProgress;
 
 #[derive(Debug)]
-pub enum JoshutoEvent {
+pub enum AppEvent {
     Termion(Event),
     IoWorkerProgress(IoWorkerProgress),
     IoWorkerResult(io::Result<IoWorkerProgress>),
@@ -32,8 +32,8 @@ impl Default for Config {
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
-    pub event_tx: mpsc::Sender<JoshutoEvent>,
-    event_rx: mpsc::Receiver<JoshutoEvent>,
+    pub event_tx: mpsc::Sender<AppEvent>,
+    event_rx: mpsc::Receiver<AppEvent>,
     pub input_tx: mpsc::SyncSender<()>,
 }
 
@@ -52,7 +52,7 @@ impl Events {
             let sigs = vec![signal::SIGWINCH];
             let mut signals = SignalsInfo::<SignalOnly>::new(&sigs).unwrap();
             for signal in &mut signals {
-                if let Err(e) = event_tx2.send(JoshutoEvent::Signal(signal)) {
+                if let Err(e) = event_tx2.send(AppEvent::Signal(signal)) {
                     eprintln!("Signal thread send err: {:#?}", e);
                     return;
                 }
@@ -67,7 +67,7 @@ impl Events {
             match events.next() {
                 Some(event) => match event {
                     Ok(event) => {
-                        if let Err(e) = event_tx2.send(JoshutoEvent::Termion(event)) {
+                        if let Err(e) = event_tx2.send(AppEvent::Termion(event)) {
                             eprintln!("Input thread send err: {:#?}", e);
                             return;
                         }
@@ -79,7 +79,7 @@ impl Events {
 
             while input_rx.recv().is_ok() {
                 if let Some(Ok(event)) = events.next() {
-                    if let Err(e) = event_tx2.send(JoshutoEvent::Termion(event)) {
+                    if let Err(e) = event_tx2.send(AppEvent::Termion(event)) {
                         eprintln!("Input thread send err: {:#?}", e);
                         return;
                     }
@@ -94,7 +94,7 @@ impl Events {
         }
     }
 
-    pub fn next(&self) -> Result<JoshutoEvent, mpsc::RecvError> {
+    pub fn next(&self) -> Result<AppEvent, mpsc::RecvError> {
         let event = self.event_rx.recv()?;
         Ok(event)
     }

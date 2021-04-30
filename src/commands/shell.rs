@@ -1,12 +1,12 @@
 use std::process;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 
 use super::reload;
 
-pub fn shell_command(context: &mut JoshutoContext, words: &[String]) -> std::io::Result<()> {
+pub fn shell_command(context: &mut AppContext, words: &[String]) -> std::io::Result<()> {
     let mut command = process::Command::new(words[0].clone());
     for word in words.iter().skip(1) {
         match (*word).as_str() {
@@ -34,7 +34,7 @@ pub fn shell_command(context: &mut JoshutoContext, words: &[String]) -> std::io:
 }
 
 pub fn shell(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     backend: &mut TuiBackend,
     words: &[String],
 ) -> JoshutoResult<()> {

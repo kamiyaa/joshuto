@@ -3,15 +3,15 @@ use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::io::FileOp;
 
 pub struct TuiWorker<'a> {
-    pub context: &'a JoshutoContext,
+    pub context: &'a AppContext,
 }
 
 impl<'a> TuiWorker<'a> {
-    pub fn new(context: &'a JoshutoContext) -> Self {
+    pub fn new(context: &'a AppContext) -> Self {
         Self { context }
     }
 }

@@ -1,7 +1,7 @@
 use globset::{GlobBuilder, GlobMatcher};
 
 use crate::commands::SearchPattern;
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::tab::JoshutoTab;
 
@@ -34,7 +34,7 @@ pub fn search_glob_rev(curr_tab: &JoshutoTab, glob: &GlobMatcher) -> Option<usiz
     None
 }
 
-pub fn search_glob(context: &mut JoshutoContext, pattern: &str) -> JoshutoResult<()> {
+pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult<()> {
     let glob = match GlobBuilder::new(pattern).case_insensitive(true).build() {
         Ok(s) => s.compile_matcher(),
         Err(e) => {

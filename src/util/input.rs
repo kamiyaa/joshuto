@@ -3,18 +3,14 @@ use termion::event::{MouseButton, MouseEvent};
 use tui::layout::{Constraint, Direction, Layout};
 
 use crate::commands::{cursor_move, parent_cursor_move, JoshutoRunnable, KeyCommand};
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOp, IoWorkerProgress};
 use crate::ui;
-use crate::util::event::JoshutoEvent;
+use crate::util::event::AppEvent;
 use crate::util::format;
 
-pub fn process_mouse(
-    event: MouseEvent,
-    context: &mut JoshutoContext,
-    backend: &mut ui::TuiBackend,
-) {
+pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut ui::TuiBackend) {
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
 
     let constraints: &[Constraint; 3] = &context.display_options_ref().default_layout;
@@ -100,24 +96,21 @@ pub fn process_mouse(
     context.flush_event();
 }
 
-pub fn process_noninteractive(event: JoshutoEvent, context: &mut JoshutoContext) {
+pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
     match event {
-        JoshutoEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
-        JoshutoEvent::IoWorkerResult(res) => process_finished_worker(context, res),
-        JoshutoEvent::Signal(signal::SIGWINCH) => {}
+        AppEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
+        AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
+        AppEvent::Signal(signal::SIGWINCH) => {}
         _ => {}
     }
 }
 
-pub fn process_worker_progress(context: &mut JoshutoContext, res: IoWorkerProgress) {
+pub fn process_worker_progress(context: &mut AppContext, res: IoWorkerProgress) {
     context.set_worker_progress(res);
     context.update_worker_msg();
 }
 
-pub fn process_finished_worker(
-    context: &mut JoshutoContext,
-    res: std::io::Result<IoWorkerProgress>,
-) {
+pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<IoWorkerProgress>) {
     let observer = context.remove_job().unwrap();
     let options = context.display_options_ref().clone();
     for tab in context.tab_context_mut().iter_mut() {

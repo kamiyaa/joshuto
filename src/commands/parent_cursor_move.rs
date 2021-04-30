@@ -1,9 +1,9 @@
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use std::path::PathBuf;
 
-pub fn parent_cursor_move(new_index: usize, context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn parent_cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
     let mut path: Option<PathBuf> = None;
     let mut new_index = new_index;
 
@@ -41,7 +41,7 @@ pub fn parent_cursor_move(new_index: usize, context: &mut JoshutoContext) -> Jos
     Ok(())
 }
 
-pub fn parent_up(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
+pub fn parent_up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     let movement = match context.tab_context_ref().curr_tab_ref().parent_list_ref() {
         Some(list) => list.index.map(|idx| if idx > u { idx - u } else { 0 }),
         None => None,
@@ -53,7 +53,7 @@ pub fn parent_up(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn parent_down(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
+pub fn parent_down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     let movement = match context.tab_context_ref().curr_tab_ref().parent_list_ref() {
         Some(list) => list.index.map(|idx| idx + u),
         None => None,

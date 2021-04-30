@@ -5,10 +5,9 @@ use std::io::Read;
 use std::process;
 
 use super::{parse_config_file, ConfigStructure};
-use crate::MIMETYPE_FILE;
 
 #[derive(Debug, Deserialize)]
-pub struct JoshutoMimetypeEntry {
+pub struct AppMimetypeEntry {
     #[serde(rename = "command")]
     _command: String,
     #[serde(default, rename = "args")]
@@ -21,7 +20,7 @@ pub struct JoshutoMimetypeEntry {
     _confirm_exit: bool,
 }
 
-impl JoshutoMimetypeEntry {
+impl AppMimetypeEntry {
     pub fn new(command: String) -> Self {
         Self {
             _command: command,
@@ -109,7 +108,7 @@ impl JoshutoMimetypeEntry {
     }
 }
 
-impl std::default::Default for JoshutoMimetypeEntry {
+impl std::default::Default for AppMimetypeEntry {
     fn default() -> Self {
         Self {
             _command: "".to_string(),
@@ -121,7 +120,7 @@ impl std::default::Default for JoshutoMimetypeEntry {
     }
 }
 
-impl std::fmt::Display for JoshutoMimetypeEntry {
+impl std::fmt::Display for AppMimetypeEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(self.get_command()).unwrap();
         self.get_args()
@@ -143,23 +142,23 @@ impl std::fmt::Display for JoshutoMimetypeEntry {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct JoshutoMimetype {
+pub struct AppMimetypeRegistry {
     #[serde(default, skip)]
-    empty_vec: Vec<JoshutoMimetypeEntry>,
+    empty_vec: Vec<AppMimetypeEntry>,
     #[serde(default)]
-    pub extension: HashMap<String, Vec<JoshutoMimetypeEntry>>,
+    pub extension: HashMap<String, Vec<AppMimetypeEntry>>,
     #[serde(default)]
-    pub mimetype: HashMap<String, Vec<JoshutoMimetypeEntry>>,
+    pub mimetype: HashMap<String, Vec<AppMimetypeEntry>>,
 }
 
-impl JoshutoMimetype {
-    pub fn get_entries_for_ext(&self, extension: &str) -> &[JoshutoMimetypeEntry] {
+impl AppMimetypeRegistry {
+    pub fn get_entries_for_ext(&self, extension: &str) -> &[AppMimetypeEntry] {
         match self.extension.get(extension) {
             Some(s) => s,
             None => &self.empty_vec,
         }
     }
-    pub fn get_entries_for_mimetype(&self, mimetype: &str) -> &[JoshutoMimetypeEntry] {
+    pub fn get_entries_for_mimetype(&self, mimetype: &str) -> &[AppMimetypeEntry] {
         match self.mimetype.get(mimetype) {
             Some(s) => s,
             None => &self.empty_vec,
@@ -167,13 +166,13 @@ impl JoshutoMimetype {
     }
 }
 
-impl ConfigStructure for JoshutoMimetype {
-    fn get_config() -> Self {
-        parse_config_file::<JoshutoMimetype>(MIMETYPE_FILE).unwrap_or_else(Self::default)
+impl ConfigStructure for AppMimetypeRegistry {
+    fn get_config(file_name: &str) -> Self {
+        parse_config_file::<AppMimetypeRegistry>(file_name).unwrap_or_else(Self::default)
     }
 }
 
-impl std::default::Default for JoshutoMimetype {
+impl std::default::Default for AppMimetypeRegistry {
     fn default() -> Self {
         Self {
             empty_vec: Vec::new(),

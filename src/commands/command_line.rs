@@ -1,5 +1,5 @@
 use crate::commands::KeyCommand;
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
@@ -7,7 +7,7 @@ use crate::ui::TuiBackend;
 use super::JoshutoRunnable;
 
 pub fn readline(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     backend: &mut TuiBackend,
     prefix: &str,
     suffix: &str,

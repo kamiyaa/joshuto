@@ -4,7 +4,7 @@ use std::process;
 
 use rand::Rng;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::TuiBackend;
 
@@ -12,7 +12,7 @@ use super::reload;
 
 const ENV_EDITOR: &str = "EDITOR";
 
-pub fn _bulk_rename(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
     const PREFIX: &str = "joshuto-";
     let editor = match std::env::var(ENV_EDITOR) {
         Ok(s) => s,
@@ -120,7 +120,7 @@ pub fn _bulk_rename(context: &mut JoshutoContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn bulk_rename(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn bulk_rename(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     backend.terminal_drop();
     let res = _bulk_rename(context);
     backend.terminal_restore()?;

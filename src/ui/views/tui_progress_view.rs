@@ -4,16 +4,16 @@ use tui::style::{Color, Style};
 use tui::widgets::{Paragraph, Text, Widget};
 
 use super::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
 pub struct TuiProgressView<'a> {
-    pub context: &'a JoshutoContext,
+    pub context: &'a AppContext,
 }
 
 impl<'a> TuiProgressView<'a> {
-    pub fn new(context: &'a JoshutoContext) -> Self {
+    pub fn new(context: &'a AppContext) -> Self {
         Self {
             context,
             show_bottom_status: true,

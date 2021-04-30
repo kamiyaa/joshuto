@@ -1,8 +1,8 @@
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::util::load_child::LoadChild;
 
-pub fn soft_reload(index: usize, context: &mut JoshutoContext) -> std::io::Result<()> {
+pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()> {
     let options = context.display_options_ref().clone();
     if let Some(curr_tab) = context.tab_context_mut().tab_mut(index) {
         if let Some(curr_list) = curr_tab.curr_list_mut() {
@@ -24,7 +24,7 @@ pub fn soft_reload(index: usize, context: &mut JoshutoContext) -> std::io::Resul
     Ok(())
 }
 
-pub fn reload(context: &mut JoshutoContext, index: usize) -> std::io::Result<()> {
+pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
     let options = context.display_options_ref().clone();
     if let Some(curr_tab) = context.tab_context_mut().tab_mut(index) {
         if let Some(curr_list) = curr_tab.curr_list_mut() {
@@ -40,7 +40,7 @@ pub fn reload(context: &mut JoshutoContext, index: usize) -> std::io::Result<()>
     Ok(())
 }
 
-pub fn reload_dirlist(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn reload_dirlist(context: &mut AppContext) -> JoshutoResult<()> {
     reload(context, context.tab_context_ref().get_index())?;
     LoadChild::load_child(context)?;
     Ok(())

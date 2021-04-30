@@ -5,8 +5,6 @@ use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::util::display::DisplayOption;
 use crate::util::sort;
 
-use crate::CONFIG_FILE;
-
 const fn default_true() -> bool {
     true
 }
@@ -18,7 +16,7 @@ const fn default_max_preview_size() -> u64 {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct JoshutoRawConfig {
+pub struct RawAppConfig {
     #[serde(default = "default_scroll_offset")]
     scroll_offset: usize,
     #[serde(default = "default_true")]
@@ -31,9 +29,9 @@ pub struct JoshutoRawConfig {
     display_options: DisplayRawOption,
 }
 
-impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
-    fn flatten(self) -> JoshutoConfig {
-        JoshutoConfig {
+impl Flattenable<AppConfig> for RawAppConfig {
+    fn flatten(self) -> AppConfig {
+        AppConfig {
             max_preview_size: self.max_preview_size,
             scroll_offset: self.scroll_offset,
             use_trash: self.use_trash,
@@ -44,7 +42,7 @@ impl Flattenable<JoshutoConfig> for JoshutoRawConfig {
 }
 
 #[derive(Debug, Clone)]
-pub struct JoshutoConfig {
+pub struct AppConfig {
     pub max_preview_size: u64,
     pub scroll_offset: usize,
     pub use_trash: bool,
@@ -52,7 +50,7 @@ pub struct JoshutoConfig {
     _display_options: DisplayOption,
 }
 
-impl JoshutoConfig {
+impl AppConfig {
     pub fn display_options_ref(&self) -> &DisplayOption {
         &self._display_options
     }
@@ -68,14 +66,13 @@ impl JoshutoConfig {
     }
 }
 
-impl ConfigStructure for JoshutoConfig {
-    fn get_config() -> Self {
-        parse_to_config_file::<JoshutoRawConfig, JoshutoConfig>(CONFIG_FILE)
-            .unwrap_or_else(Self::default)
+impl ConfigStructure for AppConfig {
+    fn get_config(file_name: &str) -> Self {
+        parse_to_config_file::<RawAppConfig, AppConfig>(file_name).unwrap_or_else(Self::default)
     }
 }
 
-impl std::default::Default for JoshutoConfig {
+impl std::default::Default for AppConfig {
     fn default() -> Self {
         Self {
             max_preview_size: default_max_preview_size(),

@@ -1,35 +1,77 @@
-use std::collections::{hash_map::Entry, HashMap};
-
 use serde_derive::Deserialize;
+
+use std::collections::{hash_map::Entry, HashMap};
 
 #[cfg(feature = "mouse")]
 use termion::event::MouseEvent;
 use termion::event::{Event, Key};
 
-use super::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::commands::{CommandKeybind, KeyCommand};
 use crate::io::IoWorkerOptions;
 use crate::util::key_mapping::str_to_event;
-use crate::KEYMAP_FILE;
+
+use super::{parse_to_config_file, ConfigStructure, Flattenable};
+
+#[derive(Debug, Deserialize)]
+struct CommandKeymap {
+    pub command: String,
+    pub keys: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct RawAppKeyMapping {
+    #[serde(default)]
+    mapcommand: Vec<CommandKeymap>,
+}
+
+impl Flattenable<AppKeyMapping> for RawAppKeyMapping {
+    fn flatten(self) -> AppKeyMapping {
+        let mut keymaps = AppKeyMapping::new();
+        for m in self.mapcommand {
+            match KeyCommand::parse_command(m.command.as_str()) {
+                Ok(command) => {
+                    let events: Vec<Event> = m
+                        .keys
+                        .iter()
+                        .filter_map(|s| str_to_event(s.as_str()))
+                        .collect();
+
+                    if events.len() != m.keys.len() {
+                        eprintln!("Failed to parse events: {:?}", m.keys);
+                        continue;
+                    }
+
+                    let result = insert_keycommand(&mut keymaps, command, &events);
+                    match result {
+                        Ok(_) => {}
+                        Err(e) => eprintln!("{}", e),
+                    }
+                }
+                Err(e) => eprintln!("{}", e.cause()),
+            }
+        }
+        keymaps
+    }
+}
 
 #[derive(Debug)]
-pub struct JoshutoKeyMapping {
+pub struct AppKeyMapping {
     map: HashMap<Event, CommandKeybind>,
 }
 
-impl std::convert::AsRef<HashMap<Event, CommandKeybind>> for JoshutoKeyMapping {
+impl std::convert::AsRef<HashMap<Event, CommandKeybind>> for AppKeyMapping {
     fn as_ref(&self) -> &HashMap<Event, CommandKeybind> {
         &self.map
     }
 }
 
-impl std::convert::AsMut<HashMap<Event, CommandKeybind>> for JoshutoKeyMapping {
+impl std::convert::AsMut<HashMap<Event, CommandKeybind>> for AppKeyMapping {
     fn as_mut(&mut self) -> &mut HashMap<Event, CommandKeybind> {
         &mut self.map
     }
 }
 
-impl JoshutoKeyMapping {
+impl AppKeyMapping {
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),
@@ -194,7 +236,7 @@ impl JoshutoKeyMapping {
     }
 }
 
-impl std::default::Default for JoshutoKeyMapping {
+impl std::default::Default for AppKeyMapping {
     fn default() -> Self {
         let mut m = Self {
             map: HashMap::new(),
@@ -204,57 +246,15 @@ impl std::default::Default for JoshutoKeyMapping {
     }
 }
 
-impl ConfigStructure for JoshutoKeyMapping {
-    fn get_config() -> Self {
-        parse_to_config_file::<JoshutoRawKeyMapping, JoshutoKeyMapping>(KEYMAP_FILE)
+impl ConfigStructure for AppKeyMapping {
+    fn get_config(file_name: &str) -> Self {
+        parse_to_config_file::<RawAppKeyMapping, AppKeyMapping>(file_name)
             .unwrap_or_else(Self::default)
     }
 }
 
-#[derive(Debug, Deserialize)]
-struct JoshutoMapCommand {
-    pub command: String,
-    pub keys: Vec<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct JoshutoRawKeyMapping {
-    #[serde(default)]
-    mapcommand: Vec<JoshutoMapCommand>,
-}
-
-impl Flattenable<JoshutoKeyMapping> for JoshutoRawKeyMapping {
-    fn flatten(self) -> JoshutoKeyMapping {
-        let mut keymaps = JoshutoKeyMapping::new();
-        for m in self.mapcommand {
-            match KeyCommand::parse_command(m.command.as_str()) {
-                Ok(command) => {
-                    let events: Vec<Event> = m
-                        .keys
-                        .iter()
-                        .filter_map(|s| str_to_event(s.as_str()))
-                        .collect();
-
-                    if events.len() != m.keys.len() {
-                        eprintln!("Failed to parse events: {:?}", m.keys);
-                        continue;
-                    }
-
-                    let result = insert_keycommand(&mut keymaps, command, &events);
-                    match result {
-                        Ok(_) => {}
-                        Err(e) => eprintln!("{}", e),
-                    }
-                }
-                Err(e) => eprintln!("{}", e.cause()),
-            }
-        }
-        keymaps
-    }
-}
-
 fn insert_keycommand(
-    keymap: &mut JoshutoKeyMapping,
+    keymap: &mut AppKeyMapping,
     keycommand: KeyCommand,
     events: &[Event],
 ) -> Result<(), String> {
@@ -282,7 +282,7 @@ fn insert_keycommand(
             _ => Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
         },
         Entry::Vacant(entry) => {
-            let mut new_map = JoshutoKeyMapping::new();
+            let mut new_map = AppKeyMapping::new();
             let result = insert_keycommand(&mut new_map, keycommand, &events[1..]);
             if result.is_ok() {
                 let composite_command = CommandKeybind::CompositeKeybind(new_map);

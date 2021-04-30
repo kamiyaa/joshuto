@@ -8,12 +8,12 @@ use crate::config;
 use crate::context::{LocalStateContext, TabContext};
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
 use crate::util::display::DisplayOption;
-use crate::util::event::{Events, JoshutoEvent};
+use crate::util::event::{AppEvent, Events};
 use crate::util::sort;
 
-pub struct JoshutoContext {
+pub struct AppContext {
     pub exit: bool,
-    config: config::JoshutoConfig,
+    config: config::AppConfig,
     events: Events,
     tab_context: TabContext,
     local_state: Option<LocalStateContext>,
@@ -23,8 +23,8 @@ pub struct JoshutoContext {
     worker: Option<IoWorkerObserver>,
 }
 
-impl JoshutoContext {
-    pub fn new(config: config::JoshutoConfig) -> Self {
+impl AppContext {
+    pub fn new(config: config::AppConfig) -> Self {
         Self {
             exit: false,
             events: Events::new(),
@@ -38,11 +38,11 @@ impl JoshutoContext {
         }
     }
 
-    pub fn config_ref(&self) -> &config::JoshutoConfig {
+    pub fn config_ref(&self) -> &config::AppConfig {
         &self.config
     }
 
-    pub fn config_mut(&mut self) -> &mut config::JoshutoConfig {
+    pub fn config_mut(&mut self) -> &mut config::AppConfig {
         &mut self.config
     }
 
@@ -80,10 +80,10 @@ impl JoshutoContext {
     }
 
     // event related
-    pub fn poll_event(&self) -> Result<JoshutoEvent, mpsc::RecvError> {
+    pub fn poll_event(&self) -> Result<AppEvent, mpsc::RecvError> {
         self.events.next()
     }
-    pub fn get_event_tx(&self) -> mpsc::Sender<JoshutoEvent> {
+    pub fn get_event_tx(&self) -> mpsc::Sender<AppEvent> {
         self.events.event_tx.clone()
     }
     pub fn flush_event(&self) {
@@ -153,17 +153,17 @@ impl JoshutoContext {
                 let worker_handle = thread::spawn(move || worker.start(wtx));
                 // relay worker info to event loop
                 while let Ok(progress) = wrx.recv() {
-                    let _ = tx.send(JoshutoEvent::IoWorkerProgress(progress));
+                    let _ = tx.send(AppEvent::IoWorkerProgress(progress));
                 }
                 let result = worker_handle.join();
 
                 match result {
                     Ok(res) => {
-                        let _ = tx.send(JoshutoEvent::IoWorkerResult(res));
+                        let _ = tx.send(AppEvent::IoWorkerResult(res));
                     }
                     Err(_) => {
                         let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
-                        let _ = tx.send(JoshutoEvent::IoWorkerResult(Err(err)));
+                        let _ = tx.send(AppEvent::IoWorkerResult(Err(err)));
                     }
                 }
             });

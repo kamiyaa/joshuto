@@ -1,13 +1,13 @@
 use globset::Glob;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::util::select::SelectOption;
 
 use super::cursor_move;
 
 pub fn select_files(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     pattern: &str,
     options: &SelectOption,
 ) -> JoshutoResult<()> {
@@ -18,10 +18,7 @@ pub fn select_files(
     }
 }
 
-fn select_without_pattern(
-    context: &mut JoshutoContext,
-    options: &SelectOption,
-) -> JoshutoResult<()> {
+fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> JoshutoResult<()> {
     if options.all {
         if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
             curr_list.iter_mut().for_each(|e| {
@@ -53,7 +50,7 @@ fn select_without_pattern(
 }
 
 fn select_with_pattern(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     pattern: &str,
     options: &SelectOption,
 ) -> JoshutoResult<()> {

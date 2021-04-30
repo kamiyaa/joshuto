@@ -1,7 +1,7 @@
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 
-pub fn quit(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn quit(context: &mut AppContext) -> JoshutoResult<()> {
     if context.worker_is_busy() {
         Err(JoshutoError::new(
             JoshutoErrorKind::IoOther,
@@ -13,7 +13,7 @@ pub fn quit(context: &mut JoshutoContext) -> JoshutoResult<()> {
     }
 }
 
-pub fn force_quit(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn force_quit(context: &mut AppContext) -> JoshutoResult<()> {
     context.exit = true;
     Ok(())
 }

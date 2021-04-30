@@ -2,10 +2,10 @@ use termion::event::{Event, Key};
 
 use tui::layout::Rect;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::ui::widgets::{TuiTopBar, TuiWorker};
 use crate::ui::TuiBackend;
-use crate::util::event::JoshutoEvent;
+use crate::util::event::AppEvent;
 use crate::util::input;
 
 pub struct TuiWorkerView {}
@@ -15,7 +15,7 @@ impl TuiWorkerView {
         Self {}
     }
 
-    pub fn display(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) {
+    pub fn display(&self, context: &mut AppContext, backend: &mut TuiBackend) {
         let terminal = backend.terminal_mut();
 
         loop {
@@ -42,7 +42,7 @@ impl TuiWorkerView {
 
             if let Ok(event) = context.poll_event() {
                 match event {
-                    JoshutoEvent::Termion(event) => {
+                    AppEvent::Termion(event) => {
                         match event {
                             Event::Key(Key::Esc) => {
                                 break;

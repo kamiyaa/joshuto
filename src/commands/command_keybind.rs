@@ -1,5 +1,5 @@
-use crate::config::JoshutoKeyMapping;
-use crate::context::JoshutoContext;
+use crate::config::AppKeyMapping;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 
@@ -8,7 +8,7 @@ use super::KeyCommand;
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(KeyCommand),
-    CompositeKeybind(JoshutoKeyMapping),
+    CompositeKeybind(AppKeyMapping),
 }
 
 impl std::fmt::Display for CommandKeybind {
@@ -21,7 +21,7 @@ impl std::fmt::Display for CommandKeybind {
 }
 
 pub trait JoshutoRunnable {
-    fn execute(&self, context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()>;
+    fn execute(&self, context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()>;
 }
 
 pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}

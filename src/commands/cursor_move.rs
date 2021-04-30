@@ -1,10 +1,10 @@
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::ui::TuiBackend;
 use std::path::PathBuf;
 
-pub fn cursor_move(new_index: usize, context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
     let mut path: Option<PathBuf> = None;
     let mut new_index = new_index;
 
@@ -35,7 +35,7 @@ pub fn cursor_move(new_index: usize, context: &mut JoshutoContext) -> JoshutoRes
     Ok(())
 }
 
-pub fn up(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
+pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => curr_list.index.map(|idx| if idx > u { idx - u } else { 0 }),
         None => None,
@@ -47,7 +47,7 @@ pub fn up(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn down(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
+pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => curr_list.index.map(|idx| idx + u),
         None => None,
@@ -58,7 +58,7 @@ pub fn down(context: &mut JoshutoContext, u: usize) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn home(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn home(context: &mut AppContext) -> JoshutoResult<()> {
     let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
             let len = curr_list.len();
@@ -77,7 +77,7 @@ pub fn home(context: &mut JoshutoContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn end(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn end(context: &mut AppContext) -> JoshutoResult<()> {
     let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
             let len = curr_list.len();
@@ -96,7 +96,7 @@ pub fn end(context: &mut JoshutoContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn page_up(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     let half_page = {
         match backend.terminal.as_ref().unwrap().size() {
             Ok(rect) => rect.height as usize - 2,
@@ -117,7 +117,7 @@ pub fn page_up(context: &mut JoshutoContext, backend: &mut TuiBackend) -> Joshut
     Ok(())
 }
 
-pub fn page_down(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn page_down(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     let half_page = {
         match backend.terminal.as_ref().unwrap().size() {
             Ok(rect) => rect.height as usize - 2,

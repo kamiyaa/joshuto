@@ -18,10 +18,9 @@ use std::process;
 use structopt::StructOpt;
 
 use crate::config::{
-    ConfigStructure, JoshutoConfig, JoshutoKeyMapping, JoshutoMimetype, JoshutoPreview,
-    JoshutoTheme,
+    AppConfig, AppKeyMapping, AppMimetypeRegistry, AppTheme, ConfigStructure, JoshutoPreview,
 };
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::run::run;
 
@@ -46,9 +45,9 @@ lazy_static! {
         }
         temp
     };
-    static ref THEME_T: JoshutoTheme = JoshutoTheme::get_config();
-    static ref MIMETYPE_T: JoshutoMimetype = JoshutoMimetype::get_config();
-    static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config();
+    static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
+    static ref MIMETYPE_T: AppMimetypeRegistry = AppMimetypeRegistry::get_config(MIMETYPE_FILE);
+    static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config(PREVIEW_FILE);
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
     static ref USERNAME: String = whoami::username();
@@ -85,10 +84,10 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
         }
     }
 
-    let config = JoshutoConfig::get_config();
-    let keymap = JoshutoKeyMapping::get_config();
+    let config = AppConfig::get_config(CONFIG_FILE);
+    let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
 
-    let mut context = JoshutoContext::new(config);
+    let mut context = AppContext::new(config);
 
     {
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;

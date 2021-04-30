@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 use crate::util::load_child::LoadChild;
@@ -8,7 +8,7 @@ use crate::util::load_child::LoadChild;
 use super::command_line;
 
 pub fn _rename_file(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     src: &path::Path,
     dest: &path::Path,
 ) -> std::io::Result<()> {
@@ -25,7 +25,7 @@ pub fn _rename_file(
     Ok(())
 }
 
-pub fn rename_file(context: &mut JoshutoContext, dest: &path::Path) -> JoshutoResult<()> {
+pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult<()> {
     let mut path: Option<path::PathBuf> = None;
 
     if let Some(s) = context
@@ -45,7 +45,7 @@ pub fn rename_file(context: &mut JoshutoContext, dest: &path::Path) -> JoshutoRe
 }
 
 pub fn _rename_file_append(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     backend: &mut TuiBackend,
     file_name: &str,
 ) -> JoshutoResult<()> {
@@ -61,10 +61,7 @@ pub fn _rename_file_append(
     command_line::readline(context, backend, &prefix, &suffix)
 }
 
-pub fn rename_file_append(
-    context: &mut JoshutoContext,
-    backend: &mut TuiBackend,
-) -> JoshutoResult<()> {
+pub fn rename_file_append(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     let mut file_name: Option<String> = None;
 
     if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
@@ -80,7 +77,7 @@ pub fn rename_file_append(
 }
 
 pub fn _rename_file_prepend(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     backend: &mut TuiBackend,
     file_name: String,
 ) -> JoshutoResult<()> {
@@ -90,7 +87,7 @@ pub fn _rename_file_prepend(
 }
 
 pub fn rename_file_prepend(
-    context: &mut JoshutoContext,
+    context: &mut AppContext,
     backend: &mut TuiBackend,
 ) -> JoshutoResult<()> {
     let mut file_name: Option<String> = None;

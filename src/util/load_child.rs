@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::history::DirectoryHistory;
 
 pub struct LoadChild {}
 
 impl LoadChild {
-    pub fn load_child(context: &mut JoshutoContext) -> std::io::Result<()> {
+    pub fn load_child(context: &mut AppContext) -> std::io::Result<()> {
         let mut path: Option<PathBuf> = None;
         if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
             if let Some(index) = curr_list.index {

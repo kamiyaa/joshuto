@@ -6,16 +6,16 @@ use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::{HOME_DIR, HOSTNAME, USERNAME};
 
 pub struct TuiTopBar<'a> {
-    pub context: &'a JoshutoContext,
+    pub context: &'a AppContext,
     path: &'a Path,
 }
 
 impl<'a> TuiTopBar<'a> {
-    pub fn new(context: &'a JoshutoContext, path: &'a Path) -> Self {
+    pub fn new(context: &'a AppContext, path: &'a Path) -> Self {
         Self { context, path }
     }
 }

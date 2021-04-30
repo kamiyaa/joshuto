@@ -1,10 +1,10 @@
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 
 use super::reload;
 
-pub fn _toggle_hidden(context: &mut JoshutoContext) {
+pub fn _toggle_hidden(context: &mut AppContext) {
     let opposite = !context.display_options_ref().show_hidden();
     context.display_options_mut().set_show_hidden(opposite);
 
@@ -16,7 +16,7 @@ pub fn _toggle_hidden(context: &mut JoshutoContext) {
     }
 }
 
-pub fn toggle_hidden(context: &mut JoshutoContext) -> JoshutoResult<()> {
+pub fn toggle_hidden(context: &mut AppContext) -> JoshutoResult<()> {
     _toggle_hidden(context);
     reload::reload_dirlist(context)
 }

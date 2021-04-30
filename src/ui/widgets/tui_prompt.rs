@@ -4,10 +4,10 @@ use tui::style::{Color, Style};
 use tui::text::Span;
 use tui::widgets::{Clear, Paragraph, Wrap};
 
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
-use crate::util::event::JoshutoEvent;
+use crate::util::event::AppEvent;
 use crate::util::input;
 
 pub struct TuiPrompt<'a> {
@@ -19,7 +19,7 @@ impl<'a> TuiPrompt<'a> {
         Self { prompt }
     }
 
-    pub fn get_key(&mut self, backend: &mut TuiBackend, context: &mut JoshutoContext) -> Key {
+    pub fn get_key(&mut self, backend: &mut TuiBackend, context: &mut AppContext) -> Key {
         let terminal = backend.terminal_mut();
 
         context.flush_event();
@@ -56,10 +56,10 @@ impl<'a> TuiPrompt<'a> {
 
             if let Ok(event) = context.poll_event() {
                 match event {
-                    JoshutoEvent::Termion(Event::Key(key)) => {
+                    AppEvent::Termion(Event::Key(key)) => {
                         return key;
                     }
-                    JoshutoEvent::Termion(_) => {
+                    AppEvent::Termion(_) => {
                         context.flush_event();
                     }
                     event => input::process_noninteractive(event, context),

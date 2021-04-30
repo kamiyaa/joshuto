@@ -1,5 +1,5 @@
 use crate::commands::SearchPattern;
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
 
@@ -36,7 +36,7 @@ pub fn search_string_rev(curr_tab: &JoshutoTab, pattern: &str) -> Option<usize> 
     None
 }
 
-pub fn search_string(context: &mut JoshutoContext, pattern: &str) -> JoshutoResult<()> {
+pub fn search_string(context: &mut AppContext, pattern: &str) -> JoshutoResult<()> {
     let pattern = pattern.to_lowercase();
     let index = search_string_fwd(context.tab_context_ref().curr_tab_ref(), pattern.as_str());
     if let Some(index) = index {

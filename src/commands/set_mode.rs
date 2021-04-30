@@ -1,4 +1,4 @@
-use crate::context::JoshutoContext;
+use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
@@ -32,7 +32,7 @@ pub fn str_to_mode(s: &str) -> u32 {
     mode
 }
 
-pub fn set_mode(context: &mut JoshutoContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn set_mode(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     use std::os::unix::fs::PermissionsExt;
 
     const PREFIX: &str = "set_mode ";

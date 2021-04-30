@@ -5,12 +5,12 @@ use tui::layout::Rect;
 use tui::widgets::Clear;
 
 use crate::commands::{CommandKeybind, KeyCommand};
-use crate::config::JoshutoKeyMapping;
-use crate::context::JoshutoContext;
+use crate::config::AppKeyMapping;
+use crate::context::AppContext;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
 use crate::ui::TuiBackend;
-use crate::util::event::JoshutoEvent;
+use crate::util::event::AppEvent;
 use crate::util::input;
 use crate::util::to_string::ToString;
 
@@ -27,8 +27,8 @@ impl TuiCommandMenu {
     pub fn get_input<'a>(
         &mut self,
         backend: &mut TuiBackend,
-        context: &mut JoshutoContext,
-        map: &'a JoshutoKeyMapping,
+        context: &mut AppContext,
+        map: &'a AppKeyMapping,
     ) -> Option<&'a KeyCommand> {
         let mut map = map;
         let terminal = backend.terminal_mut();
@@ -78,7 +78,7 @@ impl TuiCommandMenu {
 
             if let Ok(event) = context.poll_event() {
                 match event {
-                    JoshutoEvent::Termion(event) => {
+                    AppEvent::Termion(event) => {
                         match event {
                             Event::Key(Key::Esc) => return None,
                             event => match map.as_ref().get(&event) {
