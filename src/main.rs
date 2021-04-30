@@ -18,7 +18,7 @@ use std::process;
 use structopt::StructOpt;
 
 use crate::config::{
-    ConfigStructure, JoshutoCommandMapping, JoshutoConfig, JoshutoMimetype, JoshutoPreview,
+    ConfigStructure, JoshutoConfig, JoshutoKeyMapping, JoshutoMimetype, JoshutoPreview,
     JoshutoTheme,
 };
 use crate::context::JoshutoContext;
@@ -86,7 +86,7 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     }
 
     let config = JoshutoConfig::get_config();
-    let keymap = JoshutoCommandMapping::get_config();
+    let keymap = JoshutoKeyMapping::get_config();
 
     let mut context = JoshutoContext::new(config);
 

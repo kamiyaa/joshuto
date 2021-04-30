@@ -13,23 +13,23 @@ use crate::util::key_mapping::str_to_event;
 use crate::KEYMAP_FILE;
 
 #[derive(Debug)]
-pub struct JoshutoCommandMapping {
+pub struct JoshutoKeyMapping {
     map: HashMap<Event, CommandKeybind>,
 }
 
-impl std::convert::AsRef<HashMap<Event, CommandKeybind>> for JoshutoCommandMapping {
+impl std::convert::AsRef<HashMap<Event, CommandKeybind>> for JoshutoKeyMapping {
     fn as_ref(&self) -> &HashMap<Event, CommandKeybind> {
         &self.map
     }
 }
 
-impl std::convert::AsMut<HashMap<Event, CommandKeybind>> for JoshutoCommandMapping {
+impl std::convert::AsMut<HashMap<Event, CommandKeybind>> for JoshutoKeyMapping {
     fn as_mut(&mut self) -> &mut HashMap<Event, CommandKeybind> {
         &mut self.map
     }
 }
 
-impl JoshutoCommandMapping {
+impl JoshutoKeyMapping {
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),
@@ -194,7 +194,7 @@ impl JoshutoCommandMapping {
     }
 }
 
-impl std::default::Default for JoshutoCommandMapping {
+impl std::default::Default for JoshutoKeyMapping {
     fn default() -> Self {
         let mut m = Self {
             map: HashMap::new(),
@@ -204,9 +204,9 @@ impl std::default::Default for JoshutoCommandMapping {
     }
 }
 
-impl ConfigStructure for JoshutoCommandMapping {
+impl ConfigStructure for JoshutoKeyMapping {
     fn get_config() -> Self {
-        parse_to_config_file::<JoshutoRawCommandMapping, JoshutoCommandMapping>(KEYMAP_FILE)
+        parse_to_config_file::<JoshutoRawKeyMapping, JoshutoKeyMapping>(KEYMAP_FILE)
             .unwrap_or_else(Self::default)
     }
 }
@@ -218,14 +218,14 @@ struct JoshutoMapCommand {
 }
 
 #[derive(Debug, Deserialize)]
-struct JoshutoRawCommandMapping {
+struct JoshutoRawKeyMapping {
     #[serde(default)]
     mapcommand: Vec<JoshutoMapCommand>,
 }
 
-impl Flattenable<JoshutoCommandMapping> for JoshutoRawCommandMapping {
-    fn flatten(self) -> JoshutoCommandMapping {
-        let mut keymaps = JoshutoCommandMapping::new();
+impl Flattenable<JoshutoKeyMapping> for JoshutoRawKeyMapping {
+    fn flatten(self) -> JoshutoKeyMapping {
+        let mut keymaps = JoshutoKeyMapping::new();
         for m in self.mapcommand {
             match KeyCommand::parse_command(m.command.as_str()) {
                 Ok(command) => {
@@ -254,7 +254,7 @@ impl Flattenable<JoshutoCommandMapping> for JoshutoRawCommandMapping {
 }
 
 fn insert_keycommand(
-    keymap: &mut JoshutoCommandMapping,
+    keymap: &mut JoshutoKeyMapping,
     keycommand: KeyCommand,
     events: &[Event],
 ) -> Result<(), String> {
@@ -282,7 +282,7 @@ fn insert_keycommand(
             _ => Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
         },
         Entry::Vacant(entry) => {
-            let mut new_map = JoshutoCommandMapping::new();
+            let mut new_map = JoshutoKeyMapping::new();
             let result = insert_keycommand(&mut new_map, keycommand, &events[1..]);
             if result.is_ok() {
                 let composite_command = CommandKeybind::CompositeKeybind(new_map);

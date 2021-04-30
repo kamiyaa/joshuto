@@ -1,4 +1,4 @@
-use crate::config::JoshutoCommandMapping;
+use crate::config::JoshutoKeyMapping;
 use crate::context::JoshutoContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
@@ -8,7 +8,7 @@ use super::KeyCommand;
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(KeyCommand),
-    CompositeKeybind(JoshutoCommandMapping),
+    CompositeKeybind(JoshutoKeyMapping),
 }
 
 impl std::fmt::Display for CommandKeybind {

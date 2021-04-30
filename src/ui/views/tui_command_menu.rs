@@ -5,7 +5,7 @@ use tui::layout::Rect;
 use tui::widgets::Clear;
 
 use crate::commands::{CommandKeybind, KeyCommand};
-use crate::config::JoshutoCommandMapping;
+use crate::config::JoshutoKeyMapping;
 use crate::context::JoshutoContext;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
@@ -28,9 +28,9 @@ impl TuiCommandMenu {
         &mut self,
         backend: &mut TuiBackend,
         context: &mut JoshutoContext,
-        m: &'a JoshutoCommandMapping,
+        map: &'a JoshutoKeyMapping,
     ) -> Option<&'a KeyCommand> {
-        let mut map: &JoshutoCommandMapping = &m;
+        let mut map = map;
         let terminal = backend.terminal_mut();
         context.flush_event();
 

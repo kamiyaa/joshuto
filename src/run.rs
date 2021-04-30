@@ -1,7 +1,7 @@
 use termion::event::Event;
 
 use crate::commands::{CommandKeybind, JoshutoRunnable, KeyCommand};
-use crate::config::JoshutoCommandMapping;
+use crate::config::JoshutoKeyMapping;
 use crate::context::JoshutoContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
@@ -14,7 +14,7 @@ use crate::util::to_string::ToString;
 pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut JoshutoContext,
-    keymap_t: JoshutoCommandMapping,
+    keymap_t: JoshutoKeyMapping,
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
     {

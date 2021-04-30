@@ -5,7 +5,7 @@ pub mod preview;
 pub mod theme;
 
 pub use self::default::JoshutoConfig;
-pub use self::keymap::JoshutoCommandMapping;
+pub use self::keymap::JoshutoKeyMapping;
 pub use self::mimetype::JoshutoMimetype;
 pub use self::preview::{JoshutoPreview, JoshutoPreviewEntry};
 pub use self::theme::{JoshutoStyleTheme, JoshutoTheme};
