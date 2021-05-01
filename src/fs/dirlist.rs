@@ -46,6 +46,10 @@ impl JoshutoDirList {
         self.contents.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.contents.is_empty()
+    }
+
     pub fn modified(&self) -> bool {
         let metadata = std::fs::symlink_metadata(self.file_path());
         match metadata {

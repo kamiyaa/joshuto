@@ -84,8 +84,7 @@ impl<'a> TuiTextField<'a> {
         line_buffer.set_pos(char_idx);
 
         let terminal = backend.terminal_mut();
-
-        terminal.show_cursor();
+        let _ = terminal.show_cursor();
 
         loop {
             terminal
@@ -190,7 +189,7 @@ impl<'a> TuiTextField<'a> {
                             Key::Up => {}
                             Key::Down => {}
                             Key::Esc => {
-                                terminal.hide_cursor();
+                                let _ = terminal.hide_cursor();
                                 return None;
                             }
                             Key::Char('\t') => {
@@ -243,7 +242,7 @@ impl<'a> TuiTextField<'a> {
                 };
             }
         }
-        terminal.hide_cursor();
+        let _ = terminal.hide_cursor();
 
         if line_buffer.as_str().is_empty() {
             None

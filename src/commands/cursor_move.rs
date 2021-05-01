@@ -9,7 +9,7 @@ pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<
     let mut new_index = new_index;
 
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-        if curr_list.index.is_some() {
+        if !curr_list.is_empty() {
             let dir_len = curr_list.len();
             if new_index >= dir_len {
                 new_index = dir_len - 1;
@@ -24,7 +24,7 @@ pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<
     // get preview
     if let Some(path) = path {
         if path.is_dir() {
-            let options = context.display_options_ref().clone();
+            let options = context.config_ref().display_options_ref().clone();
             context
                 .tab_context_mut()
                 .curr_tab_mut()

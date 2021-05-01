@@ -3,7 +3,7 @@ use crate::error::JoshutoResult;
 use crate::util::load_child::LoadChild;
 
 pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()> {
-    let options = context.display_options_ref().clone();
+    let options = context.config_ref().display_options_ref().clone();
     if let Some(curr_tab) = context.tab_context_mut().tab_mut(index) {
         if let Some(curr_list) = curr_tab.curr_list_mut() {
             if curr_list.need_update() {
@@ -25,7 +25,7 @@ pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()
 }
 
 pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
-    let options = context.display_options_ref().clone();
+    let options = context.config_ref().display_options_ref().clone();
     if let Some(curr_tab) = context.tab_context_mut().tab_mut(index) {
         if let Some(curr_list) = curr_tab.curr_list_mut() {
             curr_list.reload_contents(&options)?;

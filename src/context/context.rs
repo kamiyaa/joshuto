@@ -6,20 +6,26 @@ use std::thread;
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
-use crate::util::display::DisplayOption;
 use crate::util::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
-use crate::util::sort;
 
 pub struct AppContext {
     pub exit: bool,
+    // app config
     config: config::AppConfig,
+    // event loop querying
     events: Events,
+    // context related to tabs
     tab_context: TabContext,
+    // context related to local file state
     local_state: Option<LocalStateContext>,
+    // context related to searching
     search_state: Option<SearchPattern>,
+    // message queue for displaying messages
     message_queue: VecDeque<String>,
+    // queue of IO workers
     worker_queue: VecDeque<IoWorkerThread>,
+    // current worker
     worker: Option<IoWorkerObserver>,
 }
 
@@ -38,28 +44,22 @@ impl AppContext {
         }
     }
 
+    // event related
+    pub fn poll_event(&self) -> Result<AppEvent, mpsc::RecvError> {
+        self.events.next()
+    }
+    pub fn get_event_tx(&self) -> mpsc::Sender<AppEvent> {
+        self.events.event_tx.clone()
+    }
+    pub fn flush_event(&self) {
+        self.events.flush();
+    }
+
     pub fn config_ref(&self) -> &config::AppConfig {
         &self.config
     }
-
     pub fn config_mut(&mut self) -> &mut config::AppConfig {
         &mut self.config
-    }
-
-    pub fn display_options_ref(&self) -> &DisplayOption {
-        self.config_ref().display_options_ref()
-    }
-
-    pub fn display_options_mut(&mut self) -> &mut DisplayOption {
-        self.config_mut().display_options_mut()
-    }
-
-    pub fn sort_options_ref(&self) -> &sort::SortOption {
-        self.config_ref().display_options_ref().sort_options_ref()
-    }
-
-    pub fn sort_options_mut(&mut self) -> &mut sort::SortOption {
-        self.config_mut().display_options_mut().sort_options_mut()
     }
 
     pub fn tab_context_ref(&self) -> &TabContext {
@@ -79,17 +79,6 @@ impl AppContext {
         self.message_queue.pop_front()
     }
 
-    // event related
-    pub fn poll_event(&self) -> Result<AppEvent, mpsc::RecvError> {
-        self.events.next()
-    }
-    pub fn get_event_tx(&self) -> mpsc::Sender<AppEvent> {
-        self.events.event_tx.clone()
-    }
-    pub fn flush_event(&self) {
-        self.events.flush();
-    }
-
     // local state related
     pub fn set_local_state(&mut self, state: LocalStateContext) {
         self.local_state = Some(state);
@@ -98,12 +87,11 @@ impl AppContext {
         self.local_state.take()
     }
 
-    pub fn set_search_state(&mut self, pattern: SearchPattern) {
-        self.search_state = Some(pattern);
-    }
-
     pub fn get_search_state(&self) -> Option<&SearchPattern> {
         self.search_state.as_ref()
+    }
+    pub fn set_search_state(&mut self, pattern: SearchPattern) {
+        self.search_state = Some(pattern);
     }
 
     // worker related
@@ -120,7 +108,6 @@ impl AppContext {
     pub fn worker_iter(&self) -> Iter<IoWorkerThread> {
         self.worker_queue.iter()
     }
-
     pub fn worker_ref(&self) -> Option<&IoWorkerObserver> {
         self.worker.as_ref()
     }

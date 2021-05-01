@@ -31,17 +31,18 @@ impl<'a> Widget for TuiFolderView<'a> {
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
 
-        let constraints: &[Constraint; 3] =
-            if !self.context.display_options_ref().collapse_preview() {
-                &self.context.display_options_ref().default_layout
-            } else {
-                match child_list {
-                    Some(_) => &self.context.display_options_ref().default_layout,
-                    None => &self.context.display_options_ref().no_preview_layout,
-                }
-            };
+        let config = self.context.config_ref();
 
-        let layout_rect = if self.context.display_options_ref().show_borders() {
+        let constraints: &[Constraint; 3] = if !config.display_options_ref().collapse_preview() {
+            &config.display_options_ref().default_layout
+        } else {
+            match child_list {
+                Some(_) => &config.display_options_ref().default_layout,
+                None => &config.display_options_ref().no_preview_layout,
+            }
+        };
+
+        let layout_rect = if config.display_options_ref().show_borders() {
             let area = Rect {
                 y: area.top() + 1,
                 height: area.height - 2,

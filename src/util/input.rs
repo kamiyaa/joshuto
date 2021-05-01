@@ -13,7 +13,7 @@ use crate::util::format;
 pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut ui::TuiBackend) {
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
 
-    let constraints: &[Constraint; 3] = &context.display_options_ref().default_layout;
+    let constraints: &[Constraint; 3] = &context.config_ref().display_options_ref().default_layout;
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
         .vertical_margin(1)
@@ -112,7 +112,7 @@ pub fn process_worker_progress(context: &mut AppContext, res: IoWorkerProgress) 
 
 pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<IoWorkerProgress>) {
     let observer = context.remove_job().unwrap();
-    let options = context.display_options_ref().clone();
+    let options = context.config_ref().display_options_ref().clone();
     for tab in context.tab_context_mut().iter_mut() {
         let _ = tab.history_mut().reload(observer.dest_path(), &options);
         let _ = tab.history_mut().reload(observer.src_path(), &options);

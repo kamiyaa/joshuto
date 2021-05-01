@@ -15,12 +15,9 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
     let path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
     std::env::set_current_dir(path.as_path())?;
 
-    let options = context.display_options_ref().clone();
-    context
-        .tab_context_mut()
-        .curr_tab_mut()
-        .history_mut()
-        .create_or_soft_update(path.as_path(), &options)?;
+    let options = context.config_ref().display_options_ref().clone();
+    let history = context.tab_context_mut().curr_tab_mut().history_mut();
+    history.create_or_soft_update(path.as_path(), &options)?;
     Ok(())
 }
 
@@ -39,7 +36,7 @@ pub fn new_tab(context: &mut AppContext) -> JoshutoResult<()> {
         None => path::PathBuf::from("/"),
     };
 
-    let tab = JoshutoTab::new(curr_path, context.display_options_ref())?;
+    let tab = JoshutoTab::new(curr_path, context.config_ref().display_options_ref())?;
     context.tab_context_mut().push_tab(tab);
     let new_index = context.tab_context_ref().len() - 1;
     context.tab_context_mut().set_index(new_index);

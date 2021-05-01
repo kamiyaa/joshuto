@@ -111,7 +111,7 @@ pub fn delete_selected_files(
 ) -> std::io::Result<()> {
     delete_files(context, backend)?;
 
-    let options = context.display_options_ref().clone();
+    let options = context.config_ref().display_options_ref().clone();
     let curr_path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().reload(&curr_path, &options)?;

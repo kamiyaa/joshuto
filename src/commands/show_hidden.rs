@@ -5,8 +5,11 @@ use crate::history::DirectoryHistory;
 use super::reload;
 
 pub fn _toggle_hidden(context: &mut AppContext) {
-    let opposite = !context.display_options_ref().show_hidden();
-    context.display_options_mut().set_show_hidden(opposite);
+    let opposite = !context.config_ref().display_options_ref().show_hidden();
+    context
+        .config_mut()
+        .display_options_mut()
+        .set_show_hidden(opposite);
 
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();

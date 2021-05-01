@@ -6,10 +6,6 @@ use tui::style::{Color, Modifier};
 use super::{AppStyle, RawAppStyle};
 use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
 
-const fn default_color() -> Color {
-    Color::Reset
-}
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct RawAppTheme {
     #[serde(default)]

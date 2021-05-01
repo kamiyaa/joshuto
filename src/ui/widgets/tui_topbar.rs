@@ -42,7 +42,12 @@ impl<'a> Widget for TuiTopBar<'a> {
                 None => {}
             }
         }
-        if self.context.display_options_ref().tilde_in_titlebar() {
+        if self
+            .context
+            .config_ref()
+            .display_options_ref()
+            .tilde_in_titlebar()
+        {
             if let Some(home_dir) = HOME_DIR.as_ref() {
                 let home_dir_str = home_dir.to_string_lossy().into_owned();
                 curr_path_str = curr_path_str.replace(&home_dir_str, "~");
