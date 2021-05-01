@@ -273,9 +273,3 @@ tex = [
 
 torrent = [
 	{ command = "transmission-gtk" } ]
-
-[mimetype]
-text = [
-	{ command = "nano" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
