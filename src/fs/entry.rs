@@ -1,13 +1,9 @@
 use std::{fs, path};
 
-use tui::style::Style;
-
 use crate::fs::{FileType, JoshutoMetadata};
 
 #[cfg(feature = "devicons")]
 use crate::util::devicons::*;
-
-use crate::util::unix;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {

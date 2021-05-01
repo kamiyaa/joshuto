@@ -43,7 +43,7 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(format!("{}/{}", i + 1, self.dirlist.len())),
                     Span::raw("  "),
                     Span::raw(mtime_str),
-                    Span::raw("  "),
+                    Span::raw(" UTC "),
                     Span::raw(size_str),
                     #[cfg(unix)]
                     Span::raw("  "),
