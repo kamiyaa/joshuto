@@ -327,7 +327,7 @@ impl KeyCommand {
     }
 }
 
-impl JoshutoRunnable for KeyCommand {
+impl AppExecute for KeyCommand {
     fn execute(&self, context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
         match &*self {
             Self::BulkRename => bulk_rename::bulk_rename(context, backend),
@@ -401,10 +401,13 @@ impl std::fmt::Display for KeyCommand {
         match &*self {
             Self::ChangeDirectory(p) => write!(f, "{} {:?}", self.command(), p),
             Self::CommandLine(s, p) => write!(f, "{} {} {}", self.command(), s, p),
-            Self::PasteFiles(options) => write!(f, "{}  {}", self.command(), options),
             Self::CursorMoveUp(i) => write!(f, "{} {}", self.command(), i),
             Self::CursorMoveDown(i) => write!(f, "{} {}", self.command(), i),
+
             Self::NewDirectory(d) => write!(f, "{} {:?}", self.command(), d),
+
+            Self::PasteFiles(options) => write!(f, "{}  {}", self.command(), options),
+
             Self::RenameFile(name) => write!(f, "{} {:?}", self.command(), name),
 
             Self::SearchGlob(s) => write!(f, "{} {}", self.command(), s),
@@ -420,4 +423,4 @@ impl std::fmt::Display for KeyCommand {
     }
 }
 
-impl JoshutoCommand for KeyCommand {}
+impl AppCommand for KeyCommand {}

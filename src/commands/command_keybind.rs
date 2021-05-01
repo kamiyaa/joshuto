@@ -20,8 +20,8 @@ impl std::fmt::Display for CommandKeybind {
     }
 }
 
-pub trait JoshutoRunnable {
+pub trait AppExecute {
     fn execute(&self, context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()>;
 }
 
-pub trait JoshutoCommand: JoshutoRunnable + std::fmt::Display + std::fmt::Debug {}
+pub trait AppCommand: AppExecute + std::fmt::Display + std::fmt::Debug {}

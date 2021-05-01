@@ -36,7 +36,7 @@ impl Flattenable<AppConfig> for RawAppConfig {
             scroll_offset: self.scroll_offset,
             use_trash: self.use_trash,
             xdg_open: self.xdg_open,
-            _display_options: self.display_options.into(),
+            _display_options: self.display_options.flatten(),
         }
     }
 }

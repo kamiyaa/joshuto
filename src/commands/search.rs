@@ -1,17 +1,10 @@
-use globset::GlobMatcher;
-
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
+use crate::util::search::SearchPattern;
 
 use super::cursor_move;
 use super::search_glob;
 use super::search_string;
-
-#[derive(Clone, Debug)]
-pub enum SearchPattern {
-    Glob(GlobMatcher),
-    String(String),
-}
 
 pub fn search_next(context: &mut AppContext) -> JoshutoResult<()> {
     if let Some(s) = context.get_search_state() {

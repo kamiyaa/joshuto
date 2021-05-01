@@ -1,9 +1,10 @@
 use serde_derive::Deserialize;
-
 use tui::layout::Constraint;
 
-use super::SortRawOption;
+use crate::config::Flattenable;
 use crate::util::display::{default_column_ratio, DisplayOption};
+
+use super::SortRawOption;
 
 const fn default_true() -> bool {
     true
@@ -36,8 +37,8 @@ pub struct DisplayRawOption {
     sort_options: SortRawOption,
 }
 
-impl DisplayRawOption {
-    pub fn into(self) -> DisplayOption {
+impl Flattenable<DisplayOption> for DisplayRawOption {
+    fn flatten(self) -> DisplayOption {
         let column_ratio = match self.column_ratio {
             Some(s) => (s[0], s[1], s[2]),
             _ => default_column_ratio(),

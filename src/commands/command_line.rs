@@ -4,7 +4,7 @@ use crate::error::JoshutoResult;
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
 
-use super::JoshutoRunnable;
+use super::AppExecute;
 
 pub fn readline(
     context: &mut AppContext,

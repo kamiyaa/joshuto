@@ -1,7 +1,7 @@
-use crate::commands::SearchPattern;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
+use crate::util::search::SearchPattern;
 
 use super::cursor_move;
 

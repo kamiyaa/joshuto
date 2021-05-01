@@ -1,6 +1,6 @@
 use termion::event::Event;
 
-use crate::commands::{CommandKeybind, JoshutoRunnable, KeyCommand};
+use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::tab::JoshutoTab;

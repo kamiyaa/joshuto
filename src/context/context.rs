@@ -3,12 +3,12 @@ use std::collections::VecDeque;
 use std::sync::mpsc;
 use std::thread;
 
-use crate::commands::SearchPattern;
 use crate::config;
 use crate::context::{LocalStateContext, TabContext};
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
 use crate::util::display::DisplayOption;
 use crate::util::event::{AppEvent, Events};
+use crate::util::search::SearchPattern;
 use crate::util::sort;
 
 pub struct AppContext {
