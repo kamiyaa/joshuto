@@ -10,5 +10,6 @@ pub mod name_resolution;
 pub mod search;
 pub mod select;
 pub mod sort;
+pub mod style;
 pub mod to_string;
 pub mod unix;

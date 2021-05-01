@@ -5,6 +5,7 @@ use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList};
+use crate::util::style;
 
 const ELLIPSIS: &str = "…";
 
@@ -46,28 +47,26 @@ impl<'a> Widget for TuiDirList<'a> {
             .enumerate()
             .take(area.height as usize)
             .for_each(|(i, entry)| {
-                let style = entry.get_style();
+                let style = style::entry_style(entry);
                 print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width - 1);
             });
 
-        {
-            let screen_index = curr_index % area.height as usize;
+        // draw selected entry in a different style
+        let screen_index = curr_index % area.height as usize;
 
-            let entry = self.dirlist.curr_entry_ref().unwrap();
-            let style = {
-                let s = entry.get_style().add_modifier(Modifier::REVERSED);
-                let space_fill = " ".repeat(drawing_width);
-                buf.set_string(x, y + screen_index as u16, space_fill.as_str(), s);
-                s
-            };
-            print_entry(
-                buf,
-                entry,
-                style,
-                (x + 1, y + screen_index as u16),
-                drawing_width - 1,
-            );
-        }
+        let entry = self.dirlist.curr_entry_ref().unwrap();
+        let style = style::entry_style(entry).add_modifier(Modifier::REVERSED);
+
+        let space_fill = " ".repeat(drawing_width);
+        buf.set_string(x, y + screen_index as u16, space_fill.as_str(), style);
+
+        print_entry(
+            buf,
+            entry,
+            style,
+            (x + 1, y + screen_index as u16),
+            drawing_width - 1,
+        );
     }
 }
 
