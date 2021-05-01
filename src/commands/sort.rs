@@ -14,7 +14,7 @@ pub fn set_sort(context: &mut AppContext, method: SortType) -> JoshutoResult<()>
         tab.history_mut().depreciate_all_entries();
     }
 
-    reload::soft_reload(context.tab_context_ref().get_index(), context)?;
+    reload::soft_reload(context.tab_context_ref().index, context)?;
     LoadChild::load_child(context)?;
     Ok(())
 }
@@ -26,7 +26,7 @@ pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult<()> {
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
     }
-    reload::soft_reload(context.tab_context_ref().get_index(), context)?;
+    reload::soft_reload(context.tab_context_ref().index, context)?;
     LoadChild::load_child(context)?;
     Ok(())
 }

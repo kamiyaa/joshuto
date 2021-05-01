@@ -39,6 +39,7 @@ impl DisplayOption {
         self._show_icons
     }
 
+    #[allow(dead_code)]
     pub fn show_preview(&self) -> bool {
         self._show_preview
     }

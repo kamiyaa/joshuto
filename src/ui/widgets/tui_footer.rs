@@ -31,12 +31,6 @@ impl<'a> Widget for TuiFooter<'a> {
                 let mtime_str = format::mtime_to_string(entry.metadata.modified());
                 let size_str = format::file_size_to_string(entry.metadata.len());
 
-                #[cfg(unix)]
-                let mimetype = match entry.metadata.mimetype.as_ref() {
-                    Some(s) => s.as_str(),
-                    None => "",
-                };
-
                 let mut text = vec![
                     Span::styled(mode_str, mode_style),
                     Span::raw("  "),
@@ -45,10 +39,6 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(mtime_str),
                     Span::raw(" UTC "),
                     Span::raw(size_str),
-                    #[cfg(unix)]
-                    Span::raw("  "),
-                    #[cfg(unix)]
-                    Span::raw(mimetype),
                 ];
 
                 if let FileType::Symlink(s) = entry.metadata.file_type() {

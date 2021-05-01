@@ -28,6 +28,7 @@ impl AppMimetypeEntry {
         }
     }
 
+    #[allow(dead_code)]
     pub fn arg<S: std::convert::Into<String>>(&mut self, arg: S) -> &mut Self {
         self._args.push(arg.into());
         self
@@ -42,16 +43,19 @@ impl AppMimetypeEntry {
         self
     }
 
+    #[allow(dead_code)]
     pub fn fork(&mut self, fork: bool) -> &mut Self {
         self._fork = fork;
         self
     }
 
+    #[allow(dead_code)]
     pub fn silent(&mut self, silent: bool) -> &mut Self {
         self._silent = silent;
         self
     }
 
+    #[allow(dead_code)]
     pub fn confirm_exit(&mut self, confirm_exit: bool) -> &mut Self {
         self._confirm_exit = confirm_exit;
         self

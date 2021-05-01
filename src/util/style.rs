@@ -1,4 +1,4 @@
-use tui::style::{Color, Modifier, Style};
+use tui::style::Style;
 
 use crate::fs::{FileType, JoshutoDirEntry};
 use crate::util::unix;

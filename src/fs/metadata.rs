@@ -1,4 +1,4 @@
-use std::{fs, io, path, process, time};
+use std::{fs, io, path, time};
 
 #[derive(Clone, Debug)]
 pub enum FileType {
@@ -13,7 +13,6 @@ pub struct JoshutoMetadata {
     _modified: time::SystemTime,
     _permissions: fs::Permissions,
     _file_type: FileType,
-    pub mimetype: Option<String>,
     #[cfg(unix)]
     pub uid: u32,
     #[cfg(unix)]
@@ -49,14 +48,6 @@ impl JoshutoMetadata {
             FileType::File
         };
 
-        let mut mimetype = None;
-        if let FileType::File = file_type {
-            #[cfg(feature = "file_mimetype")]
-            {
-                mimetype = file_mimetype(path)
-            }
-        }
-
         #[cfg(unix)]
         let uid = metadata.uid();
         #[cfg(unix)]
@@ -69,7 +60,6 @@ impl JoshutoMetadata {
             _modified,
             _permissions,
             _file_type: file_type,
-            mimetype,
             #[cfg(unix)]
             uid,
             #[cfg(unix)]
@@ -97,26 +87,5 @@ impl JoshutoMetadata {
 
     pub fn file_type(&self) -> &FileType {
         &self._file_type
-    }
-}
-
-fn file_mimetype(path: &path::Path) -> Option<String> {
-    let output = process::Command::new("file")
-        .args(&["-Lb", "--mime-type"])
-        .arg(path)
-        .output();
-
-    match output {
-        Ok(s) => {
-            if s.status.success() {
-                match String::from_utf8(s.stdout) {
-                    Ok(s) => Some(s),
-                    Err(_) => None,
-                }
-            } else {
-                None
-            }
-        }
-        Err(_) => None,
     }
 }

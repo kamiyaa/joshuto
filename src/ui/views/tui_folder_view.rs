@@ -153,7 +153,7 @@ impl<'a> Widget for TuiFolderView<'a> {
             };
             TuiTabBar::new(
                 name,
-                self.context.tab_context_ref().get_index(),
+                self.context.tab_context_ref().index,
                 self.context.tab_context_ref().len(),
             )
             .render(rect, buf);

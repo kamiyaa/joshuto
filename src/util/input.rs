@@ -89,7 +89,7 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
             } else {
             }
         }
-        MouseEvent::Press(MouseButton::Left, x, y)
+        MouseEvent::Press(MouseButton::Left, _, y)
             if y > layout_rect[1].y && y <= layout_rect[1].y + layout_rect[1].height => {}
         _ => {}
     }

@@ -40,7 +40,7 @@ pub fn shell(
 ) -> JoshutoResult<()> {
     backend.terminal_drop();
     let res = shell_command(context, words);
-    reload::soft_reload(context.tab_context_ref().get_index(), context)?;
+    reload::soft_reload(context.tab_context_ref().index, context)?;
     context.push_msg(format!("Finished: {}", words.join(" ")));
     backend.terminal_restore()?;
     res?;

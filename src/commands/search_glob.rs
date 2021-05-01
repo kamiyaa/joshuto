@@ -37,7 +37,7 @@ pub fn search_glob_rev(curr_tab: &JoshutoTab, glob: &GlobMatcher) -> Option<usiz
 pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult<()> {
     let glob = match GlobBuilder::new(pattern).case_insensitive(true).build() {
         Ok(s) => s.compile_matcher(),
-        Err(e) => {
+        Err(_) => {
             return Err(JoshutoError::new(
                 JoshutoErrorKind::IoInvalidData,
                 "Invalid glob input".to_string(),

@@ -56,7 +56,7 @@ fn select_with_pattern(
 ) -> JoshutoResult<()> {
     let glob = match Glob::new(pattern) {
         Ok(s) => s.compile_matcher(),
-        Err(e) => {
+        Err(_) => {
             return Err(JoshutoError::new(
                 JoshutoErrorKind::IoInvalidData,
                 "Invalid glob input".to_string(),

@@ -41,7 +41,7 @@ pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
 }
 
 pub fn reload_dirlist(context: &mut AppContext) -> JoshutoResult<()> {
-    reload(context, context.tab_context_ref().get_index())?;
+    reload(context, context.tab_context_ref().index)?;
     LoadChild::load_child(context)?;
     Ok(())
 }

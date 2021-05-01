@@ -57,7 +57,7 @@ where
 }
 
 fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::Result<()> {
-    let tab_index = context.tab_context_ref().get_index();
+    let tab_index = context.tab_context_ref().index;
     let paths = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(s) => s.get_selected_paths(),
         None => vec![],
