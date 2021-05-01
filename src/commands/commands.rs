@@ -71,7 +71,7 @@ pub enum KeyCommand {
 }
 
 impl KeyCommand {
-    pub fn command(&self) -> &'static str {
+    pub const fn command(&self) -> &'static str {
         match self {
             Self::BulkRename => "bulk_rename",
             Self::ChangeDirectory(_) => "cd",
@@ -235,7 +235,7 @@ impl KeyCommand {
                 Ok(Self::PasteFiles(options))
             }
             "quit" => Ok(Self::Quit),
-            "reload_dir_list" => Ok(Self::ReloadDirList),
+            "reload_dirlist" => Ok(Self::ReloadDirList),
             "rename" => match arg {
                 "" => Err(JoshutoError::new(
                     JoshutoErrorKind::IoInvalidData,

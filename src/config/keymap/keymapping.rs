@@ -46,7 +46,7 @@ impl Flattenable<AppKeyMapping> for RawAppKeyMapping {
                         Err(e) => eprintln!("{}", e),
                     }
                 }
-                Err(e) => eprintln!("{}", e.cause()),
+                Err(e) => eprintln!("{}", e),
             }
         }
         keymaps

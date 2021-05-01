@@ -72,15 +72,11 @@ impl JoshutoError {
     pub fn kind(&self) -> JoshutoErrorKind {
         self._kind
     }
-
-    pub fn cause(&self) -> &str {
-        self._cause.as_str()
-    }
 }
 
-impl std::string::ToString for JoshutoError {
-    fn to_string(&self) -> String {
-        self._cause.clone()
+impl std::fmt::Display for JoshutoError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self._cause)
     }
 }
 

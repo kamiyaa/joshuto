@@ -1,6 +1,6 @@
 use std::time;
 
-use super::unix;
+use crate::util::unix;
 
 pub fn file_size_to_string(file_size: u64) -> String {
     const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "E"];
@@ -20,10 +20,6 @@ pub fn file_size_to_string(file_size: u64) -> String {
     } else {
         format!("{:>4.2} {}", file_size, FILE_UNITS[index])
     }
-}
-
-pub fn mode_to_string(mode: u32) -> String {
-    unix::mode_to_string(mode)
 }
 
 pub fn mtime_to_string(mtime: time::SystemTime) -> String {

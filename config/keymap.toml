@@ -21,7 +21,7 @@ keys = [ "q" ]
 command = "force_quit"
 keys = [ "Q" ]
 [[mapcommand]]
-command = "reload_dir_list"
+command = "reload_dirlist"
 keys = [ "R" ]
 [[mapcommand]]
 command = "toggle_hidden"
