@@ -205,7 +205,7 @@ impl KeyCommand {
             "mkdir" => {
                 if arg.is_empty() {
                     Err(JoshutoError::new(
-                        JoshutoErrorKind::IoInvalidData,
+                        JoshutoErrorKind::InvalidParameters,
                         format!("{}: missing additional parameter", command),
                     ))
                 } else {
@@ -226,7 +226,7 @@ impl KeyCommand {
                         "--skip_exist=false" => options.skip_exist = false,
                         _ => {
                             return Err(JoshutoError::new(
-                                JoshutoErrorKind::IoInvalidData,
+                                JoshutoErrorKind::UnrecognizedArgument,
                                 format!("{}: unknown option {}", command, arg),
                             ));
                         }
@@ -238,7 +238,7 @@ impl KeyCommand {
             "reload_dirlist" => Ok(Self::ReloadDirList),
             "rename" => match arg {
                 "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IoInvalidData,
+                    JoshutoErrorKind::InvalidParameters,
                     format!("{}: Expected 1, got 0", command),
                 )),
                 arg => {
@@ -250,14 +250,14 @@ impl KeyCommand {
             "rename_prepend" => Ok(Self::RenameFilePrepend),
             "search" => match arg {
                 "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IoInvalidData,
+                    JoshutoErrorKind::InvalidParameters,
                     format!("{}: Expected 1, got 0", command),
                 )),
                 arg => Ok(Self::SearchString(arg.to_string())),
             },
             "search_glob" => match arg {
                 "" => Err(JoshutoError::new(
-                    JoshutoErrorKind::IoInvalidData,
+                    JoshutoErrorKind::InvalidParameters,
                     format!("{}: Expected 1, got 0", command),
                 )),
                 arg => Ok(Self::SearchGlob(arg.to_string())),
@@ -283,7 +283,7 @@ impl KeyCommand {
                         Ok(Self::SelectFiles(pattern.to_string(), options))
                     }
                     Err(e) => Err(JoshutoError::new(
-                        JoshutoErrorKind::IoInvalidData,
+                        JoshutoErrorKind::InvalidParameters,
                         format!("{}: {}", arg, e),
                     )),
                 }
@@ -292,11 +292,11 @@ impl KeyCommand {
             "shell" => match shell_words::split(arg) {
                 Ok(s) if !s.is_empty() => Ok(Self::ShellCommand(s)),
                 Ok(_) => Err(JoshutoError::new(
-                    JoshutoErrorKind::IoInvalidData,
+                    JoshutoErrorKind::InvalidParameters,
                     format!("sort: args {}", arg),
                 )),
                 Err(e) => Err(JoshutoError::new(
-                    JoshutoErrorKind::IoInvalidData,
+                    JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", arg, e),
                 )),
             },
@@ -306,7 +306,7 @@ impl KeyCommand {
                 arg => match SortType::parse(arg) {
                     Some(s) => Ok(Self::Sort(s)),
                     None => Err(JoshutoError::new(
-                        JoshutoErrorKind::IoInvalidData,
+                        JoshutoErrorKind::InvalidParameters,
                         format!("sort: Unknown option {}", arg),
                     )),
                 },
@@ -314,13 +314,13 @@ impl KeyCommand {
             "tab_switch" => match arg.parse::<i32>() {
                 Ok(s) => Ok(Self::TabSwitch(s)),
                 Err(e) => Err(JoshutoError::new(
-                    JoshutoErrorKind::IoInvalidData,
+                    JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", command, e.to_string()),
                 )),
             },
             "toggle_hidden" => Ok(Self::ToggleHiddenFiles),
             inp => Err(JoshutoError::new(
-                JoshutoErrorKind::UnknownCommand,
+                JoshutoErrorKind::UnrecognizedCommand,
                 format!("Unknown command: {}", inp),
             )),
         }

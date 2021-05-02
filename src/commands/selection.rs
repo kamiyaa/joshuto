@@ -1,7 +1,7 @@
 use globset::Glob;
 
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::JoshutoResult;
 use crate::util::select::SelectOption;
 
 use super::cursor_move;
@@ -54,15 +54,8 @@ fn select_with_pattern(
     pattern: &str,
     options: &SelectOption,
 ) -> JoshutoResult<()> {
-    let glob = match Glob::new(pattern) {
-        Ok(s) => s.compile_matcher(),
-        Err(_) => {
-            return Err(JoshutoError::new(
-                JoshutoErrorKind::IoInvalidData,
-                "Invalid glob input".to_string(),
-            ));
-        }
-    };
+    let glob = Glob::new(pattern)?.compile_matcher();
+
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         curr_list
             .iter_mut()

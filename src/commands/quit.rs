@@ -1,10 +1,12 @@
+use std::io;
+
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 
 pub fn quit(context: &mut AppContext) -> JoshutoResult<()> {
     if context.worker_is_busy() {
         Err(JoshutoError::new(
-            JoshutoErrorKind::IoOther,
+            JoshutoErrorKind::Io(io::ErrorKind::Other),
             String::from("operations running in background, use force_quit to quit"),
         ))
     } else {

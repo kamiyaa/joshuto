@@ -1,3 +1,4 @@
+use std::io;
 use std::path;
 
 use crate::config::AppMimetypeEntry;
@@ -41,7 +42,7 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
                 };
             if paths.is_empty() {
                 return Err(JoshutoError::new(
-                    JoshutoErrorKind::IoNotFound,
+                    JoshutoErrorKind::Io(io::ErrorKind::NotFound),
                     String::from("No files selected"),
                 ));
             }
@@ -138,7 +139,7 @@ pub fn open_with(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoR
     };
     if paths.is_empty() {
         return Err(JoshutoError::new(
-            JoshutoErrorKind::IoNotFound,
+            JoshutoErrorKind::Io(io::ErrorKind::NotFound),
             String::from("No files selected"),
         ));
     }

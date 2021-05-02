@@ -1,4 +1,4 @@
-use std::io::{BufRead, Write};
+use std::io::{self, BufRead, Write};
 use std::path;
 use std::process;
 
@@ -85,7 +85,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
     }
     if paths_renamed.len() < paths.len() {
         return Err(JoshutoError::new(
-            JoshutoErrorKind::IoInvalidInput,
+            JoshutoErrorKind::Io(io::ErrorKind::InvalidInput),
             "Insufficient inputs".to_string(),
         ));
     }

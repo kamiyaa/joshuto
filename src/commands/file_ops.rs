@@ -1,3 +1,4 @@
+use std::io;
 use std::process::Command;
 
 use crate::context::{AppContext, LocalStateContext};
@@ -41,7 +42,7 @@ pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResul
             Ok(())
         }
         _ => Err(JoshutoError::new(
-            JoshutoErrorKind::IoInvalidData,
+            JoshutoErrorKind::Io(io::ErrorKind::InvalidData),
             "no files selected".to_string(),
         )),
     }
