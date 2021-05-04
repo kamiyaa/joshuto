@@ -227,7 +227,7 @@ impl KeyCommand {
                         _ => {
                             return Err(JoshutoError::new(
                                 JoshutoErrorKind::UnrecognizedArgument,
-                                format!("{}: unknown option {}", command, arg),
+                                format!("{}: unknown option '{}'", command, arg),
                             ));
                         }
                     }
