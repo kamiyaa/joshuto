@@ -1,4 +1,6 @@
-![Rust](https://github.com/kamiyaa/joshuto/workflows/Rust/badge.svg)
+[![Linux Build](https://github.com/kamiyaa/joshuto/actions/workflows/rust-linux.yml/badge.svg)](https://github.com/kamiyaa/joshuto/actions/workflows/rust-linux.yml)
+
+[![MacOS Build](https://github.com/kamiyaa/joshuto/actions/workflows/rust-macos.yml/badge.svg)](https://github.com/kamiyaa/joshuto/actions/workflows/rust-macos.yml)
 
 # joshuto
 
