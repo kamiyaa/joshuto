@@ -12,7 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [1.49.0, stable, beta]
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install minimal ${{ matrix.rust }} rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+      - run: cargo -Vv && rustc -Vv
+      - run: cargo check
+      - run: cargo check --all-features
+      - run: cargo clippy -- -Dwarnings -Dclippy::dbg_macro
+        if: ${{ matrix.rust == 'stable' }}
+      - run: cargo fmt --all -- --check
+        if: ${{ matrix.rust == 'stable' }}
+      - run: cargo test
+        if: ${{ matrix.rust == 'stable' }}
+  check:
+    name: Rust ${{ matrix.rust }}
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        rust: [stable]
     steps:
       - uses: actions/checkout@v2
       - name: Install minimal ${{ matrix.rust }} rust
