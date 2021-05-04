@@ -1,4 +1,4 @@
-name: Rust
+name: Rust Linux
 
 on:
   push:
