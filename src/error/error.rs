@@ -45,7 +45,9 @@ impl std::convert::From<globset::Error> for JoshutoError {
 impl std::convert::From<trash::Error> for JoshutoError {
     fn from(err: trash::Error) -> Self {
         let err = match err {
-            trash::Error::Unknown => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
+            trash::Error::Unknown => {
+                std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error")
+            }
             trash::Error::TargetedRoot => {
                 std::io::Error::new(std::io::ErrorKind::Other, "Targeted Root")
             }
@@ -64,4 +66,3 @@ impl std::convert::From<trash::Error> for JoshutoError {
         }
     }
 }
-
