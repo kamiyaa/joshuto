@@ -1,4 +1,4 @@
-name: Rust MacOS
+name: MacOS Build
 
 on:
   push:
