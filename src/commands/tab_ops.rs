@@ -22,8 +22,12 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
         .and_then(|l| l.curr_entry_ref())
     {
         Some(entry) => {
-            let file_path = entry.file_path().to_path_buf();
-            Some(file_path)
+            let file_path = entry.file_path();
+            if file_path.is_dir() {
+                Some(file_path.to_path_buf())
+            } else {
+                None
+            }
         }
         None => None,
     };
