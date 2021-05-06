@@ -12,12 +12,30 @@ use super::quit;
 
 fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()> {
     context.tab_context_mut().index = new_index;
-    let path = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
-    std::env::set_current_dir(path.as_path())?;
+    let cwd = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+    std::env::set_current_dir(cwd.as_path())?;
+
+    let entry_path = match context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|l| l.curr_entry_ref())
+    {
+        Some(entry) => {
+            let file_path = entry.file_path().to_path_buf();
+            Some(file_path)
+        }
+        None => None,
+    };
 
     let options = context.config_ref().display_options_ref().clone();
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
-    history.create_or_soft_update(path.as_path(), &options)?;
+    history.create_or_soft_update(cwd.as_path(), &options)?;
+
+    if let Some(file_path) = entry_path {
+        history.create_or_soft_update(file_path.as_path(), &options)?;
+    }
+
     Ok(())
 }
 

@@ -5,9 +5,18 @@ use crate::util::load_child::LoadChild;
 use super::reload;
 
 pub fn parent_directory_helper(context: &mut AppContext) -> std::io::Result<()> {
-    if context.tab_context_mut().curr_tab_mut().pwd_mut().pop() {
-        let path = context.tab_context_ref().curr_tab_ref().pwd();
-        std::env::set_current_dir(path)?;
+    if let Some(parent) = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .cwd()
+        .parent()
+        .map(|p| p.to_path_buf())
+    {
+        std::env::set_current_dir(&parent)?;
+        context
+            .tab_context_mut()
+            .curr_tab_mut()
+            .set_cwd(parent.as_path());
     }
     Ok(())
 }

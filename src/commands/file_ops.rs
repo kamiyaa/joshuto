@@ -36,7 +36,7 @@ pub fn copy(context: &mut AppContext) -> JoshutoResult<()> {
 pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResult<()> {
     match context.take_local_state() {
         Some(state) if !state.paths.is_empty() => {
-            let dest = context.tab_context_ref().curr_tab_ref().pwd().to_path_buf();
+            let dest = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
             let worker_thread = IoWorkerThread::new(state.file_op, state.paths, dest, options);
             context.add_worker(worker_thread);
             Ok(())

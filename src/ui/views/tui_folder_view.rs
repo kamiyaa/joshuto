@@ -130,7 +130,7 @@ impl<'a> Widget for TuiFolderView<'a> {
             width: topbar_width,
             height: 1,
         };
-        TuiTopBar::new(self.context, curr_tab.pwd()).render(rect, buf);
+        TuiTopBar::new(self.context, curr_tab.cwd()).render(rect, buf);
 
         // render tabs
         if self.context.tab_context_ref().len() > 1 {
@@ -146,7 +146,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                 width: TAB_VIEW_WIDTH,
                 height: 1,
             };
-            let name = if let Some(ostr) = curr_tab.pwd().file_name() {
+            let name = if let Some(ostr) = curr_tab.cwd().file_name() {
                 ostr.to_str().unwrap_or("")
             } else {
                 ""

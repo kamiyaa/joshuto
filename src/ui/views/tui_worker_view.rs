@@ -27,7 +27,7 @@ impl TuiWorkerView {
 
                 let rect = Rect { height: 1, ..area };
                 let curr_tab = context.tab_context_ref().curr_tab_ref();
-                let view = TuiTopBar::new(context, curr_tab.pwd());
+                let view = TuiTopBar::new(context, curr_tab.cwd());
                 frame.render_widget(view, rect);
 
                 let rect = Rect {

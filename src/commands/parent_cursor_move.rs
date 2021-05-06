@@ -23,7 +23,7 @@ pub fn parent_cursor_move(new_index: usize, context: &mut AppContext) -> Joshuto
             }
         }
         if let Some(path) = path.as_ref() {
-            curr_tab.set_pwd(path);
+            curr_tab.set_cwd(path);
         }
     }
 
