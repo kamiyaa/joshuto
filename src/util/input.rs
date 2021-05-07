@@ -98,12 +98,14 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
 }
 
 pub fn process_worker_progress(context: &mut AppContext, res: IoWorkerProgress) {
-    context.set_worker_progress(res);
-    context.update_worker_msg();
+    let worker_context = context.worker_context_mut();
+    worker_context.set_progress(res);
+    worker_context.update_msg();
 }
 
 pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<IoWorkerProgress>) {
-    let observer = context.remove_job().unwrap();
+    let worker_context = context.worker_context_mut();
+    let observer = worker_context.remove_worker().unwrap();
     let options = context.config_ref().display_options_ref().clone();
     for tab in context.tab_context_mut().iter_mut() {
         let _ = tab.history_mut().reload(observer.dest_path(), &options);

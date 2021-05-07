@@ -102,7 +102,7 @@ impl<'a> Widget for TuiFolderView<'a> {
             if self.show_bottom_status {
                 let message_style = Style::default().fg(Color::Yellow);
                 /* draw the bottom status bar */
-                if let Some(msg) = self.context.worker_msg() {
+                if let Some(msg) = self.context.worker_context_ref().get_msg() {
                     let text = Span::styled(msg, message_style);
                     Paragraph::new(text)
                         .wrap(Wrap { trim: true })

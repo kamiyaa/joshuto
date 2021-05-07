@@ -7,8 +7,8 @@ use super::search_glob;
 use super::search_string;
 
 pub fn search_next(context: &mut AppContext) -> JoshutoResult<()> {
-    if let Some(s) = context.get_search_state() {
-        let index = match s {
+    if let Some(search_context) = context.get_search_context() {
+        let index = match search_context {
             SearchPattern::Glob(s) => {
                 search_glob::search_glob_fwd(context.tab_context_ref().curr_tab_ref(), s)
             }
@@ -24,8 +24,8 @@ pub fn search_next(context: &mut AppContext) -> JoshutoResult<()> {
 }
 
 pub fn search_prev(context: &mut AppContext) -> JoshutoResult<()> {
-    if let Some(s) = context.get_search_state() {
-        let index = match s {
+    if let Some(search_context) = context.get_search_context() {
+        let index = match search_context {
             SearchPattern::Glob(s) => {
                 search_glob::search_glob_rev(context.tab_context_ref().curr_tab_ref(), s)
             }

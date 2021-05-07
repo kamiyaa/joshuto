@@ -38,7 +38,7 @@ pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResul
         Some(state) if !state.paths.is_empty() => {
             let dest = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
             let worker_thread = IoWorkerThread::new(state.file_op, state.paths, dest, options);
-            context.add_worker(worker_thread);
+            context.worker_context_mut().push(worker_thread);
             Ok(())
         }
         _ => Err(JoshutoError::new(

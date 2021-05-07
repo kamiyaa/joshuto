@@ -18,7 +18,7 @@ impl<'a> TuiWorker<'a> {
 
 impl<'a> Widget for TuiWorker<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        match self.context.worker_ref() {
+        match self.context.worker_context_ref().worker_ref() {
             Some(io_obs) => {
                 if let Some(progress) = io_obs.progress.as_ref() {
                     let op_str = match progress.kind() {
@@ -49,7 +49,7 @@ impl<'a> Widget for TuiWorker<'a> {
                     buf.set_stringn(0, 5, "Queue:", area.width as usize, style);
 
                     let style = Style::default();
-                    for (i, worker) in self.context.worker_iter().enumerate() {
+                    for (i, worker) in self.context.worker_context_ref().iter().enumerate() {
                         let op_str = match worker.kind() {
                             FileOp::Copy => "Copy",
                             FileOp::Cut => "Move",

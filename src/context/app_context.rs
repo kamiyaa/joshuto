@@ -1,11 +1,8 @@
-use std::collections::vec_deque::Iter;
 use std::collections::VecDeque;
 use std::sync::mpsc;
-use std::thread;
 
 use crate::config;
-use crate::context::{LocalStateContext, TabContext};
-use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
+use crate::context::{LocalStateContext, TabContext, WorkerContext};
 use crate::util::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
@@ -20,26 +17,25 @@ pub struct AppContext {
     // context related to local file state
     local_state: Option<LocalStateContext>,
     // context related to searching
-    search_state: Option<SearchPattern>,
+    search_context: Option<SearchPattern>,
     // message queue for displaying messages
     message_queue: VecDeque<String>,
-    // queue of IO workers
-    worker_queue: VecDeque<IoWorkerThread>,
-    // current worker
-    worker: Option<IoWorkerObserver>,
+    // context related to io workers
+    worker_context: WorkerContext,
 }
 
 impl AppContext {
     pub fn new(config: config::AppConfig) -> Self {
+        let events = Events::new();
+        let event_tx = events.event_tx.clone();
         Self {
             exit: false,
-            events: Events::new(),
+            events,
             tab_context: TabContext::new(),
             local_state: None,
-            search_state: None,
+            search_context: None,
             message_queue: VecDeque::with_capacity(4),
-            worker_queue: VecDeque::new(),
-            worker: None,
+            worker_context: WorkerContext::new(event_tx),
             config,
         }
     }
@@ -47,9 +43,6 @@ impl AppContext {
     // event related
     pub fn poll_event(&self) -> Result<AppEvent, mpsc::RecvError> {
         self.events.next()
-    }
-    pub fn get_event_tx(&self) -> mpsc::Sender<AppEvent> {
-        self.events.event_tx.clone()
     }
     pub fn flush_event(&self) {
         self.events.flush();
@@ -87,79 +80,17 @@ impl AppContext {
         self.local_state.take()
     }
 
-    pub fn get_search_state(&self) -> Option<&SearchPattern> {
-        self.search_state.as_ref()
+    pub fn get_search_context(&self) -> Option<&SearchPattern> {
+        self.search_context.as_ref()
     }
-    pub fn set_search_state(&mut self, pattern: SearchPattern) {
-        self.search_state = Some(pattern);
-    }
-
-    // worker related
-    pub fn add_worker(&mut self, thread: IoWorkerThread) {
-        self.worker_queue.push_back(thread);
-    }
-    pub fn worker_is_busy(&self) -> bool {
-        self.worker.is_some()
-    }
-    pub fn worker_is_empty(&self) -> bool {
-        self.worker_queue.is_empty()
+    pub fn set_search_context(&mut self, pattern: SearchPattern) {
+        self.search_context = Some(pattern);
     }
 
-    pub fn worker_iter(&self) -> Iter<IoWorkerThread> {
-        self.worker_queue.iter()
+    pub fn worker_context_ref(&self) -> &WorkerContext {
+        &self.worker_context
     }
-    pub fn worker_ref(&self) -> Option<&IoWorkerObserver> {
-        self.worker.as_ref()
-    }
-
-    pub fn set_worker_progress(&mut self, res: IoWorkerProgress) {
-        if let Some(s) = self.worker.as_mut() {
-            s.set_progress(res);
-        }
-    }
-
-    pub fn update_worker_msg(&mut self) {
-        if let Some(s) = self.worker.as_mut() {
-            s.update_msg();
-        }
-    }
-    pub fn worker_msg(&self) -> Option<&str> {
-        let worker = self.worker.as_ref()?;
-        Some(worker.get_msg())
-    }
-
-    pub fn start_next_job(&mut self) {
-        let tx = self.get_event_tx();
-
-        if let Some(worker) = self.worker_queue.pop_front() {
-            let src = worker.paths[0].parent().unwrap().to_path_buf();
-            let dest = worker.dest.clone();
-            let handle = thread::spawn(move || {
-                let (wtx, wrx) = mpsc::channel();
-                // start worker
-                let worker_handle = thread::spawn(move || worker.start(wtx));
-                // relay worker info to event loop
-                while let Ok(progress) = wrx.recv() {
-                    let _ = tx.send(AppEvent::IoWorkerProgress(progress));
-                }
-                let result = worker_handle.join();
-
-                match result {
-                    Ok(res) => {
-                        let _ = tx.send(AppEvent::IoWorkerResult(res));
-                    }
-                    Err(_) => {
-                        let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
-                        let _ = tx.send(AppEvent::IoWorkerResult(Err(err)));
-                    }
-                }
-            });
-            let observer = IoWorkerObserver::new(handle, src, dest);
-            self.worker = Some(observer);
-        }
-    }
-
-    pub fn remove_job(&mut self) -> Option<IoWorkerObserver> {
-        self.worker.take()
+    pub fn worker_context_mut(&mut self) -> &mut WorkerContext {
+        &mut self.worker_context
     }
 }

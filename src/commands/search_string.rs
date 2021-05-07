@@ -42,6 +42,6 @@ pub fn search_string(context: &mut AppContext, pattern: &str) -> JoshutoResult<(
     if let Some(index) = index {
         let _ = cursor_move::cursor_move(index, context);
     }
-    context.set_search_state(SearchPattern::String(pattern));
+    context.set_search_context(SearchPattern::String(pattern));
     Ok(())
 }
