@@ -24,7 +24,6 @@ jobs:
       - run: cargo -Vv && rustc -Vv
       - run: cargo check
       - run: cargo check --all-features
-      - run: cargo clippy -- -Dwarnings -Dclippy::dbg_macro
         if: ${{ matrix.rust == 'stable' }}
       - run: cargo fmt --all -- --check
         if: ${{ matrix.rust == 'stable' }}
