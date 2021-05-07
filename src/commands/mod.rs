@@ -23,7 +23,7 @@ pub mod sort;
 pub mod tab_ops;
 
 pub mod command_keybind;
-pub mod commands;
+pub mod key_command;
 
 pub use self::command_keybind::{AppCommand, AppExecute, CommandKeybind};
-pub use self::commands::KeyCommand;
+pub use self::key_command::KeyCommand;

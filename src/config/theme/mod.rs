@@ -1,5 +1,5 @@
+mod app_theme;
 mod style;
-mod theme;
 
+pub use self::app_theme::AppTheme;
 pub use self::style::{AppStyle, RawAppStyle};
-pub use self::theme::AppTheme;
