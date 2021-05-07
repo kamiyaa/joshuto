@@ -34,10 +34,6 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
                 }
             } else {
                 // TODO: scroll in child list
-                let command = KeyCommand::CursorMoveUp(1);
-                if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
-                }
             }
         }
         MouseEvent::Press(MouseButton::WheelDown, x, _) => {
@@ -53,10 +49,6 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
                 }
             } else {
                 // TODO: scroll in child list
-                let command = KeyCommand::CursorMoveDown(1);
-                if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
-                }
             }
         }
         MouseEvent::Press(MouseButton::Left, x, y)

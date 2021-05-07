@@ -127,8 +127,8 @@ impl KeyCommand {
     }
 
     pub fn parse_command(s: &str) -> JoshutoResult<Self> {
-        if s.starts_with(':') {
-            return Ok(Self::CommandLine(s[1..].to_owned(), "".to_owned()));
+        if let Some(stripped) = s.strip_prefix(':') {
+            return Ok(Self::CommandLine(stripped.to_owned(), "".to_owned()));
         }
 
         let (command, arg) = match s.find(' ') {
