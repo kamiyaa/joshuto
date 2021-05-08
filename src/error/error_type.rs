@@ -42,6 +42,15 @@ impl std::convert::From<globset::Error> for JoshutoError {
     }
 }
 
+impl std::convert::From<std::env::VarError> for JoshutoError {
+    fn from(err: std::env::VarError) -> Self {
+        Self {
+            _kind: JoshutoErrorKind::from(err),
+            _cause: "Environment variable not found".to_string(),
+        }
+    }
+}
+
 impl std::convert::From<trash::Error> for JoshutoError {
     fn from(err: trash::Error) -> Self {
         let err = match err {

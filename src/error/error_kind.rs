@@ -31,3 +31,9 @@ impl std::convert::From<&globset::ErrorKind> for JoshutoErrorKind {
         Self::Glob
     }
 }
+
+impl std::convert::From<std::env::VarError> for JoshutoErrorKind {
+    fn from(_: std::env::VarError) -> Self {
+        Self::EnvVarNotPresent
+    }
+}

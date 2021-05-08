@@ -14,15 +14,7 @@ const ENV_EDITOR: &str = "EDITOR";
 
 pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
     const PREFIX: &str = "joshuto-";
-    let editor = match std::env::var(ENV_EDITOR) {
-        Ok(s) => s,
-        Err(_) => {
-            return Err(JoshutoError::new(
-                JoshutoErrorKind::EnvVarNotPresent,
-                format!("{} environment variable not set", ENV_EDITOR),
-            ));
-        }
-    };
+    let editor = std::env::var(ENV_EDITOR)?;
 
     /* generate a random file name to write to */
     let mut rand_str = String::with_capacity(PREFIX.len() + 10);
@@ -36,13 +28,11 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
     let mut file_path = path::PathBuf::from("/tmp");
     file_path.push(rand_str);
 
-    let paths = {
-        let curr_tab = context.tab_context_ref().curr_tab_ref();
-        match curr_tab.curr_list_ref() {
-            Some(s) => s.get_selected_paths(),
-            None => vec![],
-        }
-    };
+    let paths = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map_or(vec![], |s| s.get_selected_paths());
 
     {
         let mut file = std::fs::File::create(&file_path)?;
@@ -57,13 +47,14 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
     let mut command = process::Command::new(editor);
     command.arg(&file_path);
 
-    let time = std::time::SystemTime::now();
+    let last_modified = std::fs::metadata(&file_path)?.modified()?;
     {
         let mut handle = command.spawn()?;
         handle.wait()?;
     }
+    // check if the file was modified since it was created
     let metadata = std::fs::metadata(&file_path)?;
-    if time >= metadata.modified()? {
+    if metadata.modified()? <= last_modified {
         return Ok(());
     }
 

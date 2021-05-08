@@ -21,7 +21,7 @@ use crate::config::{
     AppConfig, AppKeyMapping, AppMimetypeRegistry, AppTheme, ConfigStructure, JoshutoPreview,
 };
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind};
+use crate::error::JoshutoError;
 use crate::run::run;
 
 const PROGRAM_NAME: &str = "joshuto";
@@ -67,12 +67,8 @@ pub struct Args {
 fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     if args.version {
         let version = env!("CARGO_PKG_VERSION");
-        println!("{}", version);
-        let err = JoshutoError::new(
-            JoshutoErrorKind::EnvVarNotPresent,
-            "CARGO_PKG_VERSION variable not found".to_string(),
-        );
-        return Err(err);
+        println!("{}-{}", PROGRAM_NAME, version);
+        return Ok(());
     }
     if let Some(p) = args.path.as_ref() {
         match std::env::set_current_dir(p.as_path()) {
@@ -106,7 +102,6 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
         )?;
         file.write_all("\n".as_bytes())?;
     }
-
     Ok(())
 }
 

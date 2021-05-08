@@ -26,16 +26,12 @@ pub fn _rename_file(
 }
 
 pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult<()> {
-    let mut path: Option<path::PathBuf> = None;
-
-    if let Some(s) = context
+    let path: Option<path::PathBuf> = context
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|s| s.curr_entry_ref())
-    {
-        path = Some(s.file_path().to_path_buf());
-    }
+        .and_then(|s| Some(s.file_path().to_path_buf()));
 
     if let Some(path) = path {
         _rename_file(context, path.as_path(), dest)?;
@@ -49,15 +45,13 @@ pub fn _rename_file_append(
     backend: &mut TuiBackend,
     file_name: &str,
 ) -> JoshutoResult<()> {
-    let prefix;
-    let suffix;
-    if let Some(ext) = file_name.rfind('.') {
-        prefix = format!("rename {}", &file_name[0..ext]);
-        suffix = String::from(&file_name[ext..]);
-    } else {
-        prefix = format!("rename {}", file_name);
-        suffix = String::new();
-    }
+    let (prefix, suffix): (String, String) = match file_name.rfind('.') {
+        Some(ext) => (
+            format!("rename {}", &file_name[0..ext]),
+            file_name[ext..].to_string(),
+        ),
+        None => (format!("rename {}", file_name), "".to_string()),
+    };
     command_line::readline(context, backend, &prefix, &suffix)
 }
 

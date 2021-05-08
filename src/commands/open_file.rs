@@ -35,11 +35,12 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
             change_directory::cd(path.as_path(), context)?;
             LoadChild::load_child(context)?;
         } else {
-            let paths: Vec<path::PathBuf> =
-                match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    Some(a) => a.get_selected_paths(),
-                    None => vec![],
-                };
+            let paths = context
+                .tab_context_ref()
+                .curr_tab_ref()
+                .curr_list_ref()
+                .map_or(vec![], |s| s.get_selected_paths());
+
             if paths.is_empty() {
                 return Err(JoshutoError::new(
                     JoshutoErrorKind::Io(io::ErrorKind::NotFound),
@@ -133,10 +134,12 @@ where
 }
 
 pub fn open_with(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-    let paths: Vec<path::PathBuf> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(a) => a.get_selected_paths(),
-        None => vec![],
-    };
+    let paths = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map_or(vec![], |s| s.get_selected_paths());
+
     if paths.is_empty() {
         return Err(JoshutoError::new(
             JoshutoErrorKind::Io(io::ErrorKind::NotFound),
