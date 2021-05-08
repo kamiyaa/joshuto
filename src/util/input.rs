@@ -118,12 +118,14 @@ pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<Io
                 FileOp::Copy => "copied",
                 FileOp::Cut => "moved",
             };
-            let size_str = format::file_size_to_string(progress.bytes_processed());
+            let processed_size = format::file_size_to_string(progress.bytes_processed());
+            let total_size = format::file_size_to_string(progress.total_bytes());
             let msg = format!(
-                "successfully {} {} items ({})",
+                "successfully {} {} items ({}/{})",
                 op,
-                progress.len(),
-                size_str
+                progress.total_files(),
+                processed_size,
+                total_size,
             );
             context.push_msg(msg);
         }

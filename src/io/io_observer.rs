@@ -34,18 +34,20 @@ impl IoWorkerObserver {
         match self.progress.as_ref() {
             None => {}
             Some(progress) => {
-                let size_str = format::file_size_to_string(progress.bytes_processed());
                 let op_str = match progress.kind() {
                     FileOp::Cut => "Moving",
                     FileOp::Copy => "Copying",
                 };
+                let processed_size = format::file_size_to_string(progress.bytes_processed());
+                let total_size = format::file_size_to_string(progress.total_bytes());
 
                 let msg = format!(
-                    "{} ({}/{}) {} completed",
+                    "{} ({}/{}) ({}/{}) completed",
                     op_str,
-                    progress.completed() + 1,
-                    progress.len(),
-                    size_str
+                    progress.files_processed() + 1,
+                    progress.total_files(),
+                    processed_size,
+                    total_size,
                 );
                 self.msg = msg;
             }

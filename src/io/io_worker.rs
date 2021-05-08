@@ -40,18 +40,26 @@ impl std::fmt::Display for IoWorkerOptions {
 #[derive(Clone, Debug)]
 pub struct IoWorkerProgress {
     _kind: FileOp,
-    _completed: usize,
-    _len: usize,
+    _files_processed: usize,
+    _total_files: usize,
     _bytes_processed: u64,
+    _total_bytes: u64,
 }
 
 impl IoWorkerProgress {
-    pub fn new(_kind: FileOp, _completed: usize, _len: usize, _bytes_processed: u64) -> Self {
+    pub fn new(
+        _kind: FileOp,
+        _files_processed: usize,
+        _total_files: usize,
+        _bytes_processed: u64,
+        _total_bytes: u64,
+    ) -> Self {
         Self {
             _kind,
-            _completed,
-            _len,
+            _files_processed,
+            _total_files,
             _bytes_processed,
+            _total_bytes,
         }
     }
 
@@ -59,16 +67,16 @@ impl IoWorkerProgress {
         self._kind
     }
 
-    pub fn completed(&self) -> usize {
-        self._completed
+    pub fn files_processed(&self) -> usize {
+        self._files_processed
     }
 
-    pub fn increment_completed(&mut self) {
-        self._completed += 1;
+    pub fn set_files_processed(&mut self, files_processed: usize) {
+        self._files_processed = files_processed;
     }
 
-    pub fn len(&self) -> usize {
-        self._len
+    pub fn total_files(&self) -> usize {
+        self._total_files
     }
 
     pub fn bytes_processed(&self) -> u64 {
@@ -77,6 +85,10 @@ impl IoWorkerProgress {
 
     pub fn set_bytes_processed(&mut self, _bytes_processed: u64) {
         self._bytes_processed = _bytes_processed;
+    }
+
+    pub fn total_bytes(&self) -> u64 {
+        self._total_bytes
     }
 }
 
@@ -114,16 +126,21 @@ impl IoWorkerThread {
         }
     }
 
-    fn query_number_of_items(&self) -> io::Result<usize> {
+    fn query_number_of_items(&self) -> io::Result<(usize, u64)> {
+        let mut total_bytes = 0;
+        let mut total_files = 0;
+
         let mut dirs: VecDeque<path::PathBuf> = VecDeque::new();
         for path in self.paths.iter() {
             let metadata = path.symlink_metadata()?;
             if metadata.is_dir() {
                 dirs.push_back(path.clone());
+            } else {
+                let metadata = path.symlink_metadata()?;
+                total_bytes += metadata.len();
+                total_files += 1;
             }
         }
-
-        let mut total = self.paths.len() - dirs.len();
 
         while let Some(dir) = dirs.pop_front() {
             for entry in fs::read_dir(dir)? {
@@ -131,16 +148,18 @@ impl IoWorkerThread {
                 if path.is_dir() {
                     dirs.push_back(path);
                 } else {
-                    total += 1;
+                    let metadata = path.symlink_metadata()?;
+                    total_bytes += metadata.len();
+                    total_files += 1;
                 }
             }
         }
-        Ok(total)
+        Ok((total_files, total_bytes))
     }
 
     fn paste_copy(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
-        let num_items = self.query_number_of_items()?;
-        let mut progress = IoWorkerProgress::new(self.kind(), 0, num_items, 0);
+        let (total_files, total_bytes) = self.query_number_of_items()?;
+        let mut progress = IoWorkerProgress::new(self.kind(), 0, total_files, 0, total_bytes);
         for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_copy(
@@ -150,17 +169,13 @@ impl IoWorkerThread {
                 &mut progress,
             )?;
         }
-        Ok(IoWorkerProgress::new(
-            self.kind(),
-            self.paths.len(),
-            self.paths.len(),
-            progress.bytes_processed(),
-        ))
+        Ok(progress)
     }
 
     fn paste_cut(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
-        let num_items = self.query_number_of_items()?;
-        let mut progress = IoWorkerProgress::new(self.kind(), 0, num_items, 0);
+        let (total_files, total_bytes) = self.query_number_of_items()?;
+        let mut progress = IoWorkerProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+
         for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_cut(
@@ -170,12 +185,7 @@ impl IoWorkerThread {
                 &mut progress,
             )?;
         }
-        Ok(IoWorkerProgress::new(
-            self.kind(),
-            self.paths.len(),
-            self.paths.len(),
-            progress.bytes_processed(),
-        ))
+        Ok(progress)
     }
 }
 
@@ -208,12 +218,12 @@ pub fn recursive_copy(
     } else if file_type.is_file() {
         let bytes_processed = progress.bytes_processed() + fs::copy(src, dest_buf)?;
         progress.set_bytes_processed(bytes_processed);
-        progress.increment_completed();
+        progress.set_files_processed(progress.files_processed() + 1);
         Ok(())
     } else if file_type.is_symlink() {
         let link_path = fs::read_link(src)?;
         std::os::unix::fs::symlink(link_path, dest_buf)?;
-        progress.increment_completed();
+        progress.set_files_processed(progress.files_processed() + 1);
         Ok(())
     } else {
         Ok(())
@@ -260,14 +270,14 @@ pub fn recursive_cut(
             let processed = progress.bytes_processed() + metadata.len();
             progress.set_bytes_processed(processed);
         }
-        progress.increment_completed();
+        progress.set_files_processed(progress.files_processed() + 1);
     } else if file_type.is_symlink() {
         let link_path = fs::read_link(src)?;
         std::os::unix::fs::symlink(link_path, dest_buf)?;
         fs::remove_file(src)?;
         let processed = progress.bytes_processed() + metadata.len();
         progress.set_bytes_processed(processed);
-        progress.increment_completed();
+        progress.set_files_processed(progress.files_processed() + 1);
     }
     Ok(())
 }

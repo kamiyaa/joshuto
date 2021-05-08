@@ -5,6 +5,7 @@ use tui::widgets::Widget;
 
 use crate::context::AppContext;
 use crate::io::FileOp;
+use crate::util::format;
 
 pub struct TuiWorker<'a> {
     pub context: &'a AppContext,
@@ -25,19 +26,28 @@ impl<'a> Widget for TuiWorker<'a> {
                         FileOp::Copy => "Copying",
                         FileOp::Cut => "Moving",
                     };
+
+                    let processed_size = format::file_size_to_string(progress.bytes_processed());
+                    let total_size = format::file_size_to_string(progress.total_bytes());
+
                     let msg = format!(
-                        "{} ({}/{}) {:?}",
+                        "{} ({}/{}) ({}/{}) {:?}",
                         op_str,
-                        progress.completed() + 1,
-                        progress.len(),
+                        progress.files_processed() + 1,
+                        progress.total_files(),
+                        processed_size,
+                        total_size,
                         io_obs.dest_path()
                     );
+
                     let style = Style::default();
                     buf.set_stringn(0, 2, msg, area.width as usize, style);
 
                     // draw a progress bar
-                    let progress_bar_width = (progress.completed() as f32 / progress.len() as f32
+                    let progress_bar_width = (progress.files_processed() as f32
+                        / progress.total_files() as f32
                         * area.width as f32) as usize;
+
                     let progress_bar_space = " ".repeat(progress_bar_width);
                     let style = Style::default().bg(Color::Blue);
                     buf.set_stringn(0, 3, progress_bar_space, area.width as usize, style);
