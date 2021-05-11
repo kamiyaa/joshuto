@@ -45,6 +45,18 @@ sudo dnf copr enable atim/joshuto -y
 sudo dnf install joshuto
 ```
 
+##### Arch ([AUR](https://aur.archlinux.org))
+
+* [release](https://aur.archlinux.org/packages/joshuto)
+```
+[yay/paru] -S joshuto
+```
+
+* [build from source](https://aur.archlinux.org/packages/joshuto-git)
+```
+[yay/paru] -S joshuto-git
+```
+
 ## Usage
 
 ```
