@@ -33,6 +33,10 @@ png = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
 	{ command = "mediainfo", confirm_exit = true },
+webp = [
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
 ppm = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },

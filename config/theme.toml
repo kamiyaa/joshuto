@@ -34,6 +34,8 @@ fg = "yellow"
 fg = "yellow"
 [ext.png]
 fg = "yellow"
+[ext.webp]
+fg = "yellow"
 [ext.ppm]
 fg = "yellow"
 [ext.svg]
