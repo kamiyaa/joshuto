@@ -42,7 +42,6 @@ impl RawAppStyle {
     }
 
     pub fn str_to_color(s: &str) -> style::Color {
-        eprintln!("{}", s);
         match s {
             "black" => style::Color::Black,
             "red" => style::Color::Red,
