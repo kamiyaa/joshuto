@@ -133,7 +133,7 @@ where
     }
 }
 
-pub fn open_with(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     let paths = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -151,4 +151,40 @@ pub fn open_with(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoR
 
     open_with_helper(context, backend, options, files)?;
     Ok(())
+}
+
+pub fn open_with_index(context: &mut AppContext, backend: &mut TuiBackend, index: usize) -> JoshutoResult<()> {
+    let paths = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map_or(vec![], |s| s.get_selected_paths());
+
+    if paths.is_empty() {
+        return Err(JoshutoError::new(
+            JoshutoErrorKind::Io(io::ErrorKind::NotFound),
+            String::from("No files selected"),
+        ));
+    }
+    let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
+    let options = get_options(paths[0].as_path());
+
+    if index >= options.len() {
+        return Err(JoshutoError::new(
+            JoshutoErrorKind::Io(std::io::ErrorKind::InvalidData),
+            "option does not exist".to_string(),
+        ));
+    }
+
+    let mimetype_entry = &options[index];
+    if mimetype_entry.get_fork() {
+        mimetype_entry.execute_with(files.as_slice())?;
+        Ok(())
+    } else {
+        backend.terminal_drop();
+        let res = mimetype_entry.execute_with(files.as_slice());
+        backend.terminal_restore()?;
+        res?;
+        Ok(())
+    }
 }

@@ -167,7 +167,7 @@ impl AppKeyMapping {
         let keys = [Event::Key(Key::BackTab)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::OpenFileWith;
+        let cmd = KeyCommand::OpenFileWith(None);
         let keys = [Event::Key(Key::Char('r'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 

@@ -40,7 +40,7 @@ pub enum KeyCommand {
     DeleteFiles,
     NewDirectory(path::PathBuf),
     OpenFile,
-    OpenFileWith,
+    OpenFileWith(Option<usize>),
     ParentDirectory,
 
     Quit,
@@ -77,7 +77,7 @@ impl KeyCommand {
             Self::ChangeDirectory(_) => "cd",
             Self::NewTab => "new_tab",
             Self::CloseTab => "close_tab",
-            Self::CommandLine(_, _) => "console",
+            Self::CommandLine(_, _) => ":",
 
             Self::CutFiles => "cut_files",
             Self::CopyFiles => "copy_files",
@@ -95,15 +95,15 @@ impl KeyCommand {
             Self::ParentCursorMoveDown(_) => "parent_cursor_move_down",
 
             Self::DeleteFiles => "delete_files",
-            Self::NewDirectory(_) => "new_directory",
+            Self::NewDirectory(_) => "mkdir",
             Self::OpenFile => "open",
-            Self::OpenFileWith => "open_with",
+            Self::OpenFileWith(_) => "open_with",
             Self::ParentDirectory => "cd ..",
 
             Self::Quit => "quit",
             Self::ForceQuit => "force_quit",
             Self::ReloadDirList => "reload_dirlist",
-            Self::RenameFile(_) => "rename_file",
+            Self::RenameFile(_) => "rename",
             Self::RenameFileAppend => "rename_append",
             Self::RenameFilePrepend => "rename_prepend",
 
@@ -211,11 +211,20 @@ impl KeyCommand {
                 } else {
                     Ok(Self::NewDirectory(path::PathBuf::from(arg)))
                 }
-            }
+            },
             "new_tab" => Ok(Self::NewTab),
 
-            "open_file" => Ok(Self::OpenFile),
-            "open_file_with" => Ok(Self::OpenFileWith),
+            "open" => Ok(Self::OpenFile),
+            "open_with" => match arg {
+                "" => Ok(Self::OpenFileWith(None)),
+                arg => match arg.trim().parse::<usize>() {
+                    Ok(s) => Ok(Self::OpenFileWith(Some(s))),
+                    Err(e) => Err(JoshutoError::new(
+                        JoshutoErrorKind::ParseError,
+                        e.to_string(),
+                    )),
+                },
+            },
             "paste_files" => {
                 let mut options = IoWorkerOptions::default();
                 for arg in arg.split_whitespace() {
@@ -362,7 +371,8 @@ impl AppExecute for KeyCommand {
             }
             Self::NewDirectory(p) => new_directory::new_directory(context, p.as_path()),
             Self::OpenFile => open_file::open(context, backend),
-            Self::OpenFileWith => open_file::open_with(context, backend),
+            Self::OpenFileWith(None) => open_file::open_with_interactive(context, backend),
+            Self::OpenFileWith(Some(i)) => open_file::open_with_index(context, backend, *i),
             Self::ParentDirectory => parent_directory::parent_directory(context),
 
             Self::Quit => quit::quit(context),
