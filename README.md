@@ -65,25 +65,20 @@ sudo dnf install joshuto
 
 ## Configuration
 
-Place config files inside `$XDG_CONFIG_HOME/joshuto` (usually `$HOME/.config/joshuto/` for GNU/Linux).
-
-Joshuto can currently be configured using the following files:
+Check out [wiki/Configuration](https://github.com/kamiyaa/joshuto/wiki/Configuration) for details
+and [config/](config/) for examples
 
 #### [joshuto.toml](config/joshuto.toml)
-
 - general configurations
 
 #### [keymap.toml](/config/keymap.toml)
-
 - for keybindings, please take a look at [src/util/key_mapping.rs](/src/util/key_mapping.rs#L18) for non-printable keys
 - for commands, please take a look at [src/commands/commands.rs](/src/commands/commands.rs#L139)
 
 #### [mimetype.toml](/config/mimetype.toml)
-
 - for opening files with applications
 
 #### [theme.toml](/config/theme.toml)
-
 - color customizations
 
 ## Contributing
