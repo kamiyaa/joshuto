@@ -211,7 +211,7 @@ impl KeyCommand {
                 } else {
                     Ok(Self::NewDirectory(path::PathBuf::from(arg)))
                 }
-            },
+            }
             "new_tab" => Ok(Self::NewTab),
 
             "open" => Ok(Self::OpenFile),

@@ -133,7 +133,10 @@ where
     }
 }
 
-pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn open_with_interactive(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+) -> JoshutoResult<()> {
     let paths = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -153,7 +156,11 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend)
     Ok(())
 }
 
-pub fn open_with_index(context: &mut AppContext, backend: &mut TuiBackend, index: usize) -> JoshutoResult<()> {
+pub fn open_with_index(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+    index: usize,
+) -> JoshutoResult<()> {
     let paths = context
         .tab_context_ref()
         .curr_tab_ref()

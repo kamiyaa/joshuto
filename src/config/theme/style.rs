@@ -1,4 +1,4 @@
-use colors_transform::{Rgb, Color};
+use colors_transform::{Color, Rgb};
 
 use serde_derive::Deserialize;
 
@@ -61,16 +61,14 @@ impl RawAppStyle {
             "white" => style::Color::White,
             "reset" => style::Color::Reset,
             s if s.len() == 0 => style::Color::Reset,
-            s => {
-                match s.parse::<Rgb>() {
-                    Ok(rgb) => {
-                        let r = rgb.get_red() as u8;
-                        let g = rgb.get_green() as u8;
-                        let b = rgb.get_blue() as u8;
-                        style::Color::Rgb(r, g, b)
-                    }
-                    Err(_) => style::Color::Reset,
+            s => match s.parse::<Rgb>() {
+                Ok(rgb) => {
+                    let r = rgb.get_red() as u8;
+                    let g = rgb.get_green() as u8;
+                    let b = rgb.get_blue() as u8;
+                    style::Color::Rgb(r, g, b)
                 }
+                Err(_) => style::Color::Reset,
             },
         }
     }
