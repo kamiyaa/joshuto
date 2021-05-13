@@ -36,13 +36,13 @@ keys = [ "backtab" ]
 
 [[mapcommand]]
 command = "cursor_move_up"
-keys = [ "up" ]
+keys = [ "arrow_up" ]
 [[mapcommand]]
 command = "cursor_move_up"
 keys = [ "k" ]
 [[mapcommand]]
 command = "cursor_move_down"
-keys = [ "down" ]
+keys = [ "arrow_down" ]
 [[mapcommand]]
 command = "cursor_move_down"
 keys = [ "j" ]
@@ -73,16 +73,16 @@ command = "parent_cursor_move_down"
 keys = [ "]" ]
 
 [[mapcommand]]
-command = "open_file"
-keys = [ "right" ]
+command = "open"
+keys = [ "arrow_right" ]
 [[mapcommand]]
 command = "open_file"
 keys = [ "l" ]
 [[mapcommand]]
-command = "open_file"
+command = "open"
 keys = [ "\n" ]
 [[mapcommand]]
-command = "open_file_with"
+command = "open_with"
 keys = [ "r" ]
 
 [[mapcommand]]
@@ -90,7 +90,7 @@ command = ":cd "
 keys = [ "c", "d" ]
 [[mapcommand]]
 command = "cd .."
-keys = [ "left" ]
+keys = [ "arrow_left" ]
 [[mapcommand]]
 command = "cd .."
 keys = [ "h" ]
