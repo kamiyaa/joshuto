@@ -10,6 +10,7 @@ edition = "2018"
 [dependencies]
 alphanumeric-sort = "^1"
 chrono = "^0"
+colors-transform = "^0"
 dirs-next = "^2"
 globset = "^0"
 lazy_static = "^1"
