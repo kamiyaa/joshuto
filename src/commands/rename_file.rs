@@ -31,7 +31,7 @@ pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|s| s.curr_entry_ref())
-        .and_then(|s| Some(s.file_path().to_path_buf()));
+        .map(|s| s.file_path().to_path_buf());
 
     if let Some(path) = path {
         _rename_file(context, path.as_path(), dest)?;
