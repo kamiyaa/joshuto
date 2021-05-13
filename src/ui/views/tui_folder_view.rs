@@ -1,6 +1,7 @@
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
+use tui::symbols::line::{HORIZONTAL_DOWN, HORIZONTAL_UP};
 use tui::text::Span;
 use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
@@ -48,6 +49,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                 height: area.height - 2,
                 ..area
             };
+
             let block = Block::default().borders(Borders::ALL);
             let inner = block.inner(area);
             block.render(area, buf);
@@ -56,6 +58,27 @@ impl<'a> Widget for TuiFolderView<'a> {
                 .direction(Direction::Horizontal)
                 .constraints(constraints.as_ref())
                 .split(inner);
+
+            // Render inner borders properly.
+            {
+                let top = area.top();
+                let bottom = area.bottom() - 1;
+                let left = layout_rect[1].left() - 1;
+                let right = layout_rect[2].left();
+                let intersections = Intersections {
+                    top,
+                    bottom,
+                    left,
+                    right,
+                };
+
+                if parent_list.as_ref().is_some() {
+                    intersections.render_left(buf);
+                }
+                if child_list.as_ref().is_some() {
+                    intersections.render_right(buf);
+                }
+            }
 
             let block = Block::default().borders(Borders::RIGHT);
             let inner1 = block.inner(layout_rect[0]);
@@ -158,5 +181,26 @@ impl<'a> Widget for TuiFolderView<'a> {
             )
             .render(rect, buf);
         }
+    }
+}
+
+struct Intersections {
+    top: u16,
+    bottom: u16,
+    left: u16,
+    right: u16,
+}
+
+impl Intersections {
+    fn render_left(&self, buf: &mut Buffer) {
+        buf.get_mut(self.left, self.top).set_symbol(HORIZONTAL_DOWN);
+        buf.get_mut(self.left, self.bottom)
+            .set_symbol(HORIZONTAL_UP);
+    }
+    fn render_right(&self, buf: &mut Buffer) {
+        buf.get_mut(self.right, self.top)
+            .set_symbol(HORIZONTAL_DOWN);
+        buf.get_mut(self.right, self.bottom)
+            .set_symbol(HORIZONTAL_UP);
     }
 }
