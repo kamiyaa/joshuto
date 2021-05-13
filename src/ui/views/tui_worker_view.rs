@@ -43,11 +43,8 @@ impl TuiWorkerView {
             if let Ok(event) = context.poll_event() {
                 match event {
                     AppEvent::Termion(event) => {
-                        match event {
-                            Event::Key(Key::Esc) => {
-                                break;
-                            }
-                            _ => {}
+                        if let Event::Key(Key::Esc) = event {
+                            break;
                         }
                         context.flush_event();
                     }
