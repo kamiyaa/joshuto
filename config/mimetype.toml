@@ -16,33 +16,38 @@ heic = [
 jpeg = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 jpe = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 jpg = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 pgm = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 png = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
+webp = [
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 ppm = [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 svg = [
 	{ command = "inkview", fork = true, silent = true },
 	{ command = "inkscape", fork = true, silent = true } ]
 tiff = [
 	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true } ]
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true } ]
 
 ## audio formats
 flac = [

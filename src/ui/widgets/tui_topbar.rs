@@ -34,12 +34,9 @@ impl<'a> Widget for TuiTopBar<'a> {
         let mut curr_path_str = self.path.to_string_lossy().into_owned();
 
         if curr_path_str.len() > area.width as usize {
-            match self.path.file_name() {
-                Some(s) => {
-                    curr_path_str = s.to_string_lossy().into_owned();
-                    ellipses = Some(Span::styled("…", path_style));
-                }
-                None => {}
+            if let Some(s) = self.path.file_name() {
+                curr_path_str = s.to_string_lossy().into_owned();
+                ellipses = Some(Span::styled("…", path_style));
             }
         }
         if self

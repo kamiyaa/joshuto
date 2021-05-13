@@ -1,9 +1,11 @@
+use colors_transform::{Rgb, Color};
+
 use serde_derive::Deserialize;
 
-use tui::style::{Color, Modifier};
+use tui::style;
 
-const fn default_color() -> Color {
-    Color::Reset
+const fn default_color() -> style::Color {
+    style::Color::Reset
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -25,39 +27,52 @@ impl RawAppStyle {
         let bg = Self::str_to_color(self.bg.as_str());
         let fg = Self::str_to_color(self.fg.as_str());
 
-        let mut modifier = Modifier::empty();
+        let mut modifier = style::Modifier::empty();
         if self.bold {
-            modifier.insert(Modifier::BOLD);
+            modifier.insert(style::Modifier::BOLD);
         }
         if self.underline {
-            modifier.insert(Modifier::UNDERLINED);
+            modifier.insert(style::Modifier::UNDERLINED);
         }
         if self.invert {
-            modifier.insert(Modifier::REVERSED);
+            modifier.insert(style::Modifier::REVERSED);
         }
 
         AppStyle::default().set_fg(fg).set_bg(bg).insert(modifier)
     }
 
-    pub fn str_to_color(s: &str) -> Color {
+    pub fn str_to_color(s: &str) -> style::Color {
+        eprintln!("{}", s);
         match s {
-            "black" => Color::Black,
-            "red" => Color::Red,
-            "blue" => Color::Blue,
-            "green" => Color::Green,
-            "yellow" => Color::Yellow,
-            "magenta" => Color::Magenta,
-            "cyan" => Color::Cyan,
-            "white" => Color::White,
-            "gray" => Color::Gray,
-            "dark_gray" => Color::DarkGray,
-            "light_red" => Color::LightRed,
-            "light_green" => Color::LightGreen,
-            "light_yellow" => Color::LightYellow,
-            "light_blue" => Color::LightBlue,
-            "light_magenta" => Color::LightMagenta,
-            "light_cyan" => Color::LightCyan,
-            _ => Color::Reset,
+            "black" => style::Color::Black,
+            "red" => style::Color::Red,
+            "green" => style::Color::Green,
+            "yellow" => style::Color::Yellow,
+            "blue" => style::Color::Blue,
+            "magenta" => style::Color::Magenta,
+            "cyan" => style::Color::Cyan,
+            "gray" => style::Color::Gray,
+            "dark_gray" => style::Color::DarkGray,
+            "light_red" => style::Color::LightRed,
+            "light_green" => style::Color::LightGreen,
+            "light_yellow" => style::Color::LightYellow,
+            "light_blue" => style::Color::LightBlue,
+            "light_magenta" => style::Color::LightMagenta,
+            "light_cyan" => style::Color::LightCyan,
+            "white" => style::Color::White,
+            "reset" => style::Color::Reset,
+            s if s.len() == 0 => style::Color::Reset,
+            s => {
+                match s.parse::<Rgb>() {
+                    Ok(rgb) => {
+                        let r = rgb.get_red() as u8;
+                        let g = rgb.get_green() as u8;
+                        let b = rgb.get_blue() as u8;
+                        style::Color::Rgb(r, g, b)
+                    }
+                    Err(_) => style::Color::Reset,
+                }
+            },
         }
     }
 }
@@ -76,22 +91,22 @@ impl std::default::Default for RawAppStyle {
 
 #[derive(Clone, Debug)]
 pub struct AppStyle {
-    pub fg: Color,
-    pub bg: Color,
-    pub modifier: Modifier,
+    pub fg: style::Color,
+    pub bg: style::Color,
+    pub modifier: style::Modifier,
 }
 
 impl AppStyle {
-    pub fn set_bg(mut self, bg: Color) -> Self {
+    pub fn set_bg(mut self, bg: style::Color) -> Self {
         self.bg = bg;
         self
     }
-    pub fn set_fg(mut self, fg: Color) -> Self {
+    pub fn set_fg(mut self, fg: style::Color) -> Self {
         self.fg = fg;
         self
     }
 
-    pub fn insert(mut self, modifier: Modifier) -> Self {
+    pub fn insert(mut self, modifier: style::Modifier) -> Self {
         self.modifier.insert(modifier);
         self
     }
@@ -102,7 +117,7 @@ impl std::default::Default for AppStyle {
         Self {
             fg: default_color(),
             bg: default_color(),
-            modifier: Modifier::empty(),
+            modifier: style::Modifier::empty(),
         }
     }
 }
