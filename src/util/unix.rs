@@ -35,7 +35,7 @@ pub fn mode_to_string(mode: u32) -> String {
     let mode_shifted = mode >> 9;
 
     for (val, ch) in LIBC_FILE_VALS.iter() {
-        if mode_shifted == *val {
+        if mode_shifted == (*val).into() {
             mode_str.push(*ch);
             break;
         }
