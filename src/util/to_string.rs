@@ -31,7 +31,7 @@ impl ToString for Key {
 impl ToString for MouseEvent {
     fn to_string(&self) -> String {
         let k = *self;
-        format!("{:?}",k)
+        format!("{:?}", k)
     }
 }
 
