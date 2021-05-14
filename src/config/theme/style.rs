@@ -60,7 +60,7 @@ impl RawAppStyle {
             "light_cyan" => style::Color::LightCyan,
             "white" => style::Color::White,
             "reset" => style::Color::Reset,
-            s if s.len() == 0 => style::Color::Reset,
+            s if s.is_empty() => style::Color::Reset,
             s => match s.parse::<Rgb>() {
                 Ok(rgb) => {
                     let r = rgb.get_red() as u8;

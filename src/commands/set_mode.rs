@@ -1,3 +1,5 @@
+use std::fs;
+
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::views::TuiTextField;
@@ -9,6 +11,7 @@ use super::cursor_move;
 #[derive(Clone, Debug)]
 pub struct SetMode;
 
+#[cfg(unix)]
 const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
     (libc::S_IRUSR, 'r'),
     (libc::S_IWUSR, 'w'),
@@ -23,7 +26,7 @@ const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
 
 pub fn str_to_mode(s: &str) -> u32 {
     let mut mode: u32 = 0;
-    for (i, ch) in s.chars().enumerate() {
+    for (i, ch) in s.chars().enumerate().take(LIBC_PERMISSION_VALS.len()) {
         if ch == LIBC_PERMISSION_VALS[i].1 {
             let val: u32 = LIBC_PERMISSION_VALS[i].0 as u32;
             mode |= val;
@@ -33,6 +36,7 @@ pub fn str_to_mode(s: &str) -> u32 {
 }
 
 pub fn set_mode(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
 
     const PREFIX: &str = "set_mode ";
@@ -44,9 +48,12 @@ pub fn set_mode(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRe
 
     let user_input = match entry {
         Some(entry) => {
-            context.flush_event();
             let mode = entry.metadata.permissions_ref().mode();
+            eprintln!("{:o}", mode);
             let mode_string = unix::mode_to_string(mode);
+            eprintln!("{}", mode_string);
+
+            context.flush_event();
             TuiTextField::default()
                 .prompt(":")
                 .prefix(PREFIX)
@@ -58,19 +65,30 @@ pub fn set_mode(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRe
 
     if let Some(s) = user_input {
         if let Some(stripped) = s.strip_prefix(PREFIX) {
-            let s = stripped;
-            let mode = str_to_mode(s);
+            let mode = str_to_mode(stripped);
+            if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+                if curr_list.any_selected() {
+                    for entry in curr_list.iter_selected_mut() {
+                        let mut permissions = entry.metadata.permissions_ref().clone();
+                        let file_mode = (permissions.mode() >> 12) << 12 | mode;
+                        permissions.set_mode(file_mode);
 
-            let entry = context
-                .tab_context_mut()
-                .curr_tab_mut()
-                .curr_list_mut()
-                .and_then(|x| x.curr_entry_mut())
-                .unwrap();
+                        fs::set_permissions(entry.file_path(), permissions)?;
+                        entry.metadata.permissions_mut().set_mode(file_mode);
+                    }
+                } else {
+                    if let Some(entry) = curr_list.curr_entry_mut() {
+                        let mut permissions = entry.metadata.permissions_ref().clone();
+                        let file_mode = (permissions.mode() >> 12) << 12 | mode;
+                        permissions.set_mode(file_mode);
 
-            unix::set_mode(entry.file_path(), mode);
-            entry.metadata.permissions_mut().set_mode(mode);
-            cursor_move::down(context, 1)?;
+                        fs::set_permissions(entry.file_path(), permissions)?;
+                        entry.metadata.permissions_mut().set_mode(file_mode);
+
+                        cursor_move::down(context, 1)?;
+                    }
+                }
+            }
         }
     }
     Ok(())

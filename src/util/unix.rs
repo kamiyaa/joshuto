@@ -1,5 +1,3 @@
-use std::path::Path;
-
 pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
 
@@ -50,14 +48,4 @@ pub fn mode_to_string(mode: u32) -> String {
         }
     }
     mode_str
-}
-
-pub fn set_mode(path: &Path, mode: u32) {
-    let os_path = path.as_os_str();
-    if let Some(s) = os_path.to_str() {
-        let svec: Vec<libc::c_char> = s.bytes().map(|ch| ch as libc::c_char).collect();
-        unsafe {
-            libc::chmod(svec.as_ptr(), mode as libc::mode_t);
-        }
-    }
 }

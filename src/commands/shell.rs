@@ -13,7 +13,7 @@ pub fn shell_command(context: &mut AppContext, words: &[String]) -> std::io::Res
             "%s" => {
                 if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
                     let mut i = 0;
-                    for entry in curr_list.selected_entries().map(|e| e.file_name()) {
+                    for entry in curr_list.iter_selected().map(|e| e.file_name()) {
                         command.arg(entry);
                         i += 1;
                     }

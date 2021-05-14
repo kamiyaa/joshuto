@@ -108,13 +108,21 @@ impl JoshutoDirList {
         Ok(())
     }
 
-    pub fn selected_entries(&self) -> impl Iterator<Item = &JoshutoDirEntry> {
+    pub fn any_selected(&self) -> bool {
+        self.contents.iter().any(|e| e.is_selected())
+    }
+
+    pub fn iter_selected(&self) -> impl Iterator<Item = &JoshutoDirEntry> {
         self.contents.iter().filter(|entry| entry.is_selected())
+    }
+
+    pub fn iter_selected_mut(&mut self) -> impl Iterator<Item = &mut JoshutoDirEntry> {
+        self.contents.iter_mut().filter(|entry| entry.is_selected())
     }
 
     pub fn get_selected_paths(&self) -> Vec<path::PathBuf> {
         let vec: Vec<path::PathBuf> = self
-            .selected_entries()
+            .iter_selected()
             .map(|e| e.file_path().to_path_buf())
             .collect();
         if !vec.is_empty() {
