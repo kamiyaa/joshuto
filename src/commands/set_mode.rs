@@ -49,9 +49,7 @@ pub fn set_mode(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRe
     let user_input = match entry {
         Some(entry) => {
             let mode = entry.metadata.permissions_ref().mode();
-            eprintln!("{:o}", mode);
             let mode_string = unix::mode_to_string(mode);
-            eprintln!("{}", mode_string);
 
             context.flush_event();
             TuiTextField::default()
