@@ -24,6 +24,8 @@ pub enum KeyCommand {
     CopyFiles,
     PasteFiles(IoWorkerOptions),
     CopyFileName,
+    CopyFilePath,
+    CopyDir,
 
     CursorMoveUp(usize),
     CursorMoveDown(usize),
@@ -83,6 +85,8 @@ impl KeyCommand {
             Self::CopyFiles => "copy_files",
             Self::PasteFiles(_) => "paste_files",
             Self::CopyFileName => "copy_filename",
+            Self::CopyFilePath => "copy_filepath",
+            Self::CopyDir => "copy_dir",
 
             Self::CursorMoveUp(_) => "cursor_move_up",
             Self::CursorMoveDown(_) => "cursor_move_down",
@@ -155,6 +159,8 @@ impl KeyCommand {
             "close_tab" => Ok(Self::CloseTab),
             "copy_files" => Ok(Self::CopyFiles),
             "copy_filename" => Ok(Self::CopyFileName),
+            "copy_filepath" => Ok(Self::CopyFilePath),
+            "copy_dir" => Ok(Self::CopyDir),
             "cursor_move_home" => Ok(Self::CursorMoveHome),
             "cursor_move_end" => Ok(Self::CursorMoveEnd),
             "cursor_move_page_up" => Ok(Self::CursorMovePageUp),
@@ -354,6 +360,8 @@ impl AppExecute for KeyCommand {
             Self::CopyFiles => file_ops::copy(context),
             Self::PasteFiles(options) => file_ops::paste(context, options.clone()),
             Self::CopyFileName => file_ops::copy_filename(context),
+            Self::CopyFilePath => file_ops::copy_filepath(context),
+            Self::CopyDir => file_ops::copy_dir(context),
 
             Self::CursorMoveUp(u) => cursor_move::up(context, *u),
             Self::CursorMoveDown(u) => cursor_move::down(context, *u),
