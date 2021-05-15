@@ -1,4 +1,4 @@
-name: Linux Build
+name: MacOS build
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
 
 jobs:
   check:
-    name: Rust Linux ${{ matrix.rust }}
-    runs-on: ubuntu-latest
+    name: Rust MacOS ${{ matrix.rust }}
+    runs-on: macos-latest
     strategy:
       matrix:
         rust: [stable]

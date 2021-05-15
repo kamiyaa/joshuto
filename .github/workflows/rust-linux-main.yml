@@ -1,15 +1,15 @@
-name: MacOS Build
+name: Linux build
 
 on:
   push:
-    branches: [dev]
+    branches: [main]
   pull_request:
-    branches: [dev]
+    branches: [main]
 
 jobs:
   check:
-    name: Rust MacOS ${{ matrix.rust }}
-    runs-on: macos-latest
+    name: Rust Linux ${{ matrix.rust }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         rust: [stable]
