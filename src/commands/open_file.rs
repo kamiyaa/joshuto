@@ -16,7 +16,7 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
     let mut options: Vec<&AppMimetypeEntry> = Vec::new();
     if let Some(file_ext) = path.extension() {
         if let Some(file_ext) = file_ext.to_str() {
-            let ext_entries = MIMETYPE_T.get_entries_for_ext(file_ext);
+            let ext_entries = MIMETYPE_T.app_list_for_ext(file_ext);
             options.extend(ext_entries);
         }
     }
