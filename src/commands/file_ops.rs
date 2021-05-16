@@ -77,35 +77,22 @@ pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn copy_dir(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy_dirname(context: &mut AppContext) -> JoshutoResult<()> {
     let opt_entry = context
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
-        .and_then(|c| c.curr_entry_ref());
+        .map(|dirlist| dirlist.file_path());
 
-    let dir:  Option<String> = opt_entry
-        .and_then(|entry| entry.file_path().to_str() )
-        .and_then(|filepath| {
-                    let mut pathbuf = std::path::PathBuf::from(filepath);
-                    pathbuf.pop();
-                    Some(pathbuf)
-                  })
-        .and_then(|pathbuf|  Some(pathbuf.into_os_string()) )
-        .and_then(|oss| { match  oss.into_string(){
-                            Ok(string) => Some(string),
-                            Err(_) => None,
-                            }
-                   });
-
-    if let Some(dir) = dir {
-        copy_string_to_buffer(dir)?
+    if let Some(pathbuf) = opt_entry {
+        if let Some(dir) = pathbuf.to_str().map(|s| String::from(s)) {
+            copy_string_to_buffer(dir)?
+        }
     };
     Ok(())
 }
 
 fn copy_string_to_buffer(string: String) -> JoshutoResult<()> {
-
     let clipboards = [
         (
             "wl-copy",
@@ -136,5 +123,3 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult<()> {
     ));
     return err;
 }
-
-
