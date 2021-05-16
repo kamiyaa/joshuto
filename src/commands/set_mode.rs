@@ -75,14 +75,14 @@ pub fn set_mode(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRe
                         entry.metadata.permissions_mut().set_mode(file_mode);
                     }
                 } else if let Some(entry) = curr_list.curr_entry_mut() {
-                        let mut permissions = entry.metadata.permissions_ref().clone();
-                        let file_mode = (permissions.mode() >> 12) << 12 | mode;
-                        permissions.set_mode(file_mode);
+                    let mut permissions = entry.metadata.permissions_ref().clone();
+                    let file_mode = (permissions.mode() >> 12) << 12 | mode;
+                    permissions.set_mode(file_mode);
 
-                        fs::set_permissions(entry.file_path(), permissions)?;
-                        entry.metadata.permissions_mut().set_mode(file_mode);
+                    fs::set_permissions(entry.file_path(), permissions)?;
+                    entry.metadata.permissions_mut().set_mode(file_mode);
 
-                        cursor_move::down(context, 1)?;
+                    cursor_move::down(context, 1)?;
                 }
             }
         }

@@ -12,7 +12,7 @@ pub enum FileOp {
     Copy,
 }
 
-#[derive(Clone,Debug,Default)]
+#[derive(Clone, Debug, Default)]
 pub struct IoWorkerOptions {
     pub overwrite: bool,
     pub skip_exist: bool,
