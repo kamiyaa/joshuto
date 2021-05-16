@@ -24,6 +24,8 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
 }
 
 pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    let config = context.config_ref();
+
     if let Some(entry) = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -48,6 +50,7 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
                 ));
             }
             let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
+
             let options = get_options(paths[0].as_path());
 
             if !options.is_empty() {
@@ -60,7 +63,13 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
                     res?;
                 }
             } else {
-                open_with_helper(context, backend, options, files)?;
+                if config.xdg_open {
+                    backend.terminal_drop();
+                    open::that(paths[0].as_path())?;
+                    backend.terminal_restore()?;
+                } else {
+                    open_with_helper(context, backend, options, files)?;
+                }
             }
         }
     }
