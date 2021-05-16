@@ -1,8 +1,7 @@
 [class]
 audio_default	= [
 	{ command = "mpv", args = [ "--" ] },
-	{ command = "mediainfo", confirm_exit = true },
-	{ command = "swappy", args = [ "-f" ], fork = true } ]
+	{ command = "mediainfo", confirm_exit = true } ]
 
 image_default	= [
 	{ command = "qimgv", fork = true, silent = true },
