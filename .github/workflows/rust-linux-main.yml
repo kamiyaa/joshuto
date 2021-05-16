@@ -1,0 +1,31 @@
+name: Linux build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Rust Linux ${{ matrix.rust }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install minimal ${{ matrix.rust }} rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+      - run: cargo -Vv && rustc -Vv
+      - run: cargo check
+      - run: cargo check --all-features
+        if: ${{ matrix.rust == 'stable' }}
+      - run: cargo fmt --all -- --check
+        if: ${{ matrix.rust == 'stable' }}
+      - run: cargo test
+        if: ${{ matrix.rust == 'stable' }}
