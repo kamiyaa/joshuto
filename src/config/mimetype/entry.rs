@@ -3,7 +3,32 @@ use std::fmt;
 use std::io::Read;
 use std::process;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
+pub struct AppList {
+    #[serde(default, rename = "inherit")]
+    _inherit: String,
+    #[serde(default, rename = "app_list")]
+    _app_list: Vec<AppMimetypeEntry>,
+}
+
+impl AppList {
+    pub fn new(_inherit: String, _app_list: Vec<AppMimetypeEntry>) -> Self {
+        Self {
+            _inherit,
+            _app_list,
+        }
+    }
+
+    pub fn parent(&self) -> &str {
+        self._inherit.as_str()
+    }
+
+    pub fn app_list(&self) -> &[AppMimetypeEntry] {
+        &self._app_list.as_slice()
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct AppMimetypeEntry {
     #[serde(rename = "command")]
     _command: String,

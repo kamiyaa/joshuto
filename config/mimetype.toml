@@ -1,319 +1,156 @@
+[class]
+audio_default	= [
+	{ command = "mpv", args = [ "--" ] },
+	{ command = "mediainfo", confirm_exit = true } ]
+
+image_default	= [
+	{ command = "qimgv", fork = true, silent = true },
+	{ command = "krita", fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+	{ command = "swappy", args = [ "-f" ], fork = true } ]
+
+video_default	= [
+	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
+	{ command = "mediainfo", confirm_exit = true },
+	{ command = "mpv", args = [ "--mute", "on", "--" ], fork = true, silent = true } ]
+
+text_default	= [
+	{ command = "micro" },
+	{ command = "gedit", fork = true, silent = true },
+	{ command = "bat", confirm_exit = true } ]
+
 [extension]
 
 ## image formats
-bmp = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-gif = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-heic = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-jpeg = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-jpe = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-jpg = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-pgm = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-png = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-webp = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-ppm = [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
-svg = [
+bmp.inherit	= "image_default"
+gif.inherit	= "image_default"
+heic.inherit	= "image_default"
+jpeg.inherit	= "image_default"
+jpe.inherit	= "image_default"
+jpg.inherit	= "image_default"
+pgm.inherit	= "image_default"
+png.inherit	= "image_default"
+ppm.inherit	= "image_default"
+
+svg.app_list	= [
 	{ command = "inkview", fork = true, silent = true },
 	{ command = "inkscape", fork = true, silent = true } ]
-tiff = [
+tiff.app_list	= [
 	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true } ]
+	{ command = "krita", fork = true, silent = true } ]
 
 ## audio formats
-flac = [
-	{ command = "mpv", args = [ "--" ] },
-	{ command = "mediainfo", confirm_exit = true } ]
-m4a = [
-	{ command = "mpv", args = [ "--" ] },
-	{ command = "mediainfo", confirm_exit = true } ]
-mp3 = [
-	{ command = "mpv", args = [ "--" ] },
-	{ command = "mediainfo", confirm_exit = true } ]
-ogg = [
-	{ command = "mpv", args = [ "--" ] },
-	{ command = "mediainfo", confirm_exit = true } ]
-wav = [
-	{ command = "mpv", args = [ "--" ] },
-	{ command = "mediainfo", confirm_exit = true } ]
-ts = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mpv" },
-	{ command = "mediainfo", confirm_exit = true } ]
+flac.inherit	= "audio_default"
+m4a.inherit	= "audio_default"
+mp3.inherit	= "audio_default"
+ogg.inherit	= "audio_default"
+wav.inherit	= "audio_default"
+ts.inherit	= "audio_default"
 
 ## video formats
-avi = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-av1 = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-flv = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-mkv = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-m4v = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-mov = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-mp4 = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-webm = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
-wmv = [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+avi.inherit	= "video_default"
+av1.inherit	= "video_default"
+flv.inherit	= "video_default"
+mkv.inherit	= "video_default"
+m4v.inherit	= "video_default"
+mov.inherit	= "video_default"
+mp4.inherit	= "video_default"
+webm.inherit	= "video_default"
+webp.inherit	= "video_default"
+wmv.inherit	= "video_default"
 
 ## text formats
-build = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-c = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-cmake = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-conf = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-cpp = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-css = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-csv = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-cu = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-eex = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-env = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-ex = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-exs = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-go = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-h = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-hpp = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-hs = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-html = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-ini = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-java = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-js = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-json = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-kt = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-lua = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-log = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-md = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-micro = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-ninja = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-py = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-rkt = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-rs = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-scss = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-sh = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-srt = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-svelte = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-toml = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-tsx = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-txt = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-vim = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-xml = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-yaml = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
-yml = [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
+build.inherit	= "text_default"
+c.inherit	= "text_default"
+cmake.inherit	= "text_default"
+conf.inherit	= "text_default"
+cpp.inherit	= "text_default"
+css.inherit	= "text_default"
+csv.inherit	= "text_default"
+cu.inherit	= "text_default"
+eex.inherit	= "text_default"
+env.inherit	= "text_default"
+ex.inherit	= "text_default"
+exs.inherit	= "text_default"
+go.inherit	= "text_default"
+h.inherit	= "text_default"
+hpp.inherit	= "text_default"
+hs.inherit	= "text_default"
+html.inherit	= "text_default"
+ini.inherit	= "text_default"
+java.inherit	= "text_default"
+js.inherit	= "text_default"
+json.inherit	= "text_default"
+kt.inherit	= "text_default"
+lua.inherit	= "text_default"
+log.inherit	= "text_default"
+md.inherit	= "text_default"
+micro.inherit	= "text_default"
+ninja.inherit	= "text_default"
+py.inherit	= "text_default"
+rkt.inherit	= "text_default"
+rs.inherit	= "text_default"
+scss.inherit	= "text_default"
+sh.inherit	= "text_default"
+srt.inherit	= "text_default"
+svelte.inherit	= "text_default"
+toml.inherit	= "text_default"
+tsx.inherit	= "text_default"
+txt.inherit	= "text_default"
+vim.inherit	= "text_default"
+xml.inherit	= "text_default"
+yaml.inherit	= "text_default"
+yml.inherit	= "text_default"
 
 # archive formats
-7z = [
+7z.app_list	= [
 	{ command = "7z", args = [ "x" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
-bz2 = [
+bz2.app_list	= [
 	{ command = "tar", args = [ "-xvjf" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
-gz = [
+gz.app_list	= [
 	{ command = "tar", args = [ "-xvzf" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
-tar = [
+tar.app_list	= [
 	{ command = "tar", args = [ "-xvf" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
-tgz = [
+tgz.app_list	= [
 	{ command = "tar", args = [ "-xvzf" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
-rar = [
+rar.app_list	= [
 	{ command = "unrar", args = [ "e" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
-xz = [
+xz.app_list	= [
 	{ command = "tar", args = [ "-xvJf" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
-zip = [
+zip.app_list	= [
 	{ command = "unzip", confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
 
 # misc formats
-aup = [
+aup.app_list	= [
 	{ command = "audacity", fork = true, silent = true } ]
 
-m3u = [
+m3u.app_list	= [
 	{ command = "micro" },
 	{ command = "mpv" },
 	{ command = "gedit", fork = true, silent = true },
 	{ command = "bat", confirm_exit = true } ]
-docx = [
+docx.app_list	= [
 	{ command = "libreoffice", fork = true, silent = true } ]
-odt = [
+odt.app_list	= [
 	{ command = "libreoffice", fork = true, silent = true } ]
-odf = [
+odf.app_list	= [
 	{ command = "libreoffice", fork = true, silent = true } ]
-pdf = [
+pdf.app_list	= [
 	{ command = "evince", fork = true, silent = true } ]
 
-tex = [
+tex.app_list	= [
 	{ command = "micro" },
 	{ command = "gedit", fork = true, silent = true },
 	{ command = "bat", confirm_exit = true },
 	{ command = "pdflatex" } ]
 
-torrent = [
+torrent.app_list	= [
 	{ command = "transmission-gtk" } ]
