@@ -12,19 +12,10 @@ pub enum FileOp {
     Copy,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct IoWorkerOptions {
     pub overwrite: bool,
     pub skip_exist: bool,
-}
-
-impl std::default::Default for IoWorkerOptions {
-    fn default() -> Self {
-        Self {
-            overwrite: false,
-            skip_exist: false,
-        }
-    }
 }
 
 impl std::fmt::Display for IoWorkerOptions {

@@ -71,12 +71,9 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
         return Ok(());
     }
     if let Some(p) = args.path.as_ref() {
-        match std::env::set_current_dir(p.as_path()) {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("{}", e);
-                process::exit(1);
-            }
+        if let Err(e) = std::env::set_current_dir(p.as_path()) {
+            eprintln!("{}", e);
+            process::exit(1);
         }
     }
 
@@ -108,11 +105,8 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
 fn main() {
     let args = Args::from_args();
 
-    match run_joshuto(args) {
-        Ok(_) => {}
-        Err(e) => {
-            eprintln!("{}", e.to_string());
-            process::exit(1);
-        }
+    if let Err(e) = run_joshuto(args) {
+        eprintln!("{}", e.to_string());
+        process::exit(1);
     }
 }
