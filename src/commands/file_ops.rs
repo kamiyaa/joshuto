@@ -49,45 +49,77 @@ pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResul
 }
 
 pub fn copy_filename(context: &mut AppContext) -> JoshutoResult<()> {
-    let entry_file_name = match context
+    let entry_file_name = context
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
-    {
-        Some(entry) => Some(entry.file_name().to_string()),
-        None => None,
-    };
-    if let Some(file_name) = entry_file_name {
-        let clipboards = [
-            (
-                "wl-copy",
-                format!("printf '%s' {} | {} 2> /dev/null", file_name, "wl-copy"),
-            ),
-            (
-                "xsel",
-                format!("printf '%s' {} | {} -ib 2> /dev/null", file_name, "xsel"),
-            ),
-            (
-                "xclip",
-                format!(
-                    "printf '%s' {} | {} -selection clipboard 2> /dev/null",
-                    file_name, "xclip"
-                ),
-            ),
-        ];
+        .and_then(|entry| Some(entry.file_name().to_string()));
 
-        for (_, command) in clipboards.iter() {
-            match Command::new("sh").args(&["-c", command.as_str()]).status() {
-                Ok(s) if s.success() => return Ok(()),
-                _ => {}
-            }
-        }
-        let err = Err(JoshutoError::new(
-            JoshutoErrorKind::ClipboardError,
-            "Failed to copy to clipboard".to_string(),
-        ));
-        return err;
+    if let Some(file_name) = entry_file_name {
+        copy_string_to_buffer(file_name)?;
     }
     Ok(())
+}
+
+pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult<()> {
+    let entry_file_path = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|c| c.curr_entry_ref())
+        .and_then(|entry| entry.file_path().to_str())
+        .and_then(|s| Some(s.to_string()));
+
+    if let Some(file_path) = entry_file_path {
+        copy_string_to_buffer(file_path)?;
+    }
+    Ok(())
+}
+
+pub fn copy_dirname(context: &mut AppContext) -> JoshutoResult<()> {
+    let opt_entry = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|dirlist| dirlist.file_path());
+
+    if let Some(pathbuf) = opt_entry {
+        if let Some(dir) = pathbuf.to_str().map(|s| String::from(s)) {
+            copy_string_to_buffer(dir)?
+        }
+    };
+    Ok(())
+}
+
+fn copy_string_to_buffer(string: String) -> JoshutoResult<()> {
+    let clipboards = [
+        (
+            "wl-copy",
+            format!("printf '%s' {} | {} 2> /dev/null", string, "wl-copy"),
+        ),
+        (
+            "xsel",
+            format!("printf '%s' {} | {} -ib 2> /dev/null", string, "xsel"),
+        ),
+        (
+            "xclip",
+            format!(
+                "printf '%s' {} | {} -selection clipboard 2> /dev/null",
+                string, "xclip"
+            ),
+        ),
+    ];
+
+    for (_, command) in clipboards.iter() {
+        match Command::new("sh").args(&["-c", command.as_str()]).status() {
+            Ok(s) if s.success() => return Ok(()),
+            _ => {}
+        }
+    }
+    let err = Err(JoshutoError::new(
+        JoshutoErrorKind::ClipboardError,
+        "Failed to copy to clipboard".to_string(),
+    ));
+    return err;
 }
