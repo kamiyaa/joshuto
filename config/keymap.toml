@@ -170,9 +170,6 @@ keys = [ "s", "n" ]
 [[mapcommand]]
 command = "sort reverse"
 keys = [ "s", "r" ]
-[[mapcommand]]
-command = "sort ext"
-keys = [ "s", "e" ]
 
 [[mapcommand]]
 command = "cd /"
