@@ -1,0 +1,6 @@
+/target
+/test
+*.log
+*.tmp
+*~
+**/*.rs.bk
