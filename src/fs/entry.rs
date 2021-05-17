@@ -86,6 +86,15 @@ impl JoshutoDirEntry {
     pub fn set_selected(&mut self, selected: bool) {
         self.selected = selected;
     }
+
+    pub fn get_ext(&self) -> &str {
+        let fname = self.file_name();
+        let ext = match fname.rfind('.') {
+            Some(pos) => &fname[pos..],
+            None => &fname[0..0],
+        };
+        ext
+    }
 }
 
 impl std::fmt::Display for JoshutoDirEntry {

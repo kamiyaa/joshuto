@@ -8,8 +8,10 @@ use crate::util::sort::SortType;
 use super::reload;
 
 pub fn set_sort(context: &mut AppContext, method: SortType) -> JoshutoResult<()> {
-    context.config_mut().sort_options_mut().sort_method = method;
-
+    context
+        .config_mut()
+        .sort_options_mut()
+        .set_sort_method(method);
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
     }
