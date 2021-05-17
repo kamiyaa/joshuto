@@ -27,11 +27,12 @@ impl SortRawOption {
         };
 
         let mut sort_methods = std::collections::LinkedList::new();
-        sort_methods.push_back(SortType::Ext);
+        sort_methods.push_back(sort_method);
+        sort_methods.push_back(SortType::Natural);
+        sort_methods.push_back(SortType::Lexical);
         sort_methods.push_back(SortType::Size);
         sort_methods.push_back(SortType::Mtime);
-        sort_methods.push_back(SortType::Lexical);
-        sort_methods.push_back(SortType::Natural);
+        sort_methods.push_back(SortType::Ext);
 
         let sort_methods = sort::SortTypes { list: sort_methods };
         sort::SortOption {
