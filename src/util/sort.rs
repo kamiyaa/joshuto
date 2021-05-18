@@ -1,37 +1,11 @@
 use std::cmp;
+use std::collections::VecDeque;
 use std::fs;
 use std::time;
 
 use serde_derive::Deserialize;
 
 use crate::fs::JoshutoDirEntry;
-
-#[derive(Clone, Debug)]
-pub struct SortTypes {
-    pub list: std::collections::LinkedList<SortType>,
-}
-
-impl SortTypes {
-    pub fn reorganize(&mut self, st: SortType) {
-        self.list.push_front(st);
-        self.list.pop_back();
-    }
-
-    pub fn cmp(
-        &self,
-        f1: &JoshutoDirEntry,
-        f2: &JoshutoDirEntry,
-        sort_option: &SortOption,
-    ) -> cmp::Ordering {
-        for st in &self.list {
-            let res = st.cmp(f1, f2, sort_option);
-            if res != cmp::Ordering::Equal {
-                return res;
-            }
-        }
-        cmp::Ordering::Equal
-    }
-}
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
 pub enum SortType {
@@ -86,11 +60,53 @@ impl std::fmt::Display for SortType {
 }
 
 #[derive(Clone, Debug)]
+pub struct SortTypes {
+    pub list: VecDeque<SortType>,
+}
+
+impl SortTypes {
+    pub fn reorganize(&mut self, st: SortType) {
+        self.list.push_front(st);
+        self.list.pop_back();
+    }
+
+    pub fn cmp(
+        &self,
+        f1: &JoshutoDirEntry,
+        f2: &JoshutoDirEntry,
+        sort_option: &SortOption,
+    ) -> cmp::Ordering {
+        for st in &self.list {
+            let res = st.cmp(f1, f2, sort_option);
+            if res != cmp::Ordering::Equal {
+                return res;
+            }
+        }
+        cmp::Ordering::Equal
+    }
+}
+
+impl std::default::Default for SortTypes {
+    fn default() -> Self {
+        let list: VecDeque<SortType> = vec![
+            SortType::Natural,
+            SortType::Lexical,
+            SortType::Size,
+            SortType::Ext,
+            SortType::Mtime,
+        ]
+        .into_iter()
+        .collect();
+
+        Self { list }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct SortOption {
     pub directories_first: bool,
     pub case_sensitive: bool,
     pub reverse: bool,
-    pub sort_method: SortType,
     pub sort_methods: SortTypes,
 }
 
@@ -126,18 +142,11 @@ impl SortOption {
 
 impl std::default::Default for SortOption {
     fn default() -> Self {
-        let mut sort_methods = std::collections::LinkedList::new();
-        sort_methods.push_back(SortType::Ext);
-        sort_methods.push_back(SortType::Size);
-        sort_methods.push_back(SortType::Mtime);
-        sort_methods.push_back(SortType::Lexical);
-        sort_methods.push_back(SortType::Natural);
         SortOption {
             directories_first: true,
             case_sensitive: false,
             reverse: false,
-            sort_method: SortType::Natural,
-            sort_methods: SortTypes { list: sort_methods },
+            sort_methods: SortTypes::default(),
         }
     }
 }
@@ -153,12 +162,6 @@ fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering
         let f1_mtime: time::SystemTime = f1_meta.modified()?;
         let f2_mtime: time::SystemTime = f2_meta.modified()?;
         Ok(f1_mtime.cmp(&f2_mtime))
-
-        // Ok(if f1_mtime >= f2_mtime {
-        //     cmp::Ordering::Less
-        // } else {
-        //     cmp::Ordering::Greater
-        // })
     }
     compare(&file1, &file2).unwrap_or(cmp::Ordering::Equal)
 }

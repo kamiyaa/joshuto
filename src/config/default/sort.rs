@@ -1,7 +1,6 @@
 use serde_derive::Deserialize;
 
 use crate::util::sort;
-use crate::util::sort::SortType;
 
 const fn default_true() -> bool {
     true
@@ -26,20 +25,13 @@ impl SortRawOption {
             None => sort::SortType::Natural,
         };
 
-        let mut sort_methods = std::collections::LinkedList::new();
-        sort_methods.push_back(sort_method);
-        sort_methods.push_back(SortType::Natural);
-        sort_methods.push_back(SortType::Lexical);
-        sort_methods.push_back(SortType::Size);
-        sort_methods.push_back(SortType::Mtime);
-        sort_methods.push_back(SortType::Ext);
+        let mut sort_methods = sort::SortTypes::default();
+        sort_methods.reorganize(sort_method);
 
-        let sort_methods = sort::SortTypes { list: sort_methods };
         sort::SortOption {
             directories_first: self.directories_first,
             case_sensitive: self.case_sensitive,
             reverse: self.reverse,
-            sort_method,
             sort_methods,
         }
     }
