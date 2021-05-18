@@ -14,6 +14,8 @@ pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
             .fg(THEME_T.selection.fg)
             .bg(THEME_T.selection.bg)
             .add_modifier(THEME_T.selection.modifier),
+            // .prefix(THEME_T.selection.prefix)
+            // .add_modifier(THEME_T.selection.prefix),
         FileType::Directory => Style::default()
             .fg(THEME_T.directory.fg)
             .bg(THEME_T.directory.bg)
