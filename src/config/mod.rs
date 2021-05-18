@@ -2,12 +2,14 @@ pub mod default;
 pub mod keymap;
 pub mod mimetype;
 pub mod preview;
+pub mod bookmarks;
 pub mod theme;
 
 pub use self::default::AppConfig;
 pub use self::keymap::AppKeyMapping;
 pub use self::mimetype::{AppMimetypeEntry, AppMimetypeRegistry};
 pub use self::preview::{JoshutoPreview, JoshutoPreviewEntry};
+pub use self::bookmarks::{AppBookmarkMapping};
 pub use self::theme::{AppStyle, AppTheme};
 
 use serde::de::DeserializeOwned;
