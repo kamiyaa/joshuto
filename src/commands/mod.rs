@@ -1,3 +1,4 @@
+pub mod add_bookmark;
 pub mod bulk_rename;
 pub mod change_directory;
 pub mod command_line;

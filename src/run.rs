@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use termion::event::Event;
 use termion::event::Key;
 
-use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
+use crate::commands::{AppExecute, CommandKeybind};
+use crate::commands::KeyCommand;
 use crate::config::AppKeyMapping;
 use crate::config::AppBookmarkMapping;
 use crate::context::AppContext;
@@ -26,7 +27,6 @@ pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
     keymap_t: AppKeyMapping,
-    // bookmarks: AppBookmarkMapping,
 ) -> std::io::Result<()> {
 
     let bookmarks =  AppBookmarkMapping::new();   
@@ -85,8 +85,9 @@ pub fn run(
                     Event::Key(Key::Char('`')) => {
 
                         let cmd = {
-                            let mut menu = TuiBookmarkMenu::new();
-                            menu.get_bm(backend, context, &bookmarks)
+                            // let mut menu = TuiBookmarkMenu::new();
+                            let mut menu = TuiBookmarkMenu::new(context);
+                            menu.get_bm(backend, context)
                         };
                         if let Some(path) = cmd {
                             notify(path);

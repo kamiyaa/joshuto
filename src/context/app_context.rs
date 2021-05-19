@@ -7,6 +7,7 @@ use crate::util::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
 pub struct AppContext {
+    pub bookmarks: config::bookmarks::AppBookmarkMapping,
     pub exit: bool,
     // app config
     config: config::AppConfig,
@@ -29,6 +30,7 @@ impl AppContext {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
         Self {
+            bookmarks: config::bookmarks::AppBookmarkMapping::new(),
             exit: false,
             events,
             tab_context: TabContext::new(),
