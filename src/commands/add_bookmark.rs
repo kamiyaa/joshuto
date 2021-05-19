@@ -24,7 +24,7 @@ pub fn add_bookmark(context: &mut AppContext, backend: &mut TuiBackend) -> Joshu
                     let path = std::path::PathBuf::from(dir);
                     let event = Event::Key(Key::Char(c));
                     let bookmarks = &mut context.bookmarks;
-                    config::bookmarks::insert_bookmark(bookmarks, path, event);
+                    config::bookmarks::insert_bookmark(bookmarks, path, event)?;
                     return Ok(());
                 }
             }

@@ -91,11 +91,6 @@ pub fn run(
                                 context.push_msg(e.to_string());
                             }
                         }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
-                            if let Err(e) = command.execute(context, backend) {
-                                context.push_msg(e.to_string());
-                            }
-                        }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
                             let cmd = {
                                 let mut menu = TuiCommandMenu::new();

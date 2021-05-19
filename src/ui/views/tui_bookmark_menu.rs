@@ -4,7 +4,6 @@ use termion::event::{Event, Key};
 use tui::layout::Rect;
 use tui::widgets::Clear;
 
-use crate::config::AppBookmarkMapping;
 use crate::context::AppContext;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
@@ -92,7 +91,7 @@ impl TuiBookmarkMenu {
                             Some(path) => {
                                 return Some(path);
                             }
-                            None => return None,
+                            None => {},
                         },
                     }
                     context.flush_event();
@@ -167,7 +166,7 @@ impl TuiBookmarkMenu {
                         Event::Key(Key::Esc) => return None,
                         Event::Key(Key::Char(c)) => return Some(Event::Key(Key::Char(c))),
 
-                        event => return None,
+                        _event => {},
                     }
                     context.flush_event();
                 }

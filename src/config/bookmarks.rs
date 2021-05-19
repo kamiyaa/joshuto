@@ -66,7 +66,7 @@ impl AppBookmarkMapping {
     }
 
     pub fn new() -> Self {
-        let mut map = HashMap::new();
+        let map = HashMap::new();
         Self { map }
     }
 
