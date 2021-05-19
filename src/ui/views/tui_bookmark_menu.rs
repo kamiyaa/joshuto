@@ -50,15 +50,13 @@ impl TuiBookmarkMenu {
             {
                 // draw menu
                 let display_vec: Vec<String> = context
-                    .bookmarks.map
+                    .bookmarks
+                    .map
                     .iter()
                     // .map(|(k, v)| format!("  {:?}        {}", k, v))
-                    .map(|(k, v)| {
-                        match  k {
+                    .map(|(k, v)| match k {
                         Event::Key(Key::Char(c)) => format!("  {}        {:?}", c, v.as_path()),
                         _ => "???".to_string(),
-
-                        }
                     })
                     .collect();
                 // display_vec.sort();

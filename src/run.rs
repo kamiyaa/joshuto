@@ -23,6 +23,7 @@ pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
     keymap_t: AppKeyMapping,
+    bookmark_file_path: &str,
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
     {
@@ -114,6 +115,8 @@ pub fn run(
             event => input::process_noninteractive(event, context),
         }
     }
+    // notify(bookmark_file_path);
+    context.bookmarks.save(bookmark_file_path)?;
 
     Ok(())
 }

@@ -87,7 +87,7 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
 
     {
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
-        run(&mut backend, &mut context, keymap)?;
+        run(&mut backend, &mut context, keymap, BOOKMARKS_FILE)?;
     }
 
     if let Some(p) = args.last_dir {
