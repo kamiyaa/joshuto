@@ -110,8 +110,9 @@ impl TuiBookmarkMenu {
         context.flush_event();
 
 
-    // let list_of_strings =  vec!["<any>".to_string()];
-    // show_list(&list_of_strings, backend, context); 
+        let list_of_strings =  vec!["<any>".to_string()];
+        show_list(&list_of_strings, backend, context); 
+/*
         let terminal = backend.terminal_mut();
         let _ = terminal.draw(|frame| {
             let f_size: Rect = frame.size();
@@ -148,7 +149,7 @@ impl TuiBookmarkMenu {
                 frame.render_widget(TuiMenu::new(&display_str), menu_rect);
             }
         });
-
+*/
         if let Ok(event) = context.poll_event() {
             match event {
                 AppEvent::Termion(event) => {
