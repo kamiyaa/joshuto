@@ -1,5 +1,4 @@
 use crate::ui::TuiBackend;
-// use crate::ui::views::TuiTextField;
 use crate::config;
 use crate::context::AppContext;
 use crate::ui::views::TuiBookmarkMenu;
@@ -8,12 +7,10 @@ use termion::event::Key;
 // use crate::config::{AppBookmarkMapping,};
 use crate::error::JoshutoResult;
 // use crate::error::{JoshutoError, JoshutoErrorKind};
-use crate::run::notify;   
+
 pub fn add_bookmark(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-    notify(444);
     let mut tbm = TuiBookmarkMenu::new();
     let maybe_char = tbm.get_any_char(backend, context); 
-    notify(&maybe_char);
 
     match maybe_char {
         Some(Event::Key(Key::Char(c))) => {
