@@ -1,26 +1,22 @@
-use std::collections::HashMap;
-
 use termion::event::Event;
 use termion::event::Key;
 
-use crate::commands::{AppExecute, CommandKeybind};
 use crate::commands::KeyCommand;
+use crate::commands::{AppExecute, CommandKeybind};
 use crate::config::AppKeyMapping;
-use crate::config::AppBookmarkMapping;
 use crate::context::AppContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
-use crate::ui::views::{TuiCommandMenu, TuiView};
 use crate::ui::views::TuiBookmarkMenu;
+use crate::ui::views::{TuiCommandMenu, TuiView};
 use crate::util::event::AppEvent;
 use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
 
-
-fn notify<T: std::fmt::Debug>(x: T){
+fn notify<T: std::fmt::Debug>(x: T) {
     let log = format!("{:?}", x);
-    let _  = std::process::Command::new("notify-send").arg(log).status();
+    let _ = std::process::Command::new("notify-send").arg(log).status();
 }
 
 pub fn run(
@@ -28,18 +24,6 @@ pub fn run(
     context: &mut AppContext,
     keymap_t: AppKeyMapping,
 ) -> std::io::Result<()> {
-
-    let bookmarks =  AppBookmarkMapping::new();   
-
-
-
-
-
-
-
-
-
-
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
@@ -83,10 +67,9 @@ pub fn run(
                         }
                     }
                     Event::Key(Key::Char('`')) => {
-
                         let cmd = {
                             // let mut menu = TuiBookmarkMenu::new();
-                            let mut menu = TuiBookmarkMenu::new(context);
+                            let mut menu = TuiBookmarkMenu::new();
                             menu.get_bm(backend, context)
                         };
                         if let Some(path) = cmd {
@@ -101,11 +84,7 @@ pub fn run(
                         None => {
                             context.push_msg(format!("Unmapped input: {}", key.to_string()));
                         }
-                        // Some(CommandKeybind::SimpleKeybind(command)) => {
-                        //     	let log = format!("end");
-                        //         let _  = std::process::Command::new("notify-send").arg(log).status();
 
-                        // }
                         Some(CommandKeybind::SimpleKeybind(command)) => {
                             if let Err(e) = command.execute(context, backend) {
                                 context.push_msg(e.to_string());
@@ -138,4 +117,3 @@ pub fn run(
 
     Ok(())
 }
-

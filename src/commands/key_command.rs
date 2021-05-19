@@ -14,7 +14,6 @@ use shellexpand::tilde_with_context;
 
 use super::*;
 
-
 #[derive(Clone, Debug)]
 pub enum KeyCommand {
     BulkRename,
@@ -27,7 +26,7 @@ pub enum KeyCommand {
     CopyFileName,
     CopyFilePath,
     CopyDirName,
-    AddBookmark(char),
+    AddBookmark,
 
     CursorMoveUp(usize),
     CursorMoveDown(usize),
@@ -74,10 +73,6 @@ pub enum KeyCommand {
     TabSwitch(i32),
 }
 
-
-
-
-
 impl KeyCommand {
     pub const fn command(&self) -> &'static str {
         match self {
@@ -94,7 +89,7 @@ impl KeyCommand {
             Self::CopyFilePath => "copy_filepath",
             Self::CopyDirName => "copy_dirname",
 
-            Self::AddBookmark(x) => "add_bookmark",
+            Self::AddBookmark => "add_bookmark",
 
             Self::CursorMoveUp(_) => "cursor_move_up",
             Self::CursorMoveDown(_) => "cursor_move_down",
@@ -169,7 +164,7 @@ impl KeyCommand {
             "copy_filename" => Ok(Self::CopyFileName),
             "copy_filepath" => Ok(Self::CopyFilePath),
             "copy_dirname" => Ok(Self::CopyDirName),
-            "add_bookmark" => Ok(Self::AddBookmark(arg.chars().nth(0).unwrap())),
+            "add_bookmark" => Ok(Self::AddBookmark),
             "cursor_move_home" => Ok(Self::CursorMoveHome),
             "cursor_move_end" => Ok(Self::CursorMoveEnd),
             "cursor_move_page_up" => Ok(Self::CursorMovePageUp),
@@ -371,7 +366,7 @@ impl AppExecute for KeyCommand {
             Self::CopyFileName => file_ops::copy_filename(context),
             Self::CopyFilePath => file_ops::copy_filepath(context),
             Self::CopyDirName => file_ops::copy_dirname(context),
-            Self::AddBookmark(c) => add_bookmark::add_bookmark(context,  backend),
+            Self::AddBookmark => add_bookmark::add_bookmark(context, backend),
 
             Self::CursorMoveUp(u) => cursor_move::up(context, *u),
             Self::CursorMoveDown(u) => cursor_move::down(context, *u),
