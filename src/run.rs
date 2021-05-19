@@ -14,7 +14,7 @@ use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
 
-fn notify<T: std::fmt::Debug>(x: T) {
+pub fn notify<T: std::fmt::Debug>(x: T) {
     let log = format!("{:?}", x);
     let _ = std::process::Command::new("notify-send").arg(log).status();
 }
@@ -73,14 +73,19 @@ pub fn run(
                             let mut menu = TuiBookmarkMenu::new();
                             menu.get_bm(backend, context)
                         };
-                        if let Some(path) = cmd {
-                            notify(path);
-                            let path = path.clone();
-                            let kcmd = KeyCommand::ChangeDirectory(path);
-                            kcmd.execute(context, backend).ok();
+                        match cmd{
+                            Some(path) => {
+                                notify(format!("2---{:?}",cmd));
+                                let path = path.clone();
+                                let kcmd = KeyCommand::ChangeDirectory(path);
+                                kcmd.execute(context, backend).ok();
+                            }
+                            None => {
+                                notify(format!("3---{:?}",cmd));
+                                context.push_msg(format!("No such bookmark"));
+                            }
                         }
                     }
-
                     key => match keymap_t.as_ref().get(&key) {
                         None => {
                             context.push_msg(format!("Unmapped input: {}", key.to_string()));

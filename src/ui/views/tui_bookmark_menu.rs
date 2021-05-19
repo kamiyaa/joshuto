@@ -94,9 +94,8 @@ impl TuiBookmarkMenu {
                             None => {},
                         },
                     }
-                    context.flush_event();
                 }
-                event => input::process_noninteractive(event, context),
+                event => {},
             }
         }
         None
@@ -107,9 +106,13 @@ impl TuiBookmarkMenu {
         backend: &mut TuiBackend,
         context: &'a mut AppContext,
     ) -> Option<Event> {
-        let terminal = backend.terminal_mut();
+
         context.flush_event();
 
+
+    // let list_of_strings =  vec!["<any>".to_string()];
+    // show_list(&list_of_strings, backend, context); 
+        let terminal = backend.terminal_mut();
         let _ = terminal.draw(|frame| {
             let f_size: Rect = frame.size();
 
@@ -146,19 +149,6 @@ impl TuiBookmarkMenu {
             }
         });
 
-        // if let Ok(event) = context.poll_event() {
-        //     match event {
-        //         AppEvent::Termion(Event::Key(Key::Esc)) =>return None,
-        //         AppEvent::Termion(Event::Key(Key::Char(c))) =>return Some(Event::Key(Key::Char(c))),
-        //         event =>return None,
-
-        //             }
-        //             context.flush_event();
-        //         }
-        //         event => input::process_noninteractive(event, context);
-        //     }
-        // }
-
         if let Ok(event) = context.poll_event() {
             match event {
                 AppEvent::Termion(event) => {
@@ -177,3 +167,63 @@ impl TuiBookmarkMenu {
         None
     }
 }
+
+// use tui::terminal::CompletedFrame;
+ // ->  std::io::Result<CompletedFrame> {
+ // ->  std::result::Result<(), std::io::Error> {
+pub fn show_list(list_of_strings: &Vec<String>, 
+    backend: &mut TuiBackend, context: &AppContext) {
+
+    let terminal = backend.terminal_mut();
+    let _ = terminal.draw(|frame| {
+        let f_size: Rect = frame.size();
+
+        {
+            let view = TuiView::new(&context);
+            frame.render_widget(view, f_size);
+        }
+
+        {
+            // draw menu
+            let mut display_vec = list_of_strings.clone();
+            display_vec.sort();
+            let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
+            let display_str_len = display_str.len();
+
+            let y = if (f_size.height as usize)
+                < display_str_len + BORDER_HEIGHT + BOTTOM_MARGIN
+            {
+                0
+            } else {
+                f_size.height - (BORDER_HEIGHT + BOTTOM_MARGIN) as u16 - display_str_len as u16
+            };
+
+            let menu_rect = Rect {
+                x: 0,
+                y,
+                width: f_size.width,
+                height: (display_str_len + BORDER_HEIGHT) as u16,
+            };
+
+            frame.render_widget(Clear, menu_rect);
+            frame.render_widget(TuiMenu::new(&display_str), menu_rect);
+        }
+    });
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+

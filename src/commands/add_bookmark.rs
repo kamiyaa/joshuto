@@ -8,10 +8,14 @@ use termion::event::Key;
 // use crate::config::{AppBookmarkMapping,};
 use crate::error::JoshutoResult;
 // use crate::error::{JoshutoError, JoshutoErrorKind};
-
+use crate::run::notify;   
 pub fn add_bookmark(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    notify(444);
     let mut tbm = TuiBookmarkMenu::new();
-    match tbm.get_any_char(backend, context) {
+    let maybe_char = tbm.get_any_char(backend, context); 
+    notify(&maybe_char);
+
+    match maybe_char {
         Some(Event::Key(Key::Char(c))) => {
             let opt_entry = context
                 .tab_context_ref()
