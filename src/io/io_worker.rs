@@ -110,7 +110,7 @@ impl IoWorkerThread {
         self._kind
     }
 
-    pub fn start(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
+    pub fn start(&self, tx: mpsc::Sender<IoWorkerProgress>) -> io::Result<IoWorkerProgress> {
         match self.kind() {
             FileOp::Cut => self.paste_cut(tx),
             FileOp::Copy => self.paste_copy(tx),
@@ -148,7 +148,7 @@ impl IoWorkerThread {
         Ok((total_files, total_bytes))
     }
 
-    fn paste_copy(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
+    fn paste_copy(&self, tx: mpsc::Sender<IoWorkerProgress>) -> io::Result<IoWorkerProgress> {
         let (total_files, total_bytes) = self.query_number_of_items()?;
         let mut progress = IoWorkerProgress::new(self.kind(), 0, total_files, 0, total_bytes);
         for path in self.paths.iter() {
@@ -163,7 +163,7 @@ impl IoWorkerThread {
         Ok(progress)
     }
 
-    fn paste_cut(&self, tx: mpsc::Sender<IoWorkerProgress>) -> std::io::Result<IoWorkerProgress> {
+    fn paste_cut(&self, tx: mpsc::Sender<IoWorkerProgress>) -> io::Result<IoWorkerProgress> {
         let (total_files, total_bytes) = self.query_number_of_items()?;
         let mut progress = IoWorkerProgress::new(self.kind(), 0, total_files, 0, total_bytes);
 
@@ -185,7 +185,7 @@ pub fn recursive_copy(
     dest: &path::Path,
     tx: mpsc::Sender<IoWorkerProgress>,
     progress: &mut IoWorkerProgress,
-) -> std::io::Result<()> {
+) -> io::Result<()> {
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
         dest_buf.push(s);
@@ -226,7 +226,7 @@ pub fn recursive_cut(
     dest: &path::Path,
     tx: mpsc::Sender<IoWorkerProgress>,
     progress: &mut IoWorkerProgress,
-) -> std::io::Result<()> {
+) -> io::Result<()> {
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
         dest_buf.push(s);
@@ -234,13 +234,10 @@ pub fn recursive_cut(
     rename_filename_conflict(&mut dest_buf);
     let metadata = fs::symlink_metadata(src)?;
     let file_type = metadata.file_type();
-    if file_type.is_dir() {
-        match fs::rename(src, dest_buf.as_path()) {
-            Ok(_) => {
-                let processed = progress.bytes_processed() + metadata.len();
-                progress.set_bytes_processed(processed);
-            }
-            Err(_) => {
+
+    match fs::rename(src, dest_buf.as_path()) {
+        Err(e) if e.kind() == io::ErrorKind::Other => {
+            if file_type.is_dir() {
                 fs::create_dir(dest_buf.as_path())?;
                 for entry in fs::read_dir(src)? {
                     let entry_path = entry?.path();
@@ -252,23 +249,22 @@ pub fn recursive_cut(
                     )?;
                 }
                 fs::remove_dir(src)?;
+            } else if file_type.is_symlink() {
+                let link_path = fs::read_link(src)?;
+                std::os::unix::fs::symlink(link_path, dest_buf)?;
+                fs::remove_file(src)?;
+                let processed = progress.bytes_processed() + metadata.len();
+                progress.set_bytes_processed(processed);
+                progress.set_files_processed(progress.files_processed() + 1);
+            } else {
+                let processed = progress.bytes_processed() + fs::copy(src, dest_buf.as_path())?;
+                fs::remove_file(src)?;
+                progress.set_bytes_processed(processed);
+                progress.set_files_processed(progress.files_processed() + 1);
             }
         }
-    } else if file_type.is_file() {
-        if fs::rename(src, dest_buf.as_path()).is_err() {
-            fs::copy(src, dest_buf.as_path())?;
-            fs::remove_file(src)?;
-            let processed = progress.bytes_processed() + metadata.len();
-            progress.set_bytes_processed(processed);
-        }
-        progress.set_files_processed(progress.files_processed() + 1);
-    } else if file_type.is_symlink() {
-        let link_path = fs::read_link(src)?;
-        std::os::unix::fs::symlink(link_path, dest_buf)?;
-        fs::remove_file(src)?;
-        let processed = progress.bytes_processed() + metadata.len();
-        progress.set_bytes_processed(processed);
-        progress.set_files_processed(progress.files_processed() + 1);
+        Err(e) => return Err(e),
+        _ => {}
     }
     Ok(())
 }
