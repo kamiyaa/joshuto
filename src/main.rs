@@ -80,8 +80,8 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
 
     let config = AppConfig::get_config(CONFIG_FILE);
     let bookmarks_filepath = config.bookmarks_filepath.as_str();
-    // let bookmarks = bookmarks::AppBookmarkMapping::load(BOOKMARKS_FILE);
-    let bookmarks = bookmarks::AppBookmarkMapping::load(bookmarks_filepath);
+    // let bookmarks = bookmarks::BookmarkMapping::load(BOOKMARKS_FILE);
+    let bookmarks = bookmarks::BookmarkMapping::load(bookmarks_filepath);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
 
     let mut context = AppContext::new(config, bookmarks);

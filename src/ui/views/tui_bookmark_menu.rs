@@ -36,16 +36,8 @@ impl TuiBookmarkMenu {
             .bookmarks
             .map
             .iter()
-            .map(|(k, v)| match k {
-                Event::Key(Key::Char(c)) => {
-                    format!(
-                        "  {}        {}",
-                        c,
-                        v.as_path().as_os_str().to_str().unwrap()
-                    )
-                }
-                _ => "???".to_string(),
-            })
+            .map(|(c, v)| 
+                format!( "  {}        {}", c, v.as_path().as_os_str().to_str().unwrap()))
             .collect();
 
         render_menu_from_list(&display_vec, backend, context);
@@ -54,14 +46,15 @@ impl TuiBookmarkMenu {
             match event {
                 AppEvent::Termion(event) => match event {
                     Event::Key(Key::Esc) => return None,
-                    event => match context.bookmarks.map.get(&event) {
+                    Event::Key(Key::Char(c)) => match context.bookmarks.map.get(&c) {
                         Some(path) => {
                             return Some(path);
                         }
                         None => {}
                     },
+                    _other_key_event => {},
                 },
-                _event => {}
+                _other_event => {}
             }
         }
         None

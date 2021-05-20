@@ -5,7 +5,7 @@ pub mod mimetype;
 pub mod preview;
 pub mod theme;
 
-// pub use self::bookmarks::AppBookmarkMapping;
+// pub use self::bookmarks::BookmarkMapping;
 pub use self::default::AppConfig;
 pub use self::keymap::AppKeyMapping;
 pub use self::mimetype::{AppMimetypeEntry, AppMimetypeRegistry};

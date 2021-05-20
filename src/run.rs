@@ -81,7 +81,6 @@ pub fn run(
                     }
                     Event::Key(Key::Char('`')) => {
                         let cmd = {
-                            // let mut menu = TuiBookmarkMenu::new();
                             let mut menu = TuiBookmarkMenu::new();
                             menu.get_bm(backend, context)
                         };

@@ -20,11 +20,10 @@ pub fn add_bookmark(context: &mut AppContext, backend: &mut TuiBackend) -> Joshu
                 .map(|dirlist| dirlist.file_path());
 
             if let Some(pathbuf) = opt_entry {
-                if let Some(dir) = pathbuf.to_str().map(|s| String::from(s)) {
+                if let Some(dir) = pathbuf.to_str().map(String::from) {
                     let path = std::path::PathBuf::from(dir);
-                    let event = Event::Key(Key::Char(c));
                     let bookmarks = &mut context.bookmarks;
-                    bookmarks::insert_bookmark(bookmarks, path, event)?;
+                    bookmarks::insert_bookmark(bookmarks, path, c)?;
                     return Ok(());
                 }
             }

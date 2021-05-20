@@ -1,14 +1,14 @@
 use std::collections::VecDeque;
 use std::sync::mpsc;
 
-use crate::bookmarks::AppBookmarkMapping;
+use crate::bookmarks::BookmarkMapping;
 use crate::config;
 use crate::context::{LocalStateContext, TabContext, WorkerContext};
 use crate::util::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
 pub struct AppContext {
-    pub bookmarks: AppBookmarkMapping,
+    pub bookmarks: BookmarkMapping,
     pub exit: bool,
     // app config
     config: config::AppConfig,
@@ -27,10 +27,10 @@ pub struct AppContext {
 }
 
 impl AppContext {
-    pub fn new(config: config::AppConfig, bookmarks: AppBookmarkMapping) -> Self {
+    pub fn new(config: config::AppConfig, bookmarks: BookmarkMapping) -> Self {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
-        // let bookmarks = config::bookmarks::AppBookmarkMapping::new();
+        // let bookmarks = config::bookmarks::BookmarkMapping::new();
         Self {
             bookmarks,
             exit: false,
