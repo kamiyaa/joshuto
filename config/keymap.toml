@@ -76,7 +76,7 @@ keys = [ "]" ]
 command = "open"
 keys = [ "arrow_right" ]
 [[mapcommand]]
-command = "open_file"
+command = "open"
 keys = [ "l" ]
 [[mapcommand]]
 command = "open"
