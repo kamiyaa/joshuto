@@ -12,23 +12,6 @@ use crate::util::event::AppEvent;
 use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
-/*
-pub fn notify<T: std::fmt::Debug>(x: T) {
-    use std::io::Write;
-    let log = format!("{:?}", x);
-    let _ = std::process::Command::new("notify-send").arg(&log).status();
-
-    let path = "/home/mg/.config/joshuto/bm_debug.txt" ;
-        let mut file = std::fs::OpenOptions::new()
-            .create_new(false)
-            .write(true)
-            .append(true)
-            .open(path)
-            .unwrap();
-
-        file.write_all(&log.as_bytes());
-}
-*/
 pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
