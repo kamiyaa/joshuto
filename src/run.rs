@@ -1,8 +1,7 @@
 use termion::event::Event;
 use termion::event::Key;
 
-use crate::commands::KeyCommand;
-use crate::commands::{AppExecute, CommandKeybind};
+use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::tab::JoshutoTab;
@@ -13,17 +12,30 @@ use crate::util::event::AppEvent;
 use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
-
+/*
 pub fn notify<T: std::fmt::Debug>(x: T) {
+    use std::io::Write;
     let log = format!("{:?}", x);
-    let _ = std::process::Command::new("notify-send").arg(log).status();
+    let _ = std::process::Command::new("notify-send").arg(&log).status();
+
+    let path = "/home/mg/.config/joshuto/bm_debug.txt" ;
+    // std::fs::write(PATH, log);
+    // std::fs::File::create(PATH).unwrap();
+        let mut file = std::fs::OpenOptions::new()
+            .create_new(false)
+            .write(true)
+            .append(true)
+            .open(path)
+            .unwrap();
+
+        file.write_all(&log.as_bytes());
 }
+*/
 
 pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
     keymap_t: AppKeyMapping,
-    bookmark_file_path: &str,
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
     {
@@ -73,7 +85,7 @@ pub fn run(
                             let mut menu = TuiBookmarkMenu::new();
                             menu.get_bm(backend, context)
                         };
-                        match cmd{
+                        match cmd {
                             Some(path) => {
                                 let path = path.clone();
                                 let kcmd = KeyCommand::ChangeDirectory(path);
@@ -113,8 +125,8 @@ pub fn run(
             event => input::process_noninteractive(event, context),
         }
     }
-    // notify(bookmark_file_path);
-    context.bookmarks.save(bookmark_file_path)?;
+    let bookmarks_file_path = &context.config_ref().bookmarks_filepath;
+    context.bookmarks.save(bookmarks_file_path)?;
 
     Ok(())
 }

@@ -1,3 +1,4 @@
+mod bookmarks;
 mod commands;
 mod config;
 mod context;
@@ -30,7 +31,6 @@ const MIMETYPE_FILE: &str = "mimetype.toml";
 const KEYMAP_FILE: &str = "keymap.toml";
 const THEME_FILE: &str = "theme.toml";
 const PREVIEW_FILE: &str = "preview.toml";
-const BOOKMARKS_FILE: &str = "/home/mg/.config/joshuto/bookmarks.toml";
 
 lazy_static! {
     // dynamically builds the config hierarchy
@@ -79,15 +79,16 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     }
 
     let config = AppConfig::get_config(CONFIG_FILE);
+    let bookmarks_filepath = config.bookmarks_filepath.as_str();
+    // let bookmarks = bookmarks::AppBookmarkMapping::load(BOOKMARKS_FILE);
+    let bookmarks = bookmarks::AppBookmarkMapping::load(bookmarks_filepath);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
-    // let bookmarks = config::bookmarks::AppBookmarkMapping::new();
-    let bookmarks = config::bookmarks::AppBookmarkMapping::load(BOOKMARKS_FILE);
 
     let mut context = AppContext::new(config, bookmarks);
 
     {
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
-        run(&mut backend, &mut context, keymap, BOOKMARKS_FILE)?;
+        run(&mut backend, &mut context, keymap)?;
     }
 
     if let Some(p) = args.last_dir {

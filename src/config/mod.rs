@@ -1,11 +1,11 @@
-pub mod bookmarks;
+// pub mod bookmarks;
 pub mod default;
 pub mod keymap;
 pub mod mimetype;
 pub mod preview;
 pub mod theme;
 
-pub use self::bookmarks::AppBookmarkMapping;
+// pub use self::bookmarks::AppBookmarkMapping;
 pub use self::default::AppConfig;
 pub use self::keymap::AppKeyMapping;
 pub use self::mimetype::{AppMimetypeEntry, AppMimetypeRegistry};
@@ -23,7 +23,7 @@ pub trait ConfigStructure {
 }
 
 // implemented by config file implementations to turn a RawConfig into a Config
-trait Flattenable<T> {
+pub trait Flattenable<T> {
     fn flatten(self) -> T;
 }
 

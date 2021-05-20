@@ -27,6 +27,8 @@ pub struct RawAppConfig {
     max_preview_size: u64,
     #[serde(default, rename = "display")]
     display_options: DisplayRawOption,
+    #[serde(default)]
+    bookmarks_filepath: String,
 }
 
 impl Flattenable<AppConfig> for RawAppConfig {
@@ -37,6 +39,7 @@ impl Flattenable<AppConfig> for RawAppConfig {
             use_trash: self.use_trash,
             xdg_open: self.xdg_open,
             _display_options: self.display_options.flatten(),
+            bookmarks_filepath: self.bookmarks_filepath,
         }
     }
 }
@@ -48,6 +51,7 @@ pub struct AppConfig {
     pub use_trash: bool,
     pub xdg_open: bool,
     _display_options: DisplayOption,
+    pub bookmarks_filepath: String,
 }
 
 impl AppConfig {
@@ -68,18 +72,25 @@ impl AppConfig {
 
 impl ConfigStructure for AppConfig {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<RawAppConfig, AppConfig>(file_name).unwrap_or_else(Self::default)
+        let res = parse_to_config_file::<RawAppConfig, AppConfig>(file_name)
+            .unwrap_or_else(Self::default);
+        // crate::run::notify(&res.bookmarks_filepath);
+        res
     }
 }
 
 impl std::default::Default for AppConfig {
     fn default() -> Self {
+        let home = std::env::var("HOME").unwrap();
+
         Self {
             max_preview_size: default_max_preview_size(),
             scroll_offset: default_scroll_offset(),
             use_trash: true,
             xdg_open: false,
             _display_options: DisplayOption::default(),
+            // bookmarks_filepath: "/home/mg/.config/joshuto/bookmarks_11.toml".to_string(),
+            bookmarks_filepath: format!("{}/joshuto_bookmarks.toml", home),
         }
     }
 }

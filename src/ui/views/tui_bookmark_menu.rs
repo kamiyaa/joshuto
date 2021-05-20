@@ -30,7 +30,6 @@ impl TuiBookmarkMenu {
         backend: &mut TuiBackend,
         context: &'a mut AppContext,
     ) -> Option<&'a P> {
-
         context.flush_event();
 
         let display_vec: Vec<String> = context
@@ -39,31 +38,30 @@ impl TuiBookmarkMenu {
             .iter()
             .map(|(k, v)| match k {
                 Event::Key(Key::Char(c)) => {
-                    format!("  {}        {}", c, v.as_path().as_os_str().to_str().unwrap())
-                },
+                    format!(
+                        "  {}        {}",
+                        c,
+                        v.as_path().as_os_str().to_str().unwrap()
+                    )
+                }
                 _ => "???".to_string(),
             })
             .collect();
 
-
         render_menu_from_list(&display_vec, backend, context);
-
-
 
         if let Ok(event) = context.poll_event() {
             match event {
-                AppEvent::Termion(event) => {
-                    match event {
-                        Event::Key(Key::Esc) => return None,
-                        event => match context.bookmarks.map.get(&event) {
-                            Some(path) => {
-                                return Some(path);
-                            }
-                            None => {},
-                        },
-                    }
-                }
-                _event => {},
+                AppEvent::Termion(event) => match event {
+                    Event::Key(Key::Esc) => return None,
+                    event => match context.bookmarks.map.get(&event) {
+                        Some(path) => {
+                            return Some(path);
+                        }
+                        None => {}
+                    },
+                },
+                _event => {}
             }
         }
         None
@@ -74,12 +72,10 @@ impl TuiBookmarkMenu {
         backend: &mut TuiBackend,
         context: &'a mut AppContext,
     ) -> Option<Event> {
-
         context.flush_event();
 
-
-        let list_of_strings =  vec!["<any>".to_string()];
-        render_menu_from_list(&list_of_strings, backend, context); 
+        let list_of_strings = vec!["<any>".to_string()];
+        render_menu_from_list(&list_of_strings, backend, context);
         if let Ok(event) = context.poll_event() {
             match event {
                 AppEvent::Termion(event) => {
@@ -87,7 +83,7 @@ impl TuiBookmarkMenu {
                         Event::Key(Key::Esc) => return None,
                         Event::Key(Key::Char(c)) => return Some(Event::Key(Key::Char(c))),
 
-                        _event => {},
+                        _event => {}
                     }
                     context.flush_event();
                 }
@@ -99,9 +95,11 @@ impl TuiBookmarkMenu {
     }
 }
 
-pub fn render_menu_from_list(list_of_strings: &Vec<String>, 
-    backend: &mut TuiBackend, context: &AppContext) {
-
+pub fn render_menu_from_list(
+    list_of_strings: &Vec<String>,
+    backend: &mut TuiBackend,
+    context: &AppContext,
+) {
     let terminal = backend.terminal_mut();
     let _ = terminal.draw(|frame| {
         let f_size: Rect = frame.size();
@@ -118,9 +116,7 @@ pub fn render_menu_from_list(list_of_strings: &Vec<String>,
             let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
             let display_str_len = display_str.len();
 
-            let y = if (f_size.height as usize)
-                < display_str_len + BORDER_HEIGHT + BOTTOM_MARGIN
-            {
+            let y = if (f_size.height as usize) < display_str_len + BORDER_HEIGHT + BOTTOM_MARGIN {
                 0
             } else {
                 f_size.height - (BORDER_HEIGHT + BOTTOM_MARGIN) as u16 - display_str_len as u16
@@ -137,21 +133,4 @@ pub fn render_menu_from_list(list_of_strings: &Vec<String>,
             frame.render_widget(TuiMenu::new(&display_str), menu_rect);
         }
     });
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
