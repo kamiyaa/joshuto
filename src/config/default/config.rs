@@ -72,10 +72,7 @@ impl AppConfig {
 
 impl ConfigStructure for AppConfig {
     fn get_config(file_name: &str) -> Self {
-        let res = parse_to_config_file::<RawAppConfig, AppConfig>(file_name)
-            .unwrap_or_else(Self::default);
-        // crate::run::notify(&res.bookmarks_filepath);
-        res
+        parse_to_config_file::<RawAppConfig, AppConfig>(file_name).unwrap_or_else(Self::default)
     }
 }
 
@@ -89,7 +86,6 @@ impl std::default::Default for AppConfig {
             use_trash: true,
             xdg_open: false,
             _display_options: DisplayOption::default(),
-            // bookmarks_filepath: "/home/mg/.config/joshuto/bookmarks_11.toml".to_string(),
             bookmarks_filepath: format!("{}/joshuto_bookmarks.toml", home),
         }
     }

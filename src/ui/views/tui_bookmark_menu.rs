@@ -1,16 +1,13 @@
-use std::iter::Iterator;
-
-use termion::event::{Event, Key};
-use tui::layout::Rect;
-use tui::widgets::Clear;
-
 use crate::context::AppContext;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
 use crate::ui::TuiBackend;
 use crate::util::event::AppEvent;
 use crate::util::input;
-// use crate::util::to_string::ToString;
+use std::iter::Iterator;
+use termion::event::{Event, Key};
+use tui::layout::Rect;
+use tui::widgets::Clear;
 
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;
@@ -25,7 +22,7 @@ impl TuiBookmarkMenu {
         Self
     }
 
-    pub fn get_bm<'a>(
+    pub fn get_bookmarked_path<'a>(
         &mut self,
         backend: &mut TuiBackend,
         context: &'a mut AppContext,
@@ -36,8 +33,13 @@ impl TuiBookmarkMenu {
             .bookmarks
             .map
             .iter()
-            .map(|(c, v)| 
-                format!( "  {}        {}", c, v.as_path().as_os_str().to_str().unwrap()))
+            .map(|(c, v)| {
+                format!(
+                    "  {}        {}",
+                    c,
+                    v.as_path().as_os_str().to_str().unwrap()
+                )
+            })
             .collect();
 
         render_menu_from_list(&display_vec, backend, context);
@@ -47,12 +49,10 @@ impl TuiBookmarkMenu {
                 AppEvent::Termion(event) => match event {
                     Event::Key(Key::Esc) => return None,
                     Event::Key(Key::Char(c)) => match context.bookmarks.map.get(&c) {
-                        Some(path) => {
-                            return Some(path);
-                        }
+                        Some(path) => return Some(path),
                         None => {}
                     },
-                    _other_key_event => {},
+                    _other_key_event => {}
                 },
                 _other_event => {}
             }
@@ -60,7 +60,7 @@ impl TuiBookmarkMenu {
         None
     }
 
-    pub fn get_any_char<'a>(
+    pub fn get_any_char_event<'a>(
         &mut self,
         backend: &mut TuiBackend,
         context: &'a mut AppContext,
@@ -75,7 +75,6 @@ impl TuiBookmarkMenu {
                     match event {
                         Event::Key(Key::Esc) => return None,
                         Event::Key(Key::Char(c)) => return Some(Event::Key(Key::Char(c))),
-
                         _event => {}
                     }
                     context.flush_event();
@@ -83,7 +82,6 @@ impl TuiBookmarkMenu {
                 event => input::process_noninteractive(event, context),
             }
         }
-
         None
     }
 }

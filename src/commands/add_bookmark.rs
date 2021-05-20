@@ -1,17 +1,15 @@
 use crate::bookmarks;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
+use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::ui::views::TuiBookmarkMenu;
 use crate::ui::TuiBackend;
 use termion::event::Event;
 use termion::event::Key;
-// use crate::error::{JoshutoError, JoshutoErrorKind};
 
 pub fn add_bookmark(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
     let mut tbm = TuiBookmarkMenu::new();
-    let maybe_char = tbm.get_any_char(backend, context);
-
-    match maybe_char {
+    match tbm.get_any_char_event(backend, context) {
         Some(Event::Key(Key::Char(c))) => {
             let opt_entry = context
                 .tab_context_ref()
@@ -28,7 +26,11 @@ pub fn add_bookmark(context: &mut AppContext, backend: &mut TuiBackend) -> Joshu
                 }
             }
         }
-        _ => return Ok(()),
+        _ => {}
     }
-    Ok(())
+
+    Err(JoshutoError::new(
+        JoshutoErrorKind::UnrecognizedCommand,
+        "Bookmark should be a character!".to_string(),
+    ))
 }

@@ -19,8 +19,6 @@ pub fn notify<T: std::fmt::Debug>(x: T) {
     let _ = std::process::Command::new("notify-send").arg(&log).status();
 
     let path = "/home/mg/.config/joshuto/bm_debug.txt" ;
-    // std::fs::write(PATH, log);
-    // std::fs::File::create(PATH).unwrap();
         let mut file = std::fs::OpenOptions::new()
             .create_new(false)
             .write(true)
@@ -31,7 +29,6 @@ pub fn notify<T: std::fmt::Debug>(x: T) {
         file.write_all(&log.as_bytes());
 }
 */
-
 pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
@@ -82,13 +79,18 @@ pub fn run(
                     Event::Key(Key::Char('`')) => {
                         let cmd = {
                             let mut menu = TuiBookmarkMenu::new();
-                            menu.get_bm(backend, context)
+                            menu.get_bookmarked_path(backend, context)
                         };
                         match cmd {
                             Some(path) => {
                                 let path = path.clone();
                                 let kcmd = KeyCommand::ChangeDirectory(path);
-                                kcmd.execute(context, backend).ok();
+                                match kcmd.execute(context, backend) {
+                                    Err(x) => {
+                                        context.push_msg(format!("{}", x));
+                                    }
+                                    _ => {}
+                                }
                             }
                             None => {
                                 context.push_msg(format!("No such bookmark"));
