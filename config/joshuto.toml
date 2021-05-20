@@ -7,6 +7,8 @@ use_trash = true
 # currently does not work
 max_preview_size = 2097152 # 2MB
 
+# bookmarks_filepath = "path/to/your/bookmarks/file"
+
 [display]
 # ratios for parent view, current view and preview
 collapse_preview = true
