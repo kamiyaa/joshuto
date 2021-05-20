@@ -1,6 +1,6 @@
-[![Linux Build](https://github.com/kamiyaa/joshuto/actions/workflows/rust-linux.yml/badge.svg)](https://github.com/kamiyaa/joshuto/actions/workflows/rust-linux.yml)
+[![Linux build](https://github.com/kamiyaa/joshuto/actions/workflows/rust-linux-main.yml/badge.svg)](https://github.com/kamiyaa/joshuto/actions/workflows/rust-linux-main.yml)
 
-[![MacOS Build](https://github.com/kamiyaa/joshuto/actions/workflows/rust-macos.yml/badge.svg)](https://github.com/kamiyaa/joshuto/actions/workflows/rust-macos.yml)
+[![MacOS build](https://github.com/kamiyaa/joshuto/actions/workflows/rust-macos-main.yml/badge.svg)](https://github.com/kamiyaa/joshuto/actions/workflows/rust-macos-main.yml)
 
 # joshuto
 
