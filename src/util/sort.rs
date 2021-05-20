@@ -42,14 +42,13 @@ impl SortType {
         f2: &JoshutoDirEntry,
         sort_option: &SortOption,
     ) -> cmp::Ordering {
-        let res = match &self {
+        match &self {
             SortType::Natural => natural_sort(f1, f2, sort_option),
             SortType::Lexical => lexical_sort(f1, f2, sort_option),
             SortType::Size => size_sort(f1, f2),
             SortType::Mtime => mtime_sort(f1, f2),
             SortType::Ext => ext_sort(f1, f2),
-        };
-        return res;
+        }
     }
 }
 

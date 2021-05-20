@@ -62,14 +62,12 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
                     backend.terminal_restore()?;
                     res?;
                 }
+            } else if config.xdg_open {
+                backend.terminal_drop();
+                open::that(paths[0].as_path())?;
+                backend.terminal_restore()?;
             } else {
-                if config.xdg_open {
-                    backend.terminal_drop();
-                    open::that(paths[0].as_path())?;
-                    backend.terminal_restore()?;
-                } else {
-                    open_with_helper(context, backend, options, files)?;
-                }
+                open_with_helper(context, backend, options, files)?;
             }
         }
     }

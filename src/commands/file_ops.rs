@@ -54,7 +54,7 @@ pub fn copy_filename(context: &mut AppContext) -> JoshutoResult<()> {
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
-        .and_then(|entry| Some(entry.file_name().to_string()));
+        .map(|entry| entry.file_name().to_string());
 
     if let Some(file_name) = entry_file_name {
         copy_string_to_buffer(file_name)?;
@@ -69,7 +69,7 @@ pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult<()> {
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
         .and_then(|entry| entry.file_path().to_str())
-        .and_then(|s| Some(s.to_string()));
+        .map(|s| s.to_string());
 
     if let Some(file_path) = entry_file_path {
         copy_string_to_buffer(file_path)?;
@@ -85,7 +85,7 @@ pub fn copy_dirname(context: &mut AppContext) -> JoshutoResult<()> {
         .map(|dirlist| dirlist.file_path());
 
     if let Some(pathbuf) = opt_entry {
-        if let Some(dir) = pathbuf.to_str().map(|s| String::from(s)) {
+        if let Some(dir) = pathbuf.to_str().map(String::from) {
             copy_string_to_buffer(dir)?
         }
     };
@@ -117,9 +117,8 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult<()> {
             _ => {}
         }
     }
-    let err = Err(JoshutoError::new(
+    Err(JoshutoError::new(
         JoshutoErrorKind::ClipboardError,
         "Failed to copy to clipboard".to_string(),
-    ));
-    return err;
+    ))
 }

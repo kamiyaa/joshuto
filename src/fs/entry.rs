@@ -89,11 +89,10 @@ impl JoshutoDirEntry {
 
     pub fn get_ext(&self) -> &str {
         let fname = self.file_name();
-        let ext = match fname.rfind('.') {
+        match fname.rfind('.') {
             Some(pos) => &fname[pos..],
-            None => &fname[0..0],
-        };
-        ext
+            None => "",
+        }
     }
 }
 

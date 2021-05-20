@@ -24,7 +24,7 @@ impl Flattenable<AppMimetypeRegistry> for RawAppMimetypeRegistry {
                 ._class
                 .get(class)
                 .map(|v| (*v).clone())
-                .unwrap_or(vec![]);
+                .unwrap_or_default();
             combined_app_list.extend_from_slice(app_list.app_list());
             let combined_app_list = AppList::new(class.to_string(), combined_app_list);
             registry.insert(ext, combined_app_list);
