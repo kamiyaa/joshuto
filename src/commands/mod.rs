@@ -13,6 +13,7 @@ pub mod reload;
 pub mod rename_file;
 pub mod search;
 pub mod search_glob;
+pub mod search_skim;
 pub mod search_string;
 pub mod selection;
 pub mod set_mode;
