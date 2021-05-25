@@ -90,6 +90,7 @@ impl JoshutoDirEntry {
     pub fn get_ext(&self) -> &str {
         let fname = self.file_name();
         match fname.rfind('.') {
+            Some(0) => "",      // file is hidded and has no extension
             Some(pos) => &fname[pos..],
             None => "",
         }
