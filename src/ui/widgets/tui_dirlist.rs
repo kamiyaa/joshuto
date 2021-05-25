@@ -92,7 +92,7 @@ fn print_entry(
             let file_drawing_width = drawing_width;
             let (stem, extension) = match entry.get_ext() {
                 "" => (name, ""),
-                ext => name.split_at( name.len() - ext.len())
+                ext => name.split_at(name.len() - ext.len()),
             };
             if stem.is_empty() {
                 let ext_width = extension.width();
