@@ -104,9 +104,9 @@ fn print_entry(
             }
             let file_drawing_width = drawing_width - FILE_SIZE_WIDTH;
 
-            let (stem, extension) = match name.rfind('.') {
-                None => (name, ""),
-                Some(i) => name.split_at(i),
+            let (stem, extension) = match entry.get_ext() {
+                "" => (name, ""),
+                ext => name.split_at( name.len() - ext.len())
             };
             if stem.is_empty() {
                 let ext_width = extension.width();
