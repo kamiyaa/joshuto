@@ -90,10 +90,12 @@ fn print_entry(
         }
         _ => {
             let file_drawing_width = drawing_width;
-            let (stem, extension) = match entry.get_ext() {
-                "" => (name, ""),
-                ext => name.split_at(name.len() - ext.len()),
+
+            let (stem, extension) = match entry.file_name().rfind('.') {
+                None | Some(0) => (name, ""),
+                Some(i) => name.split_at(name.len() - i),
             };
+
             if stem.is_empty() {
                 let ext_width = extension.width();
                 buf.set_stringn(x, y, extension, file_drawing_width, style);
@@ -116,9 +118,9 @@ fn print_entry(
                     } else {
                         (file_drawing_width - ext_width) as u16
                     };
-                    buf.set_stringn(x + ext_start_idx, y, extension,file_drawing_width, style);
+                    buf.set_stringn(x + ext_start_idx, y, extension, file_drawing_width, style);
                     if ext_width > file_drawing_width {
-                        buf.set_string( x - 1 + file_drawing_width  as u16, y, ELLIPSIS, style);
+                        buf.set_string(x - 1 + file_drawing_width as u16, y, ELLIPSIS, style);
                     }
                     let ext_start_idx = if ext_start_idx > 0 {
                         ext_start_idx - 1

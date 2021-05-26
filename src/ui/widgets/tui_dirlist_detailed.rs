@@ -104,10 +104,11 @@ fn print_entry(
             }
             let file_drawing_width = drawing_width - FILE_SIZE_WIDTH;
 
-            let (stem, extension) = match entry.get_ext() {
-                "" => (name, ""),
-                ext => name.split_at(name.len() - ext.len()),
+            let (stem, extension) = match entry.file_name().rfind('.') {
+                None | Some(0) => (name, ""),
+                Some(i) => name.split_at(name.len() - i),
             };
+
             if stem.is_empty() {
                 let ext_width = extension.width();
                 buf.set_stringn(x, y, extension, file_drawing_width, style);
