@@ -116,7 +116,10 @@ fn print_entry(
                     } else {
                         (file_drawing_width - ext_width) as u16
                     };
-                    buf.set_string(x + ext_start_idx, y, extension, style);
+                    buf.set_stringn(x + ext_start_idx, y, extension,file_drawing_width, style);
+                    if ext_width > file_drawing_width {
+                        buf.set_string( x - 1 + file_drawing_width  as u16, y, ELLIPSIS, style);
+                    }
                     let ext_start_idx = if ext_start_idx > 0 {
                         ext_start_idx - 1
                     } else {

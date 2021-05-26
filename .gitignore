@@ -4,3 +4,6 @@
 *.tmp
 *~
 **/*.rs.bk
+src/ui
+src/ui
+src/ui
