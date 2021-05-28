@@ -1,16 +1,17 @@
 use termion::event::Event;
+use termion::event::Key;
 
 use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::tab::JoshutoTab;
 use crate::ui;
+use crate::ui::views::TuiBookmarkMenu;
 use crate::ui::views::{TuiCommandMenu, TuiView};
 use crate::util::event::AppEvent;
 use crate::util::input;
 use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
-
 pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
@@ -58,10 +59,32 @@ pub fn run(
                             context.push_msg(e.to_string());
                         }
                     }
+                    Event::Key(Key::Char('`')) => {
+                        let cmd = {
+                            let mut menu = TuiBookmarkMenu::new();
+                            menu.get_bookmarked_path(backend, context)
+                        };
+                        match cmd {
+                            Some(path) => {
+                                let path = path.clone();
+                                let kcmd = KeyCommand::ChangeDirectory(path);
+                                match kcmd.execute(context, backend) {
+                                    Err(x) => {
+                                        context.push_msg(format!("{}", x));
+                                    }
+                                    _ => {}
+                                }
+                            }
+                            None => {
+                                context.push_msg(format!("No such bookmark"));
+                            }
+                        }
+                    }
                     key => match keymap_t.as_ref().get(&key) {
                         None => {
                             context.push_msg(format!("Unmapped input: {}", key.to_string()));
                         }
+
                         Some(CommandKeybind::SimpleKeybind(command)) => {
                             if let Err(e) = command.execute(context, backend) {
                                 context.push_msg(e.to_string());
@@ -86,6 +109,8 @@ pub fn run(
             event => input::process_noninteractive(event, context),
         }
     }
+    let bookmarks_file_path = &context.config_ref().bookmarks_filepath;
+    context.bookmarks.save(bookmarks_file_path)?;
 
     Ok(())
 }

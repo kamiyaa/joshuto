@@ -1,3 +1,4 @@
+mod bookmarks;
 mod commands;
 mod config;
 mod context;
@@ -78,9 +79,11 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     }
 
     let config = AppConfig::get_config(CONFIG_FILE);
+    let bookmarks_filepath = config.bookmarks_filepath.as_str();
+    let bookmarks = bookmarks::BookmarkMapping::load(bookmarks_filepath);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
 
-    let mut context = AppContext::new(config);
+    let mut context = AppContext::new(config, bookmarks);
 
     {
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;

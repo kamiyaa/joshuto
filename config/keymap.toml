@@ -189,3 +189,6 @@ keys = [ "g", "/" ]
 [[mapcommand]]
 command = "cd /etc"
 keys = [ "g", "e" ]
+[[mapcommand]]
+command = "add_bookmark"
+keys = [ "i" ]

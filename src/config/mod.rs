@@ -21,7 +21,7 @@ pub trait ConfigStructure {
 }
 
 // implemented by config file implementations to turn a RawConfig into a Config
-trait Flattenable<T> {
+pub trait Flattenable<T> {
     fn flatten(self) -> T;
 }
 
