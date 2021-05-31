@@ -34,16 +34,32 @@ const PREVIEW_FILE: &str = "preview.toml";
 lazy_static! {
     // dynamically builds the config hierarchy
     static ref CONFIG_HIERARCHY: Vec<PathBuf> = {
-        let mut temp = vec![];
-        match xdg::BaseDirectories::with_prefix(PROGRAM_NAME) {
-            Ok(dirs) => temp.push(dirs.get_config_home()),
-            Err(e) => eprintln!("{}", e),
-        };
+        let mut config_dirs = vec![];
+
+        if let Ok(p) = std::env::var("JOSHUTO_CONFIG_HOME") {
+            let p = PathBuf::from(p);
+            if p.is_dir() {
+                config_dirs.push(p);
+            }
+        }
+
+        if let Ok(dirs) = xdg::BaseDirectories::with_prefix(PROGRAM_NAME) {
+            config_dirs.push(dirs.get_config_home());
+        }
+
+        if let Ok(p) = std::env::var("HOME") {
+            let mut p = PathBuf::from(p);
+            p.push(".config/joshuto");
+            if p.is_dir() {
+                config_dirs.push(p);
+            }
+        }
+
         // adds the default config files to the config hierarchy if running through cargo
         if cfg!(debug_assertions) {
-            temp.push(PathBuf::from("./config"));
+            config_dirs.push(PathBuf::from("./config"));
         }
-        temp
+        config_dirs
     };
     static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
     static ref MIMETYPE_T: AppMimetypeRegistry = AppMimetypeRegistry::get_config(MIMETYPE_FILE);
@@ -80,9 +96,8 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     let config = AppConfig::get_config(CONFIG_FILE);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
 
-    let mut context = AppContext::new(config);
-
     {
+        let mut context = AppContext::new(config);
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
         run(&mut backend, &mut context, keymap)?;
     }
