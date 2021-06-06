@@ -82,8 +82,7 @@ and [config/](config/) for examples
 - color customizations
 
 ## Contributing
-
-Please create a pull request :)
+See [wiki/Contributing](https://github.com/kamiyaa/joshuto/wiki/Contributing)
 
 ## Features/Bugs
 
@@ -94,8 +93,10 @@ Please create an issue :)
 - [x] Migrate to [tui-rs](https://github.com/fdehau/tui-rs)
 - [x] Tab support
 - [x] Ctrl/Shift/Alt support
-- [x] Asynch File IO (cut/copy/paste/delete/rename) (in progress)
+- [x] Asynch File IO (cut/copy/paste)
 - [ ] Built-in command line (in progress)
+  - Currently implementation is kind of janky
 - [ ] File previews (in progress)
+  - Waiting for tui-rs to support parsing ANSI color codes
 - [ ] Tab autocomplete (in progress)
 - [x] Bulk rename

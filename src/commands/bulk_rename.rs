@@ -81,6 +81,9 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
         ));
     }
 
+    println!("{}", termion::clear::All);
+    termion::cursor::Goto(0, 0);
+
     for (p, q) in paths.iter().zip(paths_renamed.iter()) {
         println!("{:?} -> {:?}", p, q);
     }

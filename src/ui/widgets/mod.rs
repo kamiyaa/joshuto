@@ -9,7 +9,7 @@ mod tui_topbar;
 mod tui_worker;
 
 pub use self::tui_dirlist::TuiDirList;
-pub use self::tui_dirlist_detailed::TuiDirListDetailed;
+pub use self::tui_dirlist_detailed::{print_file_name, TuiDirListDetailed};
 pub use self::tui_footer::TuiFooter;
 pub use self::tui_menu::TuiMenu;
 pub use self::tui_prompt::TuiPrompt;

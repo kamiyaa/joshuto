@@ -5,6 +5,7 @@ use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList};
+use crate::ui::widgets::print_file_name;
 use crate::util::style;
 
 const ELLIPSIS: &str = "…";
@@ -82,51 +83,11 @@ fn print_entry(
 
     match entry.metadata.file_type() {
         FileType::Directory => {
-            // print filename
             buf.set_stringn(x, y, name, drawing_width, style);
             if name_width > drawing_width {
                 buf.set_string(x + drawing_width as u16 - 1, y, ELLIPSIS, style);
             }
         }
-        _ => {
-            let file_drawing_width = drawing_width;
-            let (stem, extension) = match name.rfind('.') {
-                None => (name, ""),
-                Some(i) => name.split_at(i),
-            };
-            if stem.is_empty() {
-                let ext_width = extension.width();
-                buf.set_stringn(x, y, extension, file_drawing_width, style);
-                if ext_width > drawing_width {
-                    buf.set_string(x + drawing_width as u16 - 1, y, ELLIPSIS, style);
-                }
-            } else if extension.is_empty() {
-                let stem_width = stem.width();
-                buf.set_stringn(x, y, stem, file_drawing_width, style);
-                if stem_width > file_drawing_width {
-                    buf.set_string(x + file_drawing_width as u16 - 1, y, ELLIPSIS, style);
-                }
-            } else {
-                let stem_width = stem.width();
-                let ext_width = extension.width();
-                buf.set_stringn(x, y, stem, file_drawing_width, style);
-                if stem_width + ext_width > file_drawing_width {
-                    let ext_start_idx = if file_drawing_width < ext_width {
-                        0
-                    } else {
-                        (file_drawing_width - ext_width) as u16
-                    };
-                    buf.set_string(x + ext_start_idx, y, extension, style);
-                    let ext_start_idx = if ext_start_idx > 0 {
-                        ext_start_idx - 1
-                    } else {
-                        0
-                    };
-                    buf.set_string(x + ext_start_idx, y, ELLIPSIS, style);
-                } else {
-                    buf.set_string(x + stem_width as u16, y, extension, style);
-                }
-            }
-        }
+        _ => print_file_name(buf, (x, y), name, style, drawing_width),
     }
 }

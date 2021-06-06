@@ -55,6 +55,7 @@ pub enum KeyCommand {
 
     SearchGlob(String),
     SearchString(String),
+    SearchSkim,
     SearchNext,
     SearchPrev,
 
@@ -115,6 +116,7 @@ impl KeyCommand {
 
             Self::SearchString(_) => "search",
             Self::SearchGlob(_) => "search_glob",
+            Self::SearchSkim => "search_skim",
             Self::SearchNext => "search_next",
             Self::SearchPrev => "search_prev",
 
@@ -280,6 +282,7 @@ impl KeyCommand {
                 )),
                 arg => Ok(Self::SearchGlob(arg.to_string())),
             },
+            "search_skim" => Ok(Self::SearchSkim),
             "search_next" => Ok(Self::SearchNext),
             "search_prev" => Ok(Self::SearchPrev),
             "select" => {
@@ -395,6 +398,7 @@ impl AppExecute for KeyCommand {
             Self::TouchFile => touch_file::touch_file(context),
             Self::SearchGlob(pattern) => search_glob::search_glob(context, pattern.as_str()),
             Self::SearchString(pattern) => search_string::search_string(context, pattern.as_str()),
+            Self::SearchSkim => search_skim::search_skim(context, backend),
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
 

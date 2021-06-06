@@ -96,18 +96,33 @@ pub fn end(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-    let half_page = {
-        match backend.terminal.as_ref().unwrap().size() {
-            Ok(rect) => rect.height as usize - 2,
-            _ => 10,
+fn get_page_size(context: &AppContext, backend: &TuiBackend) -> Option<usize> {
+    let config = context.config_ref();
+    let rect = backend.terminal.as_ref().map(|t| t.size())?.ok()?;
+
+    let rect_height = rect.height as usize;
+    if config.display_options_ref().show_borders() {
+        if rect_height >= 4 {
+            Some(rect_height - 4)
+        } else {
+            None
         }
-    };
+    } else {
+        if rect_height >= 2 {
+            Some(rect_height - 2)
+        } else {
+            None
+        }
+    }
+}
+
+pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    let page_size = get_page_size(context, backend).unwrap_or(10);
 
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => curr_list
             .index
-            .map(|idx| if idx > half_page { idx - half_page } else { 0 }),
+            .map(|idx| if idx > page_size { idx - page_size } else { 0 }),
         None => None,
     };
 
@@ -118,21 +133,16 @@ pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRes
 }
 
 pub fn page_down(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-    let half_page = {
-        match backend.terminal.as_ref().unwrap().size() {
-            Ok(rect) => rect.height as usize - 2,
-            _ => 10,
-        }
-    };
+    let page_size = get_page_size(context, backend).unwrap_or(10);
 
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
             let dir_len = curr_list.len();
             curr_list.index.map(|idx| {
-                if idx + half_page > dir_len - 1 {
+                if idx + page_size > dir_len - 1 {
                     dir_len - 1
                 } else {
-                    idx + half_page
+                    idx + page_size
                 }
             })
         }
