@@ -29,8 +29,7 @@ pub fn touch_file(context: &mut AppContext, arg: &str) -> JoshutoResult<()> {
         match arg {
             "" => _update_actime(&selected_file_path)?,
             file_arg => {
-                let mut file = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
-                file.push(file_arg);
+                let file = path::PathBuf::from(file_arg);
                 if file.exists() {
                     _update_actime(file.as_path())?;
                 } else {
