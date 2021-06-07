@@ -18,23 +18,25 @@ fn _create_file(file: &path::Path) -> std::io::Result<()> {
 }
 
 pub fn touch_file(context: &mut AppContext, arg: &str) -> JoshutoResult<()> {
-    let selected_file_path: Option<path::PathBuf> = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-        .and_then(|s| s.curr_entry_ref())
-        .map(|s| s.file_path().to_path_buf());
-
-    if let Some(selected_file_path) = selected_file_path {
-        match arg {
-            "" => _update_actime(&selected_file_path)?,
-            file_arg => {
-                let file = path::PathBuf::from(file_arg);
-                if file.exists() {
-                    _update_actime(file.as_path())?;
-                } else {
-                    _create_file(file.as_path())?;
-                }
+    match arg {
+        "" => {
+            match context
+                .tab_context_ref()
+                .curr_tab_ref()
+                .curr_list_ref()
+                .and_then(|s| s.curr_entry_ref())
+                .map(|s| s.file_path().to_path_buf())
+            {
+                Some(selected_file_path) => _update_actime(&selected_file_path)?,
+                None => {}
+            }
+        }
+        file_arg => {
+            let file = path::PathBuf::from(file_arg);
+            if file.exists() {
+                _update_actime(file.as_path())?;
+            } else {
+                _create_file(file.as_path())?;
             }
         }
     }
