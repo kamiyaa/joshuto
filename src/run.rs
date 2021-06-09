@@ -23,7 +23,7 @@ pub fn run(
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child
-        LoadChild::load_child(context)?;
+        let _ = LoadChild::load_child(context);
     }
 
     while !context.exit {
