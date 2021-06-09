@@ -48,9 +48,7 @@ impl<'a> Widget for TuiTopBar<'a> {
         }
 
         let username_style = if USERNAME.as_str() == "root" {
-            Style::default()
-                .fg(Color::Red)
-                .add_modifier(Modifier::BOLD)
+            Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
         } else {
             Style::default()
                 .fg(Color::LightGreen)
