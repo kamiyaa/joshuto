@@ -166,6 +166,9 @@ keys = [ "m", "k" ]
 [[mapcommand]]
 command = ":rename "
 keys = [ "c", "w" ]
+[[mapcommand]]
+command = ":touch"
+keys = [ "f", "t" ]
 
 [[mapcommand]]
 command = "sort lexical"

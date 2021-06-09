@@ -51,6 +51,7 @@ pub enum KeyCommand {
     RenameFile(path::PathBuf),
     RenameFileAppend,
     RenameFilePrepend,
+    TouchFile(String),
 
     SearchGlob(String),
     SearchString(String),
@@ -109,6 +110,7 @@ impl KeyCommand {
             Self::ForceQuit => "force_quit",
             Self::ReloadDirList => "reload_dirlist",
             Self::RenameFile(_) => "rename",
+            Self::TouchFile(_) => "touch",
             Self::RenameFileAppend => "rename_append",
             Self::RenameFilePrepend => "rename_prepend",
 
@@ -263,6 +265,7 @@ impl KeyCommand {
                     Ok(Self::RenameFile(path))
                 }
             },
+            "touch" => Ok(Self::TouchFile(arg.to_string())),
             "rename_append" => Ok(Self::RenameFileAppend),
             "rename_prepend" => Ok(Self::RenameFilePrepend),
             "search" => match arg {
@@ -392,6 +395,7 @@ impl AppExecute for KeyCommand {
             Self::RenameFile(p) => rename_file::rename_file(context, p.as_path()),
             Self::RenameFileAppend => rename_file::rename_file_append(context, backend),
             Self::RenameFilePrepend => rename_file::rename_file_prepend(context, backend),
+            Self::TouchFile(arg) => touch_file::touch_file(context, arg.as_str()),
             Self::SearchGlob(pattern) => search_glob::search_glob(context, pattern.as_str()),
             Self::SearchString(pattern) => search_string::search_string(context, pattern.as_str()),
             Self::SearchSkim => search_skim::search_skim(context, backend),
