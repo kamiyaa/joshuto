@@ -22,10 +22,6 @@ impl<'a> TuiTopBar<'a> {
 
 impl<'a> Widget for TuiTopBar<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let username_style = Style::default()
-            .fg(Color::LightGreen)
-            .add_modifier(Modifier::BOLD);
-
         let path_style = Style::default()
             .fg(Color::LightBlue)
             .add_modifier(Modifier::BOLD);
@@ -50,6 +46,16 @@ impl<'a> Widget for TuiTopBar<'a> {
                 curr_path_str = curr_path_str.replace(&home_dir_str, "~");
             }
         }
+
+        let username_style = if USERNAME.as_str() == "root" {
+            Style::default()
+                .fg(Color::Red)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+                .fg(Color::LightGreen)
+                .add_modifier(Modifier::BOLD)
+        };
 
         let text = match ellipses {
             Some(s) => Spans::from(vec![
