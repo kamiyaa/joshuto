@@ -236,6 +236,12 @@ pub fn recursive_cut(
     let file_type = metadata.file_type();
 
     match fs::rename(src, dest_buf.as_path()) {
+        Ok(_) => {
+            let bytes_processed = progress.bytes_processed() + metadata.len();
+            progress.set_bytes_processed(bytes_processed);
+            progress.set_files_processed(progress.files_processed() + 1);
+            Ok(())
+        }
         Err(e) if e.kind() == io::ErrorKind::Other => {
             if file_type.is_dir() {
                 fs::create_dir(dest_buf.as_path())?;
@@ -262,9 +268,8 @@ pub fn recursive_cut(
                 progress.set_bytes_processed(processed);
                 progress.set_files_processed(progress.files_processed() + 1);
             }
+            Ok(())
         }
-        Err(e) => return Err(e),
-        _ => {}
+        e => e,
     }
-    Ok(())
 }
