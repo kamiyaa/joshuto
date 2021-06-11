@@ -5,6 +5,7 @@ mod error;
 mod fs;
 mod history;
 mod io;
+mod preview;
 mod run;
 mod tab;
 mod ui;

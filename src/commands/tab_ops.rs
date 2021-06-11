@@ -3,7 +3,7 @@ use std::path;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
-use crate::tab::JoshutoTab;
+use crate::tab::{JoshutoTab, TabHomePage};
 use crate::util::load_child::LoadChild;
 
 use crate::HOME_DIR;
@@ -51,14 +51,21 @@ pub fn tab_switch(offset: i32, context: &mut AppContext) -> std::io::Result<()> 
     _tab_switch(new_index, context)
 }
 
-pub fn new_tab(context: &mut AppContext) -> JoshutoResult<()> {
-    /* start the new tab in $HOME or root */
-    let curr_path = match HOME_DIR.as_ref() {
-        Some(s) => s.clone(),
-        None => path::PathBuf::from("/"),
-    };
+pub fn new_tab_home_path(context: &AppContext) -> path::PathBuf {
+    match context.config_ref().tab_options_ref().home_page() {
+        TabHomePage::Home => match HOME_DIR.as_ref() {
+            Some(s) => s.clone(),
+            None => path::PathBuf::from("/"),
+        },
+        TabHomePage::Inherit => context.tab_context_ref().curr_tab_ref().cwd().to_path_buf(),
+        TabHomePage::Root => path::PathBuf::from("/"),
+    }
+}
 
-    let tab = JoshutoTab::new(curr_path, context.config_ref().display_options_ref())?;
+pub fn new_tab(context: &mut AppContext) -> JoshutoResult<()> {
+    let new_tab_path = new_tab_home_path(context);
+
+    let tab = JoshutoTab::new(new_tab_path, context.config_ref().display_options_ref())?;
     context.tab_context_mut().push_tab(tab);
     let new_index = context.tab_context_ref().len() - 1;
     context.tab_context_mut().index = new_index;
