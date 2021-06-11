@@ -1,13 +1,12 @@
-use std::process;
-
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
+use std::process::{Command, Stdio};
 
 use super::reload;
 
 fn shell_command(context: &mut AppContext, words: &[String], spawn: bool) -> std::io::Result<()> {
-    let mut command = process::Command::new(words[0].clone());
+    let mut command = Command::new(words[0].clone());
     for word in words.iter().skip(1) {
         match (*word).as_str() {
             "%s" => {
@@ -30,7 +29,10 @@ fn shell_command(context: &mut AppContext, words: &[String], spawn: bool) -> std
         };
     }
     if spawn {
-        command.spawn()?;
+        command
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?;
     } else {
         command.status()?;
     }
