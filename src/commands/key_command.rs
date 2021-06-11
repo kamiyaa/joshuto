@@ -417,8 +417,10 @@ impl AppExecute for KeyCommand {
                 selection::select_files(context, pattern.as_str(), &options)
             }
             Self::SetMode => set_mode::set_mode(context, backend),
-            Self::ShellCommand(v) => shell::shell(context, backend, v.as_slice(), false),
-            Self::SpawnCommand(v) => shell::shell(context, backend, v.as_slice(), true),
+            Self::ShellCommand(v) => {
+                sub_process::sub_process(context, backend, v.as_slice(), false)
+            }
+            Self::SpawnCommand(v) => sub_process::sub_process(context, backend, v.as_slice(), true),
             Self::ShowWorkers => show_workers::show_workers(context, backend),
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),

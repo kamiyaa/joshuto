@@ -5,7 +5,11 @@ use std::process::{Command, Stdio};
 
 use super::reload;
 
-fn shell_command(context: &mut AppContext, words: &[String], spawn: bool) -> std::io::Result<()> {
+fn execute_sub_process(
+    context: &mut AppContext,
+    words: &[String],
+    spawn: bool,
+) -> std::io::Result<()> {
     let mut command = Command::new(words[0].clone());
     for word in words.iter().skip(1) {
         match (*word).as_str() {
@@ -39,14 +43,15 @@ fn shell_command(context: &mut AppContext, words: &[String], spawn: bool) -> std
     Ok(())
 }
 
-pub fn shell(
+/// Handler for Joshuto's `shell` and `spawn` commands.
+pub fn sub_process(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     words: &[String],
     spawn: bool,
 ) -> JoshutoResult<()> {
     backend.terminal_drop();
-    let res = shell_command(context, words, spawn);
+    let res = execute_sub_process(context, words, spawn);
     reload::soft_reload(context.tab_context_ref().index, context)?;
     context.push_msg(format!(
         "{}: {}",

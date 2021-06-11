@@ -17,10 +17,10 @@ pub mod search_skim;
 pub mod search_string;
 pub mod selection;
 pub mod set_mode;
-pub mod shell;
 pub mod show_hidden;
 pub mod show_workers;
 pub mod sort;
+pub mod sub_process;
 pub mod tab_ops;
 pub mod touch_file;
 
