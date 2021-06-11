@@ -6,7 +6,7 @@ use crate::ui::TuiBackend;
 
 use super::reload;
 
-pub fn shell_command(context: &mut AppContext, words: &[String]) -> std::io::Result<()> {
+fn shell_command(context: &mut AppContext, words: &[String], spawn: bool) -> std::io::Result<()> {
     let mut command = process::Command::new(words[0].clone());
     for word in words.iter().skip(1) {
         match (*word).as_str() {
@@ -29,7 +29,11 @@ pub fn shell_command(context: &mut AppContext, words: &[String]) -> std::io::Res
             }
         };
     }
-    command.status()?;
+    if spawn {
+        command.spawn()?;
+    } else {
+        command.status()?;
+    }
     Ok(())
 }
 
@@ -37,9 +41,10 @@ pub fn shell(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     words: &[String],
+    spawn: bool,
 ) -> JoshutoResult<()> {
     backend.terminal_drop();
-    let res = shell_command(context, words);
+    let res = shell_command(context, words, spawn);
     reload::soft_reload(context.tab_context_ref().index, context)?;
     context.push_msg(format!("Finished: {}", words.join(" ")));
     backend.terminal_restore()?;

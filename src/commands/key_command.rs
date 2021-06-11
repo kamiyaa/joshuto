@@ -62,6 +62,7 @@ pub enum KeyCommand {
     SelectFiles(String, SelectOption),
     SetMode,
     ShellCommand(Vec<String>),
+    SpawnCommand(Vec<String>),
     ShowWorkers,
 
     ToggleHiddenFiles,
@@ -123,6 +124,7 @@ impl KeyCommand {
             Self::SelectFiles(_, _) => "select",
             Self::SetMode => "set_mode",
             Self::ShellCommand(_) => "shell",
+            Self::SpawnCommand(_) => "spawn",
             Self::ShowWorkers => "show_workers",
 
             Self::ToggleHiddenFiles => "toggle_hidden",
@@ -313,8 +315,14 @@ impl std::str::FromStr for KeyCommand {
                 }
             }
             "set_mode" => Ok(Self::SetMode),
-            "shell" => match shell_words::split(arg) {
-                Ok(s) if !s.is_empty() => Ok(Self::ShellCommand(s)),
+            "shell" | "spawn" => match shell_words::split(arg) {
+                Ok(s) if !s.is_empty() => {
+                    if command == "shell" {
+                        Ok(Self::ShellCommand(s))
+                    } else {
+                        Ok(Self::SpawnCommand(s))
+                    }
+                }
                 Ok(_) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: No commands given", command),
@@ -409,7 +417,8 @@ impl AppExecute for KeyCommand {
                 selection::select_files(context, pattern.as_str(), &options)
             }
             Self::SetMode => set_mode::set_mode(context, backend),
-            Self::ShellCommand(v) => shell::shell(context, backend, v.as_slice()),
+            Self::ShellCommand(v) => shell::shell(context, backend, v.as_slice(), false),
+            Self::SpawnCommand(v) => shell::shell(context, backend, v.as_slice(), true),
             Self::ShowWorkers => show_workers::show_workers(context, backend),
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
@@ -444,7 +453,9 @@ impl std::fmt::Display for KeyCommand {
             Self::SelectFiles(pattern, options) => {
                 write!(f, "{} {} {}", self.command(), pattern, options)
             }
-            Self::ShellCommand(c) => write!(f, "{} {:?}", self.command(), c),
+            Self::ShellCommand(c) | Self::SpawnCommand(c) => {
+                write!(f, "{} {:?}", self.command(), c)
+            }
             Self::Sort(t) => write!(f, "{} {}", self.command(), t),
             Self::TabSwitch(i) => write!(f, "{} {}", self.command(), i),
             _ => write!(f, "{}", self.command()),
