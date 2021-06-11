@@ -48,7 +48,11 @@ pub fn shell(
     backend.terminal_drop();
     let res = shell_command(context, words, spawn);
     reload::soft_reload(context.tab_context_ref().index, context)?;
-    context.push_msg(format!("Finished: {}", words.join(" ")));
+    context.push_msg(format!(
+        "{}: {}",
+        if spawn { "Spawned" } else { "Finished" },
+        words.join(" ")
+    ));
     backend.terminal_restore()?;
     res?;
     Ok(())
