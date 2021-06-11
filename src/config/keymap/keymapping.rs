@@ -1,6 +1,7 @@
 use serde_derive::Deserialize;
 
 use std::collections::{hash_map::Entry, HashMap};
+use std::str::FromStr;
 
 #[cfg(feature = "mouse")]
 use termion::event::MouseEvent;
@@ -27,7 +28,7 @@ impl Flattenable<AppKeyMapping> for RawAppKeyMapping {
     fn flatten(self) -> AppKeyMapping {
         let mut keymaps = AppKeyMapping::new();
         for m in self.mapcommand {
-            match KeyCommand::parse_command(m.command.as_str()) {
+            match KeyCommand::from_str(m.command.as_str()) {
                 Ok(command) => {
                     let events: Vec<Event> = m
                         .keys

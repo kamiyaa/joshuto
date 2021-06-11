@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::commands::KeyCommand;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
@@ -21,7 +23,7 @@ pub fn readline(
 
     if let Some(s) = user_input {
         let trimmed = s.trim_start();
-        let command = KeyCommand::parse_command(trimmed)?;
+        let command = KeyCommand::from_str(trimmed)?;
         command.execute(context, backend)
     } else {
         Ok(())

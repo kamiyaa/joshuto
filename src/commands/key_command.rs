@@ -133,8 +133,12 @@ impl KeyCommand {
             Self::TabSwitch(_) => "tab_switch",
         }
     }
+}
 
-    pub fn parse_command(s: &str) -> JoshutoResult<Self> {
+impl std::str::FromStr for KeyCommand {
+    type Err = JoshutoError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some(stripped) = s.strip_prefix(':') {
             return Ok(Self::CommandLine(stripped.to_owned(), "".to_owned()));
         }
@@ -216,14 +220,13 @@ impl KeyCommand {
                 if arg.is_empty() {
                     Err(JoshutoError::new(
                         JoshutoErrorKind::InvalidParameters,
-                        format!("{}: missing additional parameter", command),
+                        format!("{}: no directory name given", command),
                     ))
                 } else {
                     Ok(Self::NewDirectory(path::PathBuf::from(arg)))
                 }
             }
             "new_tab" => Ok(Self::NewTab),
-
             "open" => Ok(Self::OpenFile),
             "open_with" => match arg {
                 "" => Ok(Self::OpenFileWith(None)),
@@ -314,7 +317,7 @@ impl KeyCommand {
                 Ok(s) if !s.is_empty() => Ok(Self::ShellCommand(s)),
                 Ok(_) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
-                    format!("sort: args {}", arg),
+                    format!("{}: No commands given", command),
                 )),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
@@ -328,7 +331,7 @@ impl KeyCommand {
                     Some(s) => Ok(Self::Sort(s)),
                     None => Err(JoshutoError::new(
                         JoshutoErrorKind::InvalidParameters,
-                        format!("sort: Unknown option {}", arg),
+                        format!("{}: Unknown option '{}'", command, arg),
                     )),
                 },
             },
@@ -342,7 +345,7 @@ impl KeyCommand {
             "toggle_hidden" => Ok(Self::ToggleHiddenFiles),
             inp => Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,
-                format!("Unknown command: {}", inp),
+                format!("Unrecognized command '{}'", inp),
             )),
         }
     }
