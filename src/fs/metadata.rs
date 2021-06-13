@@ -3,8 +3,13 @@ use std::{fs, io, path, time};
 #[derive(Clone, Debug)]
 pub enum FileType {
     Directory,
-    Symlink(String),
     File,
+}
+
+#[derive(Clone, Debug)]
+pub enum LinkType {
+    Normal,
+    Symlink(String),
 }
 
 #[derive(Clone, Debug)]
@@ -13,6 +18,7 @@ pub struct JoshutoMetadata {
     _modified: time::SystemTime,
     _permissions: fs::Permissions,
     _file_type: FileType,
+    _link_type: LinkType,
     #[cfg(unix)]
     pub uid: u32,
     #[cfg(unix)]
@@ -26,40 +32,43 @@ impl JoshutoMetadata {
         #[cfg(unix)]
         use std::os::unix::fs::MetadataExt;
 
-        let metadata = fs::symlink_metadata(path)?;
+        let symlink_metadata = fs::symlink_metadata(path)?;
+        let metadata = fs::metadata(path)?;
 
         let _len = metadata.len();
         let _modified = metadata.modified()?;
         let _permissions = metadata.permissions();
-        let file_type = metadata.file_type();
+        let _file_type = match metadata.file_type().is_dir() {
+            true => FileType::Directory,
+            false => FileType::File,
+        };
+        let _link_type = match symlink_metadata.file_type().is_symlink() {
+            true => {
+                let mut link = "".to_string();
 
-        let file_type = if file_type.is_dir() {
-            FileType::Directory
-        } else if file_type.is_symlink() {
-            let mut link = "".to_string();
-
-            if let Ok(path) = fs::read_link(path) {
-                if let Some(s) = path.to_str() {
-                    link = s.to_string();
+                if let Ok(path) = fs::read_link(path) {
+                    if let Some(s) = path.to_str() {
+                        link = s.to_string();
+                    }
                 }
+                LinkType::Symlink(link)
             }
-            FileType::Symlink(link)
-        } else {
-            FileType::File
+            false => LinkType::Normal,
         };
 
         #[cfg(unix)]
-        let uid = metadata.uid();
+        let uid = symlink_metadata.uid();
         #[cfg(unix)]
-        let gid = metadata.gid();
+        let gid = symlink_metadata.gid();
         #[cfg(unix)]
-        let mode = metadata.mode();
+        let mode = symlink_metadata.mode();
 
         Ok(Self {
             _len,
             _modified,
             _permissions,
-            _file_type: file_type,
+            _file_type,
+            _link_type,
             #[cfg(unix)]
             uid,
             #[cfg(unix)]
@@ -87,5 +96,9 @@ impl JoshutoMetadata {
 
     pub fn file_type(&self) -> &FileType {
         &self._file_type
+    }
+
+    pub fn link_type(&self) -> &LinkType {
+        &self._link_type
     }
 }

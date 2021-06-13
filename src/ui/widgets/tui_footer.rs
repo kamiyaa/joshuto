@@ -4,7 +4,7 @@ use tui::style::{Color, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 
-use crate::fs::{FileType, JoshutoDirList};
+use crate::fs::{JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::unix;
 
@@ -41,7 +41,7 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(size_str),
                 ];
 
-                if let FileType::Symlink(s) = entry.metadata.file_type() {
+                if let LinkType::Symlink(s) = entry.metadata.link_type() {
                     text.push(Span::styled(" -> ", mode_style));
                     text.push(Span::styled(s, mode_style));
                 }

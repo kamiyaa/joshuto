@@ -4,7 +4,7 @@ use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
-use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList};
+use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::style;
 
@@ -81,27 +81,12 @@ fn print_entry(
     drawing_width: usize,
 ) {
     let name = entry.label();
-    let name_width = name.width();
-
     match entry.metadata.file_type() {
         FileType::Directory => {
+            let name_width = name.width();
             buf.set_stringn(x, y, name, drawing_width, style);
             if name_width > drawing_width {
                 buf.set_string(x + drawing_width as u16 - 1, y, ELLIPSIS, style);
-            }
-        }
-        FileType::Symlink(_) => {
-            if drawing_width < SYMLINK_WIDTH {
-                return;
-            }
-            let file_drawing_width = drawing_width - SYMLINK_WIDTH;
-
-            print_file_name(buf, (x, y), name, style, file_drawing_width);
-
-            // print arrow
-            buf.set_string(x + file_drawing_width as u16, y, "->", style);
-            if name_width >= file_drawing_width {
-                buf.set_string(x + file_drawing_width as u16 - 1, y, ELLIPSIS, style);
             }
         }
         FileType::File => {
@@ -110,7 +95,7 @@ fn print_entry(
             }
             let file_drawing_width = drawing_width - FILE_SIZE_WIDTH;
 
-            print_file_name(buf, (x, y), name, style, file_drawing_width);
+            print_file_name(buf, (x, y), &name, style, file_drawing_width);
 
             // print file size
             let file_size_string = format::file_size_to_string(entry.metadata.len());
@@ -122,6 +107,23 @@ fn print_entry(
                 style,
             );
         }
+    }
+    match entry.metadata.link_type() {
+        LinkType::Symlink(_) => {
+            //  if drawing_width < SYMLINK_WIDTH {
+            //      return;
+            //  }
+            //  let file_drawing_width = drawing_width - SYMLINK_WIDTH;
+
+            //  print_file_name(buf, (x, y), name, style, file_drawing_width);
+
+            // print arrow
+            buf.set_string(x + drawing_width as u16 - 2, y, "->", style);
+            // if name_width >= file_drawing_width {
+            //     buf.set_string(x + file_drawing_width as u16 - 1, y, ELLIPSIS, style);
+            // }
+        }
+        LinkType::Normal => {}
     }
 }
 
