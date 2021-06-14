@@ -12,7 +12,7 @@ pub enum FileOp {
     Copy,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct IoWorkerOptions {
     pub overwrite: bool,
     pub skip_exist: bool,
@@ -154,6 +154,7 @@ impl IoWorkerThread {
         for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_copy(
+                self.options,
                 path.as_path(),
                 self.dest.as_path(),
                 tx.clone(),
@@ -170,6 +171,7 @@ impl IoWorkerThread {
         for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_cut(
+                self.options,
                 path.as_path(),
                 self.dest.as_path(),
                 tx.clone(),
@@ -181,6 +183,7 @@ impl IoWorkerThread {
 }
 
 pub fn recursive_copy(
+    options: IoWorkerOptions,
     src: &path::Path,
     dest: &path::Path,
     tx: mpsc::Sender<IoWorkerProgress>,
@@ -190,7 +193,9 @@ pub fn recursive_copy(
     if let Some(s) = src.file_name() {
         dest_buf.push(s);
     }
-    rename_filename_conflict(&mut dest_buf);
+    if !options.overwrite {
+        rename_filename_conflict(&mut dest_buf);
+    }
     let file_type = fs::symlink_metadata(src)?.file_type();
     if file_type.is_dir() {
         fs::create_dir(dest_buf.as_path())?;
@@ -198,6 +203,7 @@ pub fn recursive_copy(
             let entry = entry?;
             let entry_path = entry.path();
             recursive_copy(
+                options,
                 entry_path.as_path(),
                 dest_buf.as_path(),
                 tx.clone(),
@@ -222,6 +228,7 @@ pub fn recursive_copy(
 }
 
 pub fn recursive_cut(
+    options: IoWorkerOptions,
     src: &path::Path,
     dest: &path::Path,
     tx: mpsc::Sender<IoWorkerProgress>,
@@ -231,7 +238,9 @@ pub fn recursive_cut(
     if let Some(s) = src.file_name() {
         dest_buf.push(s);
     }
-    rename_filename_conflict(&mut dest_buf);
+    if !options.overwrite {
+        rename_filename_conflict(&mut dest_buf);
+    }
     let metadata = fs::symlink_metadata(src)?;
     let file_type = metadata.file_type();
 
@@ -248,6 +257,7 @@ pub fn recursive_cut(
                 for entry in fs::read_dir(src)? {
                     let entry_path = entry?.path();
                     recursive_cut(
+                        options,
                         entry_path.as_path(),
                         dest_buf.as_path(),
                         tx.clone(),
