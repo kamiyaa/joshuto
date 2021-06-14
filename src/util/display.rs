@@ -106,14 +106,11 @@ const fn no_filter(_: &Result<fs::DirEntry, std::io::Error>) -> bool {
 
 fn filter_hidden(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
     match result {
-        Err(_) => false,
+        Err(_) => true,
         Ok(entry) => {
             let file_name = entry.file_name();
-            if let Some(file_name) = file_name.to_str() {
-                !file_name.starts_with('.')
-            } else {
-                false
-            }
+            let lossy_string = file_name.as_os_str().to_string_lossy();
+            !lossy_string.starts_with('.')
         }
     }
 }
