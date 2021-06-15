@@ -18,6 +18,7 @@ pub struct JoshutoDirEntry {
 impl JoshutoDirEntry {
     pub fn from(direntry: &fs::DirEntry, show_icons: bool) -> std::io::Result<Self> {
         let path = direntry.path();
+
         let metadata = JoshutoMetadata::from(&path)?;
         let name = direntry
             .file_name()

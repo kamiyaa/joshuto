@@ -4,6 +4,13 @@ use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
 use crate::util::display::DisplayOption;
 
+#[derive(Clone, Copy, Debug)]
+pub enum TabHomePage {
+    Inherit,
+    Home,
+    Root,
+}
+
 pub struct JoshutoTab {
     history: JoshutoHistory,
     _cwd: path::PathBuf,

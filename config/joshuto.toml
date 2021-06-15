@@ -4,9 +4,6 @@ scroll_offset = 6
 xdg_open = false
 use_trash = true
 
-# currently does not work
-max_preview_size = 2097152 # 2MB
-
 [display]
 # ratios for parent view, current view and preview
 collapse_preview = true
@@ -23,3 +20,12 @@ method = "natural"
 case_sensitive = false
 directories_first = true
 reverse = false
+
+[preview]
+max_preview_size = 2097152 # 2MB
+preview_images = false
+preview_script = "~/.config/joshuto/preview.sh"
+
+[tab]
+# inherit, home, root
+home_page = "home"
