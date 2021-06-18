@@ -38,9 +38,10 @@ impl JoshutoMetadata {
         let _len = metadata.len();
         let _modified = metadata.modified()?;
         let _permissions = metadata.permissions();
-        let _file_type = match metadata.file_type().is_dir() {
-            true => FileType::Directory,
-            false => FileType::File,
+        let _file_type = if metadata.file_type().is_dir() {
+            FileType::Directory
+        } else {
+            FileType::File
         };
         let _link_type = match symlink_metadata.file_type().is_symlink() {
             true => {

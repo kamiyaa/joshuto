@@ -85,8 +85,8 @@ fn print_entry(
         FileType::File => format::file_size_to_string(entry.metadata.len()),
     };
     let symlink_string = match entry.metadata.link_type() {
-        LinkType::Normal => String::from(""),
-        LinkType::Symlink(_) => String::from("-> "),
+        LinkType::Normal => "",
+        LinkType::Symlink(_) => "-> ",
     };
     let left_label_original = entry.label();
     let right_label_original = format!(" {}{}", symlink_string, size_string);
