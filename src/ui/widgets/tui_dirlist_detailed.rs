@@ -2,12 +2,12 @@ use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
-use unicode_width::UnicodeWidthStr;
 
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::format;
-use crate::util::string::truncate_by_char;
+use crate::util::string::UnicodeTruncate;
 use crate::util::style;
+use unicode_width::UnicodeWidthStr;
 
 const MIN_LEFT_LABEL_WIDTH: i32 = 15;
 
@@ -142,7 +142,7 @@ pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
         String::from("")
     } else if stem.is_empty() || extension.is_empty() {
         let full = format!("{}{}", stem, extension);
-        let mut truncated = truncate_by_char(&full, drawing_width - 1);
+        let mut truncated = full.trunc(drawing_width - 1);
         truncated.push_str(ELLIPSIS);
         truncated
     } else {
@@ -154,7 +154,7 @@ pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
             extension.to_string().replacen('.', ELLIPSIS, 1)
         } else {
             let stem_width = drawing_width - ext_width;
-            let truncated_stem = truncate_by_char(&stem.to_string(), stem_width - 1);
+            let truncated_stem = stem.trunc(stem_width - 1);
             format!("{}{}{}", truncated_stem, ELLIPSIS, extension)
         }
     }
