@@ -108,7 +108,7 @@ keys = [ "y", "n" ]
 command = "copy_filepath"
 keys = [ "y", "p" ]
 [[mapcommand]]
-command = "copy_dir"
+command = "copy_dirname"
 keys = [ "y", "d" ]
 [[mapcommand]]
 command = "paste_files"
