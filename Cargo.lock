@@ -536,6 +536,7 @@ dependencies = [
  "toml",
  "trash",
  "tui",
+ "unicode-segmentation",
  "unicode-width",
  "users",
  "whoami",

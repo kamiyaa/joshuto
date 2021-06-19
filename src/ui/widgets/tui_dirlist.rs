@@ -4,11 +4,9 @@ use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
-use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList};
-use crate::ui::widgets::print_file_name;
+use crate::fs::{JoshutoDirEntry, JoshutoDirList};
+use crate::ui::widgets::trim_file_label;
 use crate::util::style;
-
-const ELLIPSIS: &str = "…";
 
 pub struct TuiDirList<'a> {
     dirlist: &'a JoshutoDirList,
@@ -80,14 +78,10 @@ fn print_entry(
 ) {
     let name = entry.label();
     let name_width = name.width();
-
-    match entry.metadata.file_type() {
-        FileType::Directory => {
-            buf.set_stringn(x, y, name, drawing_width, style);
-            if name_width > drawing_width {
-                buf.set_string(x + drawing_width as u16 - 1, y, ELLIPSIS, style);
-            }
-        }
-        _ => print_file_name(buf, (x, y), name, style, drawing_width),
-    }
+    let label = if name_width > drawing_width {
+        trim_file_label(name, drawing_width)
+    } else {
+        name.to_string()
+    };
+    buf.set_string(x, y, label, style);
 }
