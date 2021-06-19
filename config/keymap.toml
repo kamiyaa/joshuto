@@ -161,6 +161,9 @@ keys = [ "=" ]
 command = ":"
 keys = [ ";" ]
 [[mapcommand]]
+command = ":"
+keys = [ ":" ]
+[[mapcommand]]
 command = ":mkdir "
 keys = [ "m", "k" ]
 [[mapcommand]]
