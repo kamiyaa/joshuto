@@ -224,6 +224,10 @@ impl AppKeyMapping {
         let keys = [Event::Key(Key::Char(';'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
+        let cmd = KeyCommand::CommandLine("".to_string(), "".to_string());
+        let keys = [Event::Key(Key::Char(':'))];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
         let cmd = KeyCommand::CommandLine("mkdir ".to_string(), "".to_string());
         let keys = [Event::Key(Key::Char('m')), Event::Key(Key::Char('k'))];
         insert_keycommand(&mut m, cmd, &keys)?;
