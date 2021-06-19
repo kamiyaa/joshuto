@@ -219,58 +219,57 @@ mod test_factor_labels {
             )
         );
     }
+}
+
+#[cfg(test)]
+mod test_trim_file_label {
+    use super::trim_file_label;
 
     #[test]
     fn dotfiles_get_an_ellipsis_at_the_end_if_they_dont_fit() {
-        let left = ".joshuto";
-        assert_eq!(
-            (".jos…".to_string(), "".to_string()),
-            factor_labels_for_entry(left, "".to_string(), 5)
-        );
+        let label = ".joshuto";
+        assert_eq!(".jos…".to_string(), trim_file_label(label, 5));
     }
 
     #[test]
     fn dotless_files_get_an_ellipsis_at_the_end_if_they_dont_fit() {
-        let left = "Desktop";
-        assert_eq!(
-            ("Desk…".to_string(), "".to_string()),
-            factor_labels_for_entry(left, "".to_string(), 5)
-        );
+        let label = "Desktop";
+        assert_eq!("Desk…".to_string(), trim_file_label(label, 5));
     }
 
     #[test]
     fn if_the_extension_doesnt_fit_just_an_ellipses_is_shown() {
-        let left = "foo.ext";
-        assert_eq!(
-            ("…".to_string(), "".to_string()),
-            factor_labels_for_entry(left, "".to_string(), 2)
-        );
+        let label = "foo.ext";
+        assert_eq!("…".to_string(), trim_file_label(label, 2));
     }
 
     #[test]
     fn if_just_the_extension_fits_its_shown_with_an_ellipsis_instead_of_a_dot() {
         let left = "foo.ext";
-        assert_eq!(
-            ("…ext".to_string(), "".to_string()),
-            factor_labels_for_entry(left, "".to_string(), 4)
-        );
+        assert_eq!("…ext".to_string(), trim_file_label(left, 4));
     }
 
     #[test]
     fn if_the_extension_fits_the_stem_is_truncated_with_an_appended_ellipsis_1() {
         let left = "foo.ext";
-        assert_eq!(
-            ("….ext".to_string(), "".to_string()),
-            factor_labels_for_entry(left, "".to_string(), 5)
-        );
+        assert_eq!("….ext".to_string(), trim_file_label(left, 5));
     }
 
     #[test]
     fn if_the_extension_fits_the_stem_is_truncated_with_an_appended_ellipsis_2() {
         let left = "foo.ext";
-        assert_eq!(
-            ("f….ext".to_string(), "".to_string()),
-            factor_labels_for_entry(left, "".to_string(), 6)
-        );
+        assert_eq!("f….ext".to_string(), trim_file_label(left, 6));
+    }
+
+    #[test]
+    fn if_the_name_is_truncated_after_a_full_width_character_the_ellipsis_is_shown_correctly() {
+        let left = "🌕🌕🌕";
+        assert_eq!("🌕…".to_string(), trim_file_label(left, 4));
+    }
+
+    #[test]
+    fn if_the_name_is_truncated_within_a_full_width_character_the_ellipsis_is_shown_correctly() {
+        let left = "🌕🌕🌕";
+        assert_eq!("🌕🌕…".to_string(), trim_file_label(left, 5));
     }
 }
