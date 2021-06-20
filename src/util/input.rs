@@ -16,7 +16,13 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
     let constraints: &[Constraint; 3] = &context.config_ref().display_options_ref().default_layout;
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .vertical_margin(1)
+        .vertical_margin(
+            if context.config_ref().display_options_ref().show_borders() {
+                2
+            } else {
+                1
+            },
+        )
         .constraints(constraints.as_ref())
         .split(f_size);
 
