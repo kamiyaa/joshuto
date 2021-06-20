@@ -56,26 +56,20 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
         {
             if x < layout_rect[1].x {
                 if let Some(dirlist) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    if let Some(curr_index) = dirlist.index {
-                        let skip_dist = curr_index / layout_rect[1].height as usize
-                            * layout_rect[1].height as usize;
-
-                        let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                        if let Err(e) = parent_cursor_move::parent_cursor_move(new_index, context) {
-                            context.push_msg(e.to_string());
-                        }
+                    let skip_dist =
+                        dirlist.first_index_for_viewport(layout_rect[1].height as usize);
+                    let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
+                    if let Err(e) = parent_cursor_move::parent_cursor_move(new_index, context) {
+                        context.push_msg(e.to_string());
                     }
                 }
             } else if x < layout_rect[2].x {
                 if let Some(dirlist) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    if let Some(curr_index) = dirlist.index {
-                        let skip_dist = curr_index / layout_rect[1].height as usize
-                            * layout_rect[1].height as usize;
-
-                        let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                        if let Err(e) = cursor_move::cursor_move(new_index, context) {
-                            context.push_msg(e.to_string());
-                        }
+                    let skip_dist =
+                        dirlist.first_index_for_viewport(layout_rect[1].height as usize);
+                    let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
+                    if let Err(e) = cursor_move::cursor_move(new_index, context) {
+                        context.push_msg(e.to_string());
                     }
                 }
             } else {
