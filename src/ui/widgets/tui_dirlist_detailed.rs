@@ -81,7 +81,11 @@ fn print_entry(
     drawing_width: usize,
 ) {
     let size_string = match entry.metadata.file_type() {
-        FileType::Directory => String::from(""),
+        FileType::Directory => entry
+            .metadata
+            .directory_size()
+            .expect("Directory doesn't have size")
+            .to_string(),
         FileType::File => format::file_size_to_string(entry.metadata.len()),
     };
     let symlink_string = match entry.metadata.link_type() {
