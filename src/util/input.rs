@@ -54,21 +54,27 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
         MouseEvent::Press(MouseButton::Left, x, y)
             if y > layout_rect[1].y && y <= layout_rect[1].y + layout_rect[1].height =>
         {
-            if x < layout_rect[1].x {
-                if let Some(dirlist) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+            if x < layout_rect[2].x {
+                let (dirlist, is_parent) = if x < layout_rect[1].x {
+                    (
+                        context.tab_context_ref().curr_tab_ref().parent_list_ref(),
+                        true,
+                    )
+                } else {
+                    (
+                        context.tab_context_ref().curr_tab_ref().curr_list_ref(),
+                        false,
+                    )
+                };
+                if let Some(dirlist) = dirlist {
                     let skip_dist =
                         dirlist.first_index_for_viewport(layout_rect[1].height as usize);
                     let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                    if let Err(e) = parent_cursor_move::parent_cursor_move(new_index, context) {
-                        context.push_msg(e.to_string());
-                    }
-                }
-            } else if x < layout_rect[2].x {
-                if let Some(dirlist) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    let skip_dist =
-                        dirlist.first_index_for_viewport(layout_rect[1].height as usize);
-                    let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                    if let Err(e) = cursor_move::cursor_move(new_index, context) {
+                    if let Err(e) = if is_parent {
+                        parent_cursor_move::parent_cursor_move(new_index, context)
+                    } else {
+                        cursor_move::cursor_move(new_index, context)
+                    } {
                         context.push_msg(e.to_string());
                     }
                 }
