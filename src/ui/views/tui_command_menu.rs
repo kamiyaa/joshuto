@@ -36,11 +36,11 @@ impl TuiCommandMenu {
 
         loop {
             let _ = terminal.draw(|frame| {
-                let f_size: Rect = frame.size();
+                let area = frame.size();
 
                 {
                     let view = TuiView::new(&context);
-                    frame.render_widget(view, f_size);
+                    frame.render_widget(view, area);
                 }
 
                 {
@@ -54,21 +54,27 @@ impl TuiCommandMenu {
                     let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
                     let display_str_len = display_str.len();
 
-                    let y = if (f_size.height as usize)
+                    let y = if (area.height as usize)
                         < display_str_len + BORDER_HEIGHT + BOTTOM_MARGIN
                     {
                         0
                     } else {
-                        f_size.height
+                        area.height
                             - (BORDER_HEIGHT + BOTTOM_MARGIN) as u16
                             - display_str_len as u16
+                    };
+
+                    let menu_height = if display_str_len + BORDER_HEIGHT > area.height as usize {
+                        area.height
+                    } else {
+                        (display_str_len + BORDER_HEIGHT) as u16
                     };
 
                     let menu_rect = Rect {
                         x: 0,
                         y,
-                        width: f_size.width,
-                        height: (display_str_len + BORDER_HEIGHT) as u16,
+                        width: area.width,
+                        height: menu_height,
                     };
 
                     frame.render_widget(Clear, menu_rect);
