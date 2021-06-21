@@ -116,23 +116,17 @@ fn factor_labels_for_entry<'a>(
     let left_label_original_width = left_label_original.width();
     let right_label_original_width = right_label_original.width();
 
-    if drawing_width < right_label_original_width {
-        return (ELLIPSIS.to_string(), "");
-    }
-
     let left_width_remainder = drawing_width as i32 - right_label_original_width as i32;
     let width_remainder = left_width_remainder as i32 - left_label_original_width as i32;
     if width_remainder >= 0 {
         (left_label_original.to_string(), right_label_original)
+    } else if left_width_remainder < MIN_LEFT_LABEL_WIDTH {
+        (trim_file_label(left_label_original, drawing_width), "")
     } else {
-        if left_label_original_width + right_label_original_width <= drawing_width {
-            (left_label_original.to_string(), "")
-        } else {
-            (
-                trim_file_label(left_label_original, left_width_remainder as usize),
-                right_label_original,
-            )
-        }
+        (
+            trim_file_label(left_label_original, left_width_remainder as usize),
+            right_label_original,
+        )
     }
 }
 
@@ -173,7 +167,7 @@ mod test_factor_labels {
         let left = "foo.ext";
         let right = "right";
         assert_eq!(
-            (ELLIPSIS.to_string(), ""),
+            ("".to_string(), ""),
             factor_labels_for_entry(left, right, 0)
         );
     }
@@ -204,7 +198,7 @@ mod test_factor_labels {
         let right = "right";
         assert!(left.chars().count() as i32 == MIN_LEFT_LABEL_WIDTH);
         assert_eq!(
-            ("fooba….ext".to_string(), "right"),
+            ("foobarbazf….ext".to_string(), ""),
             factor_labels_for_entry(left, right, MIN_LEFT_LABEL_WIDTH as usize)
         );
     }

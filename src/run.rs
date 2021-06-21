@@ -40,6 +40,7 @@ pub fn run(
         match event {
             AppEvent::Termion(Event::Mouse(event)) => {
                 input::process_mouse(event, context, backend);
+                preview_default::load_preview(context, backend);
             }
             AppEvent::Termion(key) => {
                 if !context.message_queue_ref().is_empty() {
