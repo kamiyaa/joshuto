@@ -72,9 +72,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                     right,
                 };
 
-                if parent_list.as_ref().is_some() {
-                    intersections.render_left(buf);
-                }
+                intersections.render_left(buf);
                 if child_list.as_ref().is_some() {
                     intersections.render_right(buf);
                 }
