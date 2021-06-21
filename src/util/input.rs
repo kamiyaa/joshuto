@@ -16,7 +16,13 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
     let constraints: &[Constraint; 3] = &context.config_ref().display_options_ref().default_layout;
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .vertical_margin(1)
+        .vertical_margin(
+            if context.config_ref().display_options_ref().show_borders() {
+                2
+            } else {
+                1
+            },
+        )
         .constraints(constraints.as_ref())
         .split(f_size);
 
@@ -54,28 +60,28 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
         MouseEvent::Press(MouseButton::Left, x, y)
             if y > layout_rect[1].y && y <= layout_rect[1].y + layout_rect[1].height =>
         {
-            if x < layout_rect[1].x {
-                if let Some(dirlist) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    if let Some(curr_index) = dirlist.index {
-                        let skip_dist = curr_index / layout_rect[1].height as usize
-                            * layout_rect[1].height as usize;
-
-                        let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                        if let Err(e) = parent_cursor_move::parent_cursor_move(new_index, context) {
-                            context.push_msg(e.to_string());
-                        }
-                    }
-                }
-            } else if x < layout_rect[2].x {
-                if let Some(dirlist) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    if let Some(curr_index) = dirlist.index {
-                        let skip_dist = curr_index / layout_rect[1].height as usize
-                            * layout_rect[1].height as usize;
-
-                        let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                        if let Err(e) = cursor_move::cursor_move(new_index, context) {
-                            context.push_msg(e.to_string());
-                        }
+            if x < layout_rect[2].x {
+                let (dirlist, is_parent) = if x < layout_rect[1].x {
+                    (
+                        context.tab_context_ref().curr_tab_ref().parent_list_ref(),
+                        true,
+                    )
+                } else {
+                    (
+                        context.tab_context_ref().curr_tab_ref().curr_list_ref(),
+                        false,
+                    )
+                };
+                if let Some(dirlist) = dirlist {
+                    let skip_dist =
+                        dirlist.first_index_for_viewport(layout_rect[1].height as usize);
+                    let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
+                    if let Err(e) = if is_parent {
+                        parent_cursor_move::parent_cursor_move(new_index, context)
+                    } else {
+                        cursor_move::cursor_move(new_index, context)
+                    } {
+                        context.push_msg(e.to_string());
                     }
                 }
             } else {
