@@ -4,7 +4,6 @@ use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::tab::{JoshutoTab, TabHomePage};
-use crate::util::load_child::LoadChild;
 
 use crate::HOME_DIR;
 
@@ -70,7 +69,6 @@ pub fn new_tab(context: &mut AppContext) -> JoshutoResult<()> {
     let new_index = context.tab_context_ref().len() - 1;
     context.tab_context_mut().index = new_index;
     _tab_switch(new_index, context)?;
-    LoadChild::load_child(context)?;
     Ok(())
 }
 

@@ -7,10 +7,10 @@ use tui::widgets::Clear;
 use crate::commands::{CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
+use crate::event::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
 use crate::ui::TuiBackend;
-use crate::util::event::AppEvent;
 use crate::util::input;
 use crate::util::to_string::ToString;
 

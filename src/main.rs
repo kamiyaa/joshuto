@@ -2,6 +2,7 @@ mod commands;
 mod config;
 mod context;
 mod error;
+mod event;
 mod fs;
 mod history;
 mod io;

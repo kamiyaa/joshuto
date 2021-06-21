@@ -1,7 +1,7 @@
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::history::DirectoryHistory;
 use crate::ui::TuiBackend;
+
 use std::path::PathBuf;
 
 pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
@@ -18,18 +18,6 @@ pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<
 
             let entry = &curr_list.contents[new_index];
             path = Some(entry.file_path().to_path_buf())
-        }
-    }
-
-    // get preview
-    if let Some(path) = path {
-        if path.is_dir() {
-            let options = context.config_ref().display_options_ref().clone();
-            context
-                .tab_context_mut()
-                .curr_tab_mut()
-                .history_mut()
-                .create_or_soft_update(path.as_path(), &options)?;
         }
     }
     Ok(())

@@ -7,7 +7,6 @@ use crate::context::AppContext;
 use crate::history::DirectoryHistory;
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::TuiBackend;
-use crate::util::load_child::LoadChild;
 
 use super::reload;
 
@@ -116,6 +115,5 @@ pub fn delete_selected_files(
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().reload(&curr_path, &options)?;
     }
-    LoadChild::load_child(context)?;
     Ok(())
 }

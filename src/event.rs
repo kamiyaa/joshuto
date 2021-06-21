@@ -1,4 +1,6 @@
 use std::io;
+use std::path;
+use std::process;
 use std::sync::mpsc;
 use std::thread;
 
@@ -16,6 +18,8 @@ pub enum AppEvent {
     Termion(Event),
     IoWorkerProgress(IoWorkerProgress),
     IoWorkerResult(io::Result<IoWorkerProgress>),
+    PreviewDir(io::Result<path::PathBuf>),
+    PreviewFile(process::Output),
     Signal(i32),
     //    Filesystem(notify::Result),
 }

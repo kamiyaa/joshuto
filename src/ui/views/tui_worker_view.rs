@@ -3,9 +3,9 @@ use termion::event::{Event, Key};
 use tui::layout::Rect;
 
 use crate::context::AppContext;
+use crate::event::AppEvent;
 use crate::ui::widgets::{TuiTopBar, TuiWorker};
 use crate::ui::TuiBackend;
-use crate::util::event::AppEvent;
 use crate::util::input;
 
 pub struct TuiWorkerView {}

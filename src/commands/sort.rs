@@ -1,8 +1,6 @@
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
-
-use crate::util::load_child::LoadChild;
 use crate::util::sort::SortType;
 
 use super::reload;
@@ -15,10 +13,7 @@ pub fn set_sort(context: &mut AppContext, method: SortType) -> JoshutoResult<()>
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
     }
-
-    reload::soft_reload(context.tab_context_ref().index, context)?;
-    LoadChild::load_child(context)?;
-    Ok(())
+    refresh(context)
 }
 
 pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult<()> {
@@ -28,7 +23,10 @@ pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult<()> {
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
     }
+    refresh(context)
+}
+
+fn refresh(context: &mut AppContext) -> JoshutoResult<()> {
     reload::soft_reload(context.tab_context_ref().index, context)?;
-    LoadChild::load_child(context)?;
     Ok(())
 }

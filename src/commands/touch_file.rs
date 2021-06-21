@@ -1,11 +1,11 @@
+use std::fs::File;
 use std::path;
+use std::time::SystemTime;
+
+use filetime::FileTime;
 
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::util::load_child::LoadChild;
-use filetime::FileTime;
-use std::fs::File;
-use std::time::SystemTime;
 
 fn _update_actime(file: &path::Path) -> std::io::Result<()> {
     let file_time = FileTime::from_system_time(SystemTime::now());
@@ -44,6 +44,5 @@ pub fn touch_file(context: &mut AppContext, arg: &str) -> JoshutoResult<()> {
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         curr_list.reload_contents(&options)?;
     }
-    LoadChild::load_child(context)?;
     Ok(())
 }

@@ -1,6 +1,5 @@
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::util::load_child::LoadChild;
 
 pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()> {
     let options = context.config_ref().display_options_ref().clone();
@@ -42,6 +41,5 @@ pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
 
 pub fn reload_dirlist(context: &mut AppContext) -> JoshutoResult<()> {
     reload(context, context.tab_context_ref().index)?;
-    LoadChild::load_child(context)?;
     Ok(())
 }
