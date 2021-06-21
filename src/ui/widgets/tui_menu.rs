@@ -19,18 +19,18 @@ impl<'a> TuiMenu<'a> {
 
 impl<'a> Widget for TuiMenu<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let text_iter = self.options.iter().chain(&[" "]);
         let style = Style::default().fg(Color::Reset).bg(Color::Reset);
-        let area_x = area.x + 1;
-        let area_y = area.y + 1;
 
         Block::default()
             .style(style)
             .borders(Borders::TOP)
             .render(area, buf);
 
-        for (i, text) in text_iter.enumerate() {
-            buf.set_string(area_x, area_y + i as u16, text, style);
+        let text_iter = self.options.iter().chain(&[" "]);
+        let area_x = area.x + 1;
+
+        for (y, text) in (area.y + 1..area.y + area.height).zip(text_iter) {
+            buf.set_string(area_x, y, text, style);
         }
     }
 }
