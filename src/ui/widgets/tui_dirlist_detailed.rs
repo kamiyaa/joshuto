@@ -118,15 +118,27 @@ fn factor_labels_for_entry<'a>(
 
     let left_width_remainder = drawing_width as i32 - right_label_original_width as i32;
     let width_remainder = left_width_remainder as i32 - left_label_original_width as i32;
-    if width_remainder >= 0 {
+
+    if drawing_width == 0 {
+        ("".to_string(), "")
+    } else if width_remainder >= 0 {
         (left_label_original.to_string(), right_label_original)
-    } else if left_width_remainder < MIN_LEFT_LABEL_WIDTH {
-        (trim_file_label(left_label_original, drawing_width), "")
     } else {
-        (
-            trim_file_label(left_label_original, left_width_remainder as usize),
-            right_label_original,
-        )
+        if left_width_remainder < MIN_LEFT_LABEL_WIDTH {
+            (
+                if left_label_original.width() as i32 <= left_width_remainder {
+                    trim_file_label(left_label_original, drawing_width)
+                } else {
+                    left_label_original.to_string()
+                },
+                "",
+            )
+        } else {
+            (
+                trim_file_label(left_label_original, left_width_remainder as usize),
+                right_label_original,
+            )
+        }
     }
 }
 
@@ -160,7 +172,7 @@ pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
 
 #[cfg(test)]
 mod test_factor_labels {
-    use super::{factor_labels_for_entry, ELLIPSIS, MIN_LEFT_LABEL_WIDTH};
+    use super::{factor_labels_for_entry, MIN_LEFT_LABEL_WIDTH};
 
     #[test]
     fn both_labels_empty_if_drawing_width_zero() {
@@ -198,7 +210,7 @@ mod test_factor_labels {
         let right = "right";
         assert!(left.chars().count() as i32 == MIN_LEFT_LABEL_WIDTH);
         assert_eq!(
-            ("foobarbazf….ext".to_string(), ""),
+            ("foobarbazfo.ext".to_string(), ""),
             factor_labels_for_entry(left, right, MIN_LEFT_LABEL_WIDTH as usize)
         );
     }
@@ -215,6 +227,19 @@ mod test_factor_labels {
                 right,
                 MIN_LEFT_LABEL_WIDTH as usize + right.chars().count()
             )
+        );
+    }
+
+    #[test]
+    // regression
+    fn file_name_which_is_smaller_or_equal_drawing_width_does_not_cause_right_label_to_be_omitted()
+    {
+        let left = "foooooobaaaaaaarbaaaaaaaaaz";
+        let right = "right";
+        assert!(left.chars().count() as i32 > MIN_LEFT_LABEL_WIDTH);
+        assert_eq!(
+            ("foooooobaaaaaaarbaaaa…".to_string(), right),
+            factor_labels_for_entry(left, right, left.chars().count())
         );
     }
 }
