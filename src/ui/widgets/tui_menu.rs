@@ -29,7 +29,7 @@ impl<'a> Widget for TuiMenu<'a> {
         let text_iter = self.options.iter().chain(&[" "]);
         let area_x = area.x + 1;
 
-        for (y, text) in (1..area.height).zip(text_iter) {
+        for (y, text) in (area.y + 1..area.y + area.height).zip(text_iter) {
             buf.set_string(area_x, y, text, style);
         }
     }
