@@ -36,7 +36,7 @@ impl<'a> Widget for TuiDirList<'a> {
         }
 
         let curr_index = self.dirlist.index.unwrap();
-        let skip_dist = curr_index / area.height as usize * area.height as usize;
+        let skip_dist = self.dirlist.first_index_for_viewport(area.height as usize);
 
         let drawing_width = area.width as usize;
 

@@ -41,7 +41,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         };
 
         let drawing_width = area.width as usize;
-        let skip_dist = curr_index / area.height as usize * area.height as usize;
+        let skip_dist = self.dirlist.first_index_for_viewport(area.height as usize);
 
         // draw every entry
         self.dirlist

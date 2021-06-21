@@ -143,6 +143,17 @@ impl JoshutoDirList {
         self.get_curr_mut_(self.index?)
     }
 
+    /// For a given number of entries, visible in a UI, this method returns the index of the entry
+    /// with which the UI should start to list the entries.
+    ///
+    /// This method assures that the cursor is always in the viewport of the UI.
+    pub fn first_index_for_viewport(&self, viewport_height: usize) -> usize {
+        match self.index {
+            Some(index) => index / viewport_height as usize * viewport_height as usize,
+            None => 0,
+        }
+    }
+
     fn get_curr_mut_(&mut self, index: usize) -> Option<&mut JoshutoDirEntry> {
         if index < self.contents.len() {
             Some(&mut self.contents[index])
