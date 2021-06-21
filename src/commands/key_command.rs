@@ -4,7 +4,6 @@ use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::IoWorkerOptions;
 use crate::ui::TuiBackend;
-use crate::util::load_child::LoadChild;
 use crate::util::select::SelectOption;
 use crate::util::sort::SortType;
 
@@ -358,7 +357,6 @@ impl AppExecute for KeyCommand {
             Self::BulkRename => bulk_rename::bulk_rename(context, backend),
             Self::ChangeDirectory(p) => {
                 change_directory::change_directory(context, p.as_path())?;
-                LoadChild::load_child(context)?;
                 Ok(())
             }
             Self::NewTab => tab_ops::new_tab(context),

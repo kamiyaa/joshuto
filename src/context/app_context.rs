@@ -3,7 +3,7 @@ use std::sync::mpsc;
 
 use crate::config;
 use crate::context::{LocalStateContext, TabContext, WorkerContext};
-use crate::util::event::{AppEvent, Events};
+use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
 pub struct AppContext {
@@ -11,7 +11,7 @@ pub struct AppContext {
     // app config
     config: config::AppConfig,
     // event loop querying
-    events: Events,
+    pub events: Events,
     // context related to tabs
     tab_context: TabContext,
     // context related to local file state

@@ -1,3 +1,3 @@
-pub mod preview_sh;
-
-pub use self::preview_sh::preview_with_script;
+pub mod preview_default;
+pub mod preview_dir;
+pub mod preview_file;

@@ -5,9 +5,9 @@ use tui::text::Span;
 use tui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::context::AppContext;
+use crate::event::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
-use crate::util::event::AppEvent;
 use crate::util::input;
 
 pub struct TuiPrompt<'a> {

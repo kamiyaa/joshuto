@@ -3,12 +3,12 @@ use termion::event::Event;
 use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
+use crate::event::AppEvent;
+use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::views::{TuiCommandMenu, TuiView};
-use crate::util::event::AppEvent;
 use crate::util::input;
-use crate::util::load_child::LoadChild;
 use crate::util::to_string::ToString;
 
 pub fn run(
@@ -23,7 +23,7 @@ pub fn run(
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child
-        let _ = LoadChild::load_child(context);
+        preview_default::load_preview(context, backend);
     }
 
     while !context.exit {
@@ -82,6 +82,7 @@ pub fn run(
                     },
                 }
                 context.flush_event();
+                preview_default::load_preview(context, backend);
             }
             event => input::process_noninteractive(event, context),
         }

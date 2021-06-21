@@ -7,10 +7,10 @@ use tui::widgets::Clear;
 use unicode_width::UnicodeWidthStr;
 
 use crate::context::AppContext;
+use crate::event::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::TuiBackend;
-use crate::util::event::AppEvent;
 use crate::util::input;
 
 struct CompletionTracker {

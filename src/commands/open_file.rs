@@ -6,7 +6,6 @@ use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
-use crate::util::load_child::LoadChild;
 
 use super::change_directory;
 
@@ -35,7 +34,6 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
         if entry.file_path().is_dir() {
             let path = entry.file_path().to_path_buf();
             change_directory::cd(path.as_path(), context)?;
-            LoadChild::load_child(context)?;
         } else {
             let paths = context
                 .tab_context_ref()

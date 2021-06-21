@@ -3,8 +3,8 @@ use std::collections::VecDeque;
 use std::sync::mpsc;
 use std::thread;
 
+use crate::event::AppEvent;
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
-use crate::util::event::AppEvent;
 
 pub struct WorkerContext {
     // queue of IO workers

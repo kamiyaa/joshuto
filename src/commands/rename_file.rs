@@ -3,7 +3,6 @@ use std::path;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
-use crate::util::load_child::LoadChild;
 
 use super::command_line;
 
@@ -36,7 +35,6 @@ pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult
     if let Some(path) = path {
         _rename_file(context, path.as_path(), dest)?;
     }
-    LoadChild::load_child(context)?;
     Ok(())
 }
 

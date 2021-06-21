@@ -4,10 +4,10 @@ use tui::layout::{Constraint, Direction, Layout};
 
 use crate::commands::{cursor_move, parent_cursor_move, AppExecute, KeyCommand};
 use crate::context::AppContext;
+use crate::event::AppEvent;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOp, IoWorkerProgress};
 use crate::ui;
-use crate::util::event::AppEvent;
 use crate::util::format;
 
 pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut ui::TuiBackend) {
