@@ -15,6 +15,7 @@ pub enum LinkType {
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
     _len: u64,
+    _directory_size: Option<usize>,
     _modified: time::SystemTime,
     _permissions: fs::Permissions,
     _file_type: FileType,
@@ -38,10 +39,10 @@ impl JoshutoMetadata {
         let _len = metadata.len();
         let _modified = metadata.modified()?;
         let _permissions = metadata.permissions();
-        let _file_type = if metadata.file_type().is_dir() {
-            FileType::Directory
+        let (_file_type, _directory_size) = if metadata.file_type().is_dir() {
+            (FileType::Directory, Some(fs::read_dir(path)?.count()))
         } else {
-            FileType::File
+            (FileType::File, None)
         };
         let _link_type = match symlink_metadata.file_type().is_symlink() {
             true => {
@@ -66,6 +67,7 @@ impl JoshutoMetadata {
 
         Ok(Self {
             _len,
+            _directory_size,
             _modified,
             _permissions,
             _file_type,
@@ -81,6 +83,10 @@ impl JoshutoMetadata {
 
     pub fn len(&self) -> u64 {
         self._len
+    }
+
+    pub fn directory_size(&self) -> Option<usize> {
+        self._directory_size
     }
 
     pub fn modified(&self) -> time::SystemTime {
