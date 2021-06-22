@@ -84,8 +84,8 @@ fn print_entry(
         FileType::Directory => entry
             .metadata
             .directory_size()
-            .expect("Directory doesn't have size")
-            .to_string(),
+            .map(|n| n.to_string())
+            .unwrap_or("".to_string()),
         FileType::File => format::file_size_to_string(entry.metadata.len()),
     };
     let symlink_string = match entry.metadata.link_type() {
@@ -93,7 +93,7 @@ fn print_entry(
         LinkType::Symlink(_) => "-> ",
     };
     let left_label_original = entry.label();
-    let right_label_original = format!(" {}{}", symlink_string, size_string);
+    let right_label_original = format!(" {}{} ", symlink_string, size_string);
 
     let (left_label, right_label) = factor_labels_for_entry(
         left_label_original,

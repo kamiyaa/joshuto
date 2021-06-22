@@ -40,7 +40,8 @@ impl JoshutoMetadata {
         let _modified = metadata.modified()?;
         let _permissions = metadata.permissions();
         let (_file_type, _directory_size) = if metadata.file_type().is_dir() {
-            (FileType::Directory, Some(fs::read_dir(path)?.count()))
+            let _directory_size = fs::read_dir(path).map(|s| s.count()).ok();
+            (FileType::Directory, _directory_size)
         } else {
             (FileType::File, None)
         };
