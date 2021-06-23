@@ -3,8 +3,7 @@ use std::path;
 use std::process::{Command, Output};
 use std::thread;
 
-use tui::layout::{Constraint, Direction, Layout, Rect};
-use tui::widgets::{Block, Borders};
+use tui::layout::Constraint;
 
 use crate::context::AppContext;
 use crate::event::AppEvent;
@@ -77,10 +76,6 @@ impl Foreground {
         let curr_tab = context.tab_context_ref().curr_tab_ref();
         let child_list = curr_tab.child_list_ref();
 
-        let preview_options = context.config_ref().preview_options_ref();
-
-        let config = context.config_ref();
-
         match child_list.and_then(|list| list.curr_entry_ref()) {
             None => Err(io::Error::new(io::ErrorKind::Other, "No file to preview")),
             Some(entry) => {
@@ -98,7 +93,11 @@ impl Background {
         backend: &mut TuiBackend,
         p: path::PathBuf,
     ) {
-        if let Some(preview) = context.preview_context_ref().get_preview(p.as_path()) {
+        if context
+            .preview_context_ref()
+            .get_preview(p.as_path())
+            .is_some()
+        {
             return;
         }
 
@@ -119,7 +118,7 @@ impl Background {
 
             let script = script.clone();
             let event_tx = context.clone_event_tx();
-            let thread = thread::spawn(move || {
+            let _ = thread::spawn(move || {
                 let file_full_path = p.as_path();
 
                 let res = Command::new(script)
@@ -132,7 +131,7 @@ impl Background {
                 match res {
                     Ok(output) => {
                         let preview = FilePreview::from((p, output));
-                        event_tx.send(AppEvent::PreviewFile(preview));
+                        let _ = event_tx.send(AppEvent::PreviewFile(preview));
                     }
                     Err(_) => {}
                 }

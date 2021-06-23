@@ -1,6 +1,4 @@
-use std::collections::{hash_map::Entry, HashMap};
-use std::path;
-use std::process;
+use std::collections::hash_map::Entry;
 
 use signal_hook::consts::signal;
 use termion::event::{MouseButton, MouseEvent};

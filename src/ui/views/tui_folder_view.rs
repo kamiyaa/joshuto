@@ -6,7 +6,6 @@ use tui::text::Span;
 use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::context::AppContext;
-use crate::ui;
 use crate::ui::widgets::{
     TuiDirList, TuiDirListDetailed, TuiFilePreview, TuiFooter, TuiTabBar, TuiTopBar,
 };

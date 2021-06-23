@@ -6,7 +6,7 @@ use crate::ui::TuiBackend;
 
 pub fn load_preview_path(context: &mut AppContext, backend: &mut TuiBackend, p: path::PathBuf) {
     if p.is_dir() {
-        preview_dir::load_preview(context, p);
+        preview_dir::Background::load_preview(context, p);
     } else if p.is_file() {
         preview_file::Background::preview_path_with_script(context, backend, p);
     }

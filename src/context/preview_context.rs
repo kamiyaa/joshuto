@@ -1,9 +1,6 @@
 use std::collections::HashMap;
-use std::io;
 use std::path;
-use std::process;
 
-use crate::event::AppEvent;
 use crate::preview::preview_file::FilePreview;
 
 pub struct PreviewContext {

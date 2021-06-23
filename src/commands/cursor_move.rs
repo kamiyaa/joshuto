@@ -2,12 +2,8 @@ use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 
-use std::path::PathBuf;
-
 pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
-    let mut path: Option<PathBuf> = None;
     let mut new_index = new_index;
-
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         if !curr_list.is_empty() {
             let dir_len = curr_list.len();
@@ -15,9 +11,6 @@ pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<
                 new_index = dir_len - 1;
             }
             curr_list.index = Some(new_index);
-
-            let entry = &curr_list.contents[new_index];
-            path = Some(entry.file_path().to_path_buf())
         }
     }
     Ok(())
