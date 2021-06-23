@@ -2,16 +2,16 @@ use std::collections::VecDeque;
 use std::sync::mpsc;
 
 use crate::config;
-use crate::context::{LocalStateContext, TabContext, WorkerContext};
+use crate::context::{LocalStateContext, PreviewContext, TabContext, WorkerContext};
 use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
 pub struct AppContext {
     pub exit: bool,
-    // app config
-    config: config::AppConfig,
     // event loop querying
     pub events: Events,
+    // app config
+    config: config::AppConfig,
     // context related to tabs
     tab_context: TabContext,
     // context related to local file state
@@ -22,6 +22,8 @@ pub struct AppContext {
     message_queue: VecDeque<String>,
     // context related to io workers
     worker_context: WorkerContext,
+    // context related to previews
+    preview_context: PreviewContext,
 }
 
 impl AppContext {
@@ -36,6 +38,7 @@ impl AppContext {
             search_context: None,
             message_queue: VecDeque::with_capacity(4),
             worker_context: WorkerContext::new(event_tx),
+            preview_context: PreviewContext::new(),
             config,
         }
     }
@@ -46,6 +49,9 @@ impl AppContext {
     }
     pub fn flush_event(&self) {
         self.events.flush();
+    }
+    pub fn clone_event_tx(&self) -> mpsc::Sender<AppEvent> {
+        self.events.event_tx.clone()
     }
 
     pub fn config_ref(&self) -> &config::AppConfig {
@@ -85,6 +91,13 @@ impl AppContext {
     }
     pub fn set_search_context(&mut self, pattern: SearchPattern) {
         self.search_context = Some(pattern);
+    }
+
+    pub fn preview_context_ref(&self) -> &PreviewContext {
+        &self.preview_context
+    }
+    pub fn preview_context_mut(&mut self) -> &mut PreviewContext {
+        &mut self.preview_context
     }
 
     pub fn worker_context_ref(&self) -> &WorkerContext {

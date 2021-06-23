@@ -1,5 +1,6 @@
 mod tui_dirlist;
 mod tui_dirlist_detailed;
+mod tui_file_preview;
 mod tui_footer;
 mod tui_menu;
 mod tui_prompt;
@@ -10,6 +11,7 @@ mod tui_worker;
 
 pub use self::tui_dirlist::TuiDirList;
 pub use self::tui_dirlist_detailed::{trim_file_label, TuiDirListDetailed};
+pub use self::tui_file_preview::TuiFilePreview;
 pub use self::tui_footer::TuiFooter;
 pub use self::tui_menu::TuiMenu;
 pub use self::tui_prompt::TuiPrompt;

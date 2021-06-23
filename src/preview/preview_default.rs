@@ -8,7 +8,7 @@ pub fn load_preview_path(context: &mut AppContext, backend: &mut TuiBackend, p: 
     if p.is_dir() {
         preview_dir::load_preview(context, p);
     } else if p.is_file() {
-        preview_file::preview_path_with_script(context, backend, p);
+        preview_file::Background::preview_path_with_script(context, backend, p);
     }
 }
 

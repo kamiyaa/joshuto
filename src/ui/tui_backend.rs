@@ -4,10 +4,13 @@ use std::io::Write;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
-use tui::widgets::Widget;
+use tui::layout::{Constraint, Direction, Layout, Rect};
+use tui::widgets::{Block, Borders, Widget};
 
 #[cfg(feature = "mouse")]
 use termion::input::MouseTerminal;
+
+use crate::util::display::DisplayOption;
 
 trait New {
     fn new() -> std::io::Result<Self>
@@ -80,4 +83,51 @@ impl TuiBackend {
         std::mem::swap(&mut self.terminal, &mut new_backend.terminal);
         Ok(())
     }
+}
+
+pub fn build_layout(
+    area: Rect,
+    constraints: &[Constraint; 3],
+    display_options: &DisplayOption,
+) -> Vec<Rect> {
+    let layout_rect = if display_options.show_borders() {
+        let area = Rect {
+            y: area.top() + 1,
+            height: area.height - 2,
+            ..area
+        };
+
+        let block = Block::default().borders(Borders::ALL);
+        let inner = block.inner(area);
+
+        let layout_rect = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(constraints.as_ref())
+            .split(inner);
+
+        let block = Block::default().borders(Borders::RIGHT);
+        let inner1 = block.inner(layout_rect[0]);
+
+        let block = Block::default().borders(Borders::LEFT);
+        let inner3 = block.inner(layout_rect[2]);
+
+        vec![inner1, layout_rect[1], inner3]
+    } else {
+        let mut layout_rect = Layout::default()
+            .direction(Direction::Horizontal)
+            .vertical_margin(1)
+            .constraints(constraints.as_ref())
+            .split(area);
+
+        layout_rect[0] = Rect {
+            width: layout_rect[0].width - 1,
+            ..layout_rect[0]
+        };
+        layout_rect[1] = Rect {
+            width: layout_rect[1].width - 1,
+            ..layout_rect[1]
+        };
+        layout_rect
+    };
+    layout_rect
 }

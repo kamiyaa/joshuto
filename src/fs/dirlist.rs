@@ -4,7 +4,7 @@ use std::{fs, path};
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::util::display::DisplayOption;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct JoshutoDirList {
     pub index: Option<usize>,
     path: path::PathBuf,

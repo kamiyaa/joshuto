@@ -6,7 +6,10 @@ use tui::text::Span;
 use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::context::AppContext;
-use crate::ui::widgets::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
+use crate::ui;
+use crate::ui::widgets::{
+    TuiDirList, TuiDirListDetailed, TuiFilePreview, TuiFooter, TuiTabBar, TuiTopBar,
+};
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
@@ -26,22 +29,33 @@ impl<'a> TuiFolderView<'a> {
 
 impl<'a> Widget for TuiFolderView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        let preview_context = self.context.preview_context_ref();
         let curr_tab = self.context.tab_context_ref().curr_tab_ref();
 
         let curr_list = curr_tab.curr_list_ref();
         let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
 
-        let config = self.context.config_ref();
+        let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
 
-        let constraints: &[Constraint; 3] = if !config.display_options_ref().collapse_preview() {
-            &config.display_options_ref().default_layout
-        } else {
-            match child_list {
-                Some(_) => &config.display_options_ref().default_layout,
-                None => &config.display_options_ref().no_preview_layout,
-            }
-        };
+        let config = self.context.config_ref();
+        let display_options = config.display_options_ref();
+
+        let (default_layout, constraints): (bool, &[Constraint; 3]) =
+            if !display_options.collapse_preview() {
+                (true, &display_options.default_layout)
+            } else {
+                match child_list {
+                    Some(_) => (true, &display_options.default_layout),
+                    None => match curr_entry {
+                        None => (false, &display_options.no_preview_layout),
+                        Some(e) => match preview_context.get_preview(e.file_path()) {
+                            Some(_) => (true, &display_options.default_layout),
+                            None => (false, &display_options.no_preview_layout),
+                        },
+                    },
+                }
+            };
 
         let layout_rect = if config.display_options_ref().show_borders() {
             let area = Rect {
@@ -73,7 +87,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                 };
 
                 intersections.render_left(buf);
-                if child_list.as_ref().is_some() {
+                if default_layout {
                     intersections.render_right(buf);
                 }
             }
@@ -108,7 +122,7 @@ impl<'a> Widget for TuiFolderView<'a> {
         // render parent view
         if let Some(list) = parent_list.as_ref() {
             TuiDirList::new(&list).render(layout_rect[0], buf);
-        };
+        }
 
         // render current view
         if let Some(list) = curr_list.as_ref() {
@@ -137,12 +151,16 @@ impl<'a> Widget for TuiFolderView<'a> {
                     TuiFooter::new(list).render(rect, buf);
                 }
             }
-        };
+        }
 
         // render preview
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(&list).render(layout_rect[2], buf);
-        };
+        } else if let Some(entry) = curr_entry {
+            if let Some(preview) = preview_context.get_preview(entry.file_path()) {
+                TuiFilePreview::new(entry, preview).render(layout_rect[2], buf);
+            }
+        }
 
         let topbar_width = area.width;
         let rect = Rect {

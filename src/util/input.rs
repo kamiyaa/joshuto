@@ -1,3 +1,7 @@
+use std::collections::{hash_map::Entry, HashMap};
+use std::path;
+use std::process;
+
 use signal_hook::consts::signal;
 use termion::event::{MouseButton, MouseEvent};
 use tui::layout::{Constraint, Direction, Layout};
@@ -5,10 +9,83 @@ use tui::layout::{Constraint, Direction, Layout};
 use crate::commands::{cursor_move, parent_cursor_move, AppExecute, KeyCommand};
 use crate::context::AppContext;
 use crate::event::AppEvent;
+use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOp, IoWorkerProgress};
+use crate::preview::preview_file::FilePreview;
 use crate::ui;
 use crate::util::format;
+
+pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
+    match event {
+        AppEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
+        AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
+        AppEvent::PreviewDir(Ok(dirlist)) => process_dir_preview(context, dirlist),
+        AppEvent::PreviewFile(file_preview) => process_file_preview(context, file_preview),
+        AppEvent::Signal(signal::SIGWINCH) => {}
+        _ => {}
+    }
+}
+
+pub fn process_worker_progress(context: &mut AppContext, res: IoWorkerProgress) {
+    let worker_context = context.worker_context_mut();
+    worker_context.set_progress(res);
+    worker_context.update_msg();
+}
+
+pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<IoWorkerProgress>) {
+    let worker_context = context.worker_context_mut();
+    let observer = worker_context.remove_worker().unwrap();
+    let options = context.config_ref().display_options_ref().clone();
+    for tab in context.tab_context_mut().iter_mut() {
+        let _ = tab.history_mut().reload(observer.dest_path(), &options);
+        let _ = tab.history_mut().reload(observer.src_path(), &options);
+    }
+    observer.join();
+    match res {
+        Ok(progress) => {
+            let op = match progress.kind() {
+                FileOp::Copy => "copied",
+                FileOp::Cut => "moved",
+            };
+            let processed_size = format::file_size_to_string(progress.bytes_processed());
+            let total_size = format::file_size_to_string(progress.total_bytes());
+            let msg = format!(
+                "successfully {} {} items ({}/{})",
+                op,
+                progress.total_files(),
+                processed_size,
+                total_size,
+            );
+            context.push_msg(msg);
+        }
+        Err(e) => {
+            let msg = format!("{}", e);
+            context.push_msg(msg);
+        }
+    }
+}
+
+pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {
+    let history = context.tab_context_mut().curr_tab_mut().history_mut();
+    match history.entry(dirlist.file_path().to_path_buf()) {
+        Entry::Occupied(mut entry) => {
+            let old_dirlist = entry.get();
+            if old_dirlist.need_update() {
+                entry.insert(dirlist);
+            }
+        }
+        Entry::Vacant(entry) => {
+            entry.insert(dirlist);
+        }
+    }
+}
+
+pub fn process_file_preview(context: &mut AppContext, file_preview: FilePreview) {
+    context
+        .preview_context_mut()
+        .insert_preview(file_preview._path.clone(), file_preview);
+}
 
 pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut ui::TuiBackend) {
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
@@ -92,52 +169,4 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
         _ => {}
     }
     context.flush_event();
-}
-
-pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
-    match event {
-        AppEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
-        AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
-        AppEvent::Signal(signal::SIGWINCH) => {}
-        _ => {}
-    }
-}
-
-pub fn process_worker_progress(context: &mut AppContext, res: IoWorkerProgress) {
-    let worker_context = context.worker_context_mut();
-    worker_context.set_progress(res);
-    worker_context.update_msg();
-}
-
-pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<IoWorkerProgress>) {
-    let worker_context = context.worker_context_mut();
-    let observer = worker_context.remove_worker().unwrap();
-    let options = context.config_ref().display_options_ref().clone();
-    for tab in context.tab_context_mut().iter_mut() {
-        let _ = tab.history_mut().reload(observer.dest_path(), &options);
-        let _ = tab.history_mut().reload(observer.src_path(), &options);
-    }
-    observer.join();
-    match res {
-        Ok(progress) => {
-            let op = match progress.kind() {
-                FileOp::Copy => "copied",
-                FileOp::Cut => "moved",
-            };
-            let processed_size = format::file_size_to_string(progress.bytes_processed());
-            let total_size = format::file_size_to_string(progress.total_bytes());
-            let msg = format!(
-                "successfully {} {} items ({}/{})",
-                op,
-                progress.total_files(),
-                processed_size,
-                total_size,
-            );
-            context.push_msg(msg);
-        }
-        Err(e) => {
-            let msg = format!("{}", e);
-            context.push_msg(msg);
-        }
-    }
 }

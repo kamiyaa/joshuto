@@ -7,23 +7,23 @@ use crate::event::AppEvent;
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
 
 pub struct WorkerContext {
+    // to send info
+    event_tx: mpsc::Sender<AppEvent>,
     // queue of IO workers
     worker_queue: VecDeque<IoWorkerThread>,
     // current worker
     worker: Option<IoWorkerObserver>,
-    // to send info
-    event_tx: mpsc::Sender<AppEvent>,
 }
 
 impl WorkerContext {
     pub fn new(event_tx: mpsc::Sender<AppEvent>) -> Self {
         Self {
+            event_tx,
             worker_queue: VecDeque::new(),
             worker: None,
-            event_tx,
         }
     }
-    pub fn get_event_tx(&self) -> mpsc::Sender<AppEvent> {
+    pub fn clone_event_tx(&self) -> mpsc::Sender<AppEvent> {
         self.event_tx.clone()
     }
     // worker related
@@ -61,7 +61,7 @@ impl WorkerContext {
     }
 
     pub fn start_next_job(&mut self) {
-        let tx = self.get_event_tx();
+        let tx = self.clone_event_tx();
 
         if let Some(worker) = self.worker_queue.pop_front() {
             let src = worker.paths[0].parent().unwrap().to_path_buf();

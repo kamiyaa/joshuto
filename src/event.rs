@@ -11,15 +11,17 @@ use signal_hook::iterator::SignalsInfo;
 use termion::event::Event;
 use termion::input::TermRead;
 
+use crate::fs::JoshutoDirList;
 use crate::io::IoWorkerProgress;
+use crate::preview::preview_file::FilePreview;
 
 #[derive(Debug)]
 pub enum AppEvent {
     Termion(Event),
     IoWorkerProgress(IoWorkerProgress),
     IoWorkerResult(io::Result<IoWorkerProgress>),
-    PreviewDir(io::Result<path::PathBuf>),
-    PreviewFile(process::Output),
+    PreviewDir(io::Result<JoshutoDirList>),
+    PreviewFile(FilePreview),
     Signal(i32),
     //    Filesystem(notify::Result),
 }
