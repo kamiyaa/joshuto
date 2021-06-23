@@ -30,6 +30,9 @@ impl<'a> TuiFilePreview<'a> {
 impl<'a> Widget for TuiFilePreview<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let style = Style::default();
-        buf.set_string(area.x, area.y, self.preview.output.as_str(), style);
+        let area_width = area.width as usize;
+        for (y, s) in (area.y..area.y + area.height).zip(self.preview.output.as_str().split('\n')) {
+            buf.set_stringn(area.x, y, s, area_width, style);
+        }
     }
 }
