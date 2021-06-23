@@ -34,17 +34,24 @@ impl JoshutoMetadata {
         use std::os::unix::fs::MetadataExt;
 
         let symlink_metadata = fs::symlink_metadata(path)?;
-        let metadata = fs::metadata(path)?;
-
-        let _len = metadata.len();
-        let _modified = metadata.modified()?;
-        let _permissions = metadata.permissions();
-        let (_file_type, _directory_size) = if metadata.file_type().is_dir() {
-            let _directory_size = fs::read_dir(path).map(|s| s.count()).ok();
-            (FileType::Directory, _directory_size)
-        } else {
-            (FileType::File, None)
+        let metadata = fs::metadata(path);
+        let (_len, _modified, _permissions) = match metadata.as_ref() {
+            Ok(m) => (m.len(), m.modified()?, m.permissions()),
+            Err(_) => (
+                symlink_metadata.len(),
+                symlink_metadata.modified()?,
+                symlink_metadata.permissions(),
+            ),
         };
+
+        let (_file_type, _directory_size) = match metadata.as_ref() {
+            Ok(m) if m.file_type().is_dir() => {
+                let _directory_size = fs::read_dir(path).map(|s| s.count()).ok();
+                (FileType::Directory, _directory_size)
+            }
+            _ => (FileType::File, None),
+        };
+
         let _link_type = match symlink_metadata.file_type().is_symlink() {
             true => {
                 let mut link = "".to_string();

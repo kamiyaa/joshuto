@@ -20,6 +20,7 @@ impl JoshutoDirEntry {
         let path = direntry.path();
 
         let metadata = JoshutoMetadata::from(&path)?;
+
         let name = direntry
             .file_name()
             .as_os_str()
