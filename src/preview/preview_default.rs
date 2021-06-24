@@ -6,9 +6,26 @@ use crate::ui::TuiBackend;
 
 pub fn load_preview_path(context: &mut AppContext, backend: &mut TuiBackend, p: path::PathBuf) {
     if p.is_dir() {
-        preview_dir::Background::load_preview(context, p);
+        let need_to_load = context
+            .tab_context_mut()
+            .curr_tab_mut()
+            .history_mut()
+            .get(p.as_path())
+            .map(|e| e.need_update())
+            .unwrap_or(true);
+
+        if need_to_load {
+            preview_dir::Background::load_preview(context, p);
+        }
     } else if p.is_file() {
-        preview_file::Background::preview_path_with_script(context, backend, p);
+        let need_to_load = context
+            .preview_context_ref()
+            .get_preview(p.as_path())
+            .is_none();
+
+        if need_to_load {
+            preview_file::Background::preview_path_with_script(context, backend, p);
+        }
     }
 }
 

@@ -81,8 +81,8 @@ pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {
 
 pub fn process_file_preview(context: &mut AppContext, file_preview: FilePreview) {
     match file_preview.status.code() {
-        Some(1) | None => {}
-        _ => {
+        None => {}
+        Some(_) => {
             context
                 .preview_context_mut()
                 .insert_preview(file_preview._path.clone(), file_preview);

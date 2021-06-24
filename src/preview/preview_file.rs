@@ -93,14 +93,6 @@ impl Background {
         backend: &mut TuiBackend,
         p: path::PathBuf,
     ) {
-        if context
-            .preview_context_ref()
-            .get_preview(p.as_path())
-            .is_some()
-        {
-            return;
-        }
-
         let preview_options = context.config_ref().preview_options_ref();
         let config = context.config_ref();
 

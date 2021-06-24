@@ -49,8 +49,10 @@ impl<'a> Widget for TuiFolderView<'a> {
                     None => match curr_entry {
                         None => (false, &display_options.no_preview_layout),
                         Some(e) => match preview_context.get_preview(e.file_path()) {
-                            Some(_) => (true, &display_options.default_layout),
-                            None => (false, &display_options.no_preview_layout),
+                            Some(p) if p.status.code() != Some(1) => {
+                                (true, &display_options.default_layout)
+                            }
+                            _ => (false, &display_options.no_preview_layout),
                         },
                     },
                 }
@@ -157,7 +159,12 @@ impl<'a> Widget for TuiFolderView<'a> {
             TuiDirList::new(&list).render(layout_rect[2], buf);
         } else if let Some(entry) = curr_entry {
             if let Some(preview) = preview_context.get_preview(entry.file_path()) {
-                TuiFilePreview::new(entry, preview).render(layout_rect[2], buf);
+                match preview.status.code() {
+                    Some(1) | None => {}
+                    _ => {
+                        TuiFilePreview::new(entry, preview).render(layout_rect[2], buf);
+                    }
+                }
             }
         }
 
