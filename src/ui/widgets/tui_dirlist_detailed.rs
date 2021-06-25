@@ -153,7 +153,7 @@ pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
         Some(i) => name.split_at(i),
     };
     if drawing_width < 1 {
-        String::from("")
+        "".to_string()
     } else if stem.is_empty() || extension.is_empty() {
         let full = format!("{}{}", stem, extension);
         let mut truncated = full.trunc(drawing_width - 1);
@@ -163,7 +163,9 @@ pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
         let ext_width = extension.width();
         if ext_width > drawing_width {
             // file ext does not fit
-            ELLIPSIS.to_string()
+            let stem_width = drawing_width;
+            let truncated_stem = stem.trunc(stem_width - 3);
+            format!("{}{}.{}", truncated_stem, ELLIPSIS, ELLIPSIS)
         } else if ext_width == drawing_width {
             extension.replacen('.', ELLIPSIS, 1).to_string()
         } else {
@@ -265,9 +267,9 @@ mod test_trim_file_label {
     }
 
     #[test]
-    fn if_the_extension_doesnt_fit_just_an_ellipses_is_shown() {
-        let label = "foo.ext";
-        assert_eq!("…".to_string(), trim_file_label(label, 2));
+    fn if_the_extension_doesnt_fit_show_stem_with_double_ellipse() {
+        let label = "12345678.12345678910";
+        assert_eq!("12345….…".to_string(), trim_file_label(label, 8));
     }
 
     #[test]
