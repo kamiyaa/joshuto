@@ -20,6 +20,10 @@ bold = true
 fg = "light_cyan"
 bold = true
 
+[link_invalid]
+fg = "red"
+bold = true
+
 [socket]
 fg = "light_magenta"
 bold = true
