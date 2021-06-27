@@ -9,7 +9,7 @@ pub enum FileType {
 #[derive(Clone, Debug)]
 pub enum LinkType {
     Normal,
-    Symlink(String),
+    Symlink(String, bool), // link target, link validity
 }
 
 #[derive(Clone, Debug)]
@@ -52,18 +52,19 @@ impl JoshutoMetadata {
             _ => (FileType::File, None),
         };
 
-        let _link_type = match symlink_metadata.file_type().is_symlink() {
-            true => {
-                let mut link = "".to_string();
+        let _link_type = if symlink_metadata.file_type().is_symlink() {
+            let mut link = "".to_string();
 
-                if let Ok(path) = fs::read_link(path) {
-                    if let Some(s) = path.to_str() {
-                        link = s.to_string();
-                    }
+            if let Ok(path) = fs::read_link(path) {
+                if let Some(s) = path.to_str() {
+                    link = s.to_string();
                 }
-                LinkType::Symlink(link)
             }
-            false => LinkType::Normal,
+
+            let exists = path.exists();
+            LinkType::Symlink(link, exists)
+        } else {
+            LinkType::Normal
         };
 
         #[cfg(unix)]

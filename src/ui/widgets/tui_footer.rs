@@ -41,7 +41,7 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(size_str),
                 ];
 
-                if let LinkType::Symlink(s) = entry.metadata.link_type() {
+                if let LinkType::Symlink(s, _) = entry.metadata.link_type() {
                     text.push(Span::styled(" -> ", mode_style));
                     text.push(Span::styled(s, mode_style));
                 }

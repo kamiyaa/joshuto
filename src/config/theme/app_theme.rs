@@ -19,6 +19,8 @@ pub struct RawAppTheme {
     #[serde(default)]
     pub link: RawAppStyle,
     #[serde(default)]
+    pub link_invalid: RawAppStyle,
+    #[serde(default)]
     pub socket: RawAppStyle,
     #[serde(default)]
     pub ext: HashMap<String, RawAppStyle>,
@@ -32,6 +34,7 @@ impl std::default::Default for RawAppTheme {
             directory: RawAppStyle::default(),
             executable: RawAppStyle::default(),
             link: RawAppStyle::default(),
+            link_invalid: RawAppStyle::default(),
             socket: RawAppStyle::default(),
             ext: HashMap::default(),
         }
@@ -45,6 +48,7 @@ impl Flattenable<AppTheme> for RawAppTheme {
         let regular = self.regular.to_style_theme();
         let directory = self.directory.to_style_theme();
         let link = self.link.to_style_theme();
+        let link_invalid = self.link_invalid.to_style_theme();
         let socket = self.socket.to_style_theme();
         let ext: HashMap<String, AppStyle> = self
             .ext
@@ -61,6 +65,7 @@ impl Flattenable<AppTheme> for RawAppTheme {
             regular,
             directory,
             link,
+            link_invalid,
             socket,
             ext,
         }
@@ -74,6 +79,7 @@ pub struct AppTheme {
     pub directory: AppStyle,
     pub executable: AppStyle,
     pub link: AppStyle,
+    pub link_invalid: AppStyle,
     pub socket: AppStyle,
     pub ext: HashMap<String, AppStyle>,
 }
@@ -99,6 +105,9 @@ impl std::default::Default for AppTheme {
         let link = AppStyle::default()
             .set_fg(Color::LightCyan)
             .insert(Modifier::BOLD);
+        let link_invalid = AppStyle::default()
+            .set_fg(Color::Red)
+            .insert(Modifier::BOLD);
         let socket = AppStyle::default()
             .set_fg(Color::LightMagenta)
             .insert(Modifier::BOLD);
@@ -110,6 +119,7 @@ impl std::default::Default for AppTheme {
             regular,
             directory,
             link,
+            link_invalid,
             socket,
             ext,
         }

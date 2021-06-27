@@ -17,10 +17,14 @@ pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
             .add_modifier(THEME_T.selection.modifier)
     } else {
         match linktype {
-            LinkType::Symlink(_) => Style::default()
+            LinkType::Symlink(_, true) => Style::default()
                 .fg(THEME_T.link.fg)
                 .bg(THEME_T.link.bg)
                 .add_modifier(THEME_T.link.modifier),
+            LinkType::Symlink(_, false) => Style::default()
+                .fg(THEME_T.link_invalid.fg)
+                .bg(THEME_T.link_invalid.bg)
+                .add_modifier(THEME_T.link_invalid.modifier),
             LinkType::Normal => match filetype {
                 FileType::Directory => Style::default()
                     .fg(THEME_T.directory.fg)
