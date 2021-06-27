@@ -7,6 +7,7 @@ use tui::widgets::{Paragraph, Widget};
 use crate::fs::{JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::unix;
+use crate::THEME_T;
 
 pub struct TuiFooter<'a> {
     dirlist: &'a JoshutoDirList,
@@ -41,9 +42,20 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(size_str),
                 ];
 
-                if let LinkType::Symlink(s, _) = entry.metadata.link_type() {
-                    text.push(Span::styled(" -> ", mode_style));
-                    text.push(Span::styled(s, mode_style));
+                if let LinkType::Symlink(target, valid) = entry.metadata.link_type() {
+                    let link_style = if *valid {
+                        Style::default()
+                            .fg(THEME_T.link.fg)
+                            .bg(THEME_T.link.bg)
+                            .add_modifier(THEME_T.link.modifier)
+                    } else {
+                        Style::default()
+                            .fg(THEME_T.link_invalid.fg)
+                            .bg(THEME_T.link_invalid.bg)
+                            .add_modifier(THEME_T.link_invalid.modifier)
+                    };
+                    text.push(Span::styled(" -> ", link_style));
+                    text.push(Span::styled(target, link_style));
                 }
 
                 Paragraph::new(Spans::from(text)).render(area, buf);
