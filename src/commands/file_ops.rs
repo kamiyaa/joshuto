@@ -96,16 +96,16 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult<()> {
     let clipboards = [
         (
             "wl-copy",
-            format!("printf '%s' {} | {} 2> /dev/null", string, "wl-copy"),
+            format!("printf '%s' '{}' | {} 2> /dev/null", string, "wl-copy"),
         ),
         (
             "xsel",
-            format!("printf '%s' {} | {} -ib 2> /dev/null", string, "xsel"),
+            format!("printf '%s' '{}' | {} -ib 2> /dev/null", string, "xsel"),
         ),
         (
             "xclip",
             format!(
-                "printf '%s' {} | {} -selection clipboard 2> /dev/null",
+                "printf '%s' '{}' | {} -selection clipboard 2> /dev/null",
                 string, "xclip"
             ),
         ),
