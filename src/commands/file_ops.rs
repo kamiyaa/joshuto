@@ -68,7 +68,10 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResul
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
-        .map(|entry| entry.file_name().rsplit_once(".").unwrap().0.to_string());
+        .map(|entry| match entry.file_name().rsplit_once(".") {
+            Some((name, _)) => name.to_string(),
+            _ => entry.file_name().to_string(),
+        });
 
     if let Some(file_name) = entry_file_name {
         copy_string_to_buffer(file_name)?;
