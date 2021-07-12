@@ -105,7 +105,7 @@ keys = [ "y", "y" ]
 command = "copy_filename"
 keys = [ "y", "n" ]
 [[mapcommand]]
-command = "copy_filename_without_extention"
+command = "copy_filename_without_extension"
 keys = [ "y", "." ]
 [[mapcommand]]
 command = "copy_filepath"

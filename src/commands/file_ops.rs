@@ -62,7 +62,7 @@ pub fn copy_filename(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn copy_filename_without_extention(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResult<()> {
     let entry_file_name = context
         .tab_context_ref()
         .curr_tab_ref()
