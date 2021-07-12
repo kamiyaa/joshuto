@@ -371,7 +371,9 @@ impl AppExecute for KeyCommand {
             Self::CopyFiles => file_ops::copy(context),
             Self::PasteFiles(options) => file_ops::paste(context, options.clone()),
             Self::CopyFileName => file_ops::copy_filename(context),
-            Self::CopyFileNameWithoutExtension => file_ops::copy_filename_without_extension(context),
+            Self::CopyFileNameWithoutExtension => {
+                file_ops::copy_filename_without_extension(context)
+            }
             Self::CopyFilePath => file_ops::copy_filepath(context),
             Self::CopyDirName => file_ops::copy_dirname(context),
 
