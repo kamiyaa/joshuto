@@ -62,6 +62,20 @@ pub fn copy_filename(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
+pub fn copy_filename_without_extention(context: &mut AppContext) -> JoshutoResult<()> {
+    let entry_file_name = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|c| c.curr_entry_ref())
+        .map(|entry| entry.file_name().rsplit_once(".").unwrap().0.to_string());
+
+    if let Some(file_name) = entry_file_name {
+        copy_string_to_buffer(file_name)?;
+    }
+    Ok(())
+}
+
 pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult<()> {
     let entry_file_path = context
         .tab_context_ref()
