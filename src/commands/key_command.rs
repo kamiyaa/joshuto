@@ -23,6 +23,7 @@ pub enum KeyCommand {
     CopyFiles,
     PasteFiles(IoWorkerOptions),
     CopyFileName,
+    CopyFileNameWithoutExtension,
     CopyFilePath,
     CopyDirName,
 
@@ -86,6 +87,7 @@ impl KeyCommand {
             Self::CopyFiles => "copy_files",
             Self::PasteFiles(_) => "paste_files",
             Self::CopyFileName => "copy_filename",
+            Self::CopyFileNameWithoutExtension => "copy_filename_without_extension",
             Self::CopyFilePath => "copy_filepath",
             Self::CopyDirName => "copy_dirname",
 
@@ -167,6 +169,7 @@ impl std::str::FromStr for KeyCommand {
             "close_tab" => Ok(Self::CloseTab),
             "copy_files" => Ok(Self::CopyFiles),
             "copy_filename" => Ok(Self::CopyFileName),
+            "copy_filename_without_extension" => Ok(Self::CopyFileNameWithoutExtension),
             "copy_filepath" => Ok(Self::CopyFilePath),
             "copy_dirname" => Ok(Self::CopyDirName),
             "cursor_move_home" => Ok(Self::CursorMoveHome),
@@ -368,6 +371,9 @@ impl AppExecute for KeyCommand {
             Self::CopyFiles => file_ops::copy(context),
             Self::PasteFiles(options) => file_ops::paste(context, options.clone()),
             Self::CopyFileName => file_ops::copy_filename(context),
+            Self::CopyFileNameWithoutExtension => {
+                file_ops::copy_filename_without_extension(context)
+            }
             Self::CopyFilePath => file_ops::copy_filepath(context),
             Self::CopyDirName => file_ops::copy_dirname(context),
 
