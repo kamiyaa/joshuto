@@ -32,7 +32,11 @@ impl std::default::Default for PreviewRawOption {
 impl Flattenable<PreviewOption> for PreviewRawOption {
     fn flatten(self) -> PreviewOption {
         let preview_script = match self.preview_script {
-            Some(s) => Some(path::PathBuf::from(s)),
+            Some(s) => {
+                let tilde_cow = shellexpand::tilde_with_context(s.as_str(), dirs_next::home_dir);
+                let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
+                Some(tilde_path)
+            }
             None => search_directories("preview.sh", &CONFIG_HIERARCHY),
         };
 
