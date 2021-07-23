@@ -35,6 +35,37 @@ command = "tab_switch -1"
 keys = [ "backtab" ]
 
 [[mapcommand]]
+command = "tab_switch_index 1"
+keys = [ "alt+1" ]
+[[mapcommand]]
+command = "tab_switch_index 2"
+keys = [ "alt+2" ]
+[[mapcommand]]
+command = "tab_switch_index 3"
+keys = [ "alt+3" ]
+[[mapcommand]]
+command = "tab_switch_index 4"
+keys = [ "alt+4" ]
+[[mapcommand]]
+command = "tab_switch_index 5"
+keys = [ "alt+5" ]
+[[mapcommand]]
+command = "tab_switch_index 6"
+keys = [ "alt+6" ]
+[[mapcommand]]
+command = "tab_switch_index 7"
+keys = [ "alt+7" ]
+[[mapcommand]]
+command = "tab_switch_index 8"
+keys = [ "alt+8" ]
+[[mapcommand]]
+command = "tab_switch_index 9"
+keys = [ "alt+9" ]
+[[mapcommand]]
+command = "tab_switch_index 10"
+keys = [ "alt+0" ]
+
+[[mapcommand]]
 command = "cursor_move_up"
 keys = [ "arrow_up" ]
 [[mapcommand]]

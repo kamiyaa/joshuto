@@ -72,6 +72,7 @@ pub enum KeyCommand {
     NewTab,
     CloseTab,
     TabSwitch(i32),
+    TabSwitchIndex(i32),
 }
 
 impl KeyCommand {
@@ -133,6 +134,7 @@ impl KeyCommand {
             Self::SortReverse => "sort reverse",
 
             Self::TabSwitch(_) => "tab_switch",
+            Self::TabSwitchIndex(_) => "tab_switch_index",
         }
     }
 }
@@ -345,6 +347,13 @@ impl std::str::FromStr for KeyCommand {
                     format!("{}: {}", command, e.to_string()),
                 )),
             },
+            "tab_switch_index" => match arg.parse::<i32>() {
+                Ok(s) => Ok(Self::TabSwitchIndex(s)),
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", command, e.to_string()),
+                )),
+            },
             "toggle_hidden" => Ok(Self::ToggleHiddenFiles),
             inp => Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,
@@ -428,6 +437,7 @@ impl AppExecute for KeyCommand {
                 tab_ops::tab_switch(*i, context)?;
                 Ok(())
             }
+            Self::TabSwitchIndex(i) => tab_ops::tab_switch_index(*i as usize, context),
         }
     }
 }
@@ -454,6 +464,7 @@ impl std::fmt::Display for KeyCommand {
             Self::SubProcess(c, _) => write!(f, "{} {:?}", self.command(), c),
             Self::Sort(t) => write!(f, "{} {}", self.command(), t),
             Self::TabSwitch(i) => write!(f, "{} {}", self.command(), i),
+            Self::TabSwitchIndex(i) => write!(f, "{} {}", self.command(), i),
             _ => write!(f, "{}", self.command()),
         }
     }
