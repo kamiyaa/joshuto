@@ -1,7 +1,7 @@
 use std::slice::{Iter, IterMut};
 use std::{fs, path};
 
-use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
+use crate::fs::{FileType, JoshutoDirEntry, JoshutoMetadata};
 use crate::util::display::DisplayOption;
 
 #[derive(Clone, Debug)]
@@ -16,7 +16,7 @@ pub struct JoshutoDirList {
 impl JoshutoDirList {
     pub fn new(path: path::PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
         let filter_func = options.filter_func();
-        let mut contents = read_dir_list(path.as_path(), filter_func, options.show_icons())?;
+        let mut contents = read_dir_list(path.as_path(), filter_func, &options)?;
 
         let sort_options = options.sort_options_ref();
         contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
@@ -75,7 +75,7 @@ impl JoshutoDirList {
 
     pub fn reload_contents(&mut self, options: &DisplayOption) -> std::io::Result<()> {
         let filter_func = options.filter_func();
-        let mut contents = read_dir_list(self.file_path(), filter_func, options.show_icons())?;
+        let mut contents = read_dir_list(self.file_path(), filter_func, options)?;
 
         let sort_options = options.sort_options_ref();
         contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
@@ -174,14 +174,15 @@ impl JoshutoDirList {
 fn read_dir_list<F>(
     path: &path::Path,
     filter_func: F,
-    show_icons: bool,
+    options: &DisplayOption,
 ) -> std::io::Result<Vec<JoshutoDirEntry>>
 where
     F: Fn(&Result<fs::DirEntry, std::io::Error>) -> bool,
 {
     let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
         .filter(filter_func)
-        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, show_icons).ok())
+        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, options).ok())
         .collect();
+
     Ok(results)
 }

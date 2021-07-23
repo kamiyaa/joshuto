@@ -12,6 +12,9 @@ const fn default_true() -> bool {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct DisplayRawOption {
+    #[serde(default)]
+    automatically_count_files: bool,
+
     #[serde(default = "default_true")]
     collapse_preview: bool,
 
@@ -58,6 +61,7 @@ impl Flattenable<DisplayOption> for DisplayRawOption {
         ];
 
         DisplayOption {
+            _automatically_count_files: self.automatically_count_files,
             _collapse_preview: self.collapse_preview,
             column_ratio,
             _show_borders: self.show_borders,
@@ -75,7 +79,8 @@ impl Flattenable<DisplayOption> for DisplayRawOption {
 impl std::default::Default for DisplayRawOption {
     fn default() -> Self {
         Self {
-            collapse_preview: default_true(),
+            automatically_count_files: false,
+            collapse_preview: true,
             column_ratio: None,
             show_borders: true,
             show_hidden: false,

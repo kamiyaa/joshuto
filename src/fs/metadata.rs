@@ -1,9 +1,18 @@
 use std::{fs, io, path, time};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum FileType {
     Directory,
     File,
+}
+
+impl FileType {
+    pub fn is_dir(&self) -> bool {
+        *self == Self::Directory
+    }
+    pub fn is_file(&self) -> bool {
+        *self == Self::File
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -45,10 +54,7 @@ impl JoshutoMetadata {
         };
 
         let (_file_type, _directory_size) = match metadata.as_ref() {
-            Ok(m) if m.file_type().is_dir() => {
-                let _directory_size = fs::read_dir(path).map(|s| s.count()).ok();
-                (FileType::Directory, _directory_size)
-            }
+            Ok(m) if m.file_type().is_dir() => (FileType::Directory, None),
             _ => (FileType::File, None),
         };
 
@@ -96,6 +102,10 @@ impl JoshutoMetadata {
 
     pub fn directory_size(&self) -> Option<usize> {
         self._directory_size
+    }
+
+    pub fn update_directory_size(&mut self, size: usize) {
+        self._directory_size = Some(size);
     }
 
     pub fn modified(&self) -> time::SystemTime {

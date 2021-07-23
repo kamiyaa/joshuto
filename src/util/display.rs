@@ -10,6 +10,7 @@ pub const fn default_column_ratio() -> (usize, usize, usize) {
 
 #[derive(Clone, Debug)]
 pub struct DisplayOption {
+    pub _automatically_count_files: bool,
     pub _collapse_preview: bool,
     pub column_ratio: (usize, usize, usize),
     pub _show_borders: bool,
@@ -23,6 +24,10 @@ pub struct DisplayOption {
 }
 
 impl DisplayOption {
+    pub fn automatically_count_files(&self) -> bool {
+        self._automatically_count_files
+    }
+
     pub fn collapse_preview(&self) -> bool {
         self._collapse_preview
     }
@@ -86,6 +91,7 @@ impl std::default::Default for DisplayOption {
         ];
 
         Self {
+            _automatically_count_files: false,
             _collapse_preview: true,
             column_ratio,
             _show_borders: true,

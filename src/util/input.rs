@@ -66,7 +66,9 @@ pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<Io
 
 pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
-    match history.entry(dirlist.file_path().to_path_buf()) {
+
+    let dir_path = dirlist.file_path().to_path_buf();
+    match history.entry(dir_path) {
         Entry::Occupied(mut entry) => {
             let old_dirlist = entry.get();
             if old_dirlist.need_update() {
