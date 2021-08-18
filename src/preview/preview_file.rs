@@ -19,6 +19,8 @@ pub struct FilePreview {
 impl std::convert::From<(path::PathBuf, Output)> for FilePreview {
     fn from((p, output): (path::PathBuf, Output)) -> Self {
         let s = String::from_utf8_lossy(&output.stdout).to_string();
+        let s2 = s.replace('\t', "        ");
+        let s = s2.to_string();
         let status = output.status;
         Self {
             _path: p,
