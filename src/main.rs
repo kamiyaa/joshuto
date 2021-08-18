@@ -118,10 +118,9 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
                 )?;
                 file.write_all("\n".as_bytes())?;
             }
-        },
-        QuitType::Force => {},
-        _ => {},
-
+        }
+        QuitType::Force => {}
+        _ => {}
     }
 
     Ok(())
