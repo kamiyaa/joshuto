@@ -22,7 +22,7 @@ use structopt::StructOpt;
 use crate::config::{
     AppConfig, AppKeyMapping, AppMimetypeRegistry, AppTheme, ConfigStructure, JoshutoPreview,
 };
-use crate::context::AppContext;
+use crate::context::{AppContext, QuitType};
 use crate::error::JoshutoError;
 use crate::run::run;
 
@@ -98,24 +98,32 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     let config = AppConfig::get_config(CONFIG_FILE);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
 
+    let mut context = AppContext::new(config);
     {
-        let mut context = AppContext::new(config);
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
         run(&mut backend, &mut context, keymap)?;
     }
 
-    if let Some(p) = args.last_dir {
-        let curr_path = std::env::current_dir()?;
-        let mut file = File::create(p)?;
-        file.write_all(
-            curr_path
-                .into_os_string()
-                .as_os_str()
-                .to_string_lossy()
-                .as_bytes(),
-        )?;
-        file.write_all("\n".as_bytes())?;
+    match context.quit {
+        QuitType::ToCurrentDirectory => {
+            if let Some(p) = args.last_dir {
+                let curr_path = std::env::current_dir()?;
+                let mut file = File::create(p)?;
+                file.write_all(
+                    curr_path
+                        .into_os_string()
+                        .as_os_str()
+                        .to_string_lossy()
+                        .as_bytes(),
+                )?;
+                file.write_all("\n".as_bytes())?;
+            }
+        },
+        QuitType::Force => {},
+        _ => {},
+
     }
+
     Ok(())
 }
 

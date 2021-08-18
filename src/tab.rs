@@ -32,6 +32,10 @@ impl JoshutoTab {
         self._cwd = cwd.to_path_buf();
     }
 
+    pub fn history_ref(&self) -> &JoshutoHistory {
+        &self.history
+    }
+
     pub fn history_mut(&mut self) -> &mut JoshutoHistory {
         &mut self.history
     }

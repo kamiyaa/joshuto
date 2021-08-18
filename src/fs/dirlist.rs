@@ -1,7 +1,7 @@
 use std::slice::{Iter, IterMut};
 use std::{fs, path};
 
-use crate::fs::{FileType, JoshutoDirEntry, JoshutoMetadata};
+use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::util::display::DisplayOption;
 
 #[derive(Clone, Debug)]

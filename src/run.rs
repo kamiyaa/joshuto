@@ -2,7 +2,7 @@ use termion::event::Event;
 
 use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
-use crate::context::AppContext;
+use crate::context::{AppContext, QuitType};
 use crate::event::AppEvent;
 use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
@@ -26,7 +26,7 @@ pub fn run(
         preview_default::load_preview(context, backend);
     }
 
-    while !context.exit {
+    while context.quit == QuitType::DoNot {
         backend.render(TuiView::new(&context));
 
         if !context.worker_context_ref().is_busy() && !context.worker_context_ref().is_empty() {

@@ -96,15 +96,15 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
 
     let constraints: &[Constraint; 3] = &context.config_ref().display_options_ref().default_layout;
+    let vertical_margin =  if context.config_ref().display_options_ref().show_borders() {
+        2
+    } else {
+        1
+    };
+
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .vertical_margin(
-            if context.config_ref().display_options_ref().show_borders() {
-                2
-            } else {
-                1
-            },
-        )
+        .vertical_margin(vertical_margin)
         .constraints(constraints.as_ref())
         .split(f_size);
 

@@ -6,8 +6,16 @@ use crate::context::{LocalStateContext, PreviewContext, TabContext, WorkerContex
 use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum QuitType {
+    DoNot,
+    Normal,
+    Force,
+    ToCurrentDirectory,
+}
+
 pub struct AppContext {
-    pub exit: bool,
+    pub quit: QuitType,
     // event loop querying
     pub events: Events,
     // app config
@@ -31,7 +39,7 @@ impl AppContext {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
         Self {
-            exit: false,
+            quit: QuitType::DoNot,
             events,
             tab_context: TabContext::new(),
             local_state: None,

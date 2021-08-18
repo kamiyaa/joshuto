@@ -46,6 +46,7 @@ pub enum KeyCommand {
     ParentDirectory,
 
     Quit,
+    QuitToCurrentDirectory,
     ForceQuit,
     ReloadDirList,
     RenameFile(path::PathBuf),
@@ -108,6 +109,7 @@ impl KeyCommand {
             Self::ParentDirectory => "cd ..",
 
             Self::Quit => "quit",
+            Self::QuitToCurrentDirectory => "quit_to_cwd",
             Self::ForceQuit => "force_quit",
             Self::ReloadDirList => "reload_dirlist",
             Self::RenameFile(_) => "rename",
@@ -260,6 +262,7 @@ impl std::str::FromStr for KeyCommand {
                 Ok(Self::PasteFiles(options))
             }
             "quit" => Ok(Self::Quit),
+            "quit_to_cwd" => Ok(Self::QuitToCurrentDirectory),
             "reload_dirlist" => Ok(Self::ReloadDirList),
             "rename" => match arg {
                 "" => Err(JoshutoError::new(
@@ -398,7 +401,9 @@ impl AppExecute for KeyCommand {
             Self::ParentDirectory => parent_directory::parent_directory(context),
 
             Self::Quit => quit::quit(context),
+            Self::QuitToCurrentDirectory => quit::quit_to_current_directory(context),
             Self::ForceQuit => quit::force_quit(context),
+
             Self::ReloadDirList => reload::reload_dirlist(context),
             Self::RenameFile(p) => rename_file::rename_file(context, p.as_path()),
             Self::RenameFileAppend => rename_file::rename_file_append(context, backend),

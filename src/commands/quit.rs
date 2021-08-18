@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::context::AppContext;
+use crate::context::{AppContext, QuitType};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 
 pub fn quit(context: &mut AppContext) -> JoshutoResult<()> {
@@ -11,12 +11,17 @@ pub fn quit(context: &mut AppContext) -> JoshutoResult<()> {
             String::from("operations running in background, use force_quit to quit"),
         ))
     } else {
-        context.exit = true;
+        context.quit = QuitType::Normal;
         Ok(())
     }
 }
 
 pub fn force_quit(context: &mut AppContext) -> JoshutoResult<()> {
-    context.exit = true;
+    context.quit = QuitType::Force;
+    Ok(())
+}
+
+pub fn quit_to_current_directory(context: &mut AppContext) -> JoshutoResult<()> {
+    context.quit = QuitType::ToCurrentDirectory;
     Ok(())
 }
