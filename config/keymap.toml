@@ -18,7 +18,7 @@ keys = [ "ctrl+w" ]
 command = "close_tab"
 keys = [ "q" ]
 [[mapcommand]]
-command = "force_quit"
+command = "quit_to_cwd"
 keys = [ "Q" ]
 [[mapcommand]]
 command = "reload_dirlist"
