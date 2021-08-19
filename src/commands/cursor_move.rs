@@ -3,17 +3,6 @@ use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 
 pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
-    let mut new_index = new_index;
-    if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-        if !curr_list.is_empty() {
-            let dir_len = curr_list.len();
-            if new_index >= dir_len {
-                new_index = dir_len - 1;
-            }
-            curr_list.index = Some(new_index);
-        }
-    }
-
     let directory_size = match context
         .tab_context_ref()
         .curr_tab_ref()
@@ -41,6 +30,17 @@ pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<
             .and_then(|l| l.curr_entry_mut())
         {
             curr_entry.metadata.update_directory_size(s);
+        }
+    }
+
+    let mut new_index = new_index;
+    if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+        if !curr_list.is_empty() {
+            let dir_len = curr_list.len();
+            if new_index >= dir_len {
+                new_index = dir_len - 1;
+            }
+            curr_list.index = Some(new_index);
         }
     }
     Ok(())
