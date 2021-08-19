@@ -30,7 +30,6 @@ impl<'a> Widget for TuiFolderView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let preview_context = self.context.preview_context_ref();
         let curr_tab = self.context.tab_context_ref().curr_tab_ref();
-        let history = curr_tab.history_ref();
 
         let curr_list = curr_tab.curr_list_ref();
         let parent_list = curr_tab.parent_list_ref();
@@ -128,7 +127,7 @@ impl<'a> Widget for TuiFolderView<'a> {
 
         // render current view
         if let Some(list) = curr_list.as_ref() {
-            TuiDirListDetailed::new(&list, history).render(layout_rect[1], buf);
+            TuiDirListDetailed::new(&list).render(layout_rect[1], buf);
             let rect = Rect {
                 x: 0,
                 y: area.height - 1,

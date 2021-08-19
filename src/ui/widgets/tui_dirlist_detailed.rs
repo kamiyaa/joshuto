@@ -4,7 +4,6 @@ use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
-use crate::history::JoshutoHistory;
 use crate::util::format;
 use crate::util::string::UnicodeTruncate;
 use crate::util::style;
@@ -16,12 +15,11 @@ const ELLIPSIS: &str = "…";
 
 pub struct TuiDirListDetailed<'a> {
     dirlist: &'a JoshutoDirList,
-    history: &'a JoshutoHistory,
 }
 
 impl<'a> TuiDirListDetailed<'a> {
-    pub fn new(dirlist: &'a JoshutoDirList, history: &'a JoshutoHistory) -> Self {
-        Self { dirlist, history }
+    pub fn new(dirlist: &'a JoshutoDirList) -> Self {
+        Self { dirlist }
     }
 }
 

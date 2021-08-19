@@ -13,6 +13,36 @@ pub fn cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<
             curr_list.index = Some(new_index);
         }
     }
+
+    let directory_size = match context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|l| l.curr_entry_ref())
+    {
+        Some(curr_entry) => {
+            if let Some(_) = curr_entry.metadata.directory_size() {
+                None
+            } else if !curr_entry.metadata.file_type().is_dir() {
+                None
+            } else {
+                let history = context.tab_context_ref().curr_tab_ref().history_ref();
+                history.get(curr_entry.file_path()).map(|d| d.len())
+            }
+        }
+        None => None,
+    };
+
+    if let Some(s) = directory_size {
+        if let Some(curr_entry) = context
+            .tab_context_mut()
+            .curr_tab_mut()
+            .curr_list_mut()
+            .and_then(|l| l.curr_entry_mut())
+        {
+            curr_entry.metadata.update_directory_size(s);
+        }
+    }
     Ok(())
 }
 
