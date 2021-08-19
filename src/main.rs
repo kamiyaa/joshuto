@@ -78,7 +78,7 @@ pub struct Args {
     path: Option<PathBuf>,
     #[structopt(short = "v", long = "version")]
     version: bool,
-    #[structopt(long = "lastdir", parse(from_os_str))]
+    #[structopt(long = "last-dir", parse(from_os_str))]
     last_dir: Option<PathBuf>,
 }
 
