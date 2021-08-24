@@ -17,6 +17,7 @@ pub fn quit(context: &mut AppContext) -> JoshutoResult<()> {
 }
 
 pub fn quit_to_current_directory(context: &mut AppContext) -> JoshutoResult<()> {
+    let worker_context = context.worker_context_ref();
     if worker_context.is_busy() || !worker_context.is_empty() {
         Err(JoshutoError::new(
             JoshutoErrorKind::Io(io::ErrorKind::Other),
@@ -26,7 +27,6 @@ pub fn quit_to_current_directory(context: &mut AppContext) -> JoshutoResult<()> 
         context.quit = QuitType::ToCurrentDirectory;
         Ok(())
     }
-    Ok(())
 }
 
 pub fn force_quit(context: &mut AppContext) -> JoshutoResult<()> {
