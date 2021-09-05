@@ -53,7 +53,7 @@ pub fn sub_process(
     backend.terminal_drop();
     let res = execute_sub_process(context, words, spawn);
     reload::soft_reload(context.tab_context_ref().index, context)?;
-    context.push_msg(format!(
+    context.message_queue_mut().push_info(format!(
         "{}: {}",
         if spawn { "Spawned" } else { "Finished" },
         words.join(" ")

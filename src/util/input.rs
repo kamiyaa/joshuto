@@ -55,11 +55,11 @@ pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<Io
                 processed_size,
                 total_size,
             );
-            context.push_msg(msg);
+            context.message_queue_mut().push_success(msg);
         }
         Err(e) => {
             let msg = format!("{}", e);
-            context.push_msg(msg);
+            context.message_queue_mut().push_error(msg);
         }
     }
 }
@@ -113,12 +113,12 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
             if x < layout_rect[1].x {
                 let command = KeyCommand::ParentCursorMoveUp(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = KeyCommand::CursorMoveUp(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
                 // TODO: scroll in child list
@@ -128,12 +128,12 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
             if x < layout_rect[1].x {
                 let command = KeyCommand::ParentCursorMoveDown(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = KeyCommand::CursorMoveDown(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
                 // TODO: scroll in child list
@@ -163,7 +163,7 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
                     } else {
                         cursor_move::cursor_move(new_index, context)
                     } {
-                        context.push_msg(e.to_string());
+                        context.message_queue_mut().push_error(e.to_string());
                     }
                 }
             } else {

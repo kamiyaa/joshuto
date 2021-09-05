@@ -107,7 +107,7 @@ fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::
                 }
                 reload::reload(context, tab_index)?;
                 let msg = format!("Deleted {} files", paths_len);
-                context.push_msg(msg);
+                context.message_queue_mut().push_success(msg);
             }
             Ok(())
         }

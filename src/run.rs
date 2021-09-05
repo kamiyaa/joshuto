@@ -43,29 +43,31 @@ pub fn run(
                 preview_default::load_preview(context, backend);
             }
             AppEvent::Termion(key) => {
-                if !context.message_queue_ref().is_empty() {
-                    context.pop_msg();
+                if let Some(_) = context.message_queue_ref().current_message() {
+                    context.message_queue_mut().pop_front();
                 }
                 match key {
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
                         let command = KeyCommand::CursorMoveUp(1);
                         if let Err(e) = command.execute(context, backend) {
-                            context.push_msg(e.to_string());
+                            context.message_queue_mut().push_error(e.to_string());
                         }
                     }
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
                         let command = KeyCommand::CursorMoveDown(1);
                         if let Err(e) = command.execute(context, backend) {
-                            context.push_msg(e.to_string());
+                            context.message_queue_mut().push_error(e.to_string());
                         }
                     }
                     key => match keymap_t.as_ref().get(&key) {
                         None => {
-                            context.push_msg(format!("Unmapped input: {}", key.to_string()));
+                            context
+                                .message_queue_mut()
+                                .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
                         Some(CommandKeybind::SimpleKeybind(command)) => {
                             if let Err(e) = command.execute(context, backend) {
-                                context.push_msg(e.to_string());
+                                context.message_queue_mut().push_error(e.to_string());
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
@@ -76,7 +78,7 @@ pub fn run(
 
                             if let Some(command) = cmd {
                                 if let Err(e) = command.execute(context, backend) {
-                                    context.push_msg(e.to_string());
+                                    context.message_queue_mut().push_error(e.to_string());
                                 }
                             }
                         }

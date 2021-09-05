@@ -136,15 +136,15 @@ impl<'a> Widget for TuiFolderView<'a> {
             };
 
             if self.show_bottom_status {
-                let message_style = Style::default().fg(Color::Yellow);
                 /* draw the bottom status bar */
                 if let Some(msg) = self.context.worker_context_ref().get_msg() {
+                    let message_style = Style::default().fg(Color::Yellow);
                     let text = Span::styled(msg, message_style);
                     Paragraph::new(text)
                         .wrap(Wrap { trim: true })
                         .render(rect, buf);
-                } else if !self.context.message_queue_ref().is_empty() {
-                    let text = Span::styled(&self.context.message_queue_ref()[0], message_style);
+                } else if let Some(msg) = self.context.message_queue_ref().current_message() {
+                    let text = Span::styled(msg.content.as_str(), msg.style.clone());
                     Paragraph::new(text)
                         .wrap(Wrap { trim: true })
                         .render(rect, buf);
