@@ -1,23 +1,27 @@
 [class]
 audio_default	= [
 	{ command = "mpv", args = [ "--" ] },
-	{ command = "mediainfo", confirm_exit = true } ]
+	{ command = "mediainfo", confirm_exit = true },
+]
 
 image_default	= [
 	{ command = "qimgv", fork = true, silent = true },
 	{ command = "krita", fork = true, silent = true },
 	{ command = "mediainfo", confirm_exit = true },
-	{ command = "swappy", args = [ "-f" ], fork = true } ]
+	{ command = "swappy", args = [ "-f" ], fork = true },
+]
 
 video_default	= [
 	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
 	{ command = "mediainfo", confirm_exit = true },
-	{ command = "mpv", args = [ "--mute", "on", "--" ], fork = true, silent = true } ]
+	{ command = "mpv", args = [ "--mute", "on", "--" ], fork = true, silent = true },
+]
 
 text_default	= [
 	{ command = "micro" },
 	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true } ]
+	{ command = "bat", confirm_exit = true },
+]
 
 [extension]
 
