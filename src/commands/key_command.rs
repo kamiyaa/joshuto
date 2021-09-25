@@ -345,12 +345,12 @@ impl std::str::FromStr for KeyCommand {
                         }
                     }
                     Ok(Self::ShowWorkers(exit_key))
-                },
+                }
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", arg, e),
                 )),
-            }
+            },
             "sort" => match arg {
                 "reverse" => Ok(Self::SortReverse),
                 arg => match SortType::parse(arg) {

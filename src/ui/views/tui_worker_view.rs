@@ -48,7 +48,7 @@ impl TuiWorkerView {
                         match event {
                             Event::Key(Key::Esc) => break,
                             Event::Key(k) if k == self.exit_key => break,
-                            _ => {},
+                            _ => {}
                         }
                         context.flush_event();
                     }
