@@ -90,7 +90,7 @@ impl KeyCommand {
             Self::CopyFileName => "copy_filename",
             Self::CopyFileNameWithoutExtension => "copy_filename_without_extension",
             Self::CopyFilePath => "copy_filepath",
-            Self::CopyDirName => "copy_dirname",
+            Self::CopyDirName => "copy_dirpath",
 
             Self::CursorMoveUp(_) => "cursor_move_up",
             Self::CursorMoveDown(_) => "cursor_move_down",
@@ -173,7 +173,7 @@ impl std::str::FromStr for KeyCommand {
             "copy_filename" => Ok(Self::CopyFileName),
             "copy_filename_without_extension" => Ok(Self::CopyFileNameWithoutExtension),
             "copy_filepath" => Ok(Self::CopyFilePath),
-            "copy_dirname" => Ok(Self::CopyDirName),
+            "copy_dirpath" => Ok(Self::CopyDirName),
             "cursor_move_home" => Ok(Self::CursorMoveHome),
             "cursor_move_end" => Ok(Self::CursorMoveEnd),
             "cursor_move_page_up" => Ok(Self::CursorMovePageUp),
@@ -378,7 +378,7 @@ impl AppExecute for KeyCommand {
                 file_ops::copy_filename_without_extension(context)
             }
             Self::CopyFilePath => file_ops::copy_filepath(context),
-            Self::CopyDirName => file_ops::copy_dirname(context),
+            Self::CopyDirName => file_ops::copy_dirpath(context),
 
             Self::CursorMoveUp(u) => cursor_move::up(context, *u),
             Self::CursorMoveDown(u) => cursor_move::down(context, *u),
