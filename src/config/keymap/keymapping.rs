@@ -7,7 +7,7 @@ use std::str::FromStr;
 use termion::event::MouseEvent;
 use termion::event::{Event, Key};
 
-use super::keyparse::str_to_event;
+use crate::util::keyparse::str_to_event;
 use crate::commands::{CommandKeybind, KeyCommand};
 use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::io::IoWorkerOptions;

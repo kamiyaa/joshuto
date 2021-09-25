@@ -56,7 +56,7 @@ mapcommand = [
 	{ keys = [ " " ],		command = "select --toggle=true" },
 	{ keys = [ "t" ],		command = "select --all=true --toggle=true" },
 
-	{ keys = [ "w" ],		command = "show_workers --exit=w" },
+	{ keys = [ "w" ],		command = "show_workers --exit-key=w" },
 	{ keys = [ "b", "b" ],		command = "bulk_rename" },
 	{ keys = [ "=" ],		command = "set_mode" },
 

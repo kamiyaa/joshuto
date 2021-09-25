@@ -8,11 +8,13 @@ use crate::ui::widgets::{TuiTopBar, TuiWorker};
 use crate::ui::TuiBackend;
 use crate::util::input;
 
-pub struct TuiWorkerView {}
+pub struct TuiWorkerView {
+    exit_key: Key,
+}
 
 impl TuiWorkerView {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(exit_key: Key) -> Self {
+        Self { exit_key }
     }
 
     pub fn display(&self, context: &mut AppContext, backend: &mut TuiBackend) {
@@ -43,8 +45,10 @@ impl TuiWorkerView {
             if let Ok(event) = context.poll_event() {
                 match event {
                     AppEvent::Termion(event) => {
-                        if let Event::Key(Key::Esc) = event {
-                            break;
+                        match event {
+                            Event::Key(Key::Esc) => break,
+                            Event::Key(k) if k == self.exit_key => break,
+                            _ => {},
                         }
                         context.flush_event();
                     }
