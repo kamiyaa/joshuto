@@ -1,7 +1,7 @@
 use std::path;
 
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
 use crate::tab::{JoshutoTab, TabHomePage};
 
@@ -58,6 +58,22 @@ pub fn tab_switch(offset: i32, context: &mut AppContext) -> std::io::Result<()> 
     let new_index = (index as i32 + num_tabs as i32 + offset) as usize % num_tabs;
 
     _tab_switch(new_index, context)
+}
+
+pub fn tab_switch_index(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
+    if new_index <= context.tab_context_ref().len() {
+        _tab_switch(new_index - 1, context)?;
+        Ok(())
+    } else if new_index == context.tab_context_ref().len() + 1 {
+        new_tab(context)?;
+        _tab_switch(new_index - 1, context)?;
+        Ok(())
+    } else {
+        Err(JoshutoError::new(
+            JoshutoErrorKind::InvalidParameters,
+            format!("No tab with index {}", new_index),
+        ))
+    }
 }
 
 pub fn new_tab_home_path(context: &AppContext) -> path::PathBuf {

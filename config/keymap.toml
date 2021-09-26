@@ -11,6 +11,12 @@ mapcommand = [
 	{ keys = [ "\t" ],		command = "tab_switch 1" },
 	{ keys = [ "backtab" ],		command = "tab_switch -1" },
 
+	{ keys = [ "alt+1" ],		command = "tab_switch_index 1" },
+	{ keys = [ "alt+2" ],		command = "tab_switch_index 2" },
+	{ keys = [ "alt+3" ],		command = "tab_switch_index 3" },
+	{ keys = [ "alt+4" ],		command = "tab_switch_index 4" },
+	{ keys = [ "alt+5" ],		command = "tab_switch_index 5" },
+
 	# arrow keys
 	{ keys = [ "arrow_up" ],	command = "cursor_move_up" },
 	{ keys = [ "arrow_down" ],	command = "cursor_move_down" },
