@@ -94,7 +94,7 @@ pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn copy_dirname(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult<()> {
     let opt_entry = context
         .tab_context_ref()
         .curr_tab_ref()

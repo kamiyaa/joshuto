@@ -58,7 +58,6 @@ sudo dnf install joshuto
 ```
 
 ## Usage
-
 ```
 ~ $ joshuto
 ```

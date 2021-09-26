@@ -1,9 +1,10 @@
-use std::{fs, path};
+use std::{fs, io, path};
 
 use crate::fs::{FileType, JoshutoMetadata};
 
 #[cfg(feature = "devicons")]
 use crate::util::devicons::*;
+use crate::util::display::DisplayOption;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
@@ -16,46 +17,29 @@ pub struct JoshutoDirEntry {
 }
 
 impl JoshutoDirEntry {
-    pub fn from(direntry: &fs::DirEntry, show_icons: bool) -> std::io::Result<Self> {
+    pub fn from(direntry: &fs::DirEntry, options: &DisplayOption) -> io::Result<Self> {
         let path = direntry.path();
 
-        let metadata = JoshutoMetadata::from(&path)?;
-
+        let mut metadata = JoshutoMetadata::from(&path)?;
         let name = direntry
             .file_name()
             .as_os_str()
             .to_string_lossy()
             .to_string();
 
+        if options.automatically_count_files() && metadata.file_type().is_dir() {
+            if let Ok(size) = get_directory_size(path.as_path()) {
+                metadata.update_directory_size(size);
+            }
+        }
+
         #[cfg(feature = "devicons")]
-        let label = if show_icons {
-            let icon = match metadata.file_type() {
-                FileType::Directory => DIR_NODE_EXACT_MATCHES
-                    .get(name.as_str())
-                    .cloned()
-                    .unwrap_or(DEFAULT_DIR),
-                _ => FILE_NODE_EXACT_MATCHES
-                    .get(name.as_str())
-                    .cloned()
-                    .unwrap_or(match path.extension() {
-                        Some(s) => FILE_NODE_EXTENSIONS
-                            .get(match s.to_str() {
-                                Some(s) => s,
-                                None => {
-                                    return Err(std::io::Error::new(
-                                        std::io::ErrorKind::Other,
-                                        "Failed converting OsStr to str",
-                                    ))
-                                }
-                            })
-                            .unwrap_or(&DEFAULT_FILE),
-                        None => DEFAULT_FILE,
-                    }),
-            };
-            format!("{} {}", icon, name)
+        let label = if options.show_icons() {
+            create_icon_label(name.as_str(), &metadata)
         } else {
             name.clone()
         };
+
         #[cfg(not(feature = "devicons"))]
         let label = name.clone();
 
@@ -67,6 +51,10 @@ impl JoshutoDirEntry {
             selected: false,
             marked: false,
         })
+    }
+
+    pub fn update_label(&mut self, label: String) {
+        self.label = label;
     }
 
     pub fn file_name(&self) -> &str {
@@ -127,4 +115,29 @@ impl std::cmp::Ord for JoshutoDirEntry {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.file_path().cmp(other.file_path())
     }
+}
+
+fn create_icon_label(name: &str, metadata: &JoshutoMetadata) -> String {
+    let label = {
+        let icon =
+            match metadata.file_type() {
+                FileType::Directory => DIR_NODE_EXACT_MATCHES
+                    .get(name)
+                    .cloned()
+                    .unwrap_or(DEFAULT_DIR),
+                _ => FILE_NODE_EXACT_MATCHES.get(name).cloned().unwrap_or(
+                    match name.rsplit_once('.') {
+                        Some((_, ext)) => FILE_NODE_EXTENSIONS.get(ext).unwrap_or(&DEFAULT_FILE),
+                        None => DEFAULT_FILE,
+                    },
+                ),
+            };
+        format!("{} {}", icon, name)
+    };
+    label
+}
+
+fn get_directory_size(path: &path::Path) -> io::Result<usize> {
+    let directory_size = fs::read_dir(path).map(|s| s.count());
+    directory_size
 }

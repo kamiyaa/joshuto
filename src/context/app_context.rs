@@ -1,13 +1,20 @@
-use std::collections::VecDeque;
 use std::sync::mpsc;
 
 use crate::config;
-use crate::context::{LocalStateContext, PreviewContext, TabContext, WorkerContext};
+use crate::context::{LocalStateContext, MessageQueue, PreviewContext, TabContext, WorkerContext};
 use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum QuitType {
+    DoNot,
+    Normal,
+    Force,
+    ToCurrentDirectory,
+}
+
 pub struct AppContext {
-    pub exit: bool,
+    pub quit: QuitType,
     // event loop querying
     pub events: Events,
     // app config
@@ -19,7 +26,7 @@ pub struct AppContext {
     // context related to searching
     search_context: Option<SearchPattern>,
     // message queue for displaying messages
-    message_queue: VecDeque<String>,
+    message_queue: MessageQueue,
     // context related to io workers
     worker_context: WorkerContext,
     // context related to previews
@@ -31,12 +38,12 @@ impl AppContext {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
         Self {
-            exit: false,
+            quit: QuitType::DoNot,
             events,
             tab_context: TabContext::new(),
             local_state: None,
             search_context: None,
-            message_queue: VecDeque::with_capacity(4),
+            message_queue: MessageQueue::new(),
             worker_context: WorkerContext::new(event_tx),
             preview_context: PreviewContext::new(),
             config,
@@ -68,14 +75,11 @@ impl AppContext {
         &mut self.tab_context
     }
 
-    pub fn message_queue_ref(&self) -> &VecDeque<String> {
+    pub fn message_queue_ref(&self) -> &MessageQueue {
         &self.message_queue
     }
-    pub fn push_msg(&mut self, msg: String) {
-        self.message_queue.push_back(msg);
-    }
-    pub fn pop_msg(&mut self) -> Option<String> {
-        self.message_queue.pop_front()
+    pub fn message_queue_mut(&mut self) -> &mut MessageQueue {
+        &mut self.message_queue
     }
 
     // local state related

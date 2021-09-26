@@ -1,9 +1,12 @@
 use std::path;
 
+use termion::event::Key;
+
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::IoWorkerOptions;
 use crate::ui::TuiBackend;
+use crate::util::keyparse::str_to_key;
 use crate::util::select::SelectOption;
 use crate::util::sort::SortType;
 
@@ -46,6 +49,7 @@ pub enum KeyCommand {
     ParentDirectory,
 
     Quit,
+    QuitToCurrentDirectory,
     ForceQuit,
     ReloadDirList,
     RenameFile(path::PathBuf),
@@ -62,7 +66,7 @@ pub enum KeyCommand {
     SelectFiles(String, SelectOption),
     SetMode,
     SubProcess(Vec<String>, bool),
-    ShowWorkers,
+    ShowWorkers(Key),
 
     ToggleHiddenFiles,
 
@@ -90,7 +94,7 @@ impl KeyCommand {
             Self::CopyFileName => "copy_filename",
             Self::CopyFileNameWithoutExtension => "copy_filename_without_extension",
             Self::CopyFilePath => "copy_filepath",
-            Self::CopyDirName => "copy_dirname",
+            Self::CopyDirName => "copy_dirpath",
 
             Self::CursorMoveUp(_) => "cursor_move_up",
             Self::CursorMoveDown(_) => "cursor_move_down",
@@ -109,6 +113,7 @@ impl KeyCommand {
             Self::ParentDirectory => "cd ..",
 
             Self::Quit => "quit",
+            Self::QuitToCurrentDirectory => "quit_to_cwd",
             Self::ForceQuit => "force_quit",
             Self::ReloadDirList => "reload_dirlist",
             Self::RenameFile(_) => "rename",
@@ -126,7 +131,7 @@ impl KeyCommand {
             Self::SetMode => "set_mode",
             Self::SubProcess(_, false) => "shell",
             Self::SubProcess(_, true) => "spawn",
-            Self::ShowWorkers => "show_workers",
+            Self::ShowWorkers(_) => "show_workers",
 
             Self::ToggleHiddenFiles => "toggle_hidden",
 
@@ -173,7 +178,7 @@ impl std::str::FromStr for KeyCommand {
             "copy_filename" => Ok(Self::CopyFileName),
             "copy_filename_without_extension" => Ok(Self::CopyFileNameWithoutExtension),
             "copy_filepath" => Ok(Self::CopyFilePath),
-            "copy_dirname" => Ok(Self::CopyDirName),
+            "copy_dirpath" => Ok(Self::CopyDirName),
             "cursor_move_home" => Ok(Self::CursorMoveHome),
             "cursor_move_end" => Ok(Self::CursorMoveEnd),
             "cursor_move_page_up" => Ok(Self::CursorMovePageUp),
@@ -262,6 +267,7 @@ impl std::str::FromStr for KeyCommand {
                 Ok(Self::PasteFiles(options))
             }
             "quit" => Ok(Self::Quit),
+            "quit_to_cwd" => Ok(Self::QuitToCurrentDirectory),
             "reload_dirlist" => Ok(Self::ReloadDirList),
             "rename" => match arg {
                 "" => Err(JoshutoError::new(
@@ -329,7 +335,24 @@ impl std::str::FromStr for KeyCommand {
                     format!("{}: {}", arg, e),
                 )),
             },
-            "show_workers" => Ok(Self::ShowWorkers),
+            "show_workers" => match shell_words::split(arg) {
+                Ok(args) => {
+                    let mut exit_key = Key::Esc;
+                    for arg in args.iter() {
+                        if let Some(key_str) = arg.strip_prefix("--exit-key=") {
+                            match str_to_key(key_str) {
+                                Some(key) => exit_key = key,
+                                _ => eprintln!("Error: failed to parse key '{}'", arg),
+                            }
+                        }
+                    }
+                    Ok(Self::ShowWorkers(exit_key))
+                }
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            },
             "sort" => match arg {
                 "reverse" => Ok(Self::SortReverse),
                 arg => match SortType::parse(arg) {
@@ -384,7 +407,7 @@ impl AppExecute for KeyCommand {
                 file_ops::copy_filename_without_extension(context)
             }
             Self::CopyFilePath => file_ops::copy_filepath(context),
-            Self::CopyDirName => file_ops::copy_dirname(context),
+            Self::CopyDirName => file_ops::copy_dirpath(context),
 
             Self::CursorMoveUp(u) => cursor_move::up(context, *u),
             Self::CursorMoveDown(u) => cursor_move::down(context, *u),
@@ -407,7 +430,9 @@ impl AppExecute for KeyCommand {
             Self::ParentDirectory => parent_directory::parent_directory(context),
 
             Self::Quit => quit::quit(context),
+            Self::QuitToCurrentDirectory => quit::quit_to_current_directory(context),
             Self::ForceQuit => quit::force_quit(context),
+
             Self::ReloadDirList => reload::reload_dirlist(context),
             Self::RenameFile(p) => rename_file::rename_file(context, p.as_path()),
             Self::RenameFileAppend => rename_file::rename_file_append(context, backend),
@@ -426,7 +451,7 @@ impl AppExecute for KeyCommand {
             Self::SubProcess(v, spawn) => {
                 sub_process::sub_process(context, backend, v.as_slice(), *spawn)
             }
-            Self::ShowWorkers => show_workers::show_workers(context, backend),
+            Self::ShowWorkers(k) => show_workers::show_workers(context, backend, k),
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 

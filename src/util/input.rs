@@ -55,18 +55,20 @@ pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<Io
                 processed_size,
                 total_size,
             );
-            context.push_msg(msg);
+            context.message_queue_mut().push_success(msg);
         }
         Err(e) => {
             let msg = format!("{}", e);
-            context.push_msg(msg);
+            context.message_queue_mut().push_error(msg);
         }
     }
 }
 
 pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
-    match history.entry(dirlist.file_path().to_path_buf()) {
+
+    let dir_path = dirlist.file_path().to_path_buf();
+    match history.entry(dir_path) {
         Entry::Occupied(mut entry) => {
             let old_dirlist = entry.get();
             if old_dirlist.need_update() {
@@ -94,15 +96,15 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
 
     let constraints: &[Constraint; 3] = &context.config_ref().display_options_ref().default_layout;
+    let vertical_margin = if context.config_ref().display_options_ref().show_borders() {
+        2
+    } else {
+        1
+    };
+
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .vertical_margin(
-            if context.config_ref().display_options_ref().show_borders() {
-                2
-            } else {
-                1
-            },
-        )
+        .vertical_margin(vertical_margin)
         .constraints(constraints.as_ref())
         .split(f_size);
 
@@ -111,12 +113,12 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
             if x < layout_rect[1].x {
                 let command = KeyCommand::ParentCursorMoveUp(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = KeyCommand::CursorMoveUp(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
                 // TODO: scroll in child list
@@ -126,12 +128,12 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
             if x < layout_rect[1].x {
                 let command = KeyCommand::ParentCursorMoveDown(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = KeyCommand::CursorMoveDown(1);
                 if let Err(e) = command.execute(context, backend) {
-                    context.push_msg(e.to_string());
+                    context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
                 // TODO: scroll in child list
@@ -161,7 +163,7 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
                     } else {
                         cursor_move::cursor_move(new_index, context)
                     } {
-                        context.push_msg(e.to_string());
+                        context.message_queue_mut().push_error(e.to_string());
                     }
                 }
             } else {

@@ -1,231 +1,95 @@
-[keymaps]
-# backspace = 263
+mapcommand = [
+	{ keys = [ "T" ],		command = "new_tab" },
+	{ keys = [ "ctrl+t" ],		command = "new_tab" },
+	{ keys = [ "W" ],		command = "close_tab" },
+	{ keys = [ "ctrl+w" ],		command = "close_tab" },
+	{ keys = [ "q" ],		command = "close_tab" },
+	{ keys = [ "Q" ],		command = "quit_to_cwd" },
 
-[[mapcommand]]
-command = "new_tab"
-keys = [ "T" ]
+	{ keys = [ "R" ],		command = "reload_dirlist" },
+	{ keys = [ "z", "h" ],		command = "toggle_hidden" },
+	{ keys = [ "\t" ],		command = "tab_switch 1" },
+	{ keys = [ "backtab" ],		command = "tab_switch -1" },
 
-[[mapcommand]]
-command = "new_tab"
-keys = [ "ctrl+t" ]
-[[mapcommand]]
-command = "close_tab"
-keys = [ "W" ]
-[[mapcommand]]
-command = "close_tab"
-keys = [ "ctrl+w" ]
-[[mapcommand]]
-command = "close_tab"
-keys = [ "q" ]
-[[mapcommand]]
-command = "force_quit"
-keys = [ "Q" ]
-[[mapcommand]]
-command = "reload_dirlist"
-keys = [ "R" ]
-[[mapcommand]]
-command = "toggle_hidden"
-keys = [ "z", "h" ]
+	{ keys = [ "alt+1" ],		command = "tab_switch_index 1" },
+	{ keys = [ "alt+2" ],		command = "tab_switch_index 2" },
+	{ keys = [ "alt+3" ],		command = "tab_switch_index 3" },
+	{ keys = [ "alt+4" ],		command = "tab_switch_index 4" },
+	{ keys = [ "alt+5" ],		command = "tab_switch_index 5" },
 
-[[mapcommand]]
-command = "tab_switch 1"
-keys = [ "\t" ]
-[[mapcommand]]
-command = "tab_switch -1"
-keys = [ "backtab" ]
+	# arrow keys
+	{ keys = [ "arrow_up" ],	command = "cursor_move_up" },
+	{ keys = [ "arrow_down" ],	command = "cursor_move_down" },
+	{ keys = [ "arrow_left" ],	command = "cd .." },
+	{ keys = [ "arrow_right" ],	command = "open" },
+	{ keys = [ "\n" ],		command = "open" },
+	{ keys = [ "end" ],		command = "cursor_move_end" },
+	{ keys = [ "home" ],		command = "cursor_move_home" },
+	{ keys = [ "page_up" ],		command = "cursor_move_page_up" },
+	{ keys = [ "page_down" ],	command = "cursor_move_page_down" },
 
-[[mapcommand]]
-command = "tab_switch_index 1"
-keys = [ "alt+1" ]
-[[mapcommand]]
-command = "tab_switch_index 2"
-keys = [ "alt+2" ]
-[[mapcommand]]
-command = "tab_switch_index 3"
-keys = [ "alt+3" ]
-[[mapcommand]]
-command = "tab_switch_index 4"
-keys = [ "alt+4" ]
-[[mapcommand]]
-command = "tab_switch_index 5"
-keys = [ "alt+5" ]
-[[mapcommand]]
-command = "tab_switch_index 6"
-keys = [ "alt+6" ]
-[[mapcommand]]
-command = "tab_switch_index 7"
-keys = [ "alt+7" ]
-[[mapcommand]]
-command = "tab_switch_index 8"
-keys = [ "alt+8" ]
-[[mapcommand]]
-command = "tab_switch_index 9"
-keys = [ "alt+9" ]
-[[mapcommand]]
-command = "tab_switch_index 10"
-keys = [ "alt+0" ]
+	# vim-like keybindings
+	{ keys = [ "j" ],		command = "cursor_move_down" },
+	{ keys = [ "k" ],		command = "cursor_move_up" },
+	{ keys = [ "h" ],		command = "cd .." },
+	{ keys = [ "l" ],		command = "open" },
+	{ keys = [ "g", "g" ],		command = "cursor_move_home" },
+	{ keys = [ "G" ],		command = "cursor_move_end" },
+	{ keys = [ "r" ],		command = "open_with" },
 
-[[mapcommand]]
-command = "cursor_move_up"
-keys = [ "arrow_up" ]
-[[mapcommand]]
-command = "cursor_move_up"
-keys = [ "k" ]
-[[mapcommand]]
-command = "cursor_move_down"
-keys = [ "arrow_down" ]
-[[mapcommand]]
-command = "cursor_move_down"
-keys = [ "j" ]
-[[mapcommand]]
-command = "cursor_move_end"
-keys = [ "end" ]
-[[mapcommand]]
-command = "cursor_move_end"
-keys = [ "G" ]
-[[mapcommand]]
-command = "cursor_move_home"
-keys = [ "home" ]
-[[mapcommand]]
-command = "cursor_move_home"
-keys = [ "g", "g" ]
-[[mapcommand]]
-command = "cursor_move_page_up"
-keys = [ "page_up" ]
-[[mapcommand]]
-command = "cursor_move_page_down"
-keys = [ "page_down" ]
+	{ keys = [ "[" ],		command = "parent_cursor_move_up" },
+	{ keys = [ "]" ],		command = "parent_cursor_move_down" },
 
-[[mapcommand]]
-command = "parent_cursor_move_up"
-keys = [ "[" ]
-[[mapcommand]]
-command = "parent_cursor_move_down"
-keys = [ "]" ]
+	{ keys = [ "c", "d" ],		command = ":cd " },
+	{ keys = [ "d", "d" ],		command = "cut_files" },
+	{ keys = [ "y", "y" ],		command = "copy_files" },
+	{ keys = [ "p", "p" ],		command = "paste_files" },
+	{ keys = [ "p", "o" ],		command = "paste_files --overwrite=true" },
 
-[[mapcommand]]
-command = "open"
-keys = [ "arrow_right" ]
-[[mapcommand]]
-command = "open"
-keys = [ "l" ]
-[[mapcommand]]
-command = "open"
-keys = [ "\n" ]
-[[mapcommand]]
-command = "open_with"
-keys = [ "r" ]
+	{ keys = [ "y", "n" ],		command = "copy_filename" },
+	{ keys = [ "y", "." ],		command = "copy_filename_without_extension" },
+	{ keys = [ "y", "p" ],		command = "copy_filepath" },
+	{ keys = [ "y", "d" ],		command = "copy_dirpath" },
 
-[[mapcommand]]
-command = ":cd "
-keys = [ "c", "d" ]
-[[mapcommand]]
-command = "cd .."
-keys = [ "arrow_left" ]
-[[mapcommand]]
-command = "cd .."
-keys = [ "h" ]
+	{ keys = [ "delete" ],		command = "delete_files" },
+	{ keys = [ "d", "D" ],		command = "delete_files" },
 
-[[mapcommand]]
-command = "cut_files"
-keys = [ "d", "d" ]
-[[mapcommand]]
-command = "copy_files"
-keys = [ "y", "y" ]
-[[mapcommand]]
-command = "copy_filename"
-keys = [ "y", "n" ]
-[[mapcommand]]
-command = "copy_filename_without_extension"
-keys = [ "y", "." ]
-[[mapcommand]]
-command = "copy_filepath"
-keys = [ "y", "p" ]
-[[mapcommand]]
-command = "copy_dirname"
-keys = [ "y", "d" ]
-[[mapcommand]]
-command = "paste_files"
-keys = [ "p", "p" ]
-[[mapcommand]]
-command = "paste_files --overwrite=true"
-keys = [ "p", "o" ]
-[[mapcommand]]
-command = "delete_files"
-keys = [ "d", "D" ]
-[[mapcommand]]
-command = "delete_files"
-keys = [ "delete" ]
+	{ keys = [ "a" ],		command = "rename_append" },
+	{ keys = [ "A" ],		command = "rename_prepend" },
 
-[[mapcommand]]
-command = "rename_append"
-keys = [ "a" ]
-[[mapcommand]]
-command = "rename_prepend"
-keys = [ "A" ]
+	{ keys = [ "f", "t" ],		command = ":touch " },
 
-[[mapcommand]]
-command = "select --toggle=true"
-keys = [ " " ]
-[[mapcommand]]
-command = "select --toggle=true --all=true"
-keys = [ "t" ]
+	{ keys = [ " " ],		command = "select --toggle=true" },
+	{ keys = [ "t" ],		command = "select --all=true --toggle=true" },
 
-[[mapcommand]]
-command = ":search "
-keys = [ "/" ]
-[[mapcommand]]
-command = ":search_glob "
-keys = [ "\\" ]
-[[mapcommand]]
-command = "search_next"
-keys = [ "n" ]
-[[mapcommand]]
-command = "search_prev"
-keys = [ "N" ]
+	{ keys = [ "w" ],		command = "show_workers --exit-key=w" },
+	{ keys = [ "b", "b" ],		command = "bulk_rename" },
+	{ keys = [ "=" ],		command = "set_mode" },
 
-[[mapcommand]]
-command = "bulk_rename"
-keys = [ "b", "b" ]
-[[mapcommand]]
-command = "set_mode"
-keys = [ "=" ]
+	{ keys = [ ":" ],		command = ":" },
+	{ keys = [ ";" ],		command = ":" },
 
-[[mapcommand]]
-command = ":"
-keys = [ ";" ]
-[[mapcommand]]
-command = ":"
-keys = [ ":" ]
-[[mapcommand]]
-command = ":mkdir "
-keys = [ "m", "k" ]
-[[mapcommand]]
-command = ":rename "
-keys = [ "c", "w" ]
-[[mapcommand]]
-command = ":touch"
-keys = [ "f", "t" ]
+	{ keys = [ "'" ],		command = ":shell " },
+	{ keys = [ "m", "k" ],		command = ":mkdir " },
+	{ keys = [ "c", "w" ],		command = ":rename " },
 
-[[mapcommand]]
-command = "sort lexical"
-keys = [ "s", "l" ]
-[[mapcommand]]
-command = "sort mtime"
-keys = [ "s", "m" ]
-[[mapcommand]]
-command = "sort natural"
-keys = [ "s", "n" ]
-[[mapcommand]]
-command = "sort ext"
-keys = [ "s", "e" ]
-[[mapcommand]]
-command = "sort reverse"
-keys = [ "s", "r" ]
+	{ keys = [ "/" ],		command = ":search " },
+	{ keys = [ "\\" ],		command = ":search_glob " },
+	{ keys = [ "?" ],		command = ":search_skim " },
 
-[[mapcommand]]
-command = "cd /"
-keys = [ "g", "/" ]
-[[mapcommand]]
-command = "cd /etc"
-keys = [ "g", "e" ]
+	{ keys = [ "n" ],		command = "search_next" },
+	{ keys = [ "N" ],		command = "search_prev" },
+
+	{ keys = [ "s", "r" ],		command = "sort reverse" },
+	{ keys = [ "s", "l" ],		command = "sort lexical" },
+	{ keys = [ "s", "m" ],		command = "sort mtime" },
+	{ keys = [ "s", "n" ],		command = "sort natural" },
+	{ keys = [ "s", "s" ],		command = "sort size" },
+	{ keys = [ "s", "e" ],		command = "sort ext" },
+
+	{ keys = [ "g", "r" ],		command = "cd /" },
+	{ keys = [ "g", "c" ],		command = "cd ~/.config" },
+	{ keys = [ "g", "d" ],		command = "cd ~/Downloads" },
+	{ keys = [ "g", "e" ],		command = "cd /etc" },
+	{ keys = [ "g", "h" ],		command = "cd ~/" },
+]

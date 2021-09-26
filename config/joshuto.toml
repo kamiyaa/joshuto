@@ -5,8 +5,9 @@ xdg_open = false
 use_trash = true
 
 [display]
-# ratios for parent view, current view and preview
+automatically_count_files = false
 collapse_preview = true
+# ratios for parent view, current view and preview
 column_ratio = [1, 4, 4]
 show_borders = true
 show_hidden = false

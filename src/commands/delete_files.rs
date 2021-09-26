@@ -56,11 +56,19 @@ where
 }
 
 fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::Result<()> {
-    let tab_index = context.tab_context_ref().index;
-    let paths = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(s) => s.get_selected_paths(),
-        None => vec![],
+    let delete_func = if context.config_ref().use_trash {
+        trash_files
+    } else {
+        remove_files
     };
+
+    let tab_index = context.tab_context_ref().index;
+    let paths = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|s| s.get_selected_paths())
+        .unwrap_or(vec![]);
     let paths_len = paths.len();
     if paths_len == 0 {
         return Err(std::io::Error::new(
@@ -69,46 +77,49 @@ fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::
         ));
     }
 
-    let delete_func = if context.config_ref().use_trash {
-        trash_files
-    } else {
-        remove_files
-    };
-
     let ch = {
         let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
         let mut prompt = TuiPrompt::new(&prompt_str);
         prompt.get_key(backend, context)
     };
 
-    if ch == Key::Char('y') || ch == Key::Char('\n') {
-        if paths_len > 1 {
-            let ch = {
-                let prompt_str = "Are you sure? (y/N)";
-                let mut prompt = TuiPrompt::new(prompt_str);
-                prompt.get_key(backend, context)
+    match ch {
+        Key::Char('y') | Key::Char('\n') => {
+            let confirm_delete = if paths_len > 1 {
+                // prompt user again for deleting multiple files
+                let ch = {
+                    let prompt_str = "Are you sure? (y/N)";
+                    let mut prompt = TuiPrompt::new(prompt_str);
+                    prompt.get_key(backend, context)
+                };
+                ch == Key::Char('y')
+            } else {
+                true
             };
-            if ch == Key::Char('y') {
+            if confirm_delete {
                 delete_func(&paths)?;
+
+                // remove directory previews
+                for tab in context.tab_context_mut().iter_mut() {
+                    for p in &paths {
+                        tab.history_mut().remove(p.as_path());
+                    }
+                }
                 reload::reload(context, tab_index)?;
                 let msg = format!("Deleted {} files", paths_len);
-                context.push_msg(msg);
+                context.message_queue_mut().push_success(msg);
             }
-        } else {
-            delete_func(&paths)?;
-            reload::reload(context, tab_index)?;
-            let msg = format!("Deleted {} files", paths_len);
-            context.push_msg(msg);
+            Ok(())
         }
+        _ => Ok(()),
     }
-    Ok(())
 }
 
 pub fn delete_selected_files(
     context: &mut AppContext,
     backend: &mut TuiBackend,
 ) -> std::io::Result<()> {
-    delete_files(context, backend)?;
+    let _ = delete_files(context, backend)?;
 
     let options = context.config_ref().display_options_ref().clone();
     let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
