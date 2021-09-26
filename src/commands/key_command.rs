@@ -72,7 +72,7 @@ pub enum KeyCommand {
     NewTab,
     CloseTab,
     TabSwitch(i32),
-    TabSwitchIndex(i32),
+    TabSwitchIndex(u32),
 }
 
 impl KeyCommand {
@@ -347,7 +347,7 @@ impl std::str::FromStr for KeyCommand {
                     format!("{}: {}", command, e.to_string()),
                 )),
             },
-            "tab_switch_index" => match arg.parse::<i32>() {
+            "tab_switch_index" => match arg.parse::<u32>() {
                 Ok(s) => Ok(Self::TabSwitchIndex(s)),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
