@@ -1,4 +1,6 @@
 use std::collections::hash_map::Entry;
+use std::io;
+use std::path;
 
 use signal_hook::consts::signal;
 use termion::event::{MouseButton, MouseEvent};
@@ -19,7 +21,7 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         AppEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
         AppEvent::PreviewDir(Ok(dirlist)) => process_dir_preview(context, dirlist),
-        AppEvent::PreviewFile(file_preview) => process_file_preview(context, file_preview),
+        AppEvent::PreviewFile(path, file_preview) => process_file_preview(context, path, file_preview),
         AppEvent::Signal(signal::SIGWINCH) => {}
         _ => {}
     }
@@ -68,27 +70,24 @@ pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
 
     let dir_path = dirlist.file_path().to_path_buf();
-    match history.entry(dir_path) {
-        Entry::Occupied(mut entry) => {
-            let old_dirlist = entry.get();
-            if old_dirlist.need_update() {
-                entry.insert(dirlist);
-            }
-        }
-        Entry::Vacant(entry) => {
-            entry.insert(dirlist);
-        }
-    }
+    history.insert(dir_path, dirlist);
 }
 
-pub fn process_file_preview(context: &mut AppContext, file_preview: FilePreview) {
-    match file_preview.status.code() {
-        None => {}
-        Some(_) => {
+pub fn process_file_preview(context: &mut AppContext, path: path::PathBuf, file_preview: io::Result<FilePreview>) {
+    if let Ok(preview) = file_preview {
+        if preview.status.code().is_some() {
             context
                 .preview_context_mut()
-                .insert_preview(file_preview._path.clone(), file_preview);
+                .insert_preview(path, Some(preview));
+        } else {
+            context
+                .preview_context_mut()
+                .insert_preview(path, None);
         }
+    } else {
+        context
+            .preview_context_mut()
+            .insert_preview(path, None);
     }
 }
 
@@ -158,12 +157,12 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
                     let skip_dist =
                         dirlist.first_index_for_viewport(layout_rect[1].height as usize);
                     let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                    if let Err(e) = if is_parent {
-                        parent_cursor_move::parent_cursor_move(new_index, context)
+                    if is_parent {
+                        if let Err(e) = parent_cursor_move::parent_cursor_move(new_index, context) {
+                            context.message_queue_mut().push_error(e.to_string());
+                        }
                     } else {
-                        cursor_move::cursor_move(new_index, context)
-                    } {
-                        context.message_queue_mut().push_error(e.to_string());
+                        cursor_move::cursor_move(new_index, context);
                     }
                 }
             } else {

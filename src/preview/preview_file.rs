@@ -10,20 +10,24 @@ use crate::event::AppEvent;
 use crate::ui::{self, TuiBackend};
 
 #[derive(Clone, Debug)]
+pub enum PreviewState {
+    NoPreview,
+    SomePreview(FilePreview),
+}
+
+#[derive(Clone, Debug)]
 pub struct FilePreview {
-    pub _path: path::PathBuf,
     pub status: std::process::ExitStatus,
     pub output: String,
 }
 
-impl std::convert::From<(path::PathBuf, Output)> for FilePreview {
-    fn from((p, output): (path::PathBuf, Output)) -> Self {
+impl std::convert::From<Output> for FilePreview {
+    fn from(output: Output) -> Self {
         let s = String::from_utf8_lossy(&output.stdout).to_string();
         let s2 = s.replace('\t', "        ");
         let s = s2.to_string();
         let status = output.status;
         Self {
-            _path: p,
             status,
             output: s,
         }
@@ -93,7 +97,7 @@ impl Background {
     pub fn preview_path_with_script(
         context: &AppContext,
         backend: &mut TuiBackend,
-        p: path::PathBuf,
+        path: path::PathBuf,
     ) {
         let preview_options = context.config_ref().preview_options_ref();
         let config = context.config_ref();
@@ -113,7 +117,7 @@ impl Background {
             let script = script.clone();
             let event_tx = context.clone_event_tx();
             let _ = thread::spawn(move || {
-                let file_full_path = p.as_path();
+                let file_full_path = path.as_path();
 
                 let res = Command::new(script)
                     .arg(file_full_path)
@@ -124,10 +128,12 @@ impl Background {
                     .output();
                 match res {
                     Ok(output) => {
-                        let preview = FilePreview::from((p, output));
-                        let _ = event_tx.send(AppEvent::PreviewFile(preview));
+                        let preview = FilePreview::from(output);
+                        let _ = event_tx.send(AppEvent::PreviewFile(path, Ok(preview)));
                     }
-                    Err(_) => {}
+                    Err(e) => {
+                        let _ = event_tx.send(AppEvent::PreviewFile(path, Err(e)));
+                    }
                 }
             });
         }

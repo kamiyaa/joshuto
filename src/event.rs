@@ -1,4 +1,5 @@
 use std::io;
+use std::path;
 use std::sync::mpsc;
 use std::thread;
 
@@ -19,7 +20,7 @@ pub enum AppEvent {
     IoWorkerProgress(IoWorkerProgress),
     IoWorkerResult(io::Result<IoWorkerProgress>),
     PreviewDir(io::Result<JoshutoDirList>),
-    PreviewFile(FilePreview),
+    PreviewFile(path::PathBuf, io::Result<FilePreview>),
     Signal(i32),
     //    Filesystem(notify::Result),
 }

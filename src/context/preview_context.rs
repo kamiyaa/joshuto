@@ -4,7 +4,7 @@ use std::path;
 use crate::preview::preview_file::FilePreview;
 
 pub struct PreviewContext {
-    pub previews: HashMap<path::PathBuf, FilePreview>,
+    previews: HashMap<path::PathBuf, Option<FilePreview>>,
 }
 
 impl PreviewContext {
@@ -14,11 +14,15 @@ impl PreviewContext {
         }
     }
 
-    pub fn get_preview(&self, p: &path::Path) -> Option<&FilePreview> {
+    pub fn preview_exists(&self, p: &path::Path) -> bool {
+        self.previews.get(p).is_some()
+    }
+
+    pub fn get_preview(&self, p: &path::Path) -> Option<&Option<FilePreview>> {
         self.previews.get(p)
     }
 
-    pub fn insert_preview(&mut self, p: path::PathBuf, file_preview: FilePreview) {
-        self.previews.insert(p, file_preview);
+    pub fn insert_preview(&mut self, p: path::PathBuf, preview: Option<FilePreview>) {
+        self.previews.insert(p, preview);
     }
 }

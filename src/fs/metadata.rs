@@ -127,4 +127,8 @@ impl JoshutoMetadata {
     pub fn link_type(&self) -> &LinkType {
         &self._link_type
     }
+
+    pub fn is_dir(&self) -> bool {
+        self._file_type == FileType::Directory
+    }
 }

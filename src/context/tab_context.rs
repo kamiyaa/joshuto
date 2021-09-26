@@ -25,6 +25,12 @@ impl TabContext {
         self.tabs.len()
     }
 
+    pub fn tab_ref(&self, i: usize) -> Option<&JoshutoTab> {
+        if i >= self.tabs.len() {
+            return None;
+        }
+        Some(&self.tabs[i])
+    }
     pub fn tab_mut(&mut self, i: usize) -> Option<&mut JoshutoTab> {
         if i >= self.tabs.len() {
             return None;

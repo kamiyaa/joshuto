@@ -2,6 +2,7 @@ use std::path;
 
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
+use crate::history::create_dirlist_with_history;
 use crate::ui::TuiBackend;
 
 use super::command_line;
@@ -17,9 +18,19 @@ pub fn _rename_file(
         return Err(err);
     }
     std::fs::rename(&src, &dest)?;
-    let options = context.config_ref().display_options_ref().clone();
-    if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-        curr_list.reload_contents(&options)?;
+
+    let path = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|lst| lst.file_path().to_path_buf());
+
+    if let Some(path) = path {
+        let options = context.config_ref().display_options_ref().clone();
+
+        let history = context.tab_context_mut().curr_tab_mut().history_mut();
+        let new_dirlist = create_dirlist_with_history(history, path.as_path(), &options)?;
+        history.insert(path, new_dirlist);
     }
     Ok(())
 }

@@ -1,7 +1,8 @@
+use std::path;
 use std::slice::{Iter, IterMut};
-use std::{fs, path};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
+use crate::history::read_directory;
 use crate::util::display::DisplayOption;
 
 #[derive(Clone, Debug)]
@@ -14,9 +15,24 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
-    pub fn new(path: path::PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
+    pub fn new(
+        path: path::PathBuf,
+        contents: Vec<JoshutoDirEntry>,
+        index: Option<usize>,
+        metadata: JoshutoMetadata,
+    ) -> Self {
+        Self {
+            index,
+            path,
+            content_outdated: false,
+            metadata,
+            contents,
+        }
+    }
+
+    pub fn from_path(path: path::PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
         let filter_func = options.filter_func();
-        let mut contents = read_dir_list(path.as_path(), filter_func, &options)?;
+        let mut contents = read_directory(path.as_path(), filter_func, &options)?;
 
         let sort_options = options.sort_options_ref();
         contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
@@ -71,41 +87,6 @@ impl JoshutoDirList {
 
     pub fn file_path(&self) -> &path::PathBuf {
         &self.path
-    }
-
-    pub fn reload_contents(&mut self, options: &DisplayOption) -> std::io::Result<()> {
-        let filter_func = options.filter_func();
-        let mut contents = read_dir_list(self.file_path(), filter_func, options)?;
-
-        let sort_options = options.sort_options_ref();
-        contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
-
-        let contents_len = contents.len();
-        let index: Option<usize> = if contents_len == 0 {
-            None
-        } else {
-            match self.index {
-                Some(i) if i >= contents_len => Some(contents_len - 1),
-                Some(i) => {
-                    let entry = &self.contents[i];
-                    contents
-                        .iter()
-                        .enumerate()
-                        .find(|(_, e)| e.file_name() == entry.file_name())
-                        .map(|(i, _)| i)
-                        .or(Some(i))
-                }
-                None => Some(0),
-            }
-        };
-
-        let metadata = JoshutoMetadata::from(self.file_path())?;
-        self.metadata = metadata;
-        self.contents = contents;
-        self.index = index;
-        self.content_outdated = false;
-
-        Ok(())
     }
 
     pub fn any_selected(&self) -> bool {
@@ -169,20 +150,4 @@ impl JoshutoDirList {
             None
         }
     }
-}
-
-fn read_dir_list<F>(
-    path: &path::Path,
-    filter_func: F,
-    options: &DisplayOption,
-) -> std::io::Result<Vec<JoshutoDirEntry>>
-where
-    F: Fn(&Result<fs::DirEntry, std::io::Error>) -> bool,
-{
-    let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
-        .filter(filter_func)
-        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, options).ok())
-        .collect();
-
-    Ok(results)
 }

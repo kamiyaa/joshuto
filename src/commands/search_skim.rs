@@ -84,7 +84,9 @@ pub fn search_skim(context: &mut AppContext, backend: &mut TuiBackend) -> Joshut
                 (*sk_item).as_any().downcast_ref::<JoshutoSkimItem>();
 
             match item {
-                Some(item) => cursor_move::cursor_move(item.idx, context)?,
+                Some(item) => {
+                    cursor_move::cursor_move(item.idx, context);
+                }
                 None => {
                     return Err(JoshutoError::new(
                         JoshutoErrorKind::Io(io::ErrorKind::InvalidData),
