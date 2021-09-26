@@ -78,7 +78,7 @@ impl DirectoryHistory for JoshutoHistory {
     }
 
     fn reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()> {
-        let dirlist = JoshutoDirList::from_path(path.to_path_buf(), options)?;
+        let dirlist = create_dirlist_with_history(self, path, &options)?;
         self.insert(path.to_path_buf(), dirlist);
         Ok(())
     }
