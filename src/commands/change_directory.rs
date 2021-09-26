@@ -1,4 +1,3 @@
-use std::io;
 use std::path;
 
 use crate::context::AppContext;
@@ -25,27 +24,10 @@ fn _change_directory(path: &path::Path, context: &mut AppContext) -> std::io::Re
 
 pub fn change_directory(context: &mut AppContext, path: &path::Path) -> JoshutoResult<()> {
     let new_cwd = if path.is_absolute() {
-        let new_cwd = path.canonicalize()?;
-        if !new_cwd.exists() {
-            let err = io::Error::new(
-                io::ErrorKind::NotFound,
-                "No such file or directory".to_string(),
-            );
-            let err = JoshutoError::from(err);
-            return Err(err);
-        }
-        new_cwd
+        path.canonicalize()?
     } else {
         let mut new_cwd = std::env::current_dir()?;
         new_cwd.push(path.canonicalize()?);
-        if !new_cwd.exists() {
-            let err = io::Error::new(
-                io::ErrorKind::NotFound,
-                "No such file or directory".to_string(),
-            );
-            let err = JoshutoError::from(err);
-            return Err(err);
-        }
         new_cwd
     };
 
