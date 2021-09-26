@@ -21,7 +21,9 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         AppEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
         AppEvent::PreviewDir(Ok(dirlist)) => process_dir_preview(context, dirlist),
-        AppEvent::PreviewFile(path, file_preview) => process_file_preview(context, path, file_preview),
+        AppEvent::PreviewFile(path, file_preview) => {
+            process_file_preview(context, path, file_preview)
+        }
         AppEvent::Signal(signal::SIGWINCH) => {}
         _ => {}
     }
@@ -73,21 +75,21 @@ pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {
     history.insert(dir_path, dirlist);
 }
 
-pub fn process_file_preview(context: &mut AppContext, path: path::PathBuf, file_preview: io::Result<FilePreview>) {
+pub fn process_file_preview(
+    context: &mut AppContext,
+    path: path::PathBuf,
+    file_preview: io::Result<FilePreview>,
+) {
     if let Ok(preview) = file_preview {
         if preview.status.code().is_some() {
             context
                 .preview_context_mut()
                 .insert_preview(path, Some(preview));
         } else {
-            context
-                .preview_context_mut()
-                .insert_preview(path, None);
+            context.preview_context_mut().insert_preview(path, None);
         }
     } else {
-        context
-            .preview_context_mut()
-            .insert_preview(path, None);
+        context.preview_context_mut().insert_preview(path, None);
     }
 }
 

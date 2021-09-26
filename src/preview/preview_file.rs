@@ -27,10 +27,7 @@ impl std::convert::From<Output> for FilePreview {
         let s2 = s.replace('\t', "        ");
         let s = s2.to_string();
         let status = output.status;
-        Self {
-            status,
-            output: s,
-        }
+        Self { status, output: s }
     }
 }
 
