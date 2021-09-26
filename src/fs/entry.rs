@@ -138,6 +138,5 @@ fn create_icon_label(name: &str, metadata: &JoshutoMetadata) -> String {
 }
 
 fn get_directory_size(path: &path::Path) -> io::Result<usize> {
-    let directory_size = fs::read_dir(path).map(|s| s.count());
-    directory_size
+    fs::read_dir(path).map(|s| s.count())
 }

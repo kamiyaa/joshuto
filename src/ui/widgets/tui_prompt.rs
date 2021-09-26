@@ -31,7 +31,7 @@ impl<'a> TuiPrompt<'a> {
                 }
 
                 {
-                    let mut view = TuiView::new(&context);
+                    let mut view = TuiView::new(context);
                     view.show_bottom_status = false;
                     frame.render_widget(view, f_size);
                 }

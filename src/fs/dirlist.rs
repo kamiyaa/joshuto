@@ -32,7 +32,7 @@ impl JoshutoDirList {
 
     pub fn from_path(path: path::PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
         let filter_func = options.filter_func();
-        let mut contents = read_directory(path.as_path(), filter_func, &options)?;
+        let mut contents = read_directory(path.as_path(), filter_func, options)?;
 
         let sort_options = options.sort_options_ref();
         contents.sort_by(|f1, f2| sort_options.compare(f1, f2));

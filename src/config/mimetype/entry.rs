@@ -24,7 +24,7 @@ impl AppList {
     }
 
     pub fn app_list(&self) -> &[AppMimetypeEntry] {
-        &self._app_list.as_slice()
+        self._app_list.as_slice()
     }
 }
 

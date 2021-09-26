@@ -17,7 +17,7 @@ fn _change_directory(path: &path::Path, context: &mut AppContext) -> std::io::Re
         .tab_context_mut()
         .curr_tab_mut()
         .history_mut()
-        .populate_to_root(&path, &options)?;
+        .populate_to_root(path, &options)?;
 
     Ok(())
 }

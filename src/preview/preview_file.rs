@@ -24,10 +24,9 @@ pub struct FilePreview {
 impl std::convert::From<Output> for FilePreview {
     fn from(output: Output) -> Self {
         let s = String::from_utf8_lossy(&output.stdout).to_string();
-        let s2 = s.replace('\t', "        ");
-        let s = s2.to_string();
+        let s2 = s.replace('\t', "        ").to_string();
         let status = output.status;
-        Self { status, output: s }
+        Self { status, output: s2 }
     }
 }
 

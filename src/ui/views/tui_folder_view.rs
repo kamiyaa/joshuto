@@ -122,12 +122,12 @@ impl<'a> Widget for TuiFolderView<'a> {
 
         // render parent view
         if let Some(list) = parent_list.as_ref() {
-            TuiDirList::new(&list).render(layout_rect[0], buf);
+            TuiDirList::new(list).render(layout_rect[0], buf);
         }
 
         // render current view
         if let Some(list) = curr_list.as_ref() {
-            TuiDirListDetailed::new(&list).render(layout_rect[1], buf);
+            TuiDirListDetailed::new(list).render(layout_rect[1], buf);
             let rect = Rect {
                 x: 0,
                 y: area.height - 1,
@@ -144,7 +144,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                         .wrap(Wrap { trim: true })
                         .render(rect, buf);
                 } else if let Some(msg) = self.context.message_queue_ref().current_message() {
-                    let text = Span::styled(msg.content.as_str(), msg.style.clone());
+                    let text = Span::styled(msg.content.as_str(), msg.style);
                     Paragraph::new(text)
                         .wrap(Wrap { trim: true })
                         .render(rect, buf);
@@ -156,7 +156,7 @@ impl<'a> Widget for TuiFolderView<'a> {
 
         // render preview
         if let Some(list) = child_list.as_ref() {
-            TuiDirList::new(&list).render(layout_rect[2], buf);
+            TuiDirList::new(list).render(layout_rect[2], buf);
         } else if let Some(entry) = curr_entry {
             if let Some(Some(preview)) = preview_context.get_preview(entry.file_path()) {
                 match preview.status.code() {

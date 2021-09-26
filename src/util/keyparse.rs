@@ -50,24 +50,15 @@ pub fn str_to_key(s: &str) -> Option<Key> {
 
     if s.starts_with("ctrl+") {
         let ch = s.chars().nth("ctrl+".len());
-        let key = match ch {
-            Some(ch) => Some(Key::Ctrl(ch)),
-            None => None,
-        };
+        let key = ch.map(Key::Ctrl);
         return key;
     } else if s.starts_with("alt+") {
         let ch = s.chars().nth("alt+".len());
-        let key = match ch {
-            Some(ch) => Some(Key::Alt(ch)),
-            None => None,
-        };
+        let key = ch.map(Key::Alt);
         return key;
     } else if s.len() == 1 {
         let ch = s.chars().next();
-        let key = match ch {
-            Some(ch) => Some(Key::Char(ch)),
-            None => None,
-        };
+        let key = ch.map(Key::Char);
         return key;
     }
     None

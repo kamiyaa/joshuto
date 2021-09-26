@@ -401,7 +401,7 @@ impl AppExecute for KeyCommand {
             }
             Self::CutFiles => file_ops::cut(context),
             Self::CopyFiles => file_ops::copy(context),
-            Self::PasteFiles(options) => file_ops::paste(context, options.clone()),
+            Self::PasteFiles(options) => file_ops::paste(context, *options),
             Self::CopyFileName => file_ops::copy_filename(context),
             Self::CopyFileNameWithoutExtension => {
                 file_ops::copy_filename_without_extension(context)
@@ -445,7 +445,7 @@ impl AppExecute for KeyCommand {
             Self::SearchPrev => search::search_prev(context),
 
             Self::SelectFiles(pattern, options) => {
-                selection::select_files(context, pattern.as_str(), &options)
+                selection::select_files(context, pattern.as_str(), options)
             }
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::SubProcess(v, spawn) => {

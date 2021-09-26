@@ -58,7 +58,7 @@ impl DirectoryHistory for JoshutoHistory {
         };
         if need_update {
             let dirlist = if contains_key {
-                create_dirlist_with_history(self, path, &options)?
+                create_dirlist_with_history(self, path, options)?
             } else {
                 JoshutoDirList::from_path(path.to_path_buf(), options)?
             };
@@ -69,7 +69,7 @@ impl DirectoryHistory for JoshutoHistory {
 
     fn create_or_reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()> {
         let dirlist = if self.contains_key(path) {
-            create_dirlist_with_history(self, path, &options)?
+            create_dirlist_with_history(self, path, options)?
         } else {
             JoshutoDirList::from_path(path.to_path_buf(), options)?
         };
@@ -78,7 +78,7 @@ impl DirectoryHistory for JoshutoHistory {
     }
 
     fn reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()> {
-        let dirlist = create_dirlist_with_history(self, path, &options)?;
+        let dirlist = create_dirlist_with_history(self, path, options)?;
         self.insert(path.to_path_buf(), dirlist);
         Ok(())
     }

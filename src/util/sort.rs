@@ -162,7 +162,7 @@ fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering
         let f2_mtime: time::SystemTime = f2_meta.modified()?;
         Ok(f1_mtime.cmp(&f2_mtime))
     }
-    compare(&file1, &file2).unwrap_or(cmp::Ordering::Equal)
+    compare(file1, file2).unwrap_or(cmp::Ordering::Equal)
 }
 
 fn size_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
@@ -183,7 +183,7 @@ fn lexical_sort(
     let f1_name = f1.file_name();
     let f2_name = f2.file_name();
     if sort_option.case_sensitive {
-        f1_name.cmp(&f2_name)
+        f1_name.cmp(f2_name)
     } else {
         let f1_name = f1_name.to_lowercase();
         let f2_name = f2_name.to_lowercase();

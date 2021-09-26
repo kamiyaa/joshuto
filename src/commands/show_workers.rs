@@ -12,7 +12,7 @@ pub fn show_workers(
 ) -> JoshutoResult<()> {
     context.flush_event();
 
-    let view = TuiWorkerView::new(exit_key.clone());
+    let view = TuiWorkerView::new(*exit_key);
     view.display(context, backend);
     Ok(())
 }

@@ -85,7 +85,7 @@ fn print_entry(
             .metadata
             .directory_size()
             .map(|n| n.to_string())
-            .unwrap_or("".to_string()),
+            .unwrap_or_else(|| "".to_string()),
         FileType::File => format::file_size_to_string(entry.metadata.len()),
     };
     let symlink_string = match entry.metadata.link_type() {
@@ -167,7 +167,7 @@ pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
             let truncated_stem = stem.trunc(stem_width - 3);
             format!("{}{}.{}", truncated_stem, ELLIPSIS, ELLIPSIS)
         } else if ext_width == drawing_width {
-            extension.replacen('.', ELLIPSIS, 1).to_string()
+            extension.replacen('.', ELLIPSIS, 1)
         } else {
             let stem_width = drawing_width - ext_width;
             let truncated_stem = stem.trunc(stem_width - 1);

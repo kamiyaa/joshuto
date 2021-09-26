@@ -38,7 +38,7 @@ impl TuiWorkerView {
                     width: area.width,
                     height: area.height - 1,
                 };
-                let view = TuiWorker::new(&context);
+                let view = TuiWorker::new(context);
                 frame.render_widget(view, rect);
             });
 

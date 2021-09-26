@@ -94,7 +94,7 @@ impl<'a> TuiTextField<'a> {
                         return;
                     }
                     {
-                        let mut view = TuiView::new(&context);
+                        let mut view = TuiView::new(context);
                         view.show_bottom_status = false;
                         frame.render_widget(view, area);
                     }

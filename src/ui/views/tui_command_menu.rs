@@ -39,7 +39,7 @@ impl TuiCommandMenu {
                 let area = frame.size();
 
                 {
-                    let view = TuiView::new(&context);
+                    let view = TuiView::new(context);
                     frame.render_widget(view, area);
                 }
 

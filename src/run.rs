@@ -19,7 +19,7 @@ pub fn run(
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
-        let tab = JoshutoTab::new(curr_path, &context.config_ref().display_options_ref())?;
+        let tab = JoshutoTab::new(curr_path, context.config_ref().display_options_ref())?;
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child
@@ -27,7 +27,7 @@ pub fn run(
     }
 
     while context.quit == QuitType::DoNot {
-        backend.render(TuiView::new(&context));
+        backend.render(TuiView::new(context));
 
         if !context.worker_context_ref().is_busy() && !context.worker_context_ref().is_empty() {
             context.worker_context_mut().start_next_job();
@@ -43,7 +43,7 @@ pub fn run(
                 preview_default::load_preview(context, backend);
             }
             AppEvent::Termion(key) => {
-                if let Some(_) = context.message_queue_ref().current_message() {
+                if context.message_queue_ref().current_message().is_some() {
                     context.message_queue_mut().pop_front();
                 }
                 match key {
@@ -73,7 +73,7 @@ pub fn run(
                         Some(CommandKeybind::CompositeKeybind(m)) => {
                             let cmd = {
                                 let mut menu = TuiCommandMenu::new();
-                                menu.get_input(backend, context, &m)
+                                menu.get_input(backend, context, m)
                             };
 
                             if let Some(command) = cmd {
