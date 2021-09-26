@@ -57,6 +57,12 @@ sudo dnf install joshuto
 [yay/paru] -S joshuto-git
 ```
 
+##### MacOS ([MacPorts](https://ports.macports.org/port/joshuto/details/))
+
+```
+sudo port install joshuto
+```
+
 ## Usage
 ```
 ~ $ joshuto
