@@ -1,7 +1,7 @@
 use std::path;
 
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoResult};
+use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 
 pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {

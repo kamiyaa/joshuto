@@ -25,7 +25,7 @@ impl DirectoryHistory for JoshutoHistory {
         let mut prev: Option<&Path> = None;
         for curr in path.ancestors() {
             if self.contains_key(curr) {
-                let mut new_dirlist = create_dirlist_with_history(self, curr, &options)?;
+                let mut new_dirlist = create_dirlist_with_history(self, curr, options)?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
                         new_dirlist.index = Some(i);

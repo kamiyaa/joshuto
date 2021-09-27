@@ -45,7 +45,7 @@ pub fn search_skim(context: &mut AppContext, backend: &mut TuiBackend) -> Joshut
                 .collect();
             v
         })
-        .unwrap_or(vec![]);
+        .unwrap_or_else(|| vec![]);
 
     if items.is_empty() {
         return Err(JoshutoError::new(
