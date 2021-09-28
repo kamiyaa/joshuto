@@ -1,7 +1,7 @@
 use std::sync::mpsc;
 
 use crate::config;
-use crate::context::{LocalStateContext, MessageQueue, PreviewContext, TabContext, WorkerContext};
+use crate::context::{LocalStateContext, PageType, MessageQueue, PreviewContext, TabContext, WorkerContext};
 use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
@@ -17,6 +17,8 @@ pub struct AppContext {
     pub quit: QuitType,
     // event loop querying
     pub events: Events,
+    // PageType can be 'Normal' or 'Help'. 'Help' opens when you press '?'
+    page_type: PageType,
     // app config
     config: config::AppConfig,
     // context related to tabs
@@ -41,6 +43,7 @@ impl AppContext {
             quit: QuitType::DoNot,
             events,
             tab_context: TabContext::new(),
+            page_type: PageType::Normal,
             local_state: None,
             search_context: None,
             message_queue: MessageQueue::new(),
@@ -109,5 +112,17 @@ impl AppContext {
     }
     pub fn worker_context_mut(&mut self) -> &mut WorkerContext {
         &mut self.worker_context
+    }
+
+    // Page type related
+    pub fn page_type_ref(&self) -> &PageType {
+        &self.page_type
+    }
+    pub fn page_type_mut(&mut self) -> &mut PageType {
+        &mut self.page_type
+    }
+    pub fn set_page_type(&mut self, page_type: PageType) {
+        println!("{}", termion::clear::All);
+        self.page_type = page_type;
     }
 }

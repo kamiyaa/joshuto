@@ -2,7 +2,7 @@ use std::path;
 
 use termion::event::Key;
 
-use crate::context::AppContext;
+use crate::context::{AppContext, PageType};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::IoWorkerOptions;
 use crate::ui::TuiBackend;
@@ -76,6 +76,7 @@ pub enum KeyCommand {
     NewTab,
     CloseTab,
     TabSwitch(i32),
+    Help,
 }
 
 impl KeyCommand {
@@ -138,6 +139,92 @@ impl KeyCommand {
             Self::SortReverse => "sort reverse",
 
             Self::TabSwitch(_) => "tab_switch",
+            Self::Help => "help",
+        }
+    }
+
+    // These comments are displayed at the help page
+    pub fn comment(&self) -> &'static str {
+        match self {
+            Self::BulkRename => "Bulk rename",
+            Self::ChangeDirectory(_) => "Change directory",
+            Self::NewTab => "Open a new tab",
+            Self::CloseTab => "Close current tab",
+            Self::CommandLine(command, _) => match command.trim() {
+                "cd" => "Change directory",
+                "search" => "Open a search prompt",
+                "search_glob" => "Glob search",
+                "rename" => "Rename selected file",
+                "touch" => "Touch file",
+                "mkdir" => "Make a new directory",
+                _ => "Open a command line",
+            },
+
+            Self::CutFiles => "Cut selected files",
+            Self::CopyFiles => "Copy selected files",
+            Self::PasteFiles(IoWorkerOptions {
+                overwrite,
+                skip_exist,
+            }) => match (overwrite, skip_exist) {
+                (true, false) => "Paste, overwrite",
+                (false, true) => "Paste, skip existing files",
+                _ => "Paste",
+            },
+            Self::CopyFileName => "Copy filename",
+            Self::CopyFileNameWithoutExtension => "Copy filename without extension",
+            Self::CopyFilePath => "Copy path to file",
+            Self::CopyDirPath => "Copy directory name",
+
+            Self::CursorMoveUp(_) => "Move cursor up",
+            Self::CursorMoveDown(_) => "Move cursor down",
+            Self::CursorMoveHome => "Move cursor to the very top",
+            Self::CursorMoveEnd => "Move cursor to the ver bottom",
+            Self::CursorMovePageUp => "Move cursor one page up",
+            Self::CursorMovePageDown => "Move cursor one page down",
+
+            Self::ParentCursorMoveUp(_) => "Cursor up in parent list",
+            Self::ParentCursorMoveDown(_) => "Cursor down in parent list",
+
+            Self::DeleteFiles => "Delete selected files",
+            Self::NewDirectory(_) => "Make a new directory",
+            Self::OpenFile => "Open a file",
+            Self::OpenFileWith(_) => "Open using selected program",
+            Self::ParentDirectory => "CD to parent directory",
+
+            Self::Quit => "Quit the program",
+            Self::QuitToCurrentDirectory => "Quit to current directory",
+            Self::ForceQuit => "Force quit",
+            Self::ReloadDirList => "Reload current dir listing",
+            Self::RenameFile(_) => "Rename file",
+            Self::TouchFile(_) => "Touch file",
+            Self::RenameFileAppend => "Rename a file",
+            Self::RenameFilePrepend => "Rename a file",
+
+            Self::SearchString(_) => "Search",
+            Self::SearchGlob(_) => "Search with globbing",
+            Self::SearchSkim => "Search via skim",
+            Self::SearchNext => "Next search entry",
+            Self::SearchPrev => "Previous search entry",
+
+            Self::SelectFiles(_, _) => "Select file",
+            Self::SetMode => "Set file permissions",
+            Self::SubProcess(_, false) => "Run a shell command",
+            Self::SubProcess(_, true) => "Run commmand in background",
+            Self::ShowWorkers(_) => "Show IO workers",
+
+            Self::ToggleHiddenFiles => "Toggle hidden files displaying",
+
+            Self::Sort(sort_type) => match sort_type {
+                SortType::Lexical => "Sort lexically",
+                SortType::Mtime => "Sort by modifiaction time",
+                SortType::Natural => "Sort naturally",
+                SortType::Size => "Sort by size",
+                SortType::Ext => "Sort by extension",
+            },
+            Self::SortReverse => "Reverse sort order",
+
+            Self::TabSwitch(_) => "Swith to the next tab",
+            Self::Help => "Open this help page",
         }
     }
 }
@@ -369,6 +456,7 @@ impl std::str::FromStr for KeyCommand {
                 )),
             },
             "toggle_hidden" => Ok(Self::ToggleHiddenFiles),
+            "help" => Ok(Self::Help),
             inp => Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,
                 format!("Unrecognized command '{}'", inp),
@@ -451,6 +539,14 @@ impl AppExecute for KeyCommand {
 
             Self::TabSwitch(i) => {
                 tab_ops::tab_switch(*i, context)?;
+                Ok(())
+            }
+
+            Self::Help => {
+                context.set_page_type(match context.page_type_ref() {
+                    PageType::Normal => PageType::Help(0),
+                    PageType::Help(_) => PageType::Normal,
+                });
                 Ok(())
             }
         }

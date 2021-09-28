@@ -1,19 +1,21 @@
 use termion::event::Event;
+use termion::event::Key;
 
-use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
+use crate::commands::{quit, AppExecute, CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
-use crate::context::{AppContext, QuitType};
+use crate::context::{AppContext, PageType, QuitType};
 use crate::event::AppEvent;
 use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::views::{TuiCommandMenu, TuiView};
+use crate::ui::widgets::TuiHelp;
 use crate::util::input;
 use crate::util::to_string::ToString;
 
 pub fn run(
     backend: &mut ui::TuiBackend,
-    context: &mut AppContext,
+    mut context: &mut AppContext,
     keymap_t: AppKeyMapping,
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
@@ -27,7 +29,10 @@ pub fn run(
     }
 
     while context.quit == QuitType::DoNot {
-        backend.render(TuiView::new(&context));
+        match context.page_type_ref() {
+            PageType::Normal => backend.render(TuiView::new(&context)),
+            PageType::Help(_) => backend.render(TuiHelp::new(&mut context, &keymap_t)),
+        }
 
         if !context.worker_context_ref().is_busy() && !context.worker_context_ref().is_empty() {
             context.worker_context_mut().start_next_job();
@@ -37,57 +42,94 @@ pub fn run(
             Ok(event) => event,
             Err(_) => return Ok(()), // TODO
         };
-        match event {
-            AppEvent::Termion(Event::Mouse(event)) => {
-                input::process_mouse(event, context, backend);
-                preview_default::load_preview(context, backend);
-            }
-            AppEvent::Termion(key) => {
-                if let Some(_) = context.message_queue_ref().current_message() {
-                    context.message_queue_mut().pop_front();
+
+        match context.page_type_ref() {
+            PageType::Normal => match event {
+                AppEvent::Termion(Event::Mouse(event)) => {
+                    input::process_mouse(event, context, backend);
+                    preview_default::load_preview(context, backend);
                 }
-                match key {
-                    Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
-                        let command = KeyCommand::CursorMoveUp(1);
-                        if let Err(e) = command.execute(context, backend) {
-                            context.message_queue_mut().push_error(e.to_string());
-                        }
+                AppEvent::Termion(key) => {
+                    if let Some(_) = context.message_queue_ref().current_message() {
+                        context.message_queue_mut().pop_front();
                     }
-                    Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
-                        let command = KeyCommand::CursorMoveDown(1);
-                        if let Err(e) = command.execute(context, backend) {
-                            context.message_queue_mut().push_error(e.to_string());
-                        }
-                    }
-                    key => match keymap_t.as_ref().get(&key) {
-                        None => {
-                            context
-                                .message_queue_mut()
-                                .push_info(format!("Unmapped input: {}", key.to_string()));
-                        }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
+                    match key {
+                        Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
+                            let command = KeyCommand::CursorMoveUp(1);
                             if let Err(e) = command.execute(context, backend) {
                                 context.message_queue_mut().push_error(e.to_string());
                             }
                         }
-                        Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let cmd = {
-                                let mut menu = TuiCommandMenu::new();
-                                menu.get_input(backend, context, &m)
-                            };
-
-                            if let Some(command) = cmd {
+                        Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
+                            let command = KeyCommand::CursorMoveDown(1);
+                            if let Err(e) = command.execute(context, backend) {
+                                context.message_queue_mut().push_error(e.to_string());
+                            }
+                        }
+                        key => match keymap_t.as_ref().get(&key) {
+                            None => {
+                                context
+                                    .message_queue_mut()
+                                    .push_info(format!("Unmapped input: {}", key.to_string()));
+                            }
+                            Some(CommandKeybind::SimpleKeybind(command)) => {
                                 if let Err(e) = command.execute(context, backend) {
                                     context.message_queue_mut().push_error(e.to_string());
                                 }
                             }
-                        }
-                    },
+                            Some(CommandKeybind::CompositeKeybind(m)) => {
+                                let cmd = {
+                                    let mut menu = TuiCommandMenu::new();
+                                    menu.get_input(backend, context, &m)
+                                };
+
+                                if let Some(command) = cmd {
+                                    if let Err(e) = command.execute(context, backend) {
+                                        context.message_queue_mut().push_error(e.to_string());
+                                    }
+                                }
+                            }
+                        },
+                    }
+                    context.flush_event();
+                    preview_default::load_preview(context, backend);
                 }
-                context.flush_event();
-                preview_default::load_preview(context, backend);
+                event => input::process_noninteractive(event, context),
             }
-            event => input::process_noninteractive(event, context),
+            PageType::Help(_) => {
+                if let AppEvent::Termion(event) = event {
+                    match event {
+                        Event::Key(Key::Esc) => context.set_page_type(PageType::Normal),
+                        event => {
+                            if let Some(CommandKeybind::SimpleKeybind(command)) =
+                                keymap_t.as_ref().get(&event)
+                            {
+                                match command {
+                                    KeyCommand::CursorMoveUp(_) => {
+                                        context.page_type_mut().offset_up()
+                                    }
+
+                                    KeyCommand::CursorMoveDown(_) => {
+                                        context.page_type_mut().offset_down()
+                                    }
+                                    KeyCommand::CloseTab | KeyCommand::Help => {
+                                        context.set_page_type(PageType::Normal)
+                                    }
+                                    KeyCommand::ForceQuit => {
+                                        #[allow(unused_must_use)]
+                                        {
+                                            quit::force_quit(context);
+                                        }
+                                        ()
+                                    }
+                                    _ => (),
+                                }
+                            }
+                        }
+                    }
+                    context.flush_event();
+                }
+            }
         }
     }
 

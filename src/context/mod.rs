@@ -1,5 +1,6 @@
 mod app_context;
 mod local_state;
+mod page_type;
 mod message_queue;
 mod preview_context;
 mod tab_context;
@@ -11,3 +12,4 @@ pub use self::message_queue::*;
 pub use self::preview_context::*;
 pub use self::tab_context::*;
 pub use self::worker_context::*;
+pub use self::page_type::PageType;
