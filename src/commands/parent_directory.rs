@@ -1,3 +1,4 @@
+use crate::commands::reload;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 
