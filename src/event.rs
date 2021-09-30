@@ -99,6 +99,9 @@ impl Events {
         }
     }
 
+    // We need a next() and a flush() so we don't continuously consume
+    // input from the console. Sometimes, other applications need to
+    // read terminal inputs while joshuto is in the background
     pub fn next(&self) -> Result<AppEvent, mpsc::RecvError> {
         let event = self.event_rx.recv()?;
         Ok(event)

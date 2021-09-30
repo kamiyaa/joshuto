@@ -2,6 +2,7 @@ use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::create_dirlist_with_history;
 
+// reload only if we have a queued reload
 pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()> {
     let mut paths = Vec::with_capacity(3);
     if let Some(curr_tab) = context.tab_context_ref().tab_ref(index) {
@@ -35,9 +36,6 @@ pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()
             }
         }
     }
-    context
-        .message_queue_mut()
-        .push_success("Directory listing reloaded!".to_string());
     Ok(())
 }
 

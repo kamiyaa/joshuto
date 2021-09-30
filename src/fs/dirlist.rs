@@ -9,7 +9,7 @@ use crate::util::display::DisplayOption;
 pub struct JoshutoDirList {
     pub index: Option<usize>,
     path: path::PathBuf,
-    content_outdated: bool,
+    _need_update: bool,
     pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
 }
@@ -24,7 +24,7 @@ impl JoshutoDirList {
         Self {
             index,
             path,
-            content_outdated: false,
+            _need_update: false,
             metadata,
             contents,
         }
@@ -44,7 +44,7 @@ impl JoshutoDirList {
         Ok(Self {
             index,
             path,
-            content_outdated: false,
+            _need_update: false,
             metadata,
             contents,
         })
@@ -78,11 +78,11 @@ impl JoshutoDirList {
     }
 
     pub fn depreciate(&mut self) {
-        self.content_outdated = true;
+        self._need_update = true;
     }
 
     pub fn need_update(&self) -> bool {
-        self.content_outdated || self.modified()
+        self._need_update
     }
 
     pub fn file_path(&self) -> &path::PathBuf {

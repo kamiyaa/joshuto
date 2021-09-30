@@ -20,5 +20,6 @@ pub fn parent_directory_helper(context: &mut AppContext) -> std::io::Result<()> 
 
 pub fn parent_directory(context: &mut AppContext) -> JoshutoResult<()> {
     parent_directory_helper(context)?;
+    reload::soft_reload(context.tab_context_ref().index, context)?;
     Ok(())
 }
