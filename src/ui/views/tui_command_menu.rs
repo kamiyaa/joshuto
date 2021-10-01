@@ -1,10 +1,9 @@
 use std::iter::Iterator;
 
-use termion::event::{Event, Key};
+use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::widgets::Clear;
+use tui::widgets::{Clear, Widget};
 
-use crate::commands::{CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::event::AppEvent;
@@ -17,91 +16,52 @@ use crate::util::to_string::ToString;
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;
 
-pub struct TuiCommandMenu;
+pub struct TuiCommandMenu<'a> {
+    context: &'a AppContext,
+    keymap: &'a AppKeyMapping,
+}
 
-impl TuiCommandMenu {
-    pub fn new() -> Self {
-        Self {}
+impl<'a> TuiCommandMenu<'a> {
+    pub fn new(context: &'a AppContext, keymap: &'a AppKeyMapping) -> Self {
+        Self { context, keymap }
     }
+}
 
-    pub fn get_input<'a>(
-        &mut self,
-        backend: &mut TuiBackend,
-        context: &mut AppContext,
-        map: &'a AppKeyMapping,
-    ) -> Option<&'a KeyCommand> {
-        let mut map = map;
-        let terminal = backend.terminal_mut();
-        context.flush_event();
+impl<'a> Widget for TuiCommandMenu<'a> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        TuiView::new(self.context).render(area, buf);
 
-        loop {
-            let _ = terminal.draw(|frame| {
-                let area = frame.size();
+        // draw menu
+        let mut display_vec: Vec<String> = self
+            .keymap
+            .as_ref()
+            .iter()
+            .map(|(k, v)| format!("  {}        {}", k.to_string(), v))
+            .collect();
+        display_vec.sort();
+        let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
+        let display_str_len = display_str.len();
 
-                {
-                    let view = TuiView::new(context);
-                    frame.render_widget(view, area);
-                }
+        let y = if (area.height as usize) < display_str_len + BORDER_HEIGHT + BOTTOM_MARGIN {
+            0
+        } else {
+            area.height - (BORDER_HEIGHT + BOTTOM_MARGIN) as u16 - display_str_len as u16
+        };
 
-                {
-                    // draw menu
-                    let mut display_vec: Vec<String> = map
-                        .as_ref()
-                        .iter()
-                        .map(|(k, v)| format!("  {}        {}", k.to_string(), v))
-                        .collect();
-                    display_vec.sort();
-                    let display_str: Vec<&str> = display_vec.iter().map(|v| v.as_str()).collect();
-                    let display_str_len = display_str.len();
+        let menu_height = if display_str_len + BORDER_HEIGHT > area.height as usize {
+            area.height
+        } else {
+            (display_str_len + BORDER_HEIGHT) as u16
+        };
 
-                    let y = if (area.height as usize)
-                        < display_str_len + BORDER_HEIGHT + BOTTOM_MARGIN
-                    {
-                        0
-                    } else {
-                        area.height
-                            - (BORDER_HEIGHT + BOTTOM_MARGIN) as u16
-                            - display_str_len as u16
-                    };
+        let menu_rect = Rect {
+            x: 0,
+            y,
+            width: area.width,
+            height: menu_height,
+        };
 
-                    let menu_height = if display_str_len + BORDER_HEIGHT > area.height as usize {
-                        area.height
-                    } else {
-                        (display_str_len + BORDER_HEIGHT) as u16
-                    };
-
-                    let menu_rect = Rect {
-                        x: 0,
-                        y,
-                        width: area.width,
-                        height: menu_height,
-                    };
-
-                    frame.render_widget(Clear, menu_rect);
-                    frame.render_widget(TuiMenu::new(&display_str), menu_rect);
-                }
-            });
-
-            if let Ok(event) = context.poll_event() {
-                match event {
-                    AppEvent::Termion(event) => {
-                        match event {
-                            Event::Key(Key::Esc) => return None,
-                            event => match map.as_ref().get(&event) {
-                                Some(CommandKeybind::SimpleKeybind(s)) => {
-                                    return Some(s);
-                                }
-                                Some(CommandKeybind::CompositeKeybind(m)) => {
-                                    map = m;
-                                }
-                                None => return None,
-                            },
-                        }
-                        context.flush_event();
-                    }
-                    event => input::process_noninteractive(event, context),
-                }
-            }
-        }
+        Clear.render(menu_rect, buf);
+        TuiMenu::new(&display_str).render(menu_rect, buf);
     }
 }

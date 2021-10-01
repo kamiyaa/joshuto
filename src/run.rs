@@ -71,10 +71,7 @@ pub fn run(
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let cmd = {
-                                let mut menu = TuiCommandMenu::new();
-                                menu.get_input(backend, context, m)
-                            };
+                            let cmd = input::get_input_while_composite(backend, context, m);
 
                             if let Some(command) = cmd {
                                 if let Err(e) = command.execute(context, backend) {
