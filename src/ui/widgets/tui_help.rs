@@ -5,7 +5,6 @@ use tui::widgets::{Cell, Row, Table, Widget};
 
 use crate::commands::CommandKeybind;
 use crate::config::AppKeyMapping;
-use crate::context::AppContext;
 use termion::event::{Event, Key};
 
 use lazy_static::lazy_static;
@@ -19,33 +18,36 @@ lazy_static! {
 }
 
 const TITLE: &str = "Keybindings";
-const FOOTER: &str = "Press <ESC> to return and Q to exit";
+const FOOTER: &str = "Press <ESC> to return";
 
 pub struct TuiHelp<'a> {
-    context: &'a mut AppContext,
-    keymap: &'a AppKeyMapping,
+    // This keymap is constructed with get_keymap_table function
+    keymap: &'a Vec<Row<'a>>,
+    offset: &'a mut u8,
+    search_query: &'a str,
 }
 
 impl<'a> TuiHelp<'a> {
-    pub fn new(context: &'a mut AppContext, keymap: &'a AppKeyMapping) -> TuiHelp<'a> {
-        TuiHelp { context, keymap }
+    pub fn new(keymap: &'a Vec<Row>, offset: &'a mut u8, search_query: &'a str) -> TuiHelp<'a> {
+        TuiHelp {
+            keymap,
+            offset,
+            search_query,
+        }
     }
 }
 
 impl<'a> Widget for TuiHelp<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let mut offset = self.context.page_type_ref().get_offset().unwrap();
         // Subtracting 2 because we'll draw a title at the top and some
         // additional information at the bottom of the page
         let height = (area.bottom() - area.top() - 2) as i16;
         let width = area.right() - area.left();
-        let keymap_table = get_keymap_table(self.keymap);
-        let max_offset = Ord::max(keymap_table.len() as i16 - height + 2, 0) as u8;
-        if offset > max_offset {
-            self.context.page_type_mut().set_offset(max_offset).unwrap();
-            offset = max_offset;
+        let max_offset = Ord::max(self.keymap.len() as i16 - height + 2, 0) as u8;
+        if *self.offset > max_offset {
+            *self.offset = max_offset;
         }
-        let keymap_table = Vec::from(&keymap_table[(offset as usize)..]);
+        let keymap = Vec::from(&self.keymap[(*self.offset as usize)..]);
 
         let keybindings_area = Rect::new(0, 1, width, height as u16);
         let mut keybindings_buffer = Buffer::default();
@@ -55,7 +57,7 @@ impl<'a> Widget for TuiHelp<'a> {
             Constraint::Length((width as f32 * 0.50) as u16),
             Constraint::Length((width as f32 * 0.38) as u16),
         ];
-        let table_widget = Table::new(keymap_table)
+        let table_widget = Table::new(keymap)
             .header(
                 Row::new(vec!["Key", "Command", "Description"])
                     .style(*HEADER_STYLE)
@@ -73,10 +75,15 @@ impl<'a> Widget for TuiHelp<'a> {
             width as usize,
             *COMMENT_STYLE,
         );
+        let footer = if self.search_query.is_empty() {
+            FOOTER
+        } else {
+            self.search_query
+        };
         buf.set_stringn(
             0,
             (height + 1) as u16,
-            format!("{:^w$}", FOOTER, w = width as usize),
+            format!("{:^w$}", footer, w = width as usize),
             width as usize,
             *COMMENT_STYLE,
         );
@@ -84,9 +91,13 @@ impl<'a> Widget for TuiHelp<'a> {
 }
 
 // This function is needed because we cannot access Row items, which
-// means that we won't be able to sort binds if we create Rows directly
-fn get_keymap_table(keymap: &AppKeyMapping) -> Vec<Row> {
-    let raw_rows = get_raw_keymap_table(keymap);
+// means that we won't be able to sort binds if we create Rows directly.
+pub fn get_keymap_table<'a>(
+    keymap: &'a AppKeyMapping,
+    search_query: &'a str,
+    sort_by: usize,
+) -> Vec<Row<'a>> {
+    let raw_rows = get_raw_keymap_table(keymap, search_query, sort_by);
     let mut rows = Vec::new();
     for row in raw_rows {
         rows.push(Row::new(vec![
@@ -98,14 +109,18 @@ fn get_keymap_table(keymap: &AppKeyMapping) -> Vec<Row> {
     rows
 }
 
-fn get_raw_keymap_table(keymap: &AppKeyMapping) -> Vec<[String; 3]> {
+pub fn get_raw_keymap_table<'a>(
+    keymap: &'a AppKeyMapping,
+    search_query: &'a str,
+    sort_by: usize,
+) -> Vec<[String; 3]> {
     let mut rows = Vec::new();
     for (event, bind) in keymap.as_ref() {
         let key = key_event_to_string(event);
         let (command, comment) = match bind {
             CommandKeybind::SimpleKeybind(command) => (format!("{}", command), command.comment()),
             CommandKeybind::CompositeKeybind(sub_keymap) => {
-                let mut sub_rows = get_raw_keymap_table(sub_keymap);
+                let mut sub_rows = get_raw_keymap_table(sub_keymap, search_query, sort_by);
                 for sub_row in sub_rows.iter_mut() {
                     sub_row[0] = key.clone() + &sub_row[0];
                 }
@@ -113,9 +128,11 @@ fn get_raw_keymap_table(keymap: &AppKeyMapping) -> Vec<[String; 3]> {
                 continue;
             }
         };
-        rows.push([key, command, comment.to_string()]);
+        if key.contains(search_query) || command.contains(search_query) {
+            rows.push([key, command, comment.to_string()]);
+        }
     }
-    rows.sort_by_cached_key(|x| x[1].clone());
+    rows.sort_by_cached_key(|x| x[sort_by].clone());
     rows
 }
 

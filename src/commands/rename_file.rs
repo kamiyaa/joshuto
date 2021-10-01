@@ -1,5 +1,6 @@
 use std::path;
 
+use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::create_dirlist_with_history;
@@ -52,6 +53,7 @@ pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult
 pub fn _rename_file_append(
     context: &mut AppContext,
     backend: &mut TuiBackend,
+    keymap_t: &AppKeyMapping,
     file_name: &str,
 ) -> JoshutoResult<()> {
     let (prefix, suffix): (String, String) = match file_name.rfind('.') {
@@ -61,10 +63,14 @@ pub fn _rename_file_append(
         ),
         None => (format!("rename {}", file_name), "".to_string()),
     };
-    command_line::readline(context, backend, &prefix, &suffix)
+    command_line::readline(context, backend, keymap_t, &prefix, &suffix)
 }
 
-pub fn rename_file_append(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn rename_file_append(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+    keymap_t: &AppKeyMapping,
+) -> JoshutoResult<()> {
     let mut file_name: Option<String> = None;
 
     if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
@@ -74,7 +80,7 @@ pub fn rename_file_append(context: &mut AppContext, backend: &mut TuiBackend) ->
     }
 
     if let Some(file_name) = file_name {
-        _rename_file_append(context, backend, file_name.as_str())?;
+        _rename_file_append(context, backend, keymap_t, file_name.as_str())?;
     }
     Ok(())
 }
@@ -82,16 +88,18 @@ pub fn rename_file_append(context: &mut AppContext, backend: &mut TuiBackend) ->
 pub fn _rename_file_prepend(
     context: &mut AppContext,
     backend: &mut TuiBackend,
+    keymap_t: &AppKeyMapping,
     file_name: String,
 ) -> JoshutoResult<()> {
     let prefix = String::from("rename ");
     let suffix = file_name;
-    command_line::readline(context, backend, &prefix, &suffix)
+    command_line::readline(context, backend, keymap_t, &prefix, &suffix)
 }
 
 pub fn rename_file_prepend(
     context: &mut AppContext,
     backend: &mut TuiBackend,
+    keymap_t: &AppKeyMapping,
 ) -> JoshutoResult<()> {
     let mut file_name: Option<String> = None;
 
@@ -102,7 +110,7 @@ pub fn rename_file_prepend(
     }
 
     if let Some(file_name) = file_name {
-        _rename_file_prepend(context, backend, file_name)?;
+        _rename_file_prepend(context, backend, keymap_t, file_name)?;
     }
     Ok(())
 }

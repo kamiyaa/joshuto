@@ -14,7 +14,7 @@ pub use self::tui_dirlist::TuiDirList;
 pub use self::tui_dirlist_detailed::{trim_file_label, TuiDirListDetailed};
 pub use self::tui_file_preview::TuiFilePreview;
 pub use self::tui_footer::TuiFooter;
-pub use self::tui_help::TuiHelp;
+pub use self::tui_help::{get_keymap_table, TuiHelp};
 pub use self::tui_menu::TuiMenu;
 pub use self::tui_prompt::TuiPrompt;
 pub use self::tui_tab::TuiTabBar;

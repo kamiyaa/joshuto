@@ -2,7 +2,8 @@ use std::path;
 
 use termion::event::Key;
 
-use crate::context::{AppContext, PageType};
+use crate::config::AppKeyMapping;
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::IoWorkerOptions;
 use crate::ui::TuiBackend;
@@ -466,7 +467,12 @@ impl std::str::FromStr for KeyCommand {
 }
 
 impl AppExecute for KeyCommand {
-    fn execute(&self, context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    fn execute(
+        &self,
+        context: &mut AppContext,
+        backend: &mut TuiBackend,
+        keymap_t: &AppKeyMapping,
+    ) -> JoshutoResult<()> {
         match &*self {
             Self::BulkRename => bulk_rename::bulk_rename(context, backend),
             Self::ChangeDirectory(p) => {
@@ -476,7 +482,7 @@ impl AppExecute for KeyCommand {
             Self::NewTab => tab_ops::new_tab(context),
             Self::CloseTab => tab_ops::close_tab(context),
             Self::CommandLine(p, s) => {
-                command_line::readline(context, backend, p.as_str(), s.as_str())
+                command_line::readline(context, backend, keymap_t, p.as_str(), s.as_str())
             }
             Self::CutFiles => file_ops::cut(context),
             Self::CopyFiles => file_ops::copy(context),
@@ -514,8 +520,8 @@ impl AppExecute for KeyCommand {
 
             Self::ReloadDirList => reload::reload_dirlist(context),
             Self::RenameFile(p) => rename_file::rename_file(context, p.as_path()),
-            Self::RenameFileAppend => rename_file::rename_file_append(context, backend),
-            Self::RenameFilePrepend => rename_file::rename_file_prepend(context, backend),
+            Self::RenameFileAppend => rename_file::rename_file_append(context, backend, keymap_t),
+            Self::RenameFilePrepend => rename_file::rename_file_prepend(context, backend, keymap_t),
             Self::TouchFile(arg) => touch_file::touch_file(context, arg.as_str()),
             Self::SearchGlob(pattern) => search_glob::search_glob(context, pattern.as_str()),
             Self::SearchString(pattern) => search_string::search_string(context, pattern.as_str()),
@@ -542,13 +548,7 @@ impl AppExecute for KeyCommand {
                 Ok(())
             }
 
-            Self::Help => {
-                context.set_page_type(match context.page_type_ref() {
-                    PageType::Normal => PageType::Help(0),
-                    PageType::Help(_) => PageType::Normal,
-                });
-                Ok(())
-            }
+            Self::Help => help::help_loop(context, backend, keymap_t),
         }
     }
 }

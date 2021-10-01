@@ -21,7 +21,12 @@ impl std::fmt::Display for CommandKeybind {
 }
 
 pub trait AppExecute {
-    fn execute(&self, context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()>;
+    fn execute(
+        &self,
+        context: &mut AppContext,
+        backend: &mut TuiBackend,
+        keymap_t: &AppKeyMapping,
+    ) -> JoshutoResult<()>;
 }
 
 pub trait AppCommand: AppExecute + std::fmt::Display + std::fmt::Debug {}
