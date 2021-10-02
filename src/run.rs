@@ -29,6 +29,10 @@ pub fn run(
     while context.quit == QuitType::DoNot {
         backend.render(TuiView::new(context));
 
+        if !context.worker_context_ref().is_busy() && !context.worker_context_ref().is_empty() {
+            context.worker_context_mut().start_next_job();
+        }
+
         let event = match context.poll_event() {
             Ok(event) => event,
             Err(_) => return Ok(()), // TODO
