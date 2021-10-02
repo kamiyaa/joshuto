@@ -33,9 +33,10 @@ pub fn run(
             Ok(event) => event,
             Err(_) => return Ok(()), // TODO
         };
+
         match event {
             AppEvent::Termion(Event::Mouse(event)) => {
-                input::process_mouse(event, context, backend);
+                input::process_mouse(event, context, backend, &keymap_t);
                 preview_default::load_preview(context, backend);
             }
             AppEvent::Termion(key) => {
@@ -45,13 +46,13 @@ pub fn run(
                 match key {
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
                         let command = KeyCommand::CursorMoveUp(1);
-                        if let Err(e) = command.execute(context, backend) {
+                        if let Err(e) = command.execute(context, backend, &keymap_t) {
                             context.message_queue_mut().push_error(e.to_string());
                         }
                     }
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
                         let command = KeyCommand::CursorMoveDown(1);
-                        if let Err(e) = command.execute(context, backend) {
+                        if let Err(e) = command.execute(context, backend, &keymap_t) {
                             context.message_queue_mut().push_error(e.to_string());
                         }
                     }
@@ -62,7 +63,7 @@ pub fn run(
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
                         Some(CommandKeybind::SimpleKeybind(command)) => {
-                            if let Err(e) = command.execute(context, backend) {
+                            if let Err(e) = command.execute(context, backend, &keymap_t) {
                                 context.message_queue_mut().push_error(e.to_string());
                             }
                         }
@@ -70,7 +71,7 @@ pub fn run(
                             let cmd = input::get_input_while_composite(backend, context, m);
 
                             if let Some(command) = cmd {
-                                if let Err(e) = command.execute(context, backend) {
+                                if let Err(e) = command.execute(context, backend, &keymap_t) {
                                     context.message_queue_mut().push_error(e.to_string());
                                 }
                             }

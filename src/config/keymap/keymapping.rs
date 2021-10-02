@@ -236,6 +236,10 @@ impl AppKeyMapping {
         let keys = [Event::Key(Key::Char('c')), Event::Key(Key::Char('w'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
+        let cmd = KeyCommand::Help;
+        let keys = [Event::Key(Key::Char('?'))];
+        insert_keycommand(&mut m, cmd, &keys)?;
+
         Ok(())
     }
 }

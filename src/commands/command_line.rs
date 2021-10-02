@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use crate::commands::KeyCommand;
+use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::views::TuiTextField;
@@ -11,6 +12,7 @@ use super::AppExecute;
 pub fn read_and_execute(
     context: &mut AppContext,
     backend: &mut TuiBackend,
+    keymap_t: &AppKeyMapping,
     prefix: &str,
     suffix: &str,
 ) -> JoshutoResult<()> {
@@ -25,7 +27,7 @@ pub fn read_and_execute(
         let trimmed = s.trim_start();
         context.commandline_context_mut().history_mut().add(trimmed);
         let command = KeyCommand::from_str(trimmed)?;
-        command.execute(context, backend)
+        command.execute(context, backend, keymap_t)
     } else {
         Ok(())
     }

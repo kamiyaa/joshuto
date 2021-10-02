@@ -5,7 +5,11 @@ use signal_hook::consts::signal;
 use termion::event::{Event, Key, MouseButton, MouseEvent};
 use tui::layout::{Constraint, Direction, Layout};
 
+<<<<<<< HEAD
 use crate::commands::{cursor_move, parent_cursor_move, AppExecute, CommandKeybind, KeyCommand};
+=======
+use crate::commands::{cursor_move, parent_cursor_move, AppExecute, KeyCommand};
+>>>>>>> main
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::event::AppEvent;
@@ -133,7 +137,12 @@ pub fn process_file_preview(
     }
 }
 
-pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut ui::TuiBackend) {
+pub fn process_mouse(
+    event: MouseEvent,
+    context: &mut AppContext,
+    backend: &mut ui::TuiBackend,
+    keymap_t: &AppKeyMapping,
+) {
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
 
     let constraints: &[Constraint; 3] = &context.config_ref().display_options_ref().default_layout;
@@ -153,12 +162,12 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
         MouseEvent::Press(MouseButton::WheelUp, x, _) => {
             if x < layout_rect[1].x {
                 let command = KeyCommand::ParentCursorMoveUp(1);
-                if let Err(e) = command.execute(context, backend) {
+                if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = KeyCommand::CursorMoveUp(1);
-                if let Err(e) = command.execute(context, backend) {
+                if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
@@ -168,12 +177,12 @@ pub fn process_mouse(event: MouseEvent, context: &mut AppContext, backend: &mut 
         MouseEvent::Press(MouseButton::WheelDown, x, _) => {
             if x < layout_rect[1].x {
                 let command = KeyCommand::ParentCursorMoveDown(1);
-                if let Err(e) = command.execute(context, backend) {
+                if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = KeyCommand::CursorMoveDown(1);
-                if let Err(e) = command.execute(context, backend) {
+                if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
