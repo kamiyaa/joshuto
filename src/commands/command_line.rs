@@ -1,13 +1,11 @@
 use std::str::FromStr;
 
-use crate::commands::KeyCommand;
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
+use crate::key_command::{AppExecute, KeyCommand};
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
-
-use super::AppExecute;
 
 pub fn read_and_execute(
     context: &mut AppContext,

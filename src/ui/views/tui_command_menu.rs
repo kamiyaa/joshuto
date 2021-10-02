@@ -6,11 +6,8 @@ use tui::widgets::{Clear, Widget};
 
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
-use crate::event::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
-use crate::ui::TuiBackend;
-use crate::util::input;
 use crate::util::to_string::ToString;
 
 const BORDER_HEIGHT: usize = 1;

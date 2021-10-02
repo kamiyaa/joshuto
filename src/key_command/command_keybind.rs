@@ -1,7 +1,4 @@
 use crate::config::AppKeyMapping;
-use crate::context::AppContext;
-use crate::error::JoshutoResult;
-use crate::ui::TuiBackend;
 
 use super::KeyCommand;
 
@@ -19,14 +16,3 @@ impl std::fmt::Display for CommandKeybind {
         }
     }
 }
-
-pub trait AppExecute {
-    fn execute(
-        &self,
-        context: &mut AppContext,
-        backend: &mut TuiBackend,
-        keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult<()>;
-}
-
-pub trait AppCommand: AppExecute + std::fmt::Display + std::fmt::Debug {}

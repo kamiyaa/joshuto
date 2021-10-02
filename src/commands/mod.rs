@@ -24,9 +24,3 @@ pub mod sort;
 pub mod sub_process;
 pub mod tab_ops;
 pub mod touch_file;
-
-pub mod command_keybind;
-pub mod key_command;
-
-pub use self::command_keybind::{AppCommand, AppExecute, CommandKeybind};
-pub use self::key_command::KeyCommand;

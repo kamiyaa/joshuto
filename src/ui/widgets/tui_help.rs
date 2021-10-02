@@ -3,8 +3,8 @@ use tui::layout::{Constraint, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Cell, Row, Table, Widget};
 
-use crate::commands::CommandKeybind;
 use crate::config::AppKeyMapping;
+use crate::key_command::CommandKeybind;
 use termion::event::{Event, Key};
 
 use lazy_static::lazy_static;

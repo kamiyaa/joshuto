@@ -1,13 +1,13 @@
 use termion::event::Event;
 
-use crate::commands::{AppExecute, CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::{AppContext, QuitType};
 use crate::event::AppEvent;
+use crate::key_command::{AppExecute, CommandKeybind, KeyCommand};
 use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
 use crate::ui;
-use crate::ui::views::{TuiCommandMenu, TuiView};
+use crate::ui::views::TuiView;
 use crate::util::input;
 use crate::util::to_string::ToString;
 

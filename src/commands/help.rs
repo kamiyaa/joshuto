@@ -1,10 +1,10 @@
 use termion::event::{Event, Key};
 
-use crate::commands::{CommandKeybind, KeyCommand};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::event::AppEvent;
+use crate::key_command::{CommandKeybind, KeyCommand};
 use crate::ui::widgets;
 use crate::ui::widgets::TuiHelp;
 use crate::ui::TuiBackend;

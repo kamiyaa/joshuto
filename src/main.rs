@@ -6,6 +6,7 @@ mod event;
 mod fs;
 mod history;
 mod io;
+mod key_command;
 mod preview;
 mod run;
 mod tab;
