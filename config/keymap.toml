@@ -75,7 +75,7 @@ mapcommand = [
 
 	{ keys = [ "/" ],		command = ":search " },
 	{ keys = [ "\\" ],		command = ":search_glob " },
-	{ keys = [ "%", "s" ],		command = ":search_skim " },
+	{ keys = [ "S" ],		command = ":search_skim " },
 
 	{ keys = [ "n" ],		command = "search_next" },
 	{ keys = [ "N" ],		command = "search_prev" },
@@ -92,5 +92,5 @@ mapcommand = [
 	{ keys = [ "g", "d" ],		command = "cd ~/Downloads" },
 	{ keys = [ "g", "e" ],		command = "cd /etc" },
 	{ keys = [ "g", "h" ],		command = "cd ~/" },
-  { keys = [ "?" ],         command = "help" }
+	{ keys = [ "?" ],		command = "help" }
 ]

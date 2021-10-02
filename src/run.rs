@@ -44,6 +44,8 @@ pub fn run(
                     context.message_queue_mut().pop_front();
                 }
                 match key {
+                    // in the event where mouse input is not supported
+                    // but we still want to register scroll
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
                         let command = KeyCommand::CursorMoveUp(1);
                         if let Err(e) = command.execute(context, backend, &keymap_t) {
