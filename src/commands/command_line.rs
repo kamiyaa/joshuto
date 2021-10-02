@@ -8,7 +8,7 @@ use crate::ui::TuiBackend;
 
 use super::AppExecute;
 
-pub fn readline(
+pub fn read_and_execute(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     prefix: &str,
@@ -23,6 +23,7 @@ pub fn readline(
 
     if let Some(s) = user_input {
         let trimmed = s.trim_start();
+        context.commandline_context_mut().history_mut().add(trimmed);
         let command = KeyCommand::from_str(trimmed)?;
         command.execute(context, backend)
     } else {

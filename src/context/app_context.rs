@@ -1,7 +1,9 @@
 use std::sync::mpsc;
 
 use crate::config;
-use crate::context::{LocalStateContext, MessageQueue, PreviewContext, TabContext, WorkerContext};
+use crate::context::{
+    CommandLineContext, LocalStateContext, MessageQueue, PreviewContext, TabContext, WorkerContext,
+};
 use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 
@@ -31,12 +33,17 @@ pub struct AppContext {
     worker_context: WorkerContext,
     // context related to previews
     preview_context: PreviewContext,
+    // context related to command line
+    commandline_context: CommandLineContext,
 }
 
 impl AppContext {
     pub fn new(config: config::AppConfig) -> Self {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
+
+        let mut commandline_context = CommandLineContext::new();
+        commandline_context.history_mut().set_max_len(20);
         Self {
             quit: QuitType::DoNot,
             events,
@@ -46,6 +53,7 @@ impl AppContext {
             message_queue: MessageQueue::new(),
             worker_context: WorkerContext::new(event_tx),
             preview_context: PreviewContext::new(),
+            commandline_context,
             config,
         }
     }
@@ -109,5 +117,13 @@ impl AppContext {
     }
     pub fn worker_context_mut(&mut self) -> &mut WorkerContext {
         &mut self.worker_context
+    }
+
+    pub fn commandline_context_ref(&self) -> &CommandLineContext {
+        &self.commandline_context
+    }
+
+    pub fn commandline_context_mut(&mut self) -> &mut CommandLineContext {
+        &mut self.commandline_context
     }
 }

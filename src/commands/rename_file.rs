@@ -61,7 +61,7 @@ pub fn _rename_file_append(
         ),
         None => (format!("rename {}", file_name), "".to_string()),
     };
-    command_line::readline(context, backend, &prefix, &suffix)
+    command_line::read_and_execute(context, backend, &prefix, &suffix)
 }
 
 pub fn rename_file_append(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
@@ -86,7 +86,7 @@ pub fn _rename_file_prepend(
 ) -> JoshutoResult<()> {
     let prefix = String::from("rename ");
     let suffix = file_name;
-    command_line::readline(context, backend, &prefix, &suffix)
+    command_line::read_and_execute(context, backend, &prefix, &suffix)
 }
 
 pub fn rename_file_prepend(

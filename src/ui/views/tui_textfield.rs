@@ -86,6 +86,8 @@ impl<'a> TuiTextField<'a> {
         let terminal = backend.terminal_mut();
         let _ = terminal.show_cursor();
 
+        let mut curr_history_index = context.commandline_context_ref().history_ref().len();
+
         loop {
             terminal
                 .draw(|frame| {
@@ -186,8 +188,40 @@ impl<'a> TuiTextField<'a> {
                                 line_buffer.move_end();
                                 completion_tracker.take();
                             }
-                            Key::Up => {}
-                            Key::Down => {}
+                            Key::Up => {
+                                curr_history_index = if curr_history_index > 0 {
+                                    curr_history_index - 1
+                                } else {
+                                    0
+                                };
+                                line_buffer.move_home();
+                                line_buffer.kill_line();
+                                if let Some(s) = context
+                                    .commandline_context_ref()
+                                    .history_ref()
+                                    .get(curr_history_index)
+                                {
+                                    line_buffer.insert_str(0, s);
+                                }
+                            }
+                            Key::Down => {
+                                curr_history_index = if curr_history_index
+                                    < context.commandline_context_ref().history_ref().len()
+                                {
+                                    curr_history_index + 1
+                                } else {
+                                    curr_history_index
+                                };
+                                line_buffer.move_home();
+                                line_buffer.kill_line();
+                                if let Some(s) = context
+                                    .commandline_context_ref()
+                                    .history_ref()
+                                    .get(curr_history_index)
+                                {
+                                    line_buffer.insert_str(0, s);
+                                }
+                            }
                             Key::Esc => {
                                 let _ = terminal.hide_cursor();
                                 return None;

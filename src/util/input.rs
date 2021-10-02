@@ -102,6 +102,10 @@ pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<Io
             context.message_queue_mut().push_error(msg);
         }
     }
+
+    if !context.worker_context_ref().is_busy() && !context.worker_context_ref().is_empty() {
+        context.worker_context_mut().start_next_job();
+    }
 }
 
 pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {

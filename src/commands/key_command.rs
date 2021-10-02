@@ -397,7 +397,7 @@ impl AppExecute for KeyCommand {
             Self::NewTab => tab_ops::new_tab(context),
             Self::CloseTab => tab_ops::close_tab(context),
             Self::CommandLine(p, s) => {
-                command_line::readline(context, backend, p.as_str(), s.as_str())
+                command_line::read_and_execute(context, backend, p.as_str(), s.as_str())
             }
             Self::CutFiles => file_ops::cut(context),
             Self::CopyFiles => file_ops::copy(context),
