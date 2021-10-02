@@ -93,11 +93,7 @@ pub fn _rename_file_prepend(
 ) -> JoshutoResult<()> {
     let prefix = String::from("rename ");
     let suffix = file_name;
-<<<<<<< HEAD
-    command_line::read_and_execute(context, backend, &prefix, &suffix)
-=======
-    command_line::readline(context, backend, keymap_t, &prefix, &suffix)
->>>>>>> main
+    command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)
 }
 
 pub fn rename_file_prepend(

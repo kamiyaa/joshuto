@@ -5,11 +5,7 @@ use signal_hook::consts::signal;
 use termion::event::{Event, Key, MouseButton, MouseEvent};
 use tui::layout::{Constraint, Direction, Layout};
 
-<<<<<<< HEAD
 use crate::commands::{cursor_move, parent_cursor_move, AppExecute, CommandKeybind, KeyCommand};
-=======
-use crate::commands::{cursor_move, parent_cursor_move, AppExecute, KeyCommand};
->>>>>>> main
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::event::AppEvent;
