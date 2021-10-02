@@ -13,12 +13,12 @@ lazy_static! {
     static ref COMMENT_STYLE: Style = Style::default().add_modifier(Modifier::REVERSED);
     static ref DEFAULT_STYLE: Style = Style::default();
     static ref HEADER_STYLE: Style = Style::default().fg(Color::Yellow);
-    static ref KEY_STYLE: Style = Style::default().fg(Color::Red);
-    static ref COMMAND_STYLE: Style = Style::default().fg(Color::Green);
+    static ref KEY_STYLE: Style = Style::default().fg(Color::Green);
+    static ref COMMAND_STYLE: Style = Style::default().fg(Color::Blue);
 }
 
 const TITLE: &str = "Keybindings";
-const FOOTER: &str = "Press <ESC> to return";
+const FOOTER: &str = "Press <ESC> to return, / to search, 1,2,3 to sort";
 
 pub struct TuiHelp<'a> {
     // This keymap is constructed with get_keymap_table function
@@ -75,23 +75,24 @@ impl<'a> Widget for TuiHelp<'a> {
             width as usize,
             *COMMENT_STYLE,
         );
+
         let footer = if self.search_query.is_empty() {
-            FOOTER
+            format!("{:^w$}", FOOTER, w = width as usize)
         } else {
-            self.search_query
+            format!("{:<w$}", self.search_query, w = width as usize)
         };
         buf.set_stringn(
             0,
             (height + 1) as u16,
-            format!("{:^w$}", footer, w = width as usize),
-            width as usize,
+            &footer,
+            footer.len(),
             *COMMENT_STYLE,
         );
     }
 }
 
-// This function is needed because we cannot access Row items, which
-// means that we won't be able to sort binds if we create Rows directly.
+// Translates output from 'get_raw_keymap_table' into format,
+// readable by TUI table widget
 pub fn get_keymap_table<'a>(
     keymap: &'a AppKeyMapping,
     search_query: &'a str,
@@ -109,6 +110,8 @@ pub fn get_keymap_table<'a>(
     rows
 }
 
+// This function is needed because we cannot access Row items, which
+// means that we won't be able to sort binds if we create Rows directly
 pub fn get_raw_keymap_table<'a>(
     keymap: &'a AppKeyMapping,
     search_query: &'a str,
@@ -120,11 +123,14 @@ pub fn get_raw_keymap_table<'a>(
         let (command, comment) = match bind {
             CommandKeybind::SimpleKeybind(command) => (format!("{}", command), command.comment()),
             CommandKeybind::CompositeKeybind(sub_keymap) => {
-                let mut sub_rows = get_raw_keymap_table(sub_keymap, search_query, sort_by);
-                for sub_row in sub_rows.iter_mut() {
+                let mut sub_rows = get_raw_keymap_table(sub_keymap, "", sort_by);
+                for _ in 0..sub_rows.len() {
+                    let mut sub_row = sub_rows.pop().unwrap();
                     sub_row[0] = key.clone() + &sub_row[0];
+                    if sub_row[0].contains(search_query) || sub_row[1].contains(search_query) {
+                        rows.push(sub_row)
+                    }
                 }
-                rows.append(&mut sub_rows);
                 continue;
             }
         };
