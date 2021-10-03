@@ -2,7 +2,7 @@ use std::fs;
 
 use tui::layout::Constraint;
 
-use crate::util::sort;
+use crate::util::sort_option::SortOption;
 
 pub const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
@@ -17,7 +17,7 @@ pub struct DisplayOption {
     pub _show_hidden: bool,
     pub _show_icons: bool,
     pub _show_preview: bool,
-    pub _sort_options: sort::SortOption,
+    pub _sort_options: SortOption,
     pub _tilde_in_titlebar: bool,
     pub default_layout: [Constraint; 3],
     pub no_preview_layout: [Constraint; 3],
@@ -53,11 +53,11 @@ impl DisplayOption {
         self._show_hidden = show_hidden;
     }
 
-    pub fn sort_options_ref(&self) -> &sort::SortOption {
+    pub fn sort_options_ref(&self) -> &SortOption {
         &self._sort_options
     }
 
-    pub fn sort_options_mut(&mut self) -> &mut sort::SortOption {
+    pub fn sort_options_mut(&mut self) -> &mut SortOption {
         &mut self._sort_options
     }
 
@@ -98,7 +98,7 @@ impl std::default::Default for DisplayOption {
             _show_hidden: false,
             _show_icons: false,
             _show_preview: true,
-            _sort_options: sort::SortOption::default(),
+            _sort_options: SortOption::default(),
             _tilde_in_titlebar: true,
             default_layout,
             no_preview_layout,

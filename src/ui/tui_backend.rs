@@ -10,7 +10,7 @@ use tui::widgets::{Block, Borders, Widget};
 #[cfg(feature = "mouse")]
 use termion::input::MouseTerminal;
 
-use crate::util::display::DisplayOption;
+use crate::util::display_option::DisplayOption;
 
 trait New {
     fn new() -> std::io::Result<Self>

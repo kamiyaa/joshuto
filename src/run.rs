@@ -3,7 +3,7 @@ use termion::event::Event;
 use crate::config::AppKeyMapping;
 use crate::context::{AppContext, QuitType};
 use crate::event::AppEvent;
-use crate::key_command::{AppExecute, CommandKeybind, KeyCommand};
+use crate::key_command::{AppExecute, Command, CommandKeybind};
 use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
 use crate::ui;
@@ -51,13 +51,13 @@ pub fn run(
                     // in the event where mouse input is not supported
                     // but we still want to register scroll
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
-                        let command = KeyCommand::CursorMoveUp(1);
+                        let command = Command::CursorMoveUp(1);
                         if let Err(e) = command.execute(context, backend, &keymap_t) {
                             context.message_queue_mut().push_error(e.to_string());
                         }
                     }
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
-                        let command = KeyCommand::CursorMoveDown(1);
+                        let command = Command::CursorMoveDown(1);
                         if let Err(e) = command.execute(context, backend, &keymap_t) {
                             context.message_queue_mut().push_error(e.to_string());
                         }

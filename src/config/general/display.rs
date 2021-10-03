@@ -2,7 +2,7 @@ use serde_derive::Deserialize;
 use tui::layout::Constraint;
 
 use crate::config::Flattenable;
-use crate::util::display::{default_column_ratio, DisplayOption};
+use crate::util::display_option::{default_column_ratio, DisplayOption};
 
 use super::SortRawOption;
 

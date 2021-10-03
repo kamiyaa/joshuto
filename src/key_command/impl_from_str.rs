@@ -6,14 +6,14 @@ use shellexpand::tilde_with_context;
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::IoWorkerOptions;
 use crate::util::select::SelectOption;
-use crate::util::sort::SortType;
+use crate::util::sort_type::SortType;
 
 use crate::HOME_DIR;
 
 use super::constants::*;
-use super::KeyCommand;
+use super::Command;
 
-impl std::str::FromStr for KeyCommand {
+impl std::str::FromStr for Command {
     type Err = JoshutoError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

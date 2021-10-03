@@ -2,10 +2,10 @@ use std::path;
 
 use crate::io::IoWorkerOptions;
 use crate::util::select::SelectOption;
-use crate::util::sort::SortType;
+use crate::util::sort_type::SortType;
 
 #[derive(Clone, Debug)]
-pub enum KeyCommand {
+pub enum Command {
     BulkRename,
     ChangeDirectory(path::PathBuf),
     CommandLine(String, String),

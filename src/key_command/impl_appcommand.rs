@@ -1,7 +1,7 @@
 use super::constants::*;
-use super::{AppCommand, KeyCommand};
+use super::{AppCommand, Command};
 
-impl AppCommand for KeyCommand {
+impl AppCommand for Command {
     fn command(&self) -> &'static str {
         match self {
             Self::Help => CMD_HELP,

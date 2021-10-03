@@ -4,9 +4,9 @@ use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 
-use super::{AppExecute, KeyCommand};
+use super::{AppExecute, Command};
 
-impl AppExecute for KeyCommand {
+impl AppExecute for Command {
     fn execute(
         &self,
         context: &mut AppContext,

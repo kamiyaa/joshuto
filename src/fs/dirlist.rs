@@ -3,7 +3,7 @@ use std::slice::{Iter, IterMut};
 
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::history::read_directory;
-use crate::util::display::DisplayOption;
+use crate::util::display_option::DisplayOption;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirList {

@@ -4,7 +4,7 @@ use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::event::AppEvent;
-use crate::key_command::{CommandKeybind, KeyCommand};
+use crate::key_command::{Command, CommandKeybind};
 use crate::ui::widgets;
 use crate::ui::widgets::TuiHelp;
 use crate::ui::TuiBackend;
@@ -48,13 +48,13 @@ pub fn help_loop(
                                 keymap_t.as_ref().get(&event)
                             {
                                 match command {
-                                    KeyCommand::CursorMoveUp(_) => move_offset(&mut offset, -1),
-                                    KeyCommand::CursorMoveDown(_) => move_offset(&mut offset, 1),
-                                    KeyCommand::CursorMoveHome => offset = 0,
-                                    KeyCommand::CursorMoveEnd => offset = 255,
-                                    KeyCommand::CursorMovePageUp => move_offset(&mut offset, -10),
-                                    KeyCommand::CursorMovePageDown => move_offset(&mut offset, 10),
-                                    KeyCommand::CloseTab | KeyCommand::Help => break,
+                                    Command::CursorMoveUp(_) => move_offset(&mut offset, -1),
+                                    Command::CursorMoveDown(_) => move_offset(&mut offset, 1),
+                                    Command::CursorMoveHome => offset = 0,
+                                    Command::CursorMoveEnd => offset = 255,
+                                    Command::CursorMovePageUp => move_offset(&mut offset, -10),
+                                    Command::CursorMovePageDown => move_offset(&mut offset, 10),
+                                    Command::CloseTab | Command::Help => break,
                                     _ => (),
                                 }
                             }

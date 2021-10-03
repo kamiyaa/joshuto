@@ -9,7 +9,7 @@ use termion::event::{Event, Key};
 
 use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
 use crate::io::IoWorkerOptions;
-use crate::key_command::{CommandKeybind, KeyCommand};
+use crate::key_command::{Command, CommandKeybind};
 use crate::util::keyparse::str_to_event;
 
 #[derive(Debug, Deserialize)]
@@ -28,7 +28,7 @@ impl Flattenable<AppKeyMapping> for RawAppKeyMapping {
     fn flatten(self) -> AppKeyMapping {
         let mut keymaps = AppKeyMapping::new();
         for m in self.mapcommand {
-            match KeyCommand::from_str(m.command.as_str()) {
+            match Command::from_str(m.command.as_str()) {
                 Ok(command) => {
                     let events: Vec<Event> = m
                         .keys
@@ -81,162 +81,162 @@ impl AppKeyMapping {
     pub fn default_res(&mut self) -> Result<(), String> {
         let mut m = self;
 
-        let cmd = KeyCommand::CursorMoveUp(1);
+        let cmd = Command::CursorMoveUp(1);
         let keys = [Event::Key(Key::Up)];
         insert_keycommand(&mut m, cmd, &keys)?;
-        let cmd = KeyCommand::CursorMoveDown(1);
+        let cmd = Command::CursorMoveDown(1);
         let keys = [Event::Key(Key::Down)];
         insert_keycommand(&mut m, cmd, &keys)?;
-        let cmd = KeyCommand::ParentDirectory;
+        let cmd = Command::ParentDirectory;
         let keys = [Event::Key(Key::Left)];
         insert_keycommand(&mut m, cmd, &keys)?;
-        let cmd = KeyCommand::OpenFile;
+        let cmd = Command::OpenFile;
         let keys = [Event::Key(Key::Right)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::OpenFile;
+        let cmd = Command::OpenFile;
         let keys = [Event::Key(Key::Char('\n'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CursorMoveHome;
+        let cmd = Command::CursorMoveHome;
         let keys = [Event::Key(Key::Home)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CursorMoveEnd;
+        let cmd = Command::CursorMoveEnd;
         let keys = [Event::Key(Key::End)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CursorMovePageUp;
+        let cmd = Command::CursorMovePageUp;
         let keys = [Event::Key(Key::PageUp)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CursorMovePageDown;
+        let cmd = Command::CursorMovePageDown;
         let keys = [Event::Key(Key::PageDown)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
         // vim keys
-        let cmd = KeyCommand::CursorMoveUp(1);
+        let cmd = Command::CursorMoveUp(1);
         let keys = [Event::Key(Key::Char('k'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CursorMoveDown(1);
+        let cmd = Command::CursorMoveDown(1);
         let keys = [Event::Key(Key::Char('j'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::ParentDirectory;
+        let cmd = Command::ParentDirectory;
         let keys = [Event::Key(Key::Char('h'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::OpenFile;
+        let cmd = Command::OpenFile;
         let keys = [Event::Key(Key::Char('l'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::NewTab;
+        let cmd = Command::NewTab;
         let keys = [Event::Key(Key::Char('T'))];
         insert_keycommand(&mut m, cmd, &keys)?;
-        let cmd = KeyCommand::NewTab;
+        let cmd = Command::NewTab;
         let keys = [Event::Key(Key::Ctrl('t'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CloseTab;
+        let cmd = Command::CloseTab;
         let keys = [Event::Key(Key::Char('W'))];
         insert_keycommand(&mut m, cmd, &keys)?;
-        let cmd = KeyCommand::CloseTab;
+        let cmd = Command::CloseTab;
         let keys = [Event::Key(Key::Ctrl('w'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CloseTab;
+        let cmd = Command::CloseTab;
         let keys = [Event::Key(Key::Char('q'))];
         insert_keycommand(&mut m, cmd, &keys)?;
-        let cmd = KeyCommand::ForceQuit;
+        let cmd = Command::ForceQuit;
         let keys = [Event::Key(Key::Char('Q'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::ReloadDirList;
+        let cmd = Command::ReloadDirList;
         let keys = [Event::Key(Key::Char('R'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::ToggleHiddenFiles;
+        let cmd = Command::ToggleHiddenFiles;
         let keys = [Event::Key(Key::Char('z')), Event::Key(Key::Char('h'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::TabSwitch(1);
+        let cmd = Command::TabSwitch(1);
         let keys = [Event::Key(Key::Char('\t'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::TabSwitch(-1);
+        let cmd = Command::TabSwitch(-1);
         let keys = [Event::Key(Key::BackTab)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::OpenFileWith(None);
+        let cmd = Command::OpenFileWith(None);
         let keys = [Event::Key(Key::Char('r'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CutFiles;
+        let cmd = Command::CutFiles;
         let keys = [Event::Key(Key::Char('d')), Event::Key(Key::Char('d'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CopyFiles;
+        let cmd = Command::CopyFiles;
         let keys = [Event::Key(Key::Char('y')), Event::Key(Key::Char('y'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::PasteFiles(IoWorkerOptions::default());
+        let cmd = Command::PasteFiles(IoWorkerOptions::default());
         let keys = [Event::Key(Key::Char('p')), Event::Key(Key::Char('p'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::DeleteFiles;
+        let cmd = Command::DeleteFiles;
         let keys = [Event::Key(Key::Delete)];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::DeleteFiles;
+        let cmd = Command::DeleteFiles;
         let keys = [Event::Key(Key::Char('D')), Event::Key(Key::Char('d'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::RenameFileAppend;
+        let cmd = Command::RenameFileAppend;
         let keys = [Event::Key(Key::Char('a'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::RenameFilePrepend;
+        let cmd = Command::RenameFilePrepend;
         let keys = [Event::Key(Key::Char('A'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CommandLine("search ".to_string(), "".to_string());
+        let cmd = Command::CommandLine("search ".to_string(), "".to_string());
         let keys = [Event::Key(Key::Char('/'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::SearchNext;
+        let cmd = Command::SearchNext;
         let keys = [Event::Key(Key::Char('n'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::SearchPrev;
+        let cmd = Command::SearchPrev;
         let keys = [Event::Key(Key::Char('N'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::BulkRename;
+        let cmd = Command::BulkRename;
         let keys = [Event::Key(Key::Char('b')), Event::Key(Key::Char('b'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::SetMode;
+        let cmd = Command::SetMode;
         let keys = [Event::Key(Key::Char('='))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CommandLine("".to_string(), "".to_string());
+        let cmd = Command::CommandLine("".to_string(), "".to_string());
         let keys = [Event::Key(Key::Char(';'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CommandLine("".to_string(), "".to_string());
+        let cmd = Command::CommandLine("".to_string(), "".to_string());
         let keys = [Event::Key(Key::Char(':'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CommandLine("mkdir ".to_string(), "".to_string());
+        let cmd = Command::CommandLine("mkdir ".to_string(), "".to_string());
         let keys = [Event::Key(Key::Char('m')), Event::Key(Key::Char('k'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::CommandLine("rename ".to_string(), "".to_string());
+        let cmd = Command::CommandLine("rename ".to_string(), "".to_string());
         let keys = [Event::Key(Key::Char('c')), Event::Key(Key::Char('w'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
-        let cmd = KeyCommand::Help;
+        let cmd = Command::Help;
         let keys = [Event::Key(Key::Char('?'))];
         insert_keycommand(&mut m, cmd, &keys)?;
 
@@ -263,7 +263,7 @@ impl ConfigStructure for AppKeyMapping {
 
 fn insert_keycommand(
     keymap: &mut AppKeyMapping,
-    keycommand: KeyCommand,
+    keycommand: Command,
     events: &[Event],
 ) -> Result<(), String> {
     let num_events = events.len();

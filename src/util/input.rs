@@ -12,7 +12,7 @@ use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOp, IoWorkerProgress};
-use crate::key_command::{AppExecute, CommandKeybind, KeyCommand};
+use crate::key_command::{AppExecute, Command, CommandKeybind};
 use crate::preview::preview_file::FilePreview;
 use crate::ui;
 use crate::ui::views::TuiCommandMenu;
@@ -22,7 +22,7 @@ pub fn get_input_while_composite<'a>(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
     keymap: &'a AppKeyMapping,
-) -> Option<&'a KeyCommand> {
+) -> Option<&'a Command> {
     let mut keymap = keymap;
 
     context.flush_event();
@@ -158,12 +158,12 @@ pub fn process_mouse(
     match event {
         MouseEvent::Press(MouseButton::WheelUp, x, _) => {
             if x < layout_rect[1].x {
-                let command = KeyCommand::ParentCursorMoveUp(1);
+                let command = Command::ParentCursorMoveUp(1);
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
-                let command = KeyCommand::CursorMoveUp(1);
+                let command = Command::CursorMoveUp(1);
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
@@ -173,12 +173,12 @@ pub fn process_mouse(
         }
         MouseEvent::Press(MouseButton::WheelDown, x, _) => {
             if x < layout_rect[1].x {
-                let command = KeyCommand::ParentCursorMoveDown(1);
+                let command = Command::ParentCursorMoveDown(1);
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
-                let command = KeyCommand::CursorMoveDown(1);
+                let command = Command::CursorMoveDown(1);
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }

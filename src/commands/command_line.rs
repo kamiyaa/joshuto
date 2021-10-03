@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::key_command::{AppExecute, KeyCommand};
+use crate::key_command::{AppExecute, Command};
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
 
@@ -24,7 +24,7 @@ pub fn read_and_execute(
     if let Some(s) = user_input {
         let trimmed = s.trim_start();
         context.commandline_context_mut().history_mut().add(trimmed);
-        let command = KeyCommand::from_str(trimmed)?;
+        let command = Command::from_str(trimmed)?;
         command.execute(context, backend, keymap_t)
     } else {
         Ok(())

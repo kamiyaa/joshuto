@@ -1,7 +1,7 @@
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
-use crate::util::sort::SortType;
+use crate::util::sort_type::SortType;
 
 use super::reload;
 

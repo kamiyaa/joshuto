@@ -1,10 +1,10 @@
 use crate::config::AppKeyMapping;
 
-use super::KeyCommand;
+use super::Command;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
-    SimpleKeybind(KeyCommand),
+    SimpleKeybind(Command),
     CompositeKeybind(AppKeyMapping),
 }
 

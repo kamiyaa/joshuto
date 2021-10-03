@@ -1,9 +1,9 @@
 use crate::io::IoWorkerOptions;
-use crate::util::sort::SortType;
+use crate::util::sort_type::SortType;
 
-use super::{CommandComment, KeyCommand};
+use super::{Command, CommandComment};
 
-impl CommandComment for KeyCommand {
+impl CommandComment for Command {
     // These comments are displayed at the help page
     fn comment(&self) -> &'static str {
         match self {

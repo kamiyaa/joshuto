@@ -5,8 +5,8 @@ use super::tab::{TabOption, TabRawOption};
 use super::DisplayRawOption;
 
 use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
-use crate::util::display::DisplayOption;
-use crate::util::sort;
+use crate::util::display_option::DisplayOption;
+use crate::util::sort_option::SortOption;
 
 const fn default_true() -> bool {
     true
@@ -69,10 +69,10 @@ impl AppConfig {
         &mut self._preview_options
     }
 
-    pub fn sort_options_ref(&self) -> &sort::SortOption {
+    pub fn sort_options_ref(&self) -> &SortOption {
         self.display_options_ref().sort_options_ref()
     }
-    pub fn sort_options_mut(&mut self) -> &mut sort::SortOption {
+    pub fn sort_options_mut(&mut self) -> &mut SortOption {
         self.display_options_mut().sort_options_mut()
     }
 

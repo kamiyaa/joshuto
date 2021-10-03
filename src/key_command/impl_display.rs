@@ -1,6 +1,6 @@
-use super::{AppCommand, KeyCommand};
+use super::{AppCommand, Command};
 
-impl std::fmt::Display for KeyCommand {
+impl std::fmt::Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &*self {
             Self::ChangeDirectory(p) => write!(f, "{} {:?}", self.command(), p),
