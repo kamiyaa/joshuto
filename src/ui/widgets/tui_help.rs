@@ -1,13 +1,15 @@
+use lazy_static::lazy_static;
+
+use termion::event::{Event, Key};
+
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Cell, Row, Table, Widget};
 
 use crate::config::AppKeyMapping;
+use crate::key_command::traits::CommandComment;
 use crate::key_command::CommandKeybind;
-use termion::event::{Event, Key};
-
-use lazy_static::lazy_static;
 
 lazy_static! {
     static ref COMMENT_STYLE: Style = Style::default().add_modifier(Modifier::REVERSED);

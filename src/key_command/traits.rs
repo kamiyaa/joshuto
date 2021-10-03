@@ -15,3 +15,7 @@ pub trait AppExecute {
 pub trait AppCommand: AppExecute + std::fmt::Display + std::fmt::Debug {
     fn command(&self) -> &'static str;
 }
+
+pub trait CommandComment {
+    fn comment(&self) -> &'static str;
+}

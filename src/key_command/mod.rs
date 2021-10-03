@@ -5,6 +5,7 @@ pub mod traits;
 
 mod impl_appcommand;
 mod impl_appexecute;
+mod impl_comment;
 mod impl_display;
 mod impl_from_str;
 
