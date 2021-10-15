@@ -77,8 +77,7 @@ and [config/](config/) for examples
 - general configurations
 
 #### [keymap.toml](/config/keymap.toml)
-- for keybindings, please take a look at [src/util/key_mapping.rs](/src/util/key_mapping.rs#L18) for non-printable keys
-- for commands, please take a look at [src/commands/commands.rs](/src/commands/commands.rs#L139)
+- for keybindings
 
 #### [mimetype.toml](/config/mimetype.toml)
 - for opening files with applications
