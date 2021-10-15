@@ -67,6 +67,8 @@ impl CommandComment for Command {
             Self::SearchNext => "Next search entry",
             Self::SearchPrev => "Previous search entry",
 
+            Self::SubdirFzf => "Switch to a child directory via fzf",
+
             Self::SelectFiles(_, _) => "Select file",
             Self::SetMode => "Set file permissions",
             Self::SubProcess(_, false) => "Run a shell command",

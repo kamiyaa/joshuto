@@ -51,6 +51,8 @@ pub enum Command {
     SearchNext,
     SearchPrev,
 
+    SubdirFzf,
+
     SelectFiles(String, SelectOption),
     SetMode,
     SubProcess(Vec<String>, bool),

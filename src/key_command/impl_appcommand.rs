@@ -51,6 +51,8 @@ impl AppCommand for Command {
             Self::SearchNext => CMD_SEARCH_NEXT,
             Self::SearchPrev => CMD_SEARCH_PREV,
 
+            Self::SubdirFzf => CMD_SUBDIR_FZF,
+
             Self::SelectFiles(_, _) => CMD_SELECT_FILES,
             Self::SetMode => CMD_SET_MODE,
 

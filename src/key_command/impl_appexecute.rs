@@ -69,6 +69,8 @@ impl AppExecute for Command {
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
 
+            Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),
+
             Self::SelectFiles(pattern, options) => {
                 selection::select_files(context, pattern.as_str(), options)
             }

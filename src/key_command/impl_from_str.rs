@@ -13,6 +13,14 @@ use crate::HOME_DIR;
 use super::constants::*;
 use super::Command;
 
+macro_rules! simple_command_conversion_case {
+    ($command: ident, $command_match: ident, $enum_name: expr) => {
+        if $command == $command_match {
+            return Ok($enum_name);
+        }
+    };
+}
+
 impl std::str::FromStr for Command {
     type Err = JoshutoError;
 
@@ -26,9 +34,56 @@ impl std::str::FromStr for Command {
             None => (s, ""),
         };
 
-        if command == CMD_BULK_RENAME {
-            Ok(Self::BulkRename)
-        } else if command == CMD_CHANGE_DIRECTORY {
+        simple_command_conversion_case!(command, CMD_QUIT, Self::Quit);
+        simple_command_conversion_case!(
+            command,
+            CMD_QUIT_TO_CURRENT_DIRECTORY,
+            Self::QuitToCurrentDirectory
+        );
+        simple_command_conversion_case!(command, CMD_FORCE_QUIT, Self::ForceQuit);
+
+        simple_command_conversion_case!(command, CMD_NEW_TAB, Self::NewTab);
+        simple_command_conversion_case!(command, CMD_CLOSE_TAB, Self::CloseTab);
+
+        simple_command_conversion_case!(command, CMD_HELP, Self::Help);
+
+        simple_command_conversion_case!(command, CMD_CURSOR_MOVE_HOME, Self::CursorMoveHome);
+        simple_command_conversion_case!(command, CMD_CURSOR_MOVE_END, Self::CursorMoveEnd);
+        simple_command_conversion_case!(command, CMD_CURSOR_MOVE_PAGEUP, Self::CursorMovePageUp);
+        simple_command_conversion_case!(
+            command,
+            CMD_CURSOR_MOVE_PAGEDOWN,
+            Self::CursorMovePageDown
+        );
+
+        simple_command_conversion_case!(command, CMD_CUT_FILES, Self::CutFiles);
+        simple_command_conversion_case!(command, CMD_DELETE_FILES, Self::DeleteFiles);
+
+        simple_command_conversion_case!(command, CMD_COPY_FILES, Self::CopyFiles);
+        simple_command_conversion_case!(command, CMD_COPY_FILENAME, Self::CopyFileName);
+        simple_command_conversion_case!(
+            command,
+            CMD_COPY_FILENAME_WITHOUT_EXTENSION,
+            Self::CopyFileNameWithoutExtension
+        );
+        simple_command_conversion_case!(command, CMD_COPY_FILEPATH, Self::CopyFilePath);
+        simple_command_conversion_case!(command, CMD_COPY_DIRECTORY_PATH, Self::CopyDirPath);
+
+        simple_command_conversion_case!(command, CMD_OPEN_FILE, Self::OpenFile);
+
+        simple_command_conversion_case!(command, CMD_RELOAD_DIRECTORY_LIST, Self::ReloadDirList);
+        simple_command_conversion_case!(command, CMD_RENAME_FILE_APPEND, Self::RenameFileAppend);
+        simple_command_conversion_case!(command, CMD_RENAME_FILE_PREPEND, Self::RenameFilePrepend);
+        simple_command_conversion_case!(command, CMD_SEARCH_FZF, Self::SearchFzf);
+        simple_command_conversion_case!(command, CMD_SEARCH_NEXT, Self::SearchNext);
+        simple_command_conversion_case!(command, CMD_SEARCH_PREV, Self::SearchPrev);
+        simple_command_conversion_case!(command, CMD_SUBDIR_FZF, Self::SubdirFzf);
+        simple_command_conversion_case!(command, CMD_SHOW_WORKERS, Self::ShowWorkers);
+        simple_command_conversion_case!(command, CMD_SET_MODE, Self::SetMode);
+        simple_command_conversion_case!(command, CMD_TOGGLE_HIDDEN, Self::ToggleHiddenFiles);
+        simple_command_conversion_case!(command, CMD_BULK_RENAME, Self::BulkRename);
+
+        if command == CMD_CHANGE_DIRECTORY {
             match arg {
                 "" => match HOME_DIR.as_ref() {
                     Some(s) => Ok(Self::ChangeDirectory(s.clone())),
@@ -43,26 +98,6 @@ impl std::str::FromStr for Command {
                     Self::ChangeDirectory(path::PathBuf::from(path_accepts_tilde.as_ref()))
                 }),
             }
-        } else if command == CMD_CLOSE_TAB {
-            Ok(Self::CloseTab)
-        } else if command == CMD_COPY_FILES {
-            Ok(Self::CopyFiles)
-        } else if command == CMD_COPY_FILENAME {
-            Ok(Self::CopyFileName)
-        } else if command == CMD_COPY_FILENAME_WITHOUT_EXTENSION {
-            Ok(Self::CopyFileNameWithoutExtension)
-        } else if command == CMD_COPY_FILEPATH {
-            Ok(Self::CopyFilePath)
-        } else if command == CMD_COPY_DIRECTORY_PATH {
-            Ok(Self::CopyDirPath)
-        } else if command == CMD_CURSOR_MOVE_HOME {
-            Ok(Self::CursorMoveHome)
-        } else if command == CMD_CURSOR_MOVE_END {
-            Ok(Self::CursorMoveEnd)
-        } else if command == CMD_CURSOR_MOVE_PAGEUP {
-            Ok(Self::CursorMovePageUp)
-        } else if command == CMD_CURSOR_MOVE_PAGEDOWN {
-            Ok(Self::CursorMovePageDown)
         } else if command == CMD_CURSOR_MOVE_DOWN {
             match arg {
                 "" => Ok(Self::CursorMoveDown(1)),
@@ -107,12 +142,6 @@ impl std::str::FromStr for Command {
                     )),
                 },
             }
-        } else if command == CMD_CUT_FILES {
-            Ok(Self::CutFiles)
-        } else if command == CMD_DELETE_FILES {
-            Ok(Self::DeleteFiles)
-        } else if command == CMD_FORCE_QUIT {
-            Ok(Self::ForceQuit)
         } else if command == CMD_NEW_DIRECTORY {
             if arg.is_empty() {
                 Err(JoshutoError::new(
@@ -122,8 +151,6 @@ impl std::str::FromStr for Command {
             } else {
                 Ok(Self::NewDirectory(path::PathBuf::from(arg)))
             }
-        } else if command == CMD_OPEN_FILE {
-            Ok(Self::OpenFile)
         } else if command == CMD_OPEN_FILE_WITH {
             match arg {
                 "" => Ok(Self::OpenFileWith(None)),
@@ -152,14 +179,6 @@ impl std::str::FromStr for Command {
                 }
             }
             Ok(Self::PasteFiles(options))
-        } else if command == CMD_NEW_TAB {
-            Ok(Self::NewTab)
-        } else if command == CMD_QUIT {
-            Ok(Self::Quit)
-        } else if command == CMD_QUIT_TO_CURRENT_DIRECTORY {
-            Ok(Self::QuitToCurrentDirectory)
-        } else if command == CMD_RELOAD_DIRECTORY_LIST {
-            Ok(Self::ReloadDirList)
         } else if command == CMD_RENAME_FILE {
             match arg {
                 "" => Err(JoshutoError::new(
@@ -171,10 +190,6 @@ impl std::str::FromStr for Command {
                     Ok(Self::RenameFile(path))
                 }
             }
-        } else if command == CMD_RENAME_FILE_APPEND {
-            Ok(Self::RenameFileAppend)
-        } else if command == CMD_RENAME_FILE_PREPEND {
-            Ok(Self::RenameFilePrepend)
         } else if command == CMD_SEARCH_STRING {
             match arg {
                 "" => Err(JoshutoError::new(
@@ -191,12 +206,6 @@ impl std::str::FromStr for Command {
                 )),
                 arg => Ok(Self::SearchGlob(arg.to_string())),
             }
-        } else if command == CMD_SEARCH_FZF {
-            Ok(Self::SearchFzf)
-        } else if command == CMD_SEARCH_NEXT {
-            Ok(Self::SearchNext)
-        } else if command == CMD_SEARCH_PREV {
-            Ok(Self::SearchPrev)
         } else if command == CMD_SELECT_FILES {
             let mut options = SelectOption::default();
             let mut pattern = "";
@@ -220,8 +229,6 @@ impl std::str::FromStr for Command {
                     format!("{}: {}", arg, e),
                 )),
             }
-        } else if command == CMD_SET_MODE {
-            Ok(Self::SetMode)
         } else if command == CMD_SUBPROCESS_FOREGROUND || command == CMD_SUBPROCESS_BACKGROUND {
             match shell_words::split(arg) {
                 Ok(s) if !s.is_empty() => Ok(Self::SubProcess(s, command == "spawn")),
@@ -234,8 +241,6 @@ impl std::str::FromStr for Command {
                     format!("{}: {}", arg, e),
                 )),
             }
-        } else if command == CMD_SHOW_WORKERS {
-            Ok(Self::ShowWorkers)
         } else if command == CMD_SORT {
             match arg {
                 "reverse" => Ok(Self::SortReverse),
@@ -263,10 +268,6 @@ impl std::str::FromStr for Command {
                     format!("{}: {}", command, e.to_string()),
                 )),
             }
-        } else if command == CMD_TOGGLE_HIDDEN {
-            Ok(Self::ToggleHiddenFiles)
-        } else if command == CMD_HELP {
-            Ok(Self::Help)
         } else if command == CMD_TOUCH_FILE {
             Ok(Self::TouchFile(arg.to_string()))
         } else {

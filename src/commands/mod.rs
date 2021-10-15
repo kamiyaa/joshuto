@@ -22,5 +22,6 @@ pub mod show_hidden;
 pub mod show_workers;
 pub mod sort;
 pub mod sub_process;
+pub mod subdir_fzf;
 pub mod tab_ops;
 pub mod touch_file;

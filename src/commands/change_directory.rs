@@ -10,7 +10,7 @@ pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     Ok(())
 }
 
-fn _change_directory(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
+pub fn change_directory_helper(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     cd(path, context)?;
     let options = context.config_ref().display_options_ref().clone();
     context
@@ -31,6 +31,6 @@ pub fn change_directory(context: &mut AppContext, path: &path::Path) -> JoshutoR
         new_cwd
     };
 
-    _change_directory(new_cwd.as_path(), context)?;
+    change_directory_helper(new_cwd.as_path(), context)?;
     Ok(())
 }
