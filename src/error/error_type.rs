@@ -1,7 +1,9 @@
+use std::convert::From;
 use std::io;
 
 use super::JoshutoErrorKind;
 
+#[derive(Clone, Debug)]
 pub struct JoshutoError {
     _kind: JoshutoErrorKind,
     _cause: String,
@@ -13,8 +15,8 @@ impl JoshutoError {
         Self { _kind, _cause }
     }
 
-    pub fn kind(&self) -> JoshutoErrorKind {
-        self._kind
+    pub fn kind(&self) -> &JoshutoErrorKind {
+        &self._kind
     }
 }
 
@@ -24,7 +26,7 @@ impl std::fmt::Display for JoshutoError {
     }
 }
 
-impl std::convert::From<io::Error> for JoshutoError {
+impl From<io::Error> for JoshutoError {
     fn from(err: io::Error) -> Self {
         Self {
             _kind: JoshutoErrorKind::from(err.kind()),
@@ -33,7 +35,7 @@ impl std::convert::From<io::Error> for JoshutoError {
     }
 }
 
-impl std::convert::From<globset::Error> for JoshutoError {
+impl From<globset::Error> for JoshutoError {
     fn from(err: globset::Error) -> Self {
         Self {
             _kind: JoshutoErrorKind::from(err.kind()),
@@ -42,7 +44,7 @@ impl std::convert::From<globset::Error> for JoshutoError {
     }
 }
 
-impl std::convert::From<std::env::VarError> for JoshutoError {
+impl From<std::env::VarError> for JoshutoError {
     fn from(err: std::env::VarError) -> Self {
         Self {
             _kind: JoshutoErrorKind::from(err),
@@ -51,7 +53,7 @@ impl std::convert::From<std::env::VarError> for JoshutoError {
     }
 }
 
-impl std::convert::From<trash::Error> for JoshutoError {
+impl From<trash::Error> for JoshutoError {
     fn from(err: trash::Error) -> Self {
         let err = match err {
             trash::Error::Unknown => {
@@ -72,6 +74,15 @@ impl std::convert::From<trash::Error> for JoshutoError {
         Self {
             _kind: JoshutoErrorKind::from(err.kind()),
             _cause: err.to_string(),
+        }
+    }
+}
+
+impl From<toml::de::Error> for JoshutoError {
+    fn from(err: toml::de::Error) -> Self {
+        Self {
+            _kind: JoshutoErrorKind::from(err),
+            _cause: "Failed to parse TOML".to_string(),
         }
     }
 }

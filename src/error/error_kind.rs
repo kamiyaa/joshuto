@@ -1,6 +1,7 @@
+use std::convert::From;
 use std::io;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum JoshutoErrorKind {
     // io related
     Io(io::ErrorKind),
@@ -11,6 +12,7 @@ pub enum JoshutoErrorKind {
     // parse error
     ParseError,
     ClipboardError,
+    TomlDeError(toml::de::Error),
 
     Glob,
 
@@ -20,20 +22,26 @@ pub enum JoshutoErrorKind {
     UnrecognizedCommand,
 }
 
-impl std::convert::From<io::ErrorKind> for JoshutoErrorKind {
+impl From<io::ErrorKind> for JoshutoErrorKind {
     fn from(err: io::ErrorKind) -> Self {
         Self::Io(err)
     }
 }
 
-impl std::convert::From<&globset::ErrorKind> for JoshutoErrorKind {
+impl From<&globset::ErrorKind> for JoshutoErrorKind {
     fn from(_: &globset::ErrorKind) -> Self {
         Self::Glob
     }
 }
 
-impl std::convert::From<std::env::VarError> for JoshutoErrorKind {
+impl From<std::env::VarError> for JoshutoErrorKind {
     fn from(_: std::env::VarError) -> Self {
         Self::EnvVarNotPresent
+    }
+}
+
+impl From<toml::de::Error> for JoshutoErrorKind {
+    fn from(err: toml::de::Error) -> Self {
+        Self::TomlDeError(err)
     }
 }
