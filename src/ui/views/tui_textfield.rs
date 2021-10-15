@@ -16,16 +16,16 @@ use crate::util::input;
 struct CompletionTracker {
     pub index: usize,
     pub pos: usize,
-    pub original: String,
+    pub _original: String,
     pub candidates: Vec<Pair>,
 }
 
 impl CompletionTracker {
-    pub fn new(pos: usize, candidates: Vec<Pair>, original: String) -> Self {
+    pub fn new(pos: usize, candidates: Vec<Pair>, _original: String) -> Self {
         CompletionTracker {
             index: 0,
             pos,
-            original,
+            _original,
             candidates,
         }
     }

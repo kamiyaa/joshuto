@@ -7,13 +7,13 @@ use crate::fs::JoshutoDirEntry;
 use crate::preview::preview_file::FilePreview;
 
 pub struct TuiFilePreview<'a> {
-    entry: &'a JoshutoDirEntry,
+    _entry: &'a JoshutoDirEntry,
     preview: &'a FilePreview,
 }
 
 impl<'a> TuiFilePreview<'a> {
-    pub fn new(entry: &'a JoshutoDirEntry, preview: &'a FilePreview) -> Self {
-        Self { entry, preview }
+    pub fn new(_entry: &'a JoshutoDirEntry, preview: &'a FilePreview) -> Self {
+        Self { _entry, preview }
     }
 }
 

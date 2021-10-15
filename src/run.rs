@@ -84,8 +84,8 @@ pub fn run(
                         }
                     },
                 }
-                context.flush_event();
                 preview_default::load_preview(context, backend);
+                context.flush_event();
             }
             event => input::process_noninteractive(event, context),
         }

@@ -65,6 +65,7 @@ impl JoshutoTab {
         self.history.get_mut(parent)
     }
 
+    #[allow(dead_code)]
     pub fn child_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
         let child_path = {
             let curr_list = self.curr_list_ref()?;

@@ -33,11 +33,13 @@ pub const CMD_RELOAD_DIRECTORY_LIST: &str = "reload_dirlist";
 pub const CMD_RENAME_FILE: &str = "rename";
 pub const CMD_RENAME_FILE_APPEND: &str = "rename_append";
 pub const CMD_RENAME_FILE_PREPEND: &str = "rename_prepend";
+
 pub const CMD_SEARCH_STRING: &str = "search";
 pub const CMD_SEARCH_GLOB: &str = "search_glob";
-pub const CMD_SEARCH_SKIM: &str = "search_skim";
+pub const CMD_SEARCH_FZF: &str = "search_fzf";
 pub const CMD_SEARCH_NEXT: &str = "search_next";
 pub const CMD_SEARCH_PREV: &str = "search_prev";
+
 pub const CMD_SELECT_FILES: &str = "select";
 pub const CMD_SET_MODE: &str = "set_mode";
 pub const CMD_SORT: &str = "sort";

@@ -7,6 +7,7 @@ use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
 
+#[allow(dead_code)]
 pub struct Foreground {}
 
 impl Foreground {

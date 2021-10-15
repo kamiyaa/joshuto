@@ -1,9 +1,4 @@
 use std::cmp;
-use std::collections::VecDeque;
-use std::fs;
-use std::time;
-
-use serde_derive::Deserialize;
 
 use crate::fs::JoshutoDirEntry;
 use crate::util::sort_type::{SortType, SortTypes};

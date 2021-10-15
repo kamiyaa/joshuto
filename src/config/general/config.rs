@@ -79,9 +79,6 @@ impl AppConfig {
     pub fn tab_options_ref(&self) -> &TabOption {
         &self._tab_options
     }
-    pub fn tab_options_mut(&mut self) -> &mut TabOption {
-        &mut self._tab_options
-    }
 }
 
 impl ConfigStructure for AppConfig {

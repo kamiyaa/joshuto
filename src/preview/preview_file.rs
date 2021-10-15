@@ -30,6 +30,7 @@ impl std::convert::From<Output> for FilePreview {
     }
 }
 
+#[allow(dead_code)]
 pub struct Foreground {}
 
 impl Foreground {

@@ -47,7 +47,7 @@ impl AppCommand for Command {
 
             Self::SearchString(_) => CMD_SEARCH_STRING,
             Self::SearchGlob(_) => CMD_SEARCH_GLOB,
-            Self::SearchSkim => CMD_SEARCH_SKIM,
+            Self::SearchFzf => CMD_SEARCH_FZF,
             Self::SearchNext => CMD_SEARCH_NEXT,
             Self::SearchPrev => CMD_SEARCH_PREV,
 

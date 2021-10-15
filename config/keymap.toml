@@ -75,7 +75,7 @@ mapcommand = [
 
 	{ keys = [ "/" ],		command = ":search " },
 	{ keys = [ "\\" ],		command = ":search_glob " },
-	{ keys = [ "S" ],		command = ":search_skim " },
+	{ keys = [ "S" ],		command = "search_fzf" },
 
 	{ keys = [ "n" ],		command = "search_next" },
 	{ keys = [ "N" ],		command = "search_prev" },

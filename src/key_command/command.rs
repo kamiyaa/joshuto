@@ -47,7 +47,7 @@ pub enum Command {
 
     SearchGlob(String),
     SearchString(String),
-    SearchSkim,
+    SearchFzf,
     SearchNext,
     SearchPrev,
 

@@ -63,7 +63,7 @@ impl CommandComment for Command {
 
             Self::SearchString(_) => "Search",
             Self::SearchGlob(_) => "Search with globbing",
-            Self::SearchSkim => "Search via skim",
+            Self::SearchFzf => "Search via fzf",
             Self::SearchNext => "Next search entry",
             Self::SearchPrev => "Previous search entry",
 

@@ -191,8 +191,8 @@ impl std::str::FromStr for Command {
                 )),
                 arg => Ok(Self::SearchGlob(arg.to_string())),
             }
-        } else if command == CMD_SEARCH_SKIM {
-            Ok(Self::SearchSkim)
+        } else if command == CMD_SEARCH_FZF {
+            Ok(Self::SearchFzf)
         } else if command == CMD_SEARCH_NEXT {
             Ok(Self::SearchNext)
         } else if command == CMD_SEARCH_PREV {
