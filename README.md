@@ -87,7 +87,8 @@ and [config/](config/) for examples
 - color customizations
 
 ## Contributing
-See [wiki/Contributing](https://github.com/kamiyaa/joshuto/wiki/Contributing)
+Feel free to contribute code (see [wiki/Contributing](https://github.com/kamiyaa/joshuto/wiki/Contributing))
+or buy me a cup of tea by donating :)
 
 ## Features/Bugs
 
