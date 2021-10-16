@@ -88,7 +88,7 @@ and [config/](config/) for examples
 
 ## Contributing
 Feel free to contribute code (see [wiki/Contributing](https://github.com/kamiyaa/joshuto/wiki/Contributing))
-or buy me a cup of tea by donating :)
+or buy me a cup of tea through [donations](https://github.com/sponsors/kamiyaa) :)
 
 ## Features/Bugs
 
