@@ -1,10 +1,10 @@
 use std::{fs, io, path};
 
+use crate::config::option::DisplayOption;
 use crate::fs::{FileType, JoshutoMetadata};
 
 #[cfg(feature = "devicons")]
 use crate::util::devicons::*;
-use crate::util::display_option::DisplayOption;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {

@@ -1,11 +1,9 @@
-pub mod config;
-pub mod display;
-pub mod preview;
-pub mod sort;
-pub mod tab;
+pub mod app;
 
-pub use self::config::AppConfig;
-pub use self::display::DisplayRawOption;
-pub use self::preview::{PreviewOption, PreviewRawOption};
-pub use self::sort::SortRawOption;
-pub use self::tab::{TabOption, TabRawOption};
+mod app_crude;
+mod display_crude;
+mod preview_crude;
+mod sort_crude;
+mod tab_crude;
+
+pub use self::app::AppConfig;

@@ -5,8 +5,8 @@ use std::time;
 
 use serde_derive::Deserialize;
 
+use crate::config::option::SortOption;
 use crate::fs::JoshutoDirEntry;
-use crate::util::sort_option::SortOption;
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
 pub enum SortType {

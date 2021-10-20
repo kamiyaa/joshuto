@@ -1,5 +1,5 @@
+use crate::config::option::SortType;
 use crate::io::IoWorkerOptions;
-use crate::util::sort_type::SortType;
 
 use super::{Command, CommandComment};
 

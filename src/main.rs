@@ -21,7 +21,7 @@ use std::process;
 use structopt::StructOpt;
 
 use crate::config::{
-    AppConfig, AppKeyMapping, AppMimetypeRegistry, AppTheme, ConfigStructure, JoshutoPreview,
+    AppConfig, AppKeyMapping, AppMimetypeRegistry, AppTheme, JoshutoPreview, TomlConfigFile,
 };
 use crate::context::{AppContext, QuitType};
 use crate::error::JoshutoError;

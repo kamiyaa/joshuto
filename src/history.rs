@@ -3,8 +3,8 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use crate::config::option::DisplayOption;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
-use crate::util::display_option::DisplayOption;
 
 pub trait DirectoryHistory {
     fn populate_to_root(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;

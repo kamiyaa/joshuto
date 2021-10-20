@@ -1,8 +1,8 @@
 use std::path;
 
+use crate::config::option::DisplayOption;
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
-use crate::util::display_option::DisplayOption;
 
 #[derive(Clone, Copy, Debug)]
 pub enum TabHomePage {

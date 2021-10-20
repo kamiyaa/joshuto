@@ -1,8 +1,8 @@
 use std::path;
 
+use crate::config::option::SortType;
 use crate::io::IoWorkerOptions;
 use crate::util::select::SelectOption;
-use crate::util::sort_type::SortType;
 
 #[derive(Clone, Debug)]
 pub enum Command {

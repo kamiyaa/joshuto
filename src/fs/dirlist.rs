@@ -1,17 +1,18 @@
 use std::path;
 use std::slice::{Iter, IterMut};
 
+use crate::config::option::DisplayOption;
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::history::read_directory;
-use crate::util::display_option::DisplayOption;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirList {
-    pub index: Option<usize>,
     path: path::PathBuf,
-    _need_update: bool,
-    pub metadata: JoshutoMetadata,
     pub contents: Vec<JoshutoDirEntry>,
+    pub metadata: JoshutoMetadata,
+    pub index: Option<usize>,
+    pub viewport_index: usize,
+    _need_update: bool,
 }
 
 impl JoshutoDirList {
@@ -22,11 +23,12 @@ impl JoshutoDirList {
         metadata: JoshutoMetadata,
     ) -> Self {
         Self {
-            index,
             path,
-            _need_update: false,
-            metadata,
             contents,
+            metadata,
+            index,
+            viewport_index: 0,
+            _need_update: false,
         }
     }
 
@@ -39,14 +41,20 @@ impl JoshutoDirList {
 
         let index = if contents.is_empty() { None } else { Some(0) };
 
+        let viewport_index = match index {
+            None => 0,
+            Some(index) => 0,
+        };
+
         let metadata = JoshutoMetadata::from(&path)?;
 
         Ok(Self {
-            index,
             path,
-            _need_update: false,
-            metadata,
             contents,
+            metadata,
+            _need_update: false,
+            index,
+            viewport_index,
         })
     }
 

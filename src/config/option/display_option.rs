@@ -1,8 +1,9 @@
+use std::convert::From;
 use std::fs;
 
 use tui::layout::Constraint;
 
-use crate::util::sort_option::SortOption;
+use crate::config::option::SortOption;
 
 pub const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
@@ -12,13 +13,14 @@ pub const fn default_column_ratio() -> (usize, usize, usize) {
 pub struct DisplayOption {
     pub _automatically_count_files: bool,
     pub _collapse_preview: bool,
-    pub column_ratio: (usize, usize, usize),
+    pub _scroll_offset: usize,
     pub _show_borders: bool,
     pub _show_hidden: bool,
     pub _show_icons: bool,
     pub _show_preview: bool,
     pub _sort_options: SortOption,
     pub _tilde_in_titlebar: bool,
+    pub column_ratio: (usize, usize, usize),
     pub default_layout: [Constraint; 3],
     pub no_preview_layout: [Constraint; 3],
 }
@@ -30,6 +32,10 @@ impl DisplayOption {
 
     pub fn collapse_preview(&self) -> bool {
         self._collapse_preview
+    }
+
+    pub fn scroll_offset(&self) -> usize {
+        self._scroll_offset
     }
 
     pub fn show_borders(&self) -> bool {
@@ -44,7 +50,6 @@ impl DisplayOption {
         self._show_icons
     }
 
-    #[allow(dead_code)]
     pub fn show_preview(&self) -> bool {
         self._show_preview
     }
@@ -94,6 +99,7 @@ impl std::default::Default for DisplayOption {
             _automatically_count_files: false,
             _collapse_preview: true,
             column_ratio,
+            _scroll_offset: 4,
             _show_borders: true,
             _show_hidden: false,
             _show_icons: false,

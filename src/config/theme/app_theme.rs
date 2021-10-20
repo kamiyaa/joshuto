@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use tui::style::{Color, Modifier};
 
 use super::{AppStyle, RawAppStyle};
-use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
+use crate::config::{parse_to_config_file, TomlConfigFile};
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct RawAppTheme {
+pub struct AppThemeCrude {
     #[serde(default)]
     pub regular: RawAppStyle,
     #[serde(default)]
@@ -26,7 +26,7 @@ pub struct RawAppTheme {
     pub ext: HashMap<String, RawAppStyle>,
 }
 
-impl std::default::Default for RawAppTheme {
+impl std::default::Default for AppThemeCrude {
     fn default() -> Self {
         Self {
             regular: RawAppStyle::default(),
@@ -41,16 +41,16 @@ impl std::default::Default for RawAppTheme {
     }
 }
 
-impl Flattenable<AppTheme> for RawAppTheme {
-    fn flatten(self) -> AppTheme {
-        let selection = self.selection.to_style_theme();
-        let executable = self.executable.to_style_theme();
-        let regular = self.regular.to_style_theme();
-        let directory = self.directory.to_style_theme();
-        let link = self.link.to_style_theme();
-        let link_invalid = self.link_invalid.to_style_theme();
-        let socket = self.socket.to_style_theme();
-        let ext: HashMap<String, AppStyle> = self
+impl From<AppThemeCrude> for AppTheme {
+    fn from(crude: AppThemeCrude) -> Self {
+        let selection = crude.selection.to_style_theme();
+        let executable = crude.executable.to_style_theme();
+        let regular = crude.regular.to_style_theme();
+        let directory = crude.directory.to_style_theme();
+        let link = crude.link.to_style_theme();
+        let link_invalid = crude.link_invalid.to_style_theme();
+        let socket = crude.socket.to_style_theme();
+        let ext: HashMap<String, AppStyle> = crude
             .ext
             .iter()
             .map(|(k, v)| {
@@ -59,7 +59,7 @@ impl Flattenable<AppTheme> for RawAppTheme {
             })
             .collect();
 
-        AppTheme {
+        Self {
             selection,
             executable,
             regular,
@@ -84,9 +84,9 @@ pub struct AppTheme {
     pub ext: HashMap<String, AppStyle>,
 }
 
-impl ConfigStructure for AppTheme {
+impl TomlConfigFile for AppTheme {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<RawAppTheme, AppTheme>(file_name).unwrap_or_else(Self::default)
+        parse_to_config_file::<AppThemeCrude, AppTheme>(file_name).unwrap_or_else(Self::default)
     }
 }
 

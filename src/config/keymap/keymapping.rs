@@ -1,13 +1,14 @@
 use serde_derive::Deserialize;
 
 use std::collections::{hash_map::Entry, HashMap};
+use std::convert::{AsMut, AsRef, From};
 use std::str::FromStr;
 
 #[cfg(feature = "mouse")]
 use termion::event::MouseEvent;
 use termion::event::{Event, Key};
 
-use crate::config::{parse_to_config_file, ConfigStructure, Flattenable};
+use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;
 use crate::io::IoWorkerOptions;
 use crate::key_command::{Command, CommandKeybind};
@@ -22,15 +23,46 @@ struct CommandKeymap {
 }
 
 #[derive(Debug, Deserialize)]
-struct RawAppKeyMapping {
+struct AppKeyMappingCrude {
     #[serde(default)]
-    mapcommand: Vec<CommandKeymap>,
+    pub mapcommand: Vec<CommandKeymap>,
 }
 
-impl Flattenable<AppKeyMapping> for RawAppKeyMapping {
-    fn flatten(self) -> AppKeyMapping {
-        let mut keymaps = AppKeyMapping::new();
-        for m in self.mapcommand {
+#[derive(Debug)]
+pub struct AppKeyMapping {
+    map: HashMap<Event, CommandKeybind>,
+}
+
+impl AppKeyMapping {
+    pub fn new() -> Self {
+        Self {
+            map: HashMap::new(),
+        }
+    }
+
+    pub fn default_res() -> JoshutoResult<Self> {
+        let crude: AppKeyMappingCrude = toml::from_str(DEFAULT_KEYMAP)?;
+        let keymapping: Self = Self::from(crude);
+        Ok(keymapping)
+    }
+}
+
+impl AsRef<HashMap<Event, CommandKeybind>> for AppKeyMapping {
+    fn as_ref(&self) -> &HashMap<Event, CommandKeybind> {
+        &self.map
+    }
+}
+
+impl AsMut<HashMap<Event, CommandKeybind>> for AppKeyMapping {
+    fn as_mut(&mut self) -> &mut HashMap<Event, CommandKeybind> {
+        &mut self.map
+    }
+}
+
+impl From<AppKeyMappingCrude> for AppKeyMapping {
+    fn from(crude: AppKeyMappingCrude) -> Self {
+        let mut keymaps = Self::new();
+        for m in crude.mapcommand {
             match Command::from_str(m.command.as_str()) {
                 Ok(command) => {
                     let events: Vec<Event> = m
@@ -57,47 +89,16 @@ impl Flattenable<AppKeyMapping> for RawAppKeyMapping {
     }
 }
 
-#[derive(Debug)]
-pub struct AppKeyMapping {
-    map: HashMap<Event, CommandKeybind>,
-}
-
-impl std::convert::AsRef<HashMap<Event, CommandKeybind>> for AppKeyMapping {
-    fn as_ref(&self) -> &HashMap<Event, CommandKeybind> {
-        &self.map
-    }
-}
-
-impl std::convert::AsMut<HashMap<Event, CommandKeybind>> for AppKeyMapping {
-    fn as_mut(&mut self) -> &mut HashMap<Event, CommandKeybind> {
-        &mut self.map
-    }
-}
-
-impl AppKeyMapping {
-    pub fn new() -> Self {
-        Self {
-            map: HashMap::new(),
-        }
-    }
-
-    pub fn default_res() -> JoshutoResult<Self> {
-        let raw: RawAppKeyMapping = toml::from_str(DEFAULT_KEYMAP)?;
-        let keymapping: Self = raw.flatten();
-        Ok(keymapping)
+impl TomlConfigFile for AppKeyMapping {
+    fn get_config(file_name: &str) -> Self {
+        parse_to_config_file::<AppKeyMappingCrude, AppKeyMapping>(file_name)
+            .unwrap_or_else(Self::default)
     }
 }
 
 impl std::default::Default for AppKeyMapping {
     fn default() -> Self {
         AppKeyMapping::default_res().unwrap()
-    }
-}
-
-impl ConfigStructure for AppKeyMapping {
-    fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<RawAppKeyMapping, AppKeyMapping>(file_name)
-            .unwrap_or_else(Self::default)
     }
 }
 

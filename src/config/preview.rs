@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use super::{parse_to_config_file, ConfigStructure, Flattenable};
+use super::{parse_to_config_file, TomlConfigFile};
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoPreviewEntry {
@@ -10,26 +10,26 @@ pub struct JoshutoPreviewEntry {
 }
 
 #[derive(Debug, Deserialize)]
-struct JoshutoRawPreview {
+struct JoshutoPreviewCrude {
     pub extension: Option<HashMap<String, JoshutoPreviewEntry>>,
     pub mimetype: Option<HashMap<String, JoshutoPreviewEntry>>,
 }
 
-impl std::default::Default for JoshutoRawPreview {
+impl std::default::Default for JoshutoPreviewCrude {
     fn default() -> Self {
-        JoshutoRawPreview {
+        Self {
             extension: None,
             mimetype: None,
         }
     }
 }
 
-impl Flattenable<JoshutoPreview> for JoshutoRawPreview {
-    fn flatten(self) -> JoshutoPreview {
-        let extension = self.extension.unwrap_or_default();
-        let mimetype = self.mimetype.unwrap_or_default();
+impl From<JoshutoPreviewCrude> for JoshutoPreview {
+    fn from(crude: JoshutoPreviewCrude) -> Self {
+        let extension = crude.extension.unwrap_or_default();
+        let mimetype = crude.mimetype.unwrap_or_default();
 
-        JoshutoPreview {
+        Self {
             extension,
             mimetype,
         }
@@ -42,9 +42,9 @@ pub struct JoshutoPreview {
     pub mimetype: HashMap<String, JoshutoPreviewEntry>,
 }
 
-impl ConfigStructure for JoshutoPreview {
+impl TomlConfigFile for JoshutoPreview {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<JoshutoRawPreview, JoshutoPreview>(file_name)
+        parse_to_config_file::<JoshutoPreviewCrude, JoshutoPreview>(file_name)
             .unwrap_or_else(JoshutoPreview::default)
     }
 }
