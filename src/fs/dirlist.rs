@@ -43,7 +43,13 @@ impl JoshutoDirList {
 
         let viewport_index = match index {
             None => 0,
-            Some(index) => 0,
+            Some(index) => {
+                if index < options.scroll_offset() {
+                    0
+                } else {
+                    index - options.scroll_offset()
+                }
+            }
         };
 
         let metadata = JoshutoMetadata::from(&path)?;

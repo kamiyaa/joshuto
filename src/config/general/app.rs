@@ -1,7 +1,4 @@
-use serde_derive::Deserialize;
-
 use crate::config::option::{DisplayOption, PreviewOption, SortOption, TabOption};
-use crate::config::{parse_to_config_file, TomlConfigFile};
 
 #[derive(Debug, Clone)]
 pub struct AppConfig {

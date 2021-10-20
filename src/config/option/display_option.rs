@@ -1,4 +1,3 @@
-use std::convert::From;
 use std::fs;
 
 use tui::layout::Constraint;

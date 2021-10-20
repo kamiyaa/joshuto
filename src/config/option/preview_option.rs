@@ -1,9 +1,4 @@
-use std::convert::From;
 use std::path;
-
-use serde_derive::Deserialize;
-
-use crate::CONFIG_HIERARCHY;
 
 const fn default_max_preview_size() -> u64 {
     2 * 1024 * 1024 // 2 MB

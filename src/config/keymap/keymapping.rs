@@ -4,13 +4,12 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::convert::{AsMut, AsRef, From};
 use std::str::FromStr;
 
+use termion::event::Event;
 #[cfg(feature = "mouse")]
 use termion::event::MouseEvent;
-use termion::event::{Event, Key};
 
 use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;
-use crate::io::IoWorkerOptions;
 use crate::key_command::{Command, CommandKeybind};
 use crate::util::keyparse::str_to_event;
 

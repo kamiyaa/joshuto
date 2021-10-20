@@ -1,5 +1,4 @@
 use std::cmp;
-use std::convert::From;
 
 use crate::config::option::{SortType, SortTypes};
 use crate::fs::JoshutoDirEntry;

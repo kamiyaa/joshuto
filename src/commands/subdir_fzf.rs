@@ -1,11 +1,10 @@
 use std::io;
-use std::io::{BufReader, BufWriter, Read, Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::commands::cursor_move;
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::JoshutoResult;
 use crate::ui::TuiBackend;
 
 use super::change_directory::change_directory;
@@ -76,8 +75,8 @@ pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult<()
             Some(curr_list) => curr_list
                 .iter()
                 .enumerate()
-                .find(|(i, e)| e.file_name() == file_name)
-                .map(|(i, e)| i),
+                .find(|(_, e)| e.file_name() == file_name)
+                .map(|(i, _)| i),
             None => None,
         };
         eprintln!("{:?}", index);
