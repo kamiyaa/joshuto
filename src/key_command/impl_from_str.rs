@@ -3,10 +3,9 @@ use std::path;
 use dirs_next::home_dir;
 use shellexpand::tilde_with_context;
 
-use crate::config::option::SortType;
+use crate::config::option::{SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::IoWorkerOptions;
-use crate::util::select::SelectOption;
 
 use crate::HOME_DIR;
 

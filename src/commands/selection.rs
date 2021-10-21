@@ -1,8 +1,8 @@
 use globset::Glob;
 
+use crate::config::option::SelectOption;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::util::select::SelectOption;
 
 use super::cursor_move;
 
