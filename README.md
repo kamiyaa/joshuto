@@ -13,6 +13,7 @@
 - [cargo](https://github.com/rust-lang/cargo/)
 - [rustc](https://www.rust-lang.org/)
 - xsel/xclip/wl-clipboard (optional, for clipboard support)
+- fzf (optional)
 
 Also see [Cargo.toml](Cargo.toml)
 
