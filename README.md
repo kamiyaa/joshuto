@@ -70,10 +70,9 @@ sudo port install joshuto
 
 ## Configuration
 
-Check out [wiki/Configuration](https://github.com/kamiyaa/joshuto/wiki/Configuration) for details
-and [config/](config/) for examples
+Check out [docs](/docs) for details and [config](/config) for examples
 
-#### [joshuto.toml](config/joshuto.toml)
+#### [joshuto.toml](/config/joshuto.toml)
 - general configurations
 
 #### [keymap.toml](/config/keymap.toml)
@@ -86,7 +85,7 @@ and [config/](config/) for examples
 - color customizations
 
 ## Contributing
-See [wiki/Contributing](https://github.com/kamiyaa/joshuto/wiki/Contributing)
+See [docs](/docs)
 
 ## Features/Bugs
 
