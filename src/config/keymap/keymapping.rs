@@ -91,7 +91,10 @@ impl From<AppKeyMappingCrude> for AppKeyMapping {
 impl TomlConfigFile for AppKeyMapping {
     fn get_config(file_name: &str) -> Self {
         parse_to_config_file::<AppKeyMappingCrude, AppKeyMapping>(file_name)
-            .unwrap_or_else(Self::default)
+            .unwrap_or_else(|| {
+                eprintln!("Using default keymapping");
+                Self::default()
+            })
     }
 }
 
