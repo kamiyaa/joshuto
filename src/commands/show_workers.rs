@@ -11,7 +11,7 @@ use crate::util::input;
 pub fn show_workers(
     context: &mut AppContext,
     backend: &mut TuiBackend,
-    keymap_t: &AppKeyMapping,
+    _keymap_t: &AppKeyMapping,
 ) -> JoshutoResult<()> {
     context.flush_event();
 
