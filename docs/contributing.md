@@ -7,4 +7,3 @@ Feel free to open a pull request!
  - Try to squash useless commits into more useful commits
    - Commits such as code formatting, code cleanups, fixing a feature that hasn't been merged can be merged into one commit for the original feature
  - Try to have somewhat informative commit messages
-   - Avoid messages like: fix, fmt,

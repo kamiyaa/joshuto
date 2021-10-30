@@ -28,6 +28,7 @@ use crate::error::JoshutoError;
 use crate::run::run;
 
 const PROGRAM_NAME: &str = "joshuto";
+const CONFIG_HOME: &str = "JOSHUTO_CONFIG_HOME";
 const CONFIG_FILE: &str = "joshuto.toml";
 const MIMETYPE_FILE: &str = "mimetype.toml";
 const KEYMAP_FILE: &str = "keymap.toml";
@@ -39,7 +40,7 @@ lazy_static! {
     static ref CONFIG_HIERARCHY: Vec<PathBuf> = {
         let mut config_dirs = vec![];
 
-        if let Ok(p) = std::env::var("JOSHUTO_CONFIG_HOME") {
+        if let Ok(p) = std::env::var(CONFIG_HOME) {
             let p = PathBuf::from(p);
             if p.is_dir() {
                 config_dirs.push(p);
