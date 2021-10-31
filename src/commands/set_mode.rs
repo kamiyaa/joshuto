@@ -12,23 +12,24 @@ use super::cursor_move;
 pub struct SetMode;
 
 #[cfg(unix)]
-const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
-    (libc::S_IRUSR, 'r'),
-    (libc::S_IWUSR, 'w'),
-    (libc::S_IXUSR, 'x'),
-    (libc::S_IRGRP, 'r'),
-    (libc::S_IWGRP, 'w'),
-    (libc::S_IXGRP, 'x'),
-    (libc::S_IROTH, 'r'),
-    (libc::S_IWOTH, 'w'),
-    (libc::S_IXOTH, 'x'),
+const LIBC_PERMISSION_VALS: [(u32, char); 9] = [
+    (libc::S_IRUSR as u32, 'r'),
+    (libc::S_IWUSR as u32, 'w'),
+    (libc::S_IXUSR as u32, 'x'),
+    (libc::S_IRGRP as u32, 'r'),
+    (libc::S_IWGRP as u32, 'w'),
+    (libc::S_IXGRP as u32, 'x'),
+    (libc::S_IROTH as u32, 'r'),
+    (libc::S_IWOTH as u32, 'w'),
+    (libc::S_IXOTH as u32, 'x'),
 ];
 
-pub fn str_to_mode(s: &str) -> libc::mode_t {
-    let mut mode: libc::mode_t = 0;
+pub fn str_to_mode(s: &str) -> u32 {
+    let mut mode: u32 = 0;
     for (i, ch) in s.chars().enumerate().take(LIBC_PERMISSION_VALS.len()) {
         if ch == LIBC_PERMISSION_VALS[i].1 {
-            mode |= LIBC_PERMISSION_VALS[i].0;
+            let val: u32 = LIBC_PERMISSION_VALS[i].0 as u32;
+            mode |= val;
         }
     }
     mode

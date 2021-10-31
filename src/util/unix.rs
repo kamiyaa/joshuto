@@ -1,32 +1,34 @@
 pub fn is_executable(mode: u32) -> bool {
-    const LIBC_PERMISSION_VALS: [libc::mode_t; 3] = [libc::S_IXUSR, libc::S_IXGRP, libc::S_IXOTH];
-
-    LIBC_PERMISSION_VALS
-        .iter()
-        .any(|val| mode & (*val as u32) != 0)
-}
-
-pub fn mode_to_string(mode: libc::mode_t) -> String {
-    const LIBC_FILE_VALS: [(libc::mode_t, char); 7] = [
-        (libc::S_IFREG >> 9, '-'),
-        (libc::S_IFDIR >> 9, 'd'),
-        (libc::S_IFLNK >> 9, 'l'),
-        (libc::S_IFSOCK >> 9, 's'),
-        (libc::S_IFBLK >> 9, 'b'),
-        (libc::S_IFCHR >> 9, 'c'),
-        (libc::S_IFIFO >> 9, 'f'),
+    const LIBC_PERMISSION_VALS: [u32; 3] = [
+        libc::S_IXUSR as u32,
+        libc::S_IXGRP as u32,
+        libc::S_IXOTH as u32,
     ];
 
-    const LIBC_PERMISSION_VALS: [(libc::mode_t, char); 9] = [
-        (libc::S_IRUSR, 'r'),
-        (libc::S_IWUSR, 'w'),
-        (libc::S_IXUSR, 'x'),
-        (libc::S_IRGRP, 'r'),
-        (libc::S_IWGRP, 'w'),
-        (libc::S_IXGRP, 'x'),
-        (libc::S_IROTH, 'r'),
-        (libc::S_IWOTH, 'w'),
-        (libc::S_IXOTH, 'x'),
+    LIBC_PERMISSION_VALS.iter().any(|val| mode & *val != 0)
+}
+
+pub fn mode_to_string(mode: u32) -> String {
+    const LIBC_FILE_VALS: [(u32, char); 7] = [
+        (libc::S_IFREG as u32 >> 9, '-'),
+        (libc::S_IFDIR as u32 >> 9, 'd'),
+        (libc::S_IFLNK as u32 >> 9, 'l'),
+        (libc::S_IFSOCK as u32 >> 9, 's'),
+        (libc::S_IFBLK as u32 >> 9, 'b'),
+        (libc::S_IFCHR as u32 >> 9, 'c'),
+        (libc::S_IFIFO as u32 >> 9, 'f'),
+    ];
+
+    const LIBC_PERMISSION_VALS: [(u32, char); 9] = [
+        (libc::S_IRUSR as u32, 'r'),
+        (libc::S_IWUSR as u32, 'w'),
+        (libc::S_IXUSR as u32, 'x'),
+        (libc::S_IRGRP as u32, 'r'),
+        (libc::S_IWGRP as u32, 'w'),
+        (libc::S_IXGRP as u32, 'x'),
+        (libc::S_IROTH as u32, 'r'),
+        (libc::S_IWOTH as u32, 'w'),
+        (libc::S_IXOTH as u32, 'x'),
     ];
 
     let mut mode_str: String = String::with_capacity(10);
