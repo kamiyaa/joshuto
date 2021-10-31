@@ -6,7 +6,7 @@ pub fn is_executable(mode: u32) -> bool {
         .any(|val| mode & (*val as u32) != 0)
 }
 
-pub fn mode_to_string(mode: u32) -> String {
+pub fn mode_to_string(mode: libc::mode_t) -> String {
     const LIBC_FILE_VALS: [(libc::mode_t, char); 7] = [
         (libc::S_IFREG >> 9, '-'),
         (libc::S_IFDIR >> 9, 'd'),
@@ -40,8 +40,7 @@ pub fn mode_to_string(mode: u32) -> String {
     }
 
     for (val, ch) in LIBC_PERMISSION_VALS.iter() {
-        let val: u32 = (*val) as u32;
-        if mode & val != 0 {
+        if mode & *val != 0 {
             mode_str.push(*ch);
         } else {
             mode_str.push('-');
