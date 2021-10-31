@@ -199,10 +199,12 @@ pub fn recursive_copy(
     let file_type = fs::symlink_metadata(src)?.file_type();
     if file_type.is_dir() {
         match fs::create_dir(dest_buf.as_path()) {
-            Ok(_) => {},
-            e => if !options.overwrite {
-                return e;
-            },
+            Ok(_) => {}
+            e => {
+                if !options.overwrite {
+                    return e;
+                }
+            }
         }
         for entry in fs::read_dir(src)? {
             let entry = entry?;
