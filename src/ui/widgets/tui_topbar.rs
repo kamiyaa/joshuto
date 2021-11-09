@@ -1,3 +1,4 @@
+use std::path::Component;
 use std::path::Path;
 
 use tui::buffer::Buffer;
@@ -31,21 +32,22 @@ impl<'a> Widget for TuiTopBar<'a> {
 
         if curr_path_str.len() > area.width as usize {
             if let Some(s) = self.path.file_name() {
-                /* path shortener */
-                let mut temp: Vec<&str> = curr_path_str.split("/").collect();
-                let mut short_path = String::from(curr_path_str.chars().next().unwrap());
-
-                for folder in &mut temp {
-                    if folder.len() > 0 {
-                        let ch: char = folder.chars().next().unwrap();
-                        short_path.push_str(&ch.to_string());
-                        short_path.push_str(&"/");
+                let mut short_path = String::new();
+                for component in self.path.components() {
+                    match component {
+                        Component::RootDir => short_path.push('/'),
+                        Component::Normal(s) => {
+                            let ch = s.to_string_lossy().chars().next().unwrap();
+                            short_path.push(ch);
+                            short_path.push('/');
+                        }
+                        Component::Prefix(_) => {}
+                        Component::CurDir => {}
+                        Component::ParentDir => {}
                     }
                 }
-
                 ellipses = Some(Span::styled(short_path, path_style));
                 curr_path_str = s.to_string_lossy().into_owned();
-                /* end path shortener */
             }
         }
         if self
