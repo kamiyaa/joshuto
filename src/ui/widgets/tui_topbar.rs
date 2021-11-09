@@ -31,8 +31,21 @@ impl<'a> Widget for TuiTopBar<'a> {
 
         if curr_path_str.len() > area.width as usize {
             if let Some(s) = self.path.file_name() {
+                /* path shortener */
+                let mut temp: Vec<&str> = curr_path_str.split("/").collect();
+                let mut short_path = String::from(curr_path_str.chars().next().unwrap());
+
+                for folder in &mut temp {
+                    if folder.len() > 0 {
+                        let ch: char = folder.chars().next().unwrap();
+                        short_path.push_str(&ch.to_string());
+                        short_path.push_str(&"/");
+                    }
+                }
+
+                ellipses = Some(Span::styled(short_path, path_style));
                 curr_path_str = s.to_string_lossy().into_owned();
-                ellipses = Some(Span::styled("…", path_style));
+                /* end path shortener */
             }
         }
         if self
