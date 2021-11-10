@@ -7,6 +7,8 @@ use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 
+use unicode_width::UnicodeWidthStr;
+
 use crate::context::AppContext;
 use crate::{HOME_DIR, HOSTNAME, USERNAME};
 
@@ -30,7 +32,7 @@ impl<'a> Widget for TuiTopBar<'a> {
         let mut ellipses = None;
         let mut curr_path_str = self.path.to_string_lossy().into_owned();
 
-        if curr_path_str.len() > area.width as usize {
+        if curr_path_str.width() > area.width as usize {
             if let Some(s) = self.path.file_name() {
                 let mut short_path = String::new();
                 for component in self.path.components() {
@@ -41,9 +43,7 @@ impl<'a> Widget for TuiTopBar<'a> {
                             short_path.push(ch);
                             short_path.push('/');
                         }
-                        Component::Prefix(_) => {}
-                        Component::CurDir => {}
-                        Component::ParentDir => {}
+                        _ => {}
                     }
                 }
                 ellipses = Some(Span::styled(short_path, path_style));
