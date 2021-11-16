@@ -10,12 +10,13 @@ use crate::ui;
 use crate::ui::views::TuiView;
 use crate::util::input;
 use crate::util::to_string::ToString;
+use std::path::PathBuf;
 
 pub fn run(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
     keymap_t: AppKeyMapping,
-) -> std::io::Result<()> {
+) -> std::io::Result<Vec<PathBuf>> {
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
@@ -35,7 +36,7 @@ pub fn run(
 
         let event = match context.poll_event() {
             Ok(event) => event,
-            Err(_) => return Ok(()), // TODO
+            Err(_) => return Ok(vec![]), // TODO
         };
 
         match event {
@@ -91,5 +92,10 @@ pub fn run(
         }
     }
 
-    Ok(())
+    let curr_tab = context.tab_context_ref().curr_tab_ref();
+    let paths = match curr_tab.curr_list_ref() {
+        Some(s) => s.get_selected_paths(),
+        None => Vec::new(),
+    };
+    Ok(paths.into_iter().collect())
 }

@@ -78,6 +78,8 @@ lazy_static! {
 pub struct Args {
     #[structopt(long = "path", parse(from_os_str))]
     path: Option<PathBuf>,
+    #[structopt(long)]
+    choosefiles: Option<PathBuf>,
     #[structopt(short = "v", long = "version")]
     version: bool,
     #[structopt(long = "last-dir", parse(from_os_str))]
@@ -100,11 +102,11 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     let config = AppConfig::get_config(CONFIG_FILE);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
 
-    let mut context = AppContext::new(config);
-    {
+    let mut context = AppContext::new(config, args.choosefiles.is_some());
+    let final_selection = {
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
-        run(&mut backend, &mut context, keymap)?;
-    }
+        run(&mut backend, &mut context, keymap)?
+    };
 
     match context.quit {
         QuitType::ToCurrentDirectory => {
@@ -122,6 +124,14 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
             }
         }
         QuitType::Force => {}
+        QuitType::Normal => {
+            if let Some(path) = args.choosefiles {
+                let mut f = File::create(path).unwrap();
+                for file in final_selection {
+                    writeln!(f, "{}", file.display()).unwrap();
+                }
+            }
+        }
         _ => {}
     }
 

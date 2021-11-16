@@ -19,6 +19,8 @@ pub struct AppContext {
     pub quit: QuitType,
     // event loop querying
     pub events: Events,
+    // choose file instead of opening it
+    pub choosefiles: bool,
     // app config
     config: config::AppConfig,
     // context related to tabs
@@ -38,7 +40,7 @@ pub struct AppContext {
 }
 
 impl AppContext {
-    pub fn new(config: config::AppConfig) -> Self {
+    pub fn new(config: config::AppConfig, choosefiles: bool) -> Self {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
 
@@ -47,6 +49,7 @@ impl AppContext {
         Self {
             quit: QuitType::DoNot,
             events,
+            choosefiles,
             tab_context: TabContext::new(),
             local_state: None,
             search_context: None,
