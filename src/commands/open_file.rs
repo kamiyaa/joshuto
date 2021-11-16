@@ -51,8 +51,8 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
 
             let options = get_options(paths[0].as_path());
 
-            if context.choosefiles {
-                context.quit = QuitType::Normal;
+            if context.args.choosefiles.is_some() {
+                context.quit = QuitType::ChooseFiles;
             } else if !options.is_empty() {
                 if options[0].get_fork() {
                     options[0].execute_with(files.as_slice())?;

@@ -6,6 +6,7 @@ use crate::context::{
 };
 use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
+use crate::Args;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum QuitType {
@@ -13,14 +14,15 @@ pub enum QuitType {
     Normal,
     Force,
     ToCurrentDirectory,
+    ChooseFiles,
 }
 
 pub struct AppContext {
     pub quit: QuitType,
     // event loop querying
     pub events: Events,
-    // choose file instead of opening it
-    pub choosefiles: bool,
+    // args from the command line
+    pub args: Args,
     // app config
     config: config::AppConfig,
     // context related to tabs
@@ -40,7 +42,7 @@ pub struct AppContext {
 }
 
 impl AppContext {
-    pub fn new(config: config::AppConfig, choosefiles: bool) -> Self {
+    pub fn new(config: config::AppConfig, args: Args) -> Self {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
 
@@ -49,7 +51,7 @@ impl AppContext {
         Self {
             quit: QuitType::DoNot,
             events,
-            choosefiles,
+            args,
             tab_context: TabContext::new(),
             local_state: None,
             search_context: None,

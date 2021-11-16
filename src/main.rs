@@ -102,11 +102,11 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
     let config = AppConfig::get_config(CONFIG_FILE);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
 
-    let mut context = AppContext::new(config, args.choosefiles.is_some());
-    let final_selection = {
+    let mut context = AppContext::new(config, args.clone());
+    {
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
-        run(&mut backend, &mut context, keymap)?
-    };
+        run(&mut backend, &mut context, keymap)?;
+    }
 
     match context.quit {
         QuitType::ToCurrentDirectory => {
@@ -123,15 +123,20 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
                 file.write_all("\n".as_bytes())?;
             }
         }
-        QuitType::Force => {}
-        QuitType::Normal => {
+        QuitType::ChooseFiles => {
             if let Some(path) = args.choosefiles {
-                let mut f = File::create(path).unwrap();
+                let curr_tab = context.tab_context_ref().curr_tab_ref();
+                let final_selection = match curr_tab.curr_list_ref() {
+                    Some(s) => s.get_selected_paths(),
+                    None => Vec::new(),
+                };
+                let mut f = File::create(path)?;
                 for file in final_selection {
-                    writeln!(f, "{}", file.display()).unwrap();
+                    writeln!(f, "{}", file.display())?;
                 }
             }
         }
+        QuitType::Force => {}
         _ => {}
     }
 
