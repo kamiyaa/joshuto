@@ -126,10 +126,10 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
         QuitType::ChooseFiles => {
             if let Some(path) = args.choosefiles {
                 let curr_tab = context.tab_context_ref().curr_tab_ref();
-                let final_selection = match curr_tab.curr_list_ref() {
-                    Some(s) => s.get_selected_paths(),
-                    None => Vec::new(),
-                };
+                let final_selection = curr_tab
+                    .curr_list_ref()
+                    .into_iter()
+                    .flat_map(|s| s.get_selected_paths());
                 let mut f = File::create(path)?;
                 for file in final_selection {
                     writeln!(f, "{}", file.display())?;
