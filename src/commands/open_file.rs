@@ -2,7 +2,7 @@ use std::io;
 use std::path;
 
 use crate::config::AppMimetypeEntry;
-use crate::context::AppContext;
+use crate::context::{AppContext, QuitType};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
@@ -51,7 +51,9 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
 
             let options = get_options(paths[0].as_path());
 
-            if !options.is_empty() {
+            if context.args.choosefiles.is_some() {
+                context.quit = QuitType::ChooseFiles;
+            } else if !options.is_empty() {
                 if options[0].get_fork() {
                     options[0].execute_with(files.as_slice())?;
                 } else {
