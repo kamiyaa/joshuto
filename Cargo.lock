@@ -18,6 +18,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20e59b2ccb4c1ffbbf45af6f493e16ac65a66981c85664f1587816c0b08cd698"
 
 [[package]]
+name = "ansi-to-tui"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c3fb5747c9d1b444cb6c9f96c84d09a3f7ae9e1eb77f52ec45c8bf30a6e6bdf"
+dependencies = [
+ "tui",
+]
+
+[[package]]
 name = "ansi_term"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -289,6 +298,7 @@ name = "joshuto"
 version = "0.9.1"
 dependencies = [
  "alphanumeric-sort",
+ "ansi-to-tui",
  "chrono",
  "colors-transform",
  "dirs-next",
