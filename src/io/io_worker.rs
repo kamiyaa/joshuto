@@ -258,7 +258,7 @@ pub fn recursive_cut(
             progress.set_files_processed(progress.files_processed() + 1);
             Ok(())
         }
-        Err(e) if e.kind() == io::ErrorKind::Other => {
+        Err(e) => {
             if file_type.is_dir() {
                 fs::create_dir(dest_buf.as_path())?;
                 for entry in fs::read_dir(src)? {
@@ -270,6 +270,7 @@ pub fn recursive_cut(
                         tx.clone(),
                         progress,
                     )?;
+                    let _ = tx.send(progress.clone());
                 }
                 fs::remove_dir(src)?;
             } else if file_type.is_symlink() {
