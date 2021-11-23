@@ -79,7 +79,6 @@ pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult<()
                 .map(|(i, _)| i),
             None => None,
         };
-        eprintln!("{:?}", index);
 
         if let Some(index) = index {
             if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
