@@ -141,6 +141,28 @@ impl std::str::FromStr for Command {
                     )),
                 },
             }
+        } else if command == CMD_PREVIEW_CURSOR_MOVE_DOWN {
+            match arg {
+                "" => Ok(Self::PreviewCursorMoveDown(1)),
+                arg => match arg.trim().parse::<usize>() {
+                    Ok(s) => Ok(Self::PreviewCursorMoveDown(s)),
+                    Err(e) => Err(JoshutoError::new(
+                        JoshutoErrorKind::ParseError,
+                        e.to_string(),
+                    )),
+                },
+            }
+        } else if command == CMD_PREVIEW_CURSOR_MOVE_UP {
+            match arg {
+                "" => Ok(Self::PreviewCursorMoveUp(1)),
+                arg => match arg.trim().parse::<usize>() {
+                    Ok(s) => Ok(Self::PreviewCursorMoveUp(s)),
+                    Err(e) => Err(JoshutoError::new(
+                        JoshutoErrorKind::ParseError,
+                        e.to_string(),
+                    )),
+                },
+            }
         } else if command == CMD_NEW_DIRECTORY {
             if arg.is_empty() {
                 Err(JoshutoError::new(

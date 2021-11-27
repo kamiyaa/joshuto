@@ -18,8 +18,12 @@ impl PreviewContext {
         self.previews.get(p).is_some()
     }
 
-    pub fn get_preview(&self, p: &path::Path) -> Option<&Option<FilePreview>> {
+    pub fn get_preview_ref(&self, p: &path::Path) -> Option<&Option<FilePreview>> {
         self.previews.get(p)
+    }
+
+    pub fn get_preview_mut(&mut self, p: &path::Path) -> Option<&mut Option<FilePreview>> {
+        self.previews.get_mut(p)
     }
 
     pub fn insert_preview(&mut self, p: path::PathBuf, preview: Option<FilePreview>) {

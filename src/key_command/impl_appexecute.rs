@@ -44,6 +44,9 @@ impl AppExecute for Command {
             Self::ParentCursorMoveUp(u) => parent_cursor_move::parent_up(context, *u),
             Self::ParentCursorMoveDown(u) => parent_cursor_move::parent_down(context, *u),
 
+            Self::PreviewCursorMoveUp(u) => preview_cursor_move::preview_up(context, *u),
+            Self::PreviewCursorMoveDown(u) => preview_cursor_move::preview_down(context, *u),
+
             Self::DeleteFiles => {
                 delete_files::delete_selected_files(context, backend)?;
                 Ok(())

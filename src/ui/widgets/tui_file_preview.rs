@@ -21,7 +21,12 @@ impl<'a> TuiFilePreview<'a> {
 impl<'a> Widget for TuiFilePreview<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let text: Text = ansi_to_text(self.preview.output.as_str().as_bytes().to_vec()).unwrap();
-        for (y, line) in (area.y..area.y + area.height).zip(text.lines) {
+        for (line, y) in text
+            .lines
+            .iter()
+            .skip(self.preview.index)
+            .zip(area.y..area.y + area.height)
+        {
             buf.set_spans(area.x, y, &line, area.width);
         }
     }

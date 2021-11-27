@@ -19,6 +19,7 @@ pub enum PreviewState {
 pub struct FilePreview {
     pub status: std::process::ExitStatus,
     pub output: String,
+    pub index: usize,
 }
 
 impl std::convert::From<Output> for FilePreview {
@@ -26,7 +27,11 @@ impl std::convert::From<Output> for FilePreview {
         let s = String::from_utf8_lossy(&output.stdout).to_string();
         let s2 = s.replace('\t', "        ").to_string();
         let status = output.status;
-        Self { status, output: s2 }
+        Self {
+            status,
+            output: s2,
+            index: 0,
+        }
     }
 }
 

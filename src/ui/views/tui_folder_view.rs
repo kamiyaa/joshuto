@@ -48,7 +48,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                     Some(_) => (true, &display_options.default_layout),
                     None => match curr_entry {
                         None => (false, &display_options.no_preview_layout),
-                        Some(e) => match preview_context.get_preview(e.file_path()) {
+                        Some(e) => match preview_context.get_preview_ref(e.file_path()) {
                             Some(Some(p)) if p.status.code() != Some(1) => {
                                 (true, &display_options.default_layout)
                             }
@@ -158,7 +158,7 @@ impl<'a> Widget for TuiFolderView<'a> {
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(list).render(layout_rect[2], buf);
         } else if let Some(entry) = curr_entry {
-            if let Some(Some(preview)) = preview_context.get_preview(entry.file_path()) {
+            if let Some(Some(preview)) = preview_context.get_preview_ref(entry.file_path()) {
                 match preview.status.code() {
                     Some(1) | None => {}
                     _ => {

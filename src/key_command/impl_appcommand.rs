@@ -34,6 +34,9 @@ impl AppCommand for Command {
             Self::ParentCursorMoveUp(_) => CMD_PARENT_CURSOR_MOVE_UP,
             Self::ParentCursorMoveDown(_) => CMD_PARENT_CURSOR_MOVE_DOWN,
 
+            Self::PreviewCursorMoveUp(_) => CMD_PREVIEW_CURSOR_MOVE_UP,
+            Self::PreviewCursorMoveDown(_) => CMD_PREVIEW_CURSOR_MOVE_DOWN,
+
             Self::DeleteFiles => CMD_DELETE_FILES,
             Self::NewDirectory(_) => CMD_NEW_DIRECTORY,
             Self::OpenFile => CMD_OPEN_FILE,

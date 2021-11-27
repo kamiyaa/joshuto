@@ -46,6 +46,9 @@ impl CommandComment for Command {
             Self::ParentCursorMoveUp(_) => "Cursor up in parent list",
             Self::ParentCursorMoveDown(_) => "Cursor down in parent list",
 
+            Self::PreviewCursorMoveUp(_) => "Cursor up in file preview",
+            Self::PreviewCursorMoveDown(_) => "Cursor down in file preview",
+
             Self::DeleteFiles => "Delete selected files",
             Self::NewDirectory(_) => "Make a new directory",
             Self::OpenFile => "Open a file",

@@ -28,7 +28,7 @@ pub fn load_preview_path(
     } else if metadata.len() <= preview_options.max_preview_size {
         let need_to_load = context
             .preview_context_ref()
-            .get_preview(p.as_path())
+            .get_preview_ref(p.as_path())
             .is_none();
 
         if need_to_load {

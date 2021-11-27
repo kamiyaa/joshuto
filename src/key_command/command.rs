@@ -27,6 +27,9 @@ pub enum Command {
     ParentCursorMoveUp(usize),
     ParentCursorMoveDown(usize),
 
+    PreviewCursorMoveUp(usize),
+    PreviewCursorMoveDown(usize),
+
     // ChildCursorMoveUp(usize),
     // ChildCursorMoveDown(usize),
     DeleteFiles,
