@@ -258,7 +258,7 @@ pub fn recursive_cut(
             progress.set_files_processed(progress.files_processed() + 1);
             Ok(())
         }
-        Err(e) => {
+        Err(_e) => {
             if file_type.is_dir() {
                 fs::create_dir(dest_buf.as_path())?;
                 for entry in fs::read_dir(src)? {
@@ -288,6 +288,5 @@ pub fn recursive_cut(
             }
             Ok(())
         }
-        e => e,
     }
 }

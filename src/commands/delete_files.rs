@@ -68,7 +68,7 @@ fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::
         .curr_tab_ref()
         .curr_list_ref()
         .map(|s| s.get_selected_paths())
-        .unwrap_or_else(|| vec![]);
+        .unwrap_or_else(Vec::new);
     let paths_len = paths.len();
     if paths_len == 0 {
         return Err(std::io::Error::new(

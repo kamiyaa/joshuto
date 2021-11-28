@@ -61,15 +61,14 @@ pub fn subdir_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> Joshuto
 
 pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult<()> {
     if path.is_dir() {
-        change_directory(context, &path)?;
+        change_directory(context, path)?;
     } else if let Some(parent) = path.parent() {
         let file_name = path
             .file_name()
             .and_then(|name| name.to_str())
             .unwrap()
             .trim();
-
-        change_directory(context, &parent)?;
+        change_directory(context, parent)?;
 
         let index = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
             Some(curr_list) => curr_list

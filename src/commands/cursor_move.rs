@@ -124,12 +124,10 @@ fn get_page_size(context: &AppContext, backend: &TuiBackend) -> Option<usize> {
         } else {
             None
         }
+    } else if rect_height >= 2 {
+        Some(rect_height - 2)
     } else {
-        if rect_height >= 2 {
-            Some(rect_height - 2)
-        } else {
-            None
-        }
+        None
     }
 }
 

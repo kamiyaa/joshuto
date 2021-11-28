@@ -8,12 +8,10 @@ pub fn preview_cursor_move(context: &mut AppContext, new_index: usize) -> Joshut
         let curr_tab = context.tab_context_ref().curr_tab_ref();
         let curr_list = curr_tab.curr_list_ref();
         let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
-        let file_path = curr_entry.map(|e| e.file_path().to_path_buf());
-        file_path
+        curr_entry.map(|e| e.file_path().to_path_buf())
     };
 
     let preview_context = context.preview_context_mut();
-
     if let Some(file_path) = file_path {
         if let Some(Some(preview)) = preview_context.get_preview_mut(&file_path) {
             preview.index = new_index;
@@ -32,7 +30,7 @@ pub fn preview_up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
         let preview_context = context.preview_context_ref();
 
         if let Some(file_path) = file_path {
-            if let Some(Some(preview)) = preview_context.get_preview_ref(&file_path) {
+            if let Some(Some(preview)) = preview_context.get_preview_ref(file_path) {
                 if preview.index < u {
                     Some(0)
                 } else {
@@ -46,7 +44,7 @@ pub fn preview_up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
         }
     };
     if let Some(new_index) = new_index {
-        preview_cursor_move(context, new_index);
+        preview_cursor_move(context, new_index)?;
     }
     Ok(())
 }
@@ -61,7 +59,7 @@ pub fn preview_down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
         let preview_context = context.preview_context_ref();
 
         if let Some(file_path) = file_path {
-            if let Some(Some(preview)) = preview_context.get_preview_ref(&file_path) {
+            if let Some(Some(preview)) = preview_context.get_preview_ref(file_path) {
                 Some(preview.index + u)
             } else {
                 None
@@ -71,7 +69,7 @@ pub fn preview_down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
         }
     };
     if let Some(new_index) = new_index {
-        preview_cursor_move(context, new_index);
+        preview_cursor_move(context, new_index)?;
     }
     Ok(())
 }

@@ -27,7 +27,7 @@ impl<'a> Widget for TuiFilePreview<'a> {
             .skip(self.preview.index)
             .zip(area.y..area.y + area.height)
         {
-            buf.set_spans(area.x, y, &line, area.width);
+            buf.set_spans(area.x, y, line, area.width);
         }
     }
 }

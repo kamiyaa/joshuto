@@ -24,13 +24,13 @@ const FOOTER: &str = "Press <ESC> to return, / to search, 1,2,3 to sort";
 
 pub struct TuiHelp<'a> {
     // This keymap is constructed with get_keymap_table function
-    keymap: &'a Vec<Row<'a>>,
+    keymap: &'a [Row<'a>],
     offset: &'a mut u8,
     search_query: &'a str,
 }
 
 impl<'a> TuiHelp<'a> {
-    pub fn new(keymap: &'a Vec<Row>, offset: &'a mut u8, search_query: &'a str) -> TuiHelp<'a> {
+    pub fn new(keymap: &'a [Row], offset: &'a mut u8, search_query: &'a str) -> TuiHelp<'a> {
         TuiHelp {
             keymap,
             offset,

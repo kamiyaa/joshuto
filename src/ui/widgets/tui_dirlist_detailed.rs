@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
@@ -127,22 +129,20 @@ fn factor_labels_for_entry<'a>(
         ("".to_string(), "")
     } else if width_remainder >= 0 {
         (left_label_original.to_string(), right_label_original)
+    } else if left_width_remainder < MIN_LEFT_LABEL_WIDTH {
+        (
+            if left_label_original.width() as i32 <= left_width_remainder {
+                trim_file_label(left_label_original, drawing_width)
+            } else {
+                left_label_original.to_string()
+            },
+            "",
+        )
     } else {
-        if left_width_remainder < MIN_LEFT_LABEL_WIDTH {
-            (
-                if left_label_original.width() as i32 <= left_width_remainder {
-                    trim_file_label(left_label_original, drawing_width)
-                } else {
-                    left_label_original.to_string()
-                },
-                "",
-            )
-        } else {
-            (
-                trim_file_label(left_label_original, left_width_remainder as usize),
-                right_label_original,
-            )
-        }
+        (
+            trim_file_label(left_label_original, left_width_remainder as usize),
+            right_label_original,
+        )
     }
 }
 
@@ -161,17 +161,19 @@ pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
         truncated
     } else {
         let ext_width = extension.width();
-        if ext_width > drawing_width {
-            // file ext does not fit
-            let stem_width = drawing_width;
-            let truncated_stem = stem.trunc(stem_width - 3);
-            format!("{}{}.{}", truncated_stem, ELLIPSIS, ELLIPSIS)
-        } else if ext_width == drawing_width {
-            extension.replacen('.', ELLIPSIS, 1)
-        } else {
-            let stem_width = drawing_width - ext_width;
-            let truncated_stem = stem.trunc(stem_width - 1);
-            format!("{}{}{}", truncated_stem, ELLIPSIS, extension)
+        match ext_width.cmp(&drawing_width) {
+            Ordering::Less => {
+                let stem_width = drawing_width - ext_width;
+                let truncated_stem = stem.trunc(stem_width - 1);
+                format!("{}{}{}", truncated_stem, ELLIPSIS, extension)
+            }
+            Ordering::Equal => extension.replacen('.', ELLIPSIS, 1),
+            Ordering::Greater => {
+                // file ext does not fit
+                let stem_width = drawing_width;
+                let truncated_stem = stem.trunc(stem_width - 3);
+                format!("{}{}.{}", truncated_stem, ELLIPSIS, ELLIPSIS)
+            }
         }
     }
 }
