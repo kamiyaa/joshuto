@@ -62,6 +62,8 @@ pub enum Command {
 
     ToggleHiddenFiles,
 
+    SwitchLineNums(u8),
+
     Sort(SortType),
     SortReverse,
 

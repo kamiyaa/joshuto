@@ -54,4 +54,5 @@ pub const CMD_SHOW_WORKERS: &str = "show_workers";
 pub const CMD_TAB_SWITCH: &str = "tab_switch";
 pub const CMD_TAB_SWITCH_INDEX: &str = "tab_switch_index";
 pub const CMD_TOGGLE_HIDDEN: &str = "toggle_hidden";
+pub const CMD_SWITCH_LINE_NUMBERS: &str = "line_nums";
 pub const CMD_TOUCH_FILE: &str = "touch";

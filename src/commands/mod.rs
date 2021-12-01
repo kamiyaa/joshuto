@@ -5,6 +5,7 @@ pub mod cursor_move;
 pub mod delete_files;
 pub mod file_ops;
 pub mod help;
+pub mod line_nums;
 pub mod new_directory;
 pub mod open_file;
 pub mod parent_cursor_move;

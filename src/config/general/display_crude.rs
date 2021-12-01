@@ -50,6 +50,9 @@ pub struct DisplayOptionCrude {
 
     #[serde(default, rename = "sort")]
     pub sort_options: SortOptionCrude,
+
+    #[serde(default)]
+    pub line_nums: String,
 }
 
 impl std::default::Default for DisplayOptionCrude {
@@ -65,6 +68,7 @@ impl std::default::Default for DisplayOptionCrude {
             show_preview: true,
             sort_options: SortOptionCrude::default(),
             tilde_in_titlebar: true,
+            line_nums: "0".to_string(),
         }
     }
 }
@@ -89,6 +93,12 @@ impl From<DisplayOptionCrude> for DisplayOption {
             Constraint::Ratio(0, total),
         ];
 
+        let _line_nums = match crude.line_nums.as_ref() {
+            "absolute" => 1,
+            "relative" => 2,
+            _ => 0,
+        };
+
         Self {
             _automatically_count_files: crude.automatically_count_files,
             _collapse_preview: crude.collapse_preview,
@@ -99,6 +109,7 @@ impl From<DisplayOptionCrude> for DisplayOption {
             _show_preview: crude.show_preview,
             _sort_options: crude.sort_options.into(),
             _tilde_in_titlebar: crude.tilde_in_titlebar,
+            _line_nums,
 
             column_ratio,
             default_layout,

@@ -34,6 +34,11 @@ show_icons = true
 show_preview = true
 # Shorten /home/$USER to ~
 tilde_in_titlebar = true
+# Options include
+# - no
+# - absolute
+# - relative
+line_nums = "no"
 
 # Configurations related to file sorting
 [display.sort]

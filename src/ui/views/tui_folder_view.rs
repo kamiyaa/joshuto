@@ -127,7 +127,7 @@ impl<'a> Widget for TuiFolderView<'a> {
 
         // render current view
         if let Some(list) = curr_list.as_ref() {
-            TuiDirListDetailed::new(list).render(layout_rect[1], buf);
+            TuiDirListDetailed::new(list, display_options.line_nums()).render(layout_rect[1], buf);
             let rect = Rect {
                 x: 0,
                 y: area.height - 1,

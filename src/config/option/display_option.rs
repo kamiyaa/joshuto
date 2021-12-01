@@ -19,6 +19,7 @@ pub struct DisplayOption {
     pub _show_preview: bool,
     pub _sort_options: SortOption,
     pub _tilde_in_titlebar: bool,
+    pub _line_nums: u8,
     pub column_ratio: (usize, usize, usize),
     pub default_layout: [Constraint; 3],
     pub no_preview_layout: [Constraint; 3],
@@ -69,6 +70,14 @@ impl DisplayOption {
         self._tilde_in_titlebar
     }
 
+    pub fn line_nums(&self) -> u8 {
+        self._line_nums
+    }
+
+    pub fn set_line_nums(&mut self, policy: u8) {
+        self._line_nums = policy;
+    }
+
     pub fn filter_func(&self) -> fn(&Result<fs::DirEntry, std::io::Error>) -> bool {
         if self.show_hidden() {
             no_filter
@@ -105,6 +114,7 @@ impl std::default::Default for DisplayOption {
             _show_preview: true,
             _sort_options: SortOption::default(),
             _tilde_in_titlebar: true,
+            _line_nums: 0,
             default_layout,
             no_preview_layout,
         }

@@ -291,6 +291,22 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_TOUCH_FILE {
             Ok(Self::TouchFile(arg.to_string()))
+        } else if command == CMD_SWITCH_LINE_NUMBERS {
+            let policy = match arg {
+                "no" => 0,
+                "absolute" => 1,
+                "relative" => 2,
+                s => match s.parse::<u8>() {
+                    Ok(n) if (0..3).contains(&n) => n,
+                    _ => {
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::InvalidParameters,
+                            format!("{}: {}", command, "Invalid argument. Must be 0/1/2"),
+                        ))
+                    }
+                },
+            };
+            Ok(Self::SwitchLineNums(policy))
         } else {
             Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,
