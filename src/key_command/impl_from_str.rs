@@ -3,7 +3,7 @@ use std::path;
 use dirs_next::home_dir;
 use shellexpand::tilde_with_context;
 
-use crate::config::option::{SelectOption, SortType};
+use crate::config::option::{LineNumberStyle, SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::IoWorkerOptions;
 
@@ -293,18 +293,9 @@ impl std::str::FromStr for Command {
             Ok(Self::TouchFile(arg.to_string()))
         } else if command == CMD_SWITCH_LINE_NUMBERS {
             let policy = match arg {
-                "no" => 0,
-                "absolute" => 1,
-                "relative" => 2,
-                s => match s.parse::<u8>() {
-                    Ok(n) if (0..3).contains(&n) => n,
-                    _ => {
-                        return Err(JoshutoError::new(
-                            JoshutoErrorKind::InvalidParameters,
-                            format!("{}: {}", command, "Invalid argument. Must be 0/1/2"),
-                        ))
-                    }
-                },
+                "absolute" | "1" => LineNumberStyle::Absolute,
+                "relative" | "2" => LineNumberStyle::Relative,
+                _ => LineNumberStyle::None,
             };
             Ok(Self::SwitchLineNums(policy))
         } else {

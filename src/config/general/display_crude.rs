@@ -3,7 +3,7 @@ use std::convert::From;
 use serde_derive::Deserialize;
 use tui::layout::Constraint;
 
-use crate::config::option::DisplayOption;
+use crate::config::option::{DisplayOption, LineNumberStyle};
 
 use super::sort_crude::SortOptionCrude;
 
@@ -52,7 +52,7 @@ pub struct DisplayOptionCrude {
     pub sort_options: SortOptionCrude,
 
     #[serde(default)]
-    pub line_nums: String,
+    pub line_number_style: String,
 }
 
 impl std::default::Default for DisplayOptionCrude {
@@ -68,7 +68,7 @@ impl std::default::Default for DisplayOptionCrude {
             show_preview: true,
             sort_options: SortOptionCrude::default(),
             tilde_in_titlebar: true,
-            line_nums: "0".to_string(),
+            line_number_style: "none".to_string(),
         }
     }
 }
@@ -93,10 +93,10 @@ impl From<DisplayOptionCrude> for DisplayOption {
             Constraint::Ratio(0, total),
         ];
 
-        let _line_nums = match crude.line_nums.as_ref() {
-            "absolute" => 1,
-            "relative" => 2,
-            _ => 0,
+        let _line_nums = match crude.line_number_style.as_ref() {
+            "absolute" => LineNumberStyle::Absolute,
+            "relative" => LineNumberStyle::Relative,
+            _ => LineNumberStyle::None,
         };
 
         Self {

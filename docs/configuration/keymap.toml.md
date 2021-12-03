@@ -93,7 +93,7 @@ function joshuto() {
     - press `escape` to exit view
  - `toggle_hidden`: toggle hidden files
  - `line_nums`: switch displaying of entry numbers
-    - `line_nums 0` or `line_nums no`: disable displaying
+    - `line_nums 0` or `line_nums none`: disable displaying
     - `line_nums 1` or `line_nums absolute`: enable absolute numbers for each entry
     - `line_nums 2` or `line_nums relative`: enable numbers relative to selected entry
 

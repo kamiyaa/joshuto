@@ -5,6 +5,7 @@ use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
+use crate::config::option::LineNumberStyle;
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::string::UnicodeTruncate;
@@ -17,13 +18,13 @@ const ELLIPSIS: &str = "…";
 
 pub struct TuiDirListDetailed<'a> {
     dirlist: &'a JoshutoDirList,
-    draw_indexes: u8, // 0 - disable, 1 - absolute, 2 - relative
+    line_num_style: LineNumberStyle,
 }
 impl<'a> TuiDirListDetailed<'a> {
-    pub fn new(dirlist: &'a JoshutoDirList, draw_indexes: u8) -> Self {
+    pub fn new(dirlist: &'a JoshutoDirList, line_num_style: LineNumberStyle) -> Self {
         Self {
             dirlist,
-            draw_indexes,
+            line_num_style,
         }
     }
 }
@@ -51,7 +52,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         // Length (In chars) of the last entry's index on current page.
         // Using this to align all elements
         let max_index_length = (skip_dist
-            + min((self.dirlist.len() - skip_dist), area.height as usize))
+            + min(self.dirlist.len() - skip_dist, area.height as usize))
         .to_string()
         .len();
 
@@ -69,14 +70,16 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     style,
                     (x + 1, y + i as u16),
                     drawing_width - 1,
-                    match self.draw_indexes {
-                        1 => format!("{:1$}", skip_dist + i + 1, max_index_length),
-                        2 => format!(
+                    match self.line_num_style {
+                        LineNumberStyle::Absolute => {
+                            format!("{:1$}", skip_dist + i + 1, max_index_length)
+                        }
+                        LineNumberStyle::Relative => format!(
                             "{:1$}",
                             (screen_index as i16 - i as i16).abs(),
                             max_index_length
                         ),
-                        _ => "".to_string(),
+                        LineNumberStyle::None => String::new(),
                     },
                 );
             });
@@ -94,9 +97,9 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             style,
             (x + 1, y + screen_index as u16),
             drawing_width - 1,
-            match self.draw_indexes {
-                1 | 2 => format!("{:<1$}", curr_index + 1, max_index_length),
-                _ => "".to_string(),
+            match self.line_num_style {
+                LineNumberStyle::None => String::new(),
+                _ => format!("{:<1$}", curr_index + 1, max_index_length),
             },
         );
     }
