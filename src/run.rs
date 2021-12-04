@@ -1,5 +1,6 @@
-use termion::event::Event;
+use termion::event::{Event, Key};
 
+use crate::commands::numbered_command;
 use crate::config::AppKeyMapping;
 use crate::context::{AppContext, QuitType};
 use crate::event::AppEvent;
@@ -59,6 +60,13 @@ pub fn run(
                     Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
                         let command = Command::CursorMoveDown(1);
                         if let Err(e) = command.execute(context, backend, &keymap_t) {
+                            context.message_queue_mut().push_error(e.to_string());
+                        }
+                    }
+                    Event::Key(Key::Char(c)) if c.is_numeric() && c != '0' => {
+                        if let Err(e) =
+                            numbered_command::numbered_command(c, context, backend, &keymap_t)
+                        {
                             context.message_queue_mut().push_error(e.to_string());
                         }
                     }
