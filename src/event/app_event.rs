@@ -17,10 +17,14 @@ use crate::preview::preview_file::FilePreview;
 #[derive(Debug)]
 pub enum AppEvent {
     Termion(Event),
+
+    IoWorkerCreate,
     IoWorkerProgress(IoWorkerProgress),
     IoWorkerResult(io::Result<IoWorkerProgress>),
+
     PreviewDir(io::Result<JoshutoDirList>),
     PreviewFile(path::PathBuf, io::Result<FilePreview>),
+
     Signal(i32),
     //    Filesystem(notify::Result),
 }

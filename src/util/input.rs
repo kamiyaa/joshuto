@@ -55,6 +55,7 @@ pub fn get_input_while_composite<'a>(
 
 pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
     match event {
+        AppEvent::IoWorkerCreate => process_new_worker(context),
         AppEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
         AppEvent::PreviewDir(Ok(dirlist)) => process_dir_preview(context, dirlist),
@@ -63,6 +64,12 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         }
         AppEvent::Signal(signal::SIGWINCH) => {}
         _ => {}
+    }
+}
+
+pub fn process_new_worker(context: &mut AppContext) {
+    if !context.worker_context_ref().is_busy() && !context.worker_context_ref().is_empty() {
+        context.worker_context_mut().start_next_job();
     }
 }
 
@@ -131,6 +138,24 @@ pub fn process_file_preview(
         }
     } else {
         context.preview_context_mut().insert_preview(path, None);
+    }
+}
+
+pub fn process_unsupported(context: &mut AppContext, backend: &mut ui::TuiBackend, keymap_t: &AppKeyMapping, event: Vec<u8>) {
+    match event.as_slice() {
+        [27, 79, 65] => {
+            let command = Command::CursorMoveUp(1);
+            if let Err(e) = command.execute(context, backend, &keymap_t) {
+                context.message_queue_mut().push_error(e.to_string());
+            }
+        }
+        [27, 79, 66] => {
+            let command = Command::CursorMoveDown(1);
+            if let Err(e) = command.execute(context, backend, &keymap_t) {
+                context.message_queue_mut().push_error(e.to_string());
+            }
+        }
+        _ => {},
     }
 }
 

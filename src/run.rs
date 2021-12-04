@@ -29,10 +29,6 @@ pub fn run(
     while context.quit == QuitType::DoNot {
         backend.render(TuiView::new(context));
 
-        if !context.worker_context_ref().is_busy() && !context.worker_context_ref().is_empty() {
-            context.worker_context_mut().start_next_job();
-        }
-
         let event = match context.poll_event() {
             Ok(event) => event,
             Err(_) => return Ok(()), // TODO
@@ -50,17 +46,8 @@ pub fn run(
                 match key {
                     // in the event where mouse input is not supported
                     // but we still want to register scroll
-                    Event::Unsupported(s) if s.as_slice() == [27, 79, 65] => {
-                        let command = Command::CursorMoveUp(1);
-                        if let Err(e) = command.execute(context, backend, &keymap_t) {
-                            context.message_queue_mut().push_error(e.to_string());
-                        }
-                    }
-                    Event::Unsupported(s) if s.as_slice() == [27, 79, 66] => {
-                        let command = Command::CursorMoveDown(1);
-                        if let Err(e) = command.execute(context, backend, &keymap_t) {
-                            context.message_queue_mut().push_error(e.to_string());
-                        }
+                    Event::Unsupported(s) => {
+                        input::process_unsupported(context, backend, &keymap_t, s);
                     }
                     key => match keymap_t.as_ref().get(&key) {
                         None => {

@@ -83,7 +83,7 @@ impl IoWorkerProgress {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct IoWorkerThread {
     _kind: FileOp,
     pub options: IoWorkerOptions,
