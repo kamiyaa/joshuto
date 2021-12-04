@@ -5,9 +5,9 @@ audio_default	= [
 ]
 
 image_default	= [
-	{ command = "qimgv", fork = true, silent = true },
-	{ command = "krita", fork = true, silent = true },
-	{ command = "mediainfo", confirm_exit = true },
+	{ command = "qimgv", args = [ "--" ], fork = true, silent = true },
+	{ command = "krita", args = [ "--" ], fork = true, silent = true },
+	{ command = "exiftool", confirm_exit = true },
 	{ command = "swappy", args = [ "-f" ], fork = true },
 ]
 
@@ -20,12 +20,21 @@ video_default	= [
 text_default	= [
 	{ command = "micro" },
 	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", confirm_exit = true },
+	{ command = "bat", args = [ "--paging=always" ] },
+]
+
+reader_default	= [
+	{ command = "evince", fork = true, silent = true },
+]
+
+libreoffice_default	= [
+	{ command = "libreoffice", fork = true, silent = true },
 ]
 
 [extension]
 
 ## image formats
+avif.inherit    = "image_default"
 bmp.inherit	= "image_default"
 gif.inherit	= "image_default"
 heic.inherit	= "image_default"
@@ -35,7 +44,7 @@ jpg.inherit	= "image_default"
 pgm.inherit	= "image_default"
 png.inherit	= "image_default"
 ppm.inherit	= "image_default"
-avif.inherit    = "image_default"
+webp.inherit	= "image_default"
 
 svg.app_list	= [
 	{ command = "inkview", fork = true, silent = true },
@@ -50,7 +59,6 @@ m4a.inherit	= "audio_default"
 mp3.inherit	= "audio_default"
 ogg.inherit	= "audio_default"
 wav.inherit	= "audio_default"
-ts.inherit	= "audio_default"
 
 ## video formats
 avi.inherit	= "video_default"
@@ -60,8 +68,8 @@ mkv.inherit	= "video_default"
 m4v.inherit	= "video_default"
 mov.inherit	= "video_default"
 mp4.inherit	= "video_default"
+ts.inherit	= "video_default"
 webm.inherit	= "video_default"
-webp.inherit	= "video_default"
 wmv.inherit	= "video_default"
 
 ## text formats
@@ -73,6 +81,7 @@ cpp.inherit	= "text_default"
 css.inherit	= "text_default"
 csv.inherit	= "text_default"
 cu.inherit	= "text_default"
+ebuild.inherit	= "text_default"
 eex.inherit	= "text_default"
 env.inherit	= "text_default"
 ex.inherit	= "text_default"
@@ -124,7 +133,7 @@ tgz.app_list	= [
 	{ command = "tar", args = [ "-xvzf" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
 rar.app_list	= [
-	{ command = "unrar", args = [ "e" ], confirm_exit = true },
+	{ command = "unrar", args = [ "x" ], confirm_exit = true },
 	{ command = "file-roller", fork = true, silent = true } ]
 xz.app_list	= [
 	{ command = "tar", args = [ "-xvJf" ], confirm_exit = true },
@@ -142,14 +151,27 @@ m3u.app_list	= [
 	{ command = "mpv" },
 	{ command = "gedit", fork = true, silent = true },
 	{ command = "bat", confirm_exit = true } ]
-docx.app_list	= [
-	{ command = "libreoffice", fork = true, silent = true } ]
-odt.app_list	= [
-	{ command = "libreoffice", fork = true, silent = true } ]
-odf.app_list	= [
-	{ command = "libreoffice", fork = true, silent = true } ]
-pdf.app_list	= [
-	{ command = "evince", fork = true, silent = true } ]
+
+odt.inherit	= "libreoffice_default"
+odf.inherit	= "libreoffice_default"
+ods.inherit	= "libreoffice_default"
+odp.inherit	= "libreoffice_default"
+
+doc.inherit	= "libreoffice_default"
+docx.inherit	= "libreoffice_default"
+xls.inherit	= "libreoffice_default"
+xlsx.inherit	= "libreoffice_default"
+ppt.inherit	= "libreoffice_default"
+pptx.inherit	= "libreoffice_default"
+
+pdf.inherit	= "reader_default"
+
+kra.app_list = [
+	{ command = "krita", fork = true, silent = true }
+]
+kdenlive.app_list = [
+	{ command = "kdenlive", fork = true, silent = true }
+]
 
 tex.app_list	= [
 	{ command = "micro" },
@@ -157,5 +179,5 @@ tex.app_list	= [
 	{ command = "bat", confirm_exit = true },
 	{ command = "pdflatex" } ]
 
-torrent.app_list	= [
+torrent.app_list = [
 	{ command = "transmission-gtk" } ]
