@@ -1,3 +1,5 @@
+use std::env;
+use std::fs;
 use std::io::{self, BufRead, Write};
 use std::path;
 use std::process;
@@ -10,9 +12,12 @@ use crate::ui::TuiBackend;
 
 use super::reload;
 
+const ENV_TMP_DIR: &str = "TMP_DIR";
 const ENV_EDITOR: &str = "EDITOR";
 
 pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
+    let tmp_directory = env::var(ENV_TMP_DIR).unwrap_or_else(|_| "/tmp".to_string());
+
     const PREFIX: &str = "joshuto-";
     let editor = std::env::var(ENV_EDITOR)?;
 
@@ -25,7 +30,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
         .for_each(|ch| rand_str.push(ch as char));
 
     /* create this file in a temporary folder */
-    let mut file_path = path::PathBuf::from("/tmp");
+    let mut file_path = path::PathBuf::from(&tmp_directory);
     file_path.push(rand_str);
 
     let paths = context
@@ -34,8 +39,9 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
         .curr_list_ref()
         .map_or(vec![], |s| s.get_selected_paths());
 
+    /* write file names into temporary file to edit */
     {
-        let mut file = std::fs::File::create(&file_path)?;
+        let mut file = fs::File::create(&file_path)?;
         for path in paths.iter() {
             let file_name = path.file_name().unwrap();
             let file_name_as_bytes = file_name.to_str().unwrap().as_bytes();
@@ -44,18 +50,20 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
         }
     }
 
-    let mut command = process::Command::new(editor);
-    command.arg(&file_path);
-
-    let last_modified = std::fs::metadata(&file_path)?.modified()?;
+    /* open file with text editor to edit */
     {
-        let mut handle = command.spawn()?;
-        handle.wait()?;
-    }
-    // check if the file was modified since it was created
-    let metadata = std::fs::metadata(&file_path)?;
-    if metadata.modified()? <= last_modified {
-        return Ok(());
+        let initial_modified = fs::metadata(&file_path)?.modified()?;
+
+        process::Command::new(editor)
+            .arg(&file_path)
+            .spawn()?
+            .wait()?;
+
+        // check if the file was modified since it was created
+        let last_modified = fs::metadata(&file_path)?.modified()?;
+        if last_modified <= initial_modified {
+            return Ok(());
+        }
     }
 
     let mut paths_renamed: Vec<path::PathBuf> = Vec::with_capacity(paths.len());
