@@ -109,11 +109,11 @@ function joshuto() {
  - `cursor_move_page_down`: moves the cursor down by `x`
    - where `x` is the number of items that can be seen on the screen
 
- - `parent_cursor_move_up`
-   - same as `cursor_move_up` but moves the cursor in the parent list instead of the current list
+ - `parent_cursor_move_up`: same as `cursor_move_up` but for parent directory
+ - `parent_cursor_move_down`: same as `cursor_move_down` but for parent directory
 
- - `parent_cursor_move_down`
-   - same as `cursor_move_down` but moves the cursor in the parent list instead of the current list
+ - `preview_cursor_move_up`: moves the preview up
+ - `preview_cursor_move_down`: moves the preview down
 
  - `cd`: change directory
    - `cd ..`: go to parent directory
@@ -123,7 +123,6 @@ function joshuto() {
    it will prompt `:open_with ` to open with a specific command
    - if `xdg_open` is `true` in [joshuto.toml](https://github.com/kamiyaa/joshuto),
    joshuto will try to open it via xdg settings
-
  - `subdir_fzf`: go to a subdirectory via fzf
 
 
@@ -135,6 +134,9 @@ function joshuto() {
     - where `x` is an integer
     - `tab_switch 1`: go to next tab
     - `tab_switch -1`: go to previous tab
+ - `tab_switch_index`: switch to a given tab index
+    - `tab_switch_index 3`: go to third tab if it exists,
+    create one if it does not exist and there is already 3 - 1 = 2 tabs open
 
 ## File Operations
 
@@ -148,7 +150,7 @@ function joshuto() {
     [joshuto.toml](https://github.com/kamiyaa/joshuto)/wiki/Configuration#joshutotoml)
     - if `use_trash` is `true`, this might cause issues with deleting files
     on mounted filesystems such as on an external hard drive or tmpfs
- - `rename`: rename current file
+ - `rename`: rename the current file the cursor is on
     - `:rename new_name`
  - `rename_append`: opens the command prompt with the rename command and the current file name filled in.
     - cursor will be set right before the extension of the file
@@ -159,13 +161,14 @@ function joshuto() {
  - `copy_filename`: copy the file name to clipboard
     - clipboard support requires xsel, xclip, or wl-copy
  - `copy_filename_without_extension`: copy the file name without the extension to clipboard
- - `copy_filepath`: copy the file path to clipboard
+ - `copy_filepath`: copy the current file path to clipboard
  - `copy_dirpath`: copy the current directory path to clipboard
 
  - `set_mode`: Set read, write, execute permissions of current file
- - `touch`: create a new file or update an existing file's modified time
+ - `touch`: create a new file or update the modified date of an existing file
 
 ## Search
+
  - `search`: search via string
     - case insensitive
  - `search_glob`: search via shell globbing
@@ -182,5 +185,6 @@ function joshuto() {
 
 ## Misc
  - `bulk_rename`: rename all selected files
-    - this will create a file inside `/tmp` and open up your text editor of choice via `$EDITOR` environment variable
+    - this will create a file inside `$TMP_DIR` (or `/tmp` if `$TMP_DIR` is not set) and
+      open up your text editor of choice via `$EDITOR` environment variable
     - once you've made your changes to the file, saved and quit, it will use the `mv` command to rename everything
