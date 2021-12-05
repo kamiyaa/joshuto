@@ -65,23 +65,26 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             .take(area.height as usize)
             .for_each(|(i, entry)| {
                 let style = style::entry_style(entry);
+
+                let line_number_string = match line_num_style {
+                    LineNumberStyle::Absolute => {
+                        format!("{:1$} ", skip_dist + i + 1, max_index_length)
+                    }
+                    LineNumberStyle::Relative => format!(
+                        "{:1$} ",
+                        (screen_index as i16 - i as i16).abs(),
+                        max_index_length
+                    ),
+                    LineNumberStyle::None => String::new(),
+                };
+
                 print_entry(
                     buf,
                     entry,
                     style,
                     (x + 1, y + i as u16),
                     drawing_width - 1,
-                    match line_num_style {
-                        LineNumberStyle::Absolute => {
-                            format!("{:1$}", skip_dist + i + 1, max_index_length)
-                        }
-                        LineNumberStyle::Relative => format!(
-                            "{:1$}",
-                            (screen_index as i16 - i as i16).abs(),
-                            max_index_length
-                        ),
-                        LineNumberStyle::None => String::new(),
-                    },
+                    line_number_string,
                 );
             });
 
@@ -92,16 +95,18 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         let space_fill = " ".repeat(drawing_width);
         buf.set_string(x, y + screen_index as u16, space_fill.as_str(), style);
 
+        let line_number_string = match line_num_style {
+            LineNumberStyle::None => "".to_string(),
+            _ => format!("{:<1$} ", curr_index + 1, max_index_length),
+        };
+
         print_entry(
             buf,
             entry,
             style,
             (x + 1, y + screen_index as u16),
             drawing_width - 1,
-            match line_num_style {
-                LineNumberStyle::None => String::new(),
-                _ => format!("{:<1$}", curr_index + 1, max_index_length),
-            },
+            line_number_string,
         );
     }
 }
@@ -135,28 +140,19 @@ fn print_entry(
         drawing_width,
     );
 
-    // Drawing index (If not empty)
-    let space_for_index = if !index.is_empty() {
-        let index_len = index.len();
-        buf.set_stringn(x, y, index, index_len, Style::default());
-        index_len as u16 + 1 // Adding margin between index and name
-    } else {
-        0
-    };
+    let index_width = index.width();
+    // draw_index
+    buf.set_stringn(x, y, index, index_width, Style::default());
 
+    let drawing_width = drawing_width - index_width as usize;
+    let x = x + index_width as u16;
     // Drawing labels
-    buf.set_stringn(
-        x + space_for_index,
-        y,
-        left_label,
-        drawing_width - space_for_index as usize,
-        style,
-    );
+    buf.set_stringn(x, y, left_label, drawing_width, style);
     buf.set_stringn(
         x + drawing_width as u16 - right_label.width() as u16,
         y,
         right_label,
-        drawing_width - space_for_index as usize,
+        drawing_width,
         style,
     );
 }
