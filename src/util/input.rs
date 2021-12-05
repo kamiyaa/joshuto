@@ -141,7 +141,12 @@ pub fn process_file_preview(
     }
 }
 
-pub fn process_unsupported(context: &mut AppContext, backend: &mut ui::TuiBackend, keymap_t: &AppKeyMapping, event: Vec<u8>) {
+pub fn process_unsupported(
+    context: &mut AppContext,
+    backend: &mut ui::TuiBackend,
+    keymap_t: &AppKeyMapping,
+    event: Vec<u8>,
+) {
     match event.as_slice() {
         [27, 79, 65] => {
             let command = Command::CursorMoveUp(1);
@@ -155,7 +160,7 @@ pub fn process_unsupported(context: &mut AppContext, backend: &mut ui::TuiBacken
                 context.message_queue_mut().push_error(e.to_string());
             }
         }
-        _ => {},
+        _ => {}
     }
 }
 
