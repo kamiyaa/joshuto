@@ -69,6 +69,7 @@ impl AppCommand for Command {
             Self::TabSwitch(_) => CMD_TAB_SWITCH,
             Self::TabSwitchIndex(_) => CMD_TAB_SWITCH_INDEX,
             Self::ToggleHiddenFiles => CMD_TOGGLE_HIDDEN,
+            Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
             Self::TouchFile(_) => CMD_TOUCH_FILE,
         }
     }

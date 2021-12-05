@@ -85,6 +85,8 @@ impl AppExecute for Command {
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
+            Self::SwitchLineNums(d) => line_nums::switch_line_numbering(context, *d),
+
             Self::Sort(t) => sort::set_sort(context, *t),
             Self::SortReverse => sort::toggle_reverse(context),
 

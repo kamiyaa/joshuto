@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::config::option::{SelectOption, SortType};
+use crate::config::option::{LineNumberStyle, SelectOption, SortType};
 use crate::io::IoWorkerOptions;
 
 #[derive(Clone, Debug)]
@@ -61,6 +61,8 @@ pub enum Command {
     ShowWorkers,
 
     ToggleHiddenFiles,
+
+    SwitchLineNums(LineNumberStyle),
 
     Sort(SortType),
     SortReverse,

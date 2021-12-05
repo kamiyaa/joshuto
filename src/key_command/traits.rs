@@ -12,6 +12,16 @@ pub trait AppExecute {
     ) -> JoshutoResult<()>;
 }
 
+pub trait NumberedExecute {
+    fn numbered_execute(
+        &self,
+        number_prefix: usize,
+        context: &mut AppContext,
+        backend: &mut TuiBackend,
+        keymap_t: &AppKeyMapping,
+    ) -> JoshutoResult<()>;
+}
+
 pub trait AppCommand: AppExecute + std::fmt::Display + std::fmt::Debug {
     fn command(&self) -> &'static str;
 }

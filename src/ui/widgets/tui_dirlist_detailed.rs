@@ -1,10 +1,11 @@
-use std::cmp::Ordering;
+use std::cmp::{min, Ordering};
 
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
+use crate::config::option::{DisplayOption, LineNumberStyle};
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::string::UnicodeTruncate;
@@ -17,11 +18,14 @@ const ELLIPSIS: &str = "…";
 
 pub struct TuiDirListDetailed<'a> {
     dirlist: &'a JoshutoDirList,
+    display_options: &'a DisplayOption,
 }
-
 impl<'a> TuiDirListDetailed<'a> {
-    pub fn new(dirlist: &'a JoshutoDirList) -> Self {
-        Self { dirlist }
+    pub fn new(dirlist: &'a JoshutoDirList, display_options: &'a DisplayOption) -> Self {
+        Self {
+            dirlist,
+            display_options,
+        }
     }
 }
 
@@ -44,6 +48,14 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
 
         let drawing_width = area.width as usize;
         let skip_dist = self.dirlist.first_index_for_viewport(area.height as usize);
+        let screen_index = curr_index % area.height as usize;
+        let line_num_style = self.display_options.line_nums();
+        // Length (In chars) of the last entry's index on current page.
+        // Using this to align all elements
+        let max_index_length = (skip_dist
+            + min(self.dirlist.len() - skip_dist, area.height as usize))
+        .to_string()
+        .len();
 
         // draw every entry
         self.dirlist
@@ -53,12 +65,27 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             .take(area.height as usize)
             .for_each(|(i, entry)| {
                 let style = style::entry_style(entry);
-                print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width - 1);
+                print_entry(
+                    buf,
+                    entry,
+                    style,
+                    (x + 1, y + i as u16),
+                    drawing_width - 1,
+                    match line_num_style {
+                        LineNumberStyle::Absolute => {
+                            format!("{:1$}", skip_dist + i + 1, max_index_length)
+                        }
+                        LineNumberStyle::Relative => format!(
+                            "{:1$}",
+                            (screen_index as i16 - i as i16).abs(),
+                            max_index_length
+                        ),
+                        LineNumberStyle::None => String::new(),
+                    },
+                );
             });
 
         // draw selected entry in a different style
-        let screen_index = curr_index % area.height as usize;
-
         let entry = self.dirlist.curr_entry_ref().unwrap();
         let style = style::entry_style(entry).add_modifier(Modifier::REVERSED);
 
@@ -71,6 +98,10 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             style,
             (x + 1, y + screen_index as u16),
             drawing_width - 1,
+            match line_num_style {
+                LineNumberStyle::None => String::new(),
+                _ => format!("{:<1$}", curr_index + 1, max_index_length),
+            },
         );
     }
 }
@@ -81,6 +112,7 @@ fn print_entry(
     style: Style,
     (x, y): (u16, u16),
     drawing_width: usize,
+    index: String,
 ) {
     let size_string = match entry.metadata.file_type() {
         FileType::Directory => entry
@@ -103,13 +135,28 @@ fn print_entry(
         drawing_width,
     );
 
-    let right_width = right_label.width();
-    buf.set_stringn(x, y, left_label, drawing_width, style);
+    // Drawing index (If not empty)
+    let space_for_index = if !index.is_empty() {
+        let index_len = index.len();
+        buf.set_stringn(x, y, index, index_len, Style::default());
+        index_len as u16 + 1 // Adding margin between index and name
+    } else {
+        0
+    };
+
+    // Drawing labels
     buf.set_stringn(
-        x + drawing_width as u16 - right_width as u16,
+        x + space_for_index,
+        y,
+        left_label,
+        drawing_width - space_for_index as usize,
+        style,
+    );
+    buf.set_stringn(
+        x + drawing_width as u16 - right_label.width() as u16,
         y,
         right_label,
-        drawing_width,
+        drawing_width - space_for_index as usize,
         style,
     );
 }
