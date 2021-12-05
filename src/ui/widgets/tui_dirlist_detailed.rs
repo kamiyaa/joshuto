@@ -5,7 +5,7 @@ use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
-use crate::config::option::LineNumberStyle;
+use crate::config::option::{DisplayOption, LineNumberStyle};
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::string::UnicodeTruncate;
@@ -18,13 +18,13 @@ const ELLIPSIS: &str = "…";
 
 pub struct TuiDirListDetailed<'a> {
     dirlist: &'a JoshutoDirList,
-    line_num_style: LineNumberStyle,
+    display_options: &'a DisplayOption,
 }
 impl<'a> TuiDirListDetailed<'a> {
-    pub fn new(dirlist: &'a JoshutoDirList, line_num_style: LineNumberStyle) -> Self {
+    pub fn new(dirlist: &'a JoshutoDirList, display_options: &'a DisplayOption) -> Self {
         Self {
             dirlist,
-            line_num_style,
+            display_options,
         }
     }
 }
@@ -49,6 +49,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         let drawing_width = area.width as usize;
         let skip_dist = self.dirlist.first_index_for_viewport(area.height as usize);
         let screen_index = curr_index % area.height as usize;
+        let line_num_style = self.display_options.line_nums();
         // Length (In chars) of the last entry's index on current page.
         // Using this to align all elements
         let max_index_length = (skip_dist
@@ -70,7 +71,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     style,
                     (x + 1, y + i as u16),
                     drawing_width - 1,
-                    match self.line_num_style {
+                    match line_num_style {
                         LineNumberStyle::Absolute => {
                             format!("{:1$}", skip_dist + i + 1, max_index_length)
                         }
@@ -97,7 +98,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             style,
             (x + 1, y + screen_index as u16),
             drawing_width - 1,
-            match self.line_num_style {
+            match line_num_style {
                 LineNumberStyle::None => String::new(),
                 _ => format!("{:<1$}", curr_index + 1, max_index_length),
             },
@@ -144,12 +145,18 @@ fn print_entry(
     };
 
     // Drawing labels
-    buf.set_stringn(x + space_for_index, y, left_label, drawing_width, style);
     buf.set_stringn(
-        x + drawing_width as u16 - right_label.width() as u16 - space_for_index,
+        x + space_for_index,
+        y,
+        left_label,
+        drawing_width - space_for_index as usize,
+        style,
+    );
+    buf.set_stringn(
+        x + drawing_width as u16 - right_label.width() as u16,
         y,
         right_label,
-        drawing_width,
+        drawing_width - space_for_index as usize,
         style,
     );
 }

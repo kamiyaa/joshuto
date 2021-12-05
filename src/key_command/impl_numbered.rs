@@ -9,8 +9,8 @@ use super::{Command, NumberedExecute};
 // In joshuto you can prefix simple commands with numbers by entering number,
 // and then pressing key which some command is bound to. This is used mainly
 // for easier navigation. You don't have to implement this for every command
-#[allow(unused)] // backend and keymap_t args are not used, but they probably will be
 impl NumberedExecute for Command {
+    #[allow(unused)] // backend and keymap_t args are not used, but they probably will be
     fn numbered_execute(
         &self,
         number_prefix: usize,

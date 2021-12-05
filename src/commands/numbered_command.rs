@@ -53,7 +53,7 @@ pub fn numbered_command(
                     }
                     key => match keymap.as_ref().get(&key) {
                         Some(CommandKeybind::SimpleKeybind(command)) => {
-                            return command.numbered_execute(num_prefix, context, backend, &keymap);
+                            return command.numbered_execute(num_prefix, context, backend, keymap);
                         }
                         _ => {
                             return Err(JoshutoError::new(
