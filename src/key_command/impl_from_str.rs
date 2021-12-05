@@ -3,7 +3,7 @@ use std::path;
 use dirs_next::home_dir;
 use shellexpand::tilde_with_context;
 
-use crate::config::option::{SelectOption, SortType};
+use crate::config::option::{LineNumberStyle, SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::IoWorkerOptions;
 
@@ -291,6 +291,13 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_TOUCH_FILE {
             Ok(Self::TouchFile(arg.to_string()))
+        } else if command == CMD_SWITCH_LINE_NUMBERS {
+            let policy = match arg {
+                "absolute" | "1" => LineNumberStyle::Absolute,
+                "relative" | "2" => LineNumberStyle::Relative,
+                _ => LineNumberStyle::None,
+            };
+            Ok(Self::SwitchLineNums(policy))
         } else {
             Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,

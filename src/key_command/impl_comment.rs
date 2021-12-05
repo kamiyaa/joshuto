@@ -80,6 +80,8 @@ impl CommandComment for Command {
 
             Self::ToggleHiddenFiles => "Toggle hidden files displaying",
 
+            Self::SwitchLineNums(_) => "Switch line numbering",
+
             Self::Sort(sort_type) => match sort_type {
                 SortType::Lexical => "Sort lexically",
                 SortType::Mtime => "Sort by modifiaction time",

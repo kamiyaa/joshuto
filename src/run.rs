@@ -1,5 +1,6 @@
-use termion::event::Event;
+use termion::event::{Event, Key};
 
+use crate::commands::numbered_command;
 use crate::config::AppKeyMapping;
 use crate::context::{AppContext, QuitType};
 use crate::event::AppEvent;
@@ -48,6 +49,13 @@ pub fn run(
                     // but we still want to register scroll
                     Event::Unsupported(s) => {
                         input::process_unsupported(context, backend, &keymap_t, s);
+                    }
+                    Event::Key(Key::Char(c)) if c.is_numeric() && c != '0' => {
+                        if let Err(e) =
+                            numbered_command::numbered_command(c, context, backend, &keymap_t)
+                        {
+                            context.message_queue_mut().push_error(e.to_string());
+                        }
                     }
                     key => match keymap_t.as_ref().get(&key) {
                         None => {

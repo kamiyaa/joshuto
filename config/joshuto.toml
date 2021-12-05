@@ -12,6 +12,8 @@ show_hidden = false
 show_icons = true
 show_preview = true
 tilde_in_titlebar = true
+# none, absolute, relative
+line_number_style = "none"
 
 [display.sort]
 # lexical, mtime, natural

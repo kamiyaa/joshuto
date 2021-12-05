@@ -3,7 +3,7 @@ use std::convert::From;
 use serde_derive::Deserialize;
 use tui::layout::Constraint;
 
-use crate::config::option::DisplayOption;
+use crate::config::option::{DisplayOption, LineNumberStyle};
 
 use super::sort_crude::SortOptionCrude;
 
@@ -50,6 +50,9 @@ pub struct DisplayOptionCrude {
 
     #[serde(default, rename = "sort")]
     pub sort_options: SortOptionCrude,
+
+    #[serde(default)]
+    pub line_number_style: String,
 }
 
 impl std::default::Default for DisplayOptionCrude {
@@ -65,6 +68,7 @@ impl std::default::Default for DisplayOptionCrude {
             show_preview: true,
             sort_options: SortOptionCrude::default(),
             tilde_in_titlebar: true,
+            line_number_style: "none".to_string(),
         }
     }
 }
@@ -89,6 +93,12 @@ impl From<DisplayOptionCrude> for DisplayOption {
             Constraint::Ratio(0, total),
         ];
 
+        let _line_nums = match crude.line_number_style.as_ref() {
+            "absolute" => LineNumberStyle::Absolute,
+            "relative" => LineNumberStyle::Relative,
+            _ => LineNumberStyle::None,
+        };
+
         Self {
             _automatically_count_files: crude.automatically_count_files,
             _collapse_preview: crude.collapse_preview,
@@ -99,6 +109,7 @@ impl From<DisplayOptionCrude> for DisplayOption {
             _show_preview: crude.show_preview,
             _sort_options: crude.sort_options.into(),
             _tilde_in_titlebar: crude.tilde_in_titlebar,
+            _line_nums,
 
             column_ratio,
             default_layout,
