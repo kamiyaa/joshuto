@@ -40,6 +40,12 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
         history.remove(cwd.as_path());
     }
 
+    if let Some(cwd_parent) = cwd.parent() {
+        if history.create_or_soft_update(cwd_parent, &options).is_err() {
+            history.remove(cwd_parent);
+        }
+    }
+
     if let Some(file_path) = entry_path {
         if history
             .create_or_soft_update(file_path.as_path(), &options)
