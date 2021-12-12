@@ -1,6 +1,7 @@
 use std::io;
 use std::path;
 
+use crate::commands::reload;
 use crate::config::AppMimetypeEntry;
 use crate::context::{AppContext, QuitType};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
@@ -34,6 +35,7 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
         if entry.file_path().is_dir() {
             let path = entry.file_path().to_path_buf();
             change_directory::cd(path.as_path(), context)?;
+            reload::soft_reload(context.tab_context_ref().index, context)?;
         } else {
             let paths = context
                 .tab_context_ref()
