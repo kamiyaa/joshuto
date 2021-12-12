@@ -20,10 +20,7 @@ impl<'a> TuiDirList<'a> {
 
 impl<'a> Widget for TuiDirList<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        if area.width < 1 || area.height < 1 {
-            return;
-        }
-        if area.width < 4 {
+        if area.width < 4 || area.height < 1 {
             return;
         }
         let x = area.left();
