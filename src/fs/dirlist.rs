@@ -96,7 +96,7 @@ impl JoshutoDirList {
     }
 
     pub fn need_update(&self) -> bool {
-        self._need_update
+        self._need_update || self.modified()
     }
 
     pub fn file_path(&self) -> &path::PathBuf {
