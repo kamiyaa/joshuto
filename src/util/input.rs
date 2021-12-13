@@ -1,11 +1,11 @@
+use notify;
+use signal_hook::consts::signal;
 use std::io;
 use std::path;
-
-use signal_hook::consts::signal;
 use termion::event::{Event, Key, MouseButton, MouseEvent};
 use tui::layout::{Constraint, Direction, Layout};
 
-use crate::commands::{cursor_move, parent_cursor_move};
+use crate::commands::{cursor_move, parent_cursor_move, reload};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::event::AppEvent;
@@ -63,8 +63,16 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
             process_file_preview(context, path, file_preview)
         }
         AppEvent::Signal(signal::SIGWINCH) => {}
+        AppEvent::Filesystem(e) => process_filesystem_event(e, context),
         _ => {}
     }
+}
+
+fn process_filesystem_event(event: notify::Event, context: &mut AppContext) {
+    let event_str = format!("{:?}", event);
+    let tab = context.tab_context_mut().curr_tab_mut();
+    let curr_list_opt = tab.curr_list_mut();
+    let _ = reload::soft_reload(context.tab_context_ref().index, context);
 }
 
 pub fn process_new_worker(context: &mut AppContext) {

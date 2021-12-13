@@ -1,4 +1,5 @@
 use std::sync::mpsc;
+use std::thread;
 
 use crate::config;
 use crate::context::{
@@ -7,6 +8,8 @@ use crate::context::{
 use crate::event::{AppEvent, Events};
 use crate::util::search::SearchPattern;
 use crate::Args;
+use notify::{RecursiveMode, Watcher};
+use std::path;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum QuitType {
@@ -39,6 +42,10 @@ pub struct AppContext {
     preview_context: PreviewContext,
     // context related to command line
     commandline_context: CommandLineContext,
+    // filesystem watcher to inform about changes in shown directories
+    watcher: notify::INotifyWatcher,
+    // list of watched paths; seems not to be possible to get them from a notify::Watcher
+    watched_paths: Vec<path::PathBuf>,
 }
 
 impl AppContext {
@@ -48,6 +55,17 @@ impl AppContext {
 
         let mut commandline_context = CommandLineContext::new();
         commandline_context.history_mut().set_max_len(20);
+
+        let event_tx_for_fs_notification = event_tx.clone();
+        let mut watcher = notify::recommended_watcher(move |res| match res {
+            Ok(event) => {
+                let _ = event_tx_for_fs_notification.send(AppEvent::Filesystem(event));
+            }
+            Err(_) => {}
+        })
+        .unwrap();
+        let watched_paths: Vec<path::PathBuf> = Vec::with_capacity(3);
+
         Self {
             quit: QuitType::DoNot,
             events,
@@ -60,6 +78,41 @@ impl AppContext {
             preview_context: PreviewContext::new(),
             commandline_context,
             config,
+            watcher,
+            watched_paths,
+        }
+    }
+
+    pub fn update_watcher(&mut self) {
+        // collect the paths that shall be watched...
+        let mut new_paths_to_watch: Vec<path::PathBuf> = Vec::with_capacity(3);
+        if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().curr_list_ref() {
+            new_paths_to_watch.push(dir_list.file_path().to_path_buf())
+        }
+        if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().parent_list_ref() {
+            new_paths_to_watch.push(dir_list.file_path().to_path_buf())
+        }
+        if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().child_list_ref() {
+            new_paths_to_watch.push(dir_list.file_path().to_path_buf())
+        }
+        // remove paths from watcher which don't need to be watched anymore...
+        for old_watched_path in &self.watched_paths {
+            if !new_paths_to_watch.contains(&old_watched_path) {
+                let _ = self.watcher.unwatch(old_watched_path.as_path());
+            }
+        }
+        // add paths to watcher which need to be watched...
+        for new_watched_path in &new_paths_to_watch {
+            if !self.watched_paths.contains(&new_watched_path) {
+                let _ = self
+                    .watcher
+                    .watch(new_watched_path.as_path(), RecursiveMode::NonRecursive);
+            }
+        }
+        // update own list of watched paths
+        self.watched_paths.clear();
+        for new_watched_path in new_paths_to_watch {
+            self.watched_paths.push(new_watched_path);
         }
     }
 
