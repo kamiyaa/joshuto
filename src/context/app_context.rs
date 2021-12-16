@@ -1,5 +1,4 @@
 use std::sync::mpsc;
-use std::thread;
 
 use crate::config;
 use crate::context::{
@@ -43,7 +42,12 @@ pub struct AppContext {
     // context related to command line
     commandline_context: CommandLineContext,
     // filesystem watcher to inform about changes in shown directories
+    #[cfg(target_os = "linux")]
     watcher: notify::INotifyWatcher,
+    #[cfg(target_os = "macos")]
+    watcher: notify::FsEventWatcher,
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    watcher: notify::NullWatcher,
     // list of watched paths; seems not to be possible to get them from a notify::Watcher
     watched_paths: Vec<path::PathBuf>,
 }
@@ -57,7 +61,7 @@ impl AppContext {
         commandline_context.history_mut().set_max_len(20);
 
         let event_tx_for_fs_notification = event_tx.clone();
-        let mut watcher = notify::recommended_watcher(move |res| match res {
+        let watcher = notify::recommended_watcher(move |res| match res {
             Ok(event) => {
                 let _ = event_tx_for_fs_notification.send(AppEvent::Filesystem(event));
             }
