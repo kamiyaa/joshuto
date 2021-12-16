@@ -68,10 +68,7 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
     }
 }
 
-fn process_filesystem_event(event: notify::Event, context: &mut AppContext) {
-    let event_str = format!("{:?}", event);
-    let tab = context.tab_context_mut().curr_tab_mut();
-    let curr_list_opt = tab.curr_list_mut();
+fn process_filesystem_event(_event: notify::Event, context: &mut AppContext) {
     let _ = reload::soft_reload(context.tab_context_ref().index, context);
 }
 
