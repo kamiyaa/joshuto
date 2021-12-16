@@ -32,7 +32,6 @@ impl<'a> Widget for TuiFolderView<'a> {
         let curr_tab = self.context.tab_context_ref().curr_tab_ref();
 
         let curr_list = curr_tab.curr_list_ref();
-        let parent_list = curr_tab.parent_list_ref();
         let child_list = curr_tab.child_list_ref();
 
         let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
@@ -87,7 +86,11 @@ impl<'a> Widget for TuiFolderView<'a> {
                     right,
                 };
 
-                intersections.render_left(buf);
+                // Won't render intersections if parent view is turned off
+                match constraints[0] {
+                    Constraint::Ratio(0, _) => (),
+                    _ => intersections.render_left(buf),
+                }
                 if default_layout {
                     intersections.render_right(buf);
                 }
@@ -121,8 +124,13 @@ impl<'a> Widget for TuiFolderView<'a> {
         };
 
         // render parent view
-        if let Some(list) = parent_list.as_ref() {
-            TuiDirList::new(list).render(layout_rect[0], buf);
+        match constraints[0] {
+            Constraint::Ratio(0, _) => (),
+            _ => {
+                if let Some(list) = curr_tab.parent_list_ref().as_ref() {
+                    TuiDirList::new(list).render(layout_rect[0], buf);
+                }
+            }
         }
 
         // render current view

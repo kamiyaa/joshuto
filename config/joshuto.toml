@@ -4,7 +4,7 @@ use_trash = true
 [display]
 automatically_count_files = false
 collapse_preview = true
-# ratios for parent view, current view and preview
+# ratios for parent view (optional), current view and preview
 column_ratio = [1, 4, 4]
 scroll_offset = 6
 show_borders = true
