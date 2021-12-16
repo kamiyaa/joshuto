@@ -21,7 +21,8 @@ max_preview_size = 2097152 # 2MB
 [display]
 # Collapse the preview window when there is no preview available
 collapse_preview = true
-# Ratios for parent view, current view and preview
+# Ratios for parent view, current view and preview. You can specify 0 for
+# parent view or omit it (So there are only 2 nums) and it won't be displayed
 column_ratio = [1, 3, 4]
 # Show borders around different views
 show_borders = true

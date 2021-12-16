@@ -28,7 +28,7 @@ pub struct DisplayOptionCrude {
     pub collapse_preview: bool,
 
     #[serde(default)]
-    pub column_ratio: Option<[usize; 3]>,
+    pub column_ratio: Option<Vec<usize>>,
 
     #[serde(default = "default_scroll_offset")]
     pub scroll_offset: usize,
@@ -76,7 +76,8 @@ impl std::default::Default for DisplayOptionCrude {
 impl From<DisplayOptionCrude> for DisplayOption {
     fn from(crude: DisplayOptionCrude) -> Self {
         let column_ratio = match crude.column_ratio {
-            Some(s) => (s[0], s[1], s[2]),
+            Some(s) if s.len() == 3 => (s[0], s[1], s[2]),
+            Some(s) if s.len() == 2 => (0, s[0], s[1]),
             _ => default_column_ratio(),
         };
 
