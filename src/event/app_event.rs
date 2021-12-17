@@ -3,6 +3,8 @@ use std::path;
 use std::sync::mpsc;
 use std::thread;
 
+use notify;
+
 use signal_hook::consts::signal;
 use signal_hook::iterator::exfiltrator::SignalOnly;
 use signal_hook::iterator::SignalsInfo;
@@ -26,7 +28,7 @@ pub enum AppEvent {
     PreviewFile(path::PathBuf, io::Result<FilePreview>),
 
     Signal(i32),
-    //    Filesystem(notify::Result),
+    Filesystem(notify::Event),
 }
 
 #[derive(Debug, Clone, Copy)]

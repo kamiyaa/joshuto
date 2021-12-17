@@ -84,6 +84,7 @@ pub fn run(
             }
             event => input::process_noninteractive(event, context),
         }
+        context.update_watcher();
     }
 
     Ok(())
