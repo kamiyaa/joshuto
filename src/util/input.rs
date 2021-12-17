@@ -241,11 +241,11 @@ pub fn process_mouse(
                         dirlist.first_index_for_viewport(layout_rect[1].height as usize);
                     let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
                     if is_parent {
-                        if let Err(e) = parent_cursor_move::parent_cursor_move(new_index, context) {
+                        if let Err(e) = parent_cursor_move::parent_cursor_move(context, new_index) {
                             context.message_queue_mut().push_error(e.to_string());
                         }
                     } else {
-                        cursor_move::cursor_move(new_index, context);
+                        cursor_move::cursor_move(context, new_index);
                     }
                 }
             } else {

@@ -35,7 +35,7 @@ xdg = "^2"
 phf = { version = "^0", features = ["macros"], optional = true }
 trash = { version = "^1", optional = true }
 unicode-segmentation = "^1"
-ansi-to-tui = "0.4.1"
+ansi-to-tui = "^0"
 notify = "5.0.0-pre.13"
 
 [features]

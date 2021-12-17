@@ -40,7 +40,7 @@ pub fn search_string(context: &mut AppContext, pattern: &str) -> JoshutoResult<(
     let pattern = pattern.to_lowercase();
     let index = search_string_fwd(context.tab_context_ref().curr_tab_ref(), pattern.as_str());
     if let Some(index) = index {
-        let _ = cursor_move::cursor_move(index, context);
+        let _ = cursor_move::cursor_move(context, index);
     }
     context.set_search_context(SearchPattern::String(pattern));
     Ok(())

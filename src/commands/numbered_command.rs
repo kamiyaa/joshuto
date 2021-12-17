@@ -45,7 +45,7 @@ pub fn numbered_command(
                 match event {
                     Event::Key(Key::Esc) => return Ok(()),
                     Event::Key(Key::Char('g')) => {
-                        cursor_move::cursor_move(num_prefix - 1, context);
+                        cursor_move::cursor_move(context, num_prefix - 1);
                         return Ok(());
                     }
                     Event::Key(Key::Char(c)) if c.is_numeric() => {

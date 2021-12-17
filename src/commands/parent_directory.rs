@@ -2,7 +2,7 @@ use crate::commands::reload;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 
-pub fn parent_directory_helper(context: &mut AppContext) -> std::io::Result<()> {
+fn parent_directory_helper(context: &mut AppContext) -> std::io::Result<()> {
     if let Some(parent) = context
         .tab_context_ref()
         .curr_tab_ref()

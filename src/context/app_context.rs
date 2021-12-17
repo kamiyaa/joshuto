@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::sync::mpsc;
 
 use crate::config;
@@ -49,7 +50,7 @@ pub struct AppContext {
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     watcher: notify::NullWatcher,
     // list of watched paths; seems not to be possible to get them from a notify::Watcher
-    watched_paths: Vec<path::PathBuf>,
+    watched_paths: HashSet<path::PathBuf>,
 }
 
 impl AppContext {
@@ -68,7 +69,7 @@ impl AppContext {
             Err(_) => {}
         })
         .unwrap();
-        let watched_paths: Vec<path::PathBuf> = Vec::with_capacity(3);
+        let watched_paths = HashSet::with_capacity(3);
 
         Self {
             quit: QuitType::DoNot,
@@ -89,35 +90,32 @@ impl AppContext {
 
     pub fn update_watcher(&mut self) {
         // collect the paths that shall be watched...
-        let mut new_paths_to_watch: Vec<path::PathBuf> = Vec::with_capacity(3);
+        let mut new_paths_to_watch: HashSet<path::PathBuf> = HashSet::with_capacity(3);
         if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().curr_list_ref() {
-            new_paths_to_watch.push(dir_list.file_path().to_path_buf())
+            new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
         }
         if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().parent_list_ref() {
-            new_paths_to_watch.push(dir_list.file_path().to_path_buf())
+            new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
         }
         if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().child_list_ref() {
-            new_paths_to_watch.push(dir_list.file_path().to_path_buf())
+            new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
         }
         // remove paths from watcher which don't need to be watched anymore...
         for old_watched_path in &self.watched_paths {
-            if !new_paths_to_watch.contains(&old_watched_path) {
+            if !new_paths_to_watch.contains(old_watched_path.as_path()) {
                 let _ = self.watcher.unwatch(old_watched_path.as_path());
             }
         }
         // add paths to watcher which need to be watched...
         for new_watched_path in &new_paths_to_watch {
-            if !self.watched_paths.contains(&new_watched_path) {
+            if !self.watched_paths.contains(new_watched_path.as_path()) {
                 let _ = self
                     .watcher
                     .watch(new_watched_path.as_path(), RecursiveMode::NonRecursive);
             }
         }
         // update own list of watched paths
-        self.watched_paths.clear();
-        for new_watched_path in new_paths_to_watch {
-            self.watched_paths.push(new_watched_path);
-        }
+        self.watched_paths = new_paths_to_watch;
     }
 
     // event related

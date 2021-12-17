@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 
-pub fn parent_cursor_move(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
+pub fn parent_cursor_move(context: &mut AppContext, new_index: usize) -> JoshutoResult<()> {
     let mut path: Option<PathBuf> = None;
     let mut new_index = new_index;
 
@@ -36,8 +36,9 @@ pub fn parent_up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     };
 
     if let Some(s) = movement {
-        parent_cursor_move(s, context)?;
+        parent_cursor_move(context, s)?;
     }
+    context.update_watcher();
     Ok(())
 }
 
@@ -47,7 +48,7 @@ pub fn parent_down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
         None => None,
     };
     if let Some(s) = movement {
-        parent_cursor_move(s, context)?;
+        parent_cursor_move(context, s)?;
     }
     Ok(())
 }

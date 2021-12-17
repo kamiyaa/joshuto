@@ -10,7 +10,7 @@ pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn change_directory_helper(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
+fn change_directory_helper(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     cd(path, context)?;
     let options = context.config_ref().display_options_ref().clone();
     context
@@ -18,7 +18,6 @@ pub fn change_directory_helper(path: &path::Path, context: &mut AppContext) -> s
         .curr_tab_mut()
         .history_mut()
         .populate_to_root(path, &options)?;
-
     Ok(())
 }
 

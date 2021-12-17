@@ -86,6 +86,5 @@ pub fn run(
         }
         context.update_watcher();
     }
-
     Ok(())
 }

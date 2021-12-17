@@ -38,7 +38,7 @@ pub fn lazy_load_directory_size(context: &mut AppContext) {
     }
 }
 
-pub fn cursor_move(new_index: usize, context: &mut AppContext) {
+pub fn cursor_move(context: &mut AppContext, new_index: usize) {
     lazy_load_directory_size(context);
     let mut new_index = new_index;
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
@@ -59,7 +59,7 @@ pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     };
 
     if let Some(s) = movement {
-        cursor_move(s, context);
+        cursor_move(context, s);
     }
     Ok(())
 }
@@ -70,7 +70,7 @@ pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
         None => None,
     };
     if let Some(s) = movement {
-        cursor_move(s, context);
+        cursor_move(context, s);
     }
     Ok(())
 }
@@ -89,7 +89,7 @@ pub fn home(context: &mut AppContext) -> JoshutoResult<()> {
     };
 
     if let Some(s) = movement {
-        cursor_move(s, context);
+        cursor_move(context, s);
     }
     Ok(())
 }
@@ -108,7 +108,7 @@ pub fn end(context: &mut AppContext) -> JoshutoResult<()> {
     };
 
     if let Some(s) = movement {
-        cursor_move(s, context);
+        cursor_move(context, s);
     }
     Ok(())
 }
@@ -142,7 +142,7 @@ pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRes
     };
 
     if let Some(s) = movement {
-        cursor_move(s, context);
+        cursor_move(context, s);
     }
     Ok(())
 }
@@ -165,7 +165,7 @@ pub fn page_down(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoR
     };
 
     if let Some(s) = movement {
-        cursor_move(s, context);
+        cursor_move(context, s);
     }
     Ok(())
 }
