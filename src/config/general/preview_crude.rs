@@ -19,6 +19,10 @@ pub struct PreviewOptionCrude {
     pub preview_images: bool,
     #[serde(default)]
     pub preview_script: Option<String>,
+    #[serde(default)]
+    pub preview_shown_hook_script: Option<String>,
+    #[serde(default)]
+    pub preview_removed_hook_script: Option<String>,
 }
 
 impl std::default::Default for PreviewOptionCrude {
@@ -27,6 +31,8 @@ impl std::default::Default for PreviewOptionCrude {
             max_preview_size: default_max_preview_size(),
             preview_images: false,
             preview_script: None,
+            preview_shown_hook_script: None,
+            preview_removed_hook_script: None,
         }
     }
 }
@@ -41,11 +47,29 @@ impl From<PreviewOptionCrude> for PreviewOption {
             }
             None => search_directories("preview.sh", &CONFIG_HIERARCHY),
         };
+        let preview_shown_hook_script = match crude.preview_shown_hook_script {
+            Some(s) => {
+                let tilde_cow = shellexpand::tilde_with_context(s.as_str(), dirs_next::home_dir);
+                let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
+                Some(tilde_path)
+            }
+            None => None,
+        };
+        let preview_removed_hook_script = match crude.preview_removed_hook_script {
+            Some(s) => {
+                let tilde_cow = shellexpand::tilde_with_context(s.as_str(), dirs_next::home_dir);
+                let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
+                Some(tilde_path)
+            }
+            None => None,
+        };
 
         Self {
             max_preview_size: crude.max_preview_size,
             preview_images: crude.preview_images,
             preview_script,
+            preview_shown_hook_script,
+            preview_removed_hook_script,
         }
     }
 }

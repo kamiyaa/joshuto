@@ -8,6 +8,7 @@ use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
+use crate::ui::RenderResult;
 use crate::util::to_string::ToString;
 
 const BORDER_HEIGHT: usize = 1;
@@ -26,7 +27,8 @@ impl<'a> TuiCommandMenu<'a> {
 
 impl<'a> Widget for TuiCommandMenu<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        TuiView::new(self.context).render(area, buf);
+        let mut render_result = RenderResult::new();
+        TuiView::new(self.context, &mut render_result).render(area, buf);
 
         // draw menu
         let mut display_vec: Vec<String> = self

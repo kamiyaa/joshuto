@@ -1,3 +1,5 @@
+use std::path;
+
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
@@ -6,22 +8,26 @@ use tui::text::Span;
 use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::context::AppContext;
+use crate::ui;
 use crate::ui::widgets::{
     TuiDirList, TuiDirListDetailed, TuiFilePreview, TuiFooter, TuiTabBar, TuiTopBar,
 };
+use crate::ui::RenderResult;
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
 pub struct TuiFolderView<'a> {
     pub context: &'a AppContext,
     pub show_bottom_status: bool,
+    pub render_result: &'a mut RenderResult,
 }
 
 impl<'a> TuiFolderView<'a> {
-    pub fn new(context: &'a AppContext) -> Self {
+    pub fn new(context: &'a AppContext, render_result: &'a mut RenderResult) -> Self {
         Self {
             context,
             show_bottom_status: true,
+            render_result,
         }
     }
 }
@@ -163,6 +169,8 @@ impl<'a> Widget for TuiFolderView<'a> {
         }
 
         // render preview
+        let mut file_preview_path: Option<path::PathBuf> = None;
+        let mut preview_area: Option<ui::Rect> = None;
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(list).render(layout_rect[2], buf);
         } else if let Some(entry) = curr_entry {
@@ -170,11 +178,21 @@ impl<'a> Widget for TuiFolderView<'a> {
                 match preview.status.code() {
                     Some(1) | None => {}
                     _ => {
-                        TuiFilePreview::new(entry, preview).render(layout_rect[2], buf);
+                        let rect = layout_rect[2];
+                        TuiFilePreview::new(entry, preview).render(rect, buf);
+                        file_preview_path = Some(entry.file_path_buf());
+                        preview_area = Some(ui::Rect {
+                            x: rect.x,
+                            y: rect.y,
+                            width: rect.width,
+                            height: rect.height,
+                        })
                     }
                 }
             }
         }
+        self.render_result.file_preview_path = file_preview_path;
+        self.render_result.preview_area = preview_area;
 
         let topbar_width = area.width;
         let rect = Rect {

@@ -1,5 +1,3 @@
-use termion::event::{Event, Key};
-
 use crate::commands::numbered_command;
 use crate::config::AppKeyMapping;
 use crate::context::{AppContext, QuitType};
@@ -9,8 +7,13 @@ use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::views::TuiView;
+use crate::ui::RenderResult;
 use crate::util::input;
 use crate::util::to_string::ToString;
+use std::path;
+use std::process;
+use std::thread;
+use termion::event::{Event, Key};
 
 pub fn run(
     backend: &mut ui::TuiBackend,
@@ -26,9 +29,48 @@ pub fn run(
         // trigger a preview of child
         preview_default::load_preview(context, backend);
     }
+    let mut last_preview_file_path: Option<path::PathBuf> = None;
 
     while context.quit == QuitType::DoNot {
-        backend.render(TuiView::new(context));
+        let mut render_result = RenderResult::new();
+        backend.render(TuiView::new(context, &mut render_result));
+        if render_result.file_preview_path != last_preview_file_path {
+            match render_result.file_preview_path.clone() {
+                Some(path_buf) => {
+                    if let Some(preview_shown_hook_script) = context
+                        .config_ref()
+                        .preview_options_ref()
+                        .preview_shown_hook_script
+                        .clone()
+                    {
+                        if let Some(preview_area) = render_result.preview_area {
+                            let _ = thread::spawn(move || {
+                                let _ = process::Command::new(preview_shown_hook_script.as_path())
+                                    .arg(path_buf)
+                                    .arg(preview_area.x.to_string())
+                                    .arg(preview_area.y.to_string())
+                                    .arg(preview_area.width.to_string())
+                                    .arg(preview_area.height.to_string())
+                                    .status();
+                            });
+                        }
+                    }
+                }
+                None => {
+                    if let Some(preview_removed_hook_script) = context
+                        .config_ref()
+                        .preview_options_ref()
+                        .preview_removed_hook_script
+                        .clone()
+                    {
+                        let _ = thread::spawn(|| {
+                            let _ = process::Command::new(preview_removed_hook_script).status();
+                        });
+                    }
+                }
+            }
+            last_preview_file_path = render_result.file_preview_path;
+        }
 
         let event = match context.poll_event() {
             Ok(event) => event,
