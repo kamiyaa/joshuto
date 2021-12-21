@@ -3,8 +3,6 @@ use std::path;
 use std::sync::mpsc;
 use std::thread;
 
-use notify;
-
 use signal_hook::consts::signal;
 use signal_hook::iterator::exfiltrator::SignalOnly;
 use signal_hook::iterator::SignalsInfo;

@@ -4,17 +4,15 @@ use tui::layout::Rect;
 use tui::text::Text;
 use tui::widgets::Widget;
 
-use crate::fs::JoshutoDirEntry;
 use crate::preview::preview_file::FilePreview;
 
 pub struct TuiFilePreview<'a> {
-    _entry: &'a JoshutoDirEntry,
     preview: &'a FilePreview,
 }
 
 impl<'a> TuiFilePreview<'a> {
-    pub fn new(_entry: &'a JoshutoDirEntry, preview: &'a FilePreview) -> Self {
-        Self { _entry, preview }
+    pub fn new(preview: &'a FilePreview) -> Self {
+        Self { preview }
     }
 }
 
