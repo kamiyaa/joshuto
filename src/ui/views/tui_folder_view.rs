@@ -8,9 +8,10 @@ use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 use crate::context::AppContext;
 use crate::ui;
 use crate::ui::widgets::{
-    TuiDirList, TuiDirListDetailed, TuiFilePreview, TuiFooter, TuiTabBar, TuiTopBar,
+    TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiFooter, TuiTabBar,
+    TuiTopBar,
 };
-use crate::ui::RenderResult;
+use crate::ui::PreviewArea;
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
@@ -142,20 +143,22 @@ impl<'a> Widget for TuiFolderView<'a> {
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(list).render(layout_rect[2], buf);
         } else if curr_entry.is_some() {
-            let render_result = calculate_preview(self.context, layout_rect[2]);
-            if let Some(render_result) = render_result {
+            let preview_area = calculate_preview(self.context, layout_rect[2]);
+            if let Some(preview_area) = preview_area {
                 let area = Rect {
-                    x: render_result.preview_area.x,
-                    y: render_result.preview_area.y,
-                    width: render_result.preview_area.width,
-                    height: render_result.preview_area.height,
+                    x: preview_area.preview_area.x,
+                    y: preview_area.preview_area.y,
+                    width: preview_area.preview_area.width,
+                    height: preview_area.preview_area.height,
                 };
                 if let Some(Some(preview)) =
-                    preview_context.get_preview_ref(&render_result.file_preview_path)
+                    preview_context.get_preview_ref(&preview_area.file_preview_path)
                 {
                     TuiFilePreview::new(preview).render(area, buf);
                 }
             }
+        } else {
+            TuiDirListLoading::new().render(layout_rect[2], buf);
         }
 
         let topbar_width = area.width;
@@ -236,7 +239,10 @@ pub fn get_constraints(context: &AppContext) -> &[Constraint; 3] {
             Some(_) => &display_options.default_layout,
             None => match curr_entry {
                 None => &display_options.no_preview_layout,
-                Some(e) => match preview_context.get_preview_ref(e.file_path()) {
+                Some(entry) if entry.metadata.file_type().is_dir() => {
+                    &display_options.default_layout
+                }
+                Some(entry) => match preview_context.get_preview_ref(entry.file_path()) {
                     Some(Some(p)) if p.status.code() != Some(1) => &display_options.default_layout,
                     _ => &display_options.no_preview_layout,
                 },
@@ -280,7 +286,7 @@ pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) 
     vec![inner1, layout_rect[1], inner3]
 }
 
-pub fn calculate_preview(context: &AppContext, rect: Rect) -> Option<RenderResult> {
+pub fn calculate_preview(context: &AppContext, rect: Rect) -> Option<PreviewArea> {
     let preview_context = context.preview_context_ref();
     let curr_tab = context.tab_context_ref().curr_tab_ref();
 
@@ -303,7 +309,7 @@ pub fn calculate_preview(context: &AppContext, rect: Rect) -> Option<RenderResul
                         width: rect.width,
                         height: rect.height,
                     };
-                    Some(RenderResult::new(file_preview_path, preview_area))
+                    Some(PreviewArea::new(file_preview_path, preview_area))
                 }
             }
         } else {
