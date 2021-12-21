@@ -15,14 +15,14 @@ pub struct Rect {
 }
 
 #[derive(Debug, Clone)]
-pub struct RenderResult {
+pub struct PreviewArea {
     pub file_preview_path: path::PathBuf,
     pub preview_area: Rect,
 }
 
-impl RenderResult {
-    pub fn new(file_preview_path: path::PathBuf, preview_area: Rect) -> RenderResult {
-        RenderResult {
+impl PreviewArea {
+    pub fn new(file_preview_path: path::PathBuf, preview_area: Rect) -> Self {
+        Self {
             file_preview_path,
             preview_area,
         }
