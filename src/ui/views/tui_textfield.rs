@@ -10,6 +10,7 @@ use crate::context::AppContext;
 use crate::event::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
+use crate::ui::RenderResult;
 use crate::ui::TuiBackend;
 use crate::util::input;
 
@@ -96,7 +97,8 @@ impl<'a> TuiTextField<'a> {
                         return;
                     }
                     {
-                        let mut view = TuiView::new(context);
+                        let mut render_result = RenderResult::new();
+                        let mut view = TuiView::new(context, &mut render_result);
                         view.show_bottom_status = false;
                         frame.render_widget(view, area);
                     }
