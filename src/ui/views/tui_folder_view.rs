@@ -45,12 +45,13 @@ impl<'a> Widget for TuiFolderView<'a> {
         let is_default_layout = constraints == &display_options.default_layout;
 
         let layout_rect = if display_options.show_borders() {
-            let layout = calculate_layout_with_borders(area, constraints);
             let area = Rect {
                 y: area.top() + 1,
                 height: area.height - 2,
                 ..area
             };
+
+            let layout = calculate_layout_with_borders(area, constraints);
 
             let block = Block::default().borders(Borders::ALL);
             let inner = block.inner(area);
@@ -262,12 +263,6 @@ pub fn calculate_layout(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> 
 }
 
 pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
-    let area = Rect {
-        y: area.top() + 1,
-        height: area.height - 2,
-        ..area
-    };
-
     let block = Block::default().borders(Borders::ALL);
     let inner = block.inner(area);
 
