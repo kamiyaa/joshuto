@@ -106,6 +106,12 @@ fn process_preview_on_change(
     area: Rect,
     old_render_result: Option<RenderResult>,
 ) -> Option<RenderResult> {
+    let area = Rect {
+        y: area.top() + 1,
+        height: area.height - 2,
+        ..area
+    };
+
     let constraints = views::get_constraints(&context);
     let config = context.config_ref();
     let display_options = config.display_options_ref();
@@ -113,7 +119,7 @@ fn process_preview_on_change(
     let layout = if display_options.show_borders() {
         views::calculate_layout_with_borders(area, constraints)
     } else {
-        views::calculate_layout_with_borders(area, constraints)
+        views::calculate_layout(area, constraints)
     };
     let new_render_result = views::calculate_preview(&context, layout[2]);
 
