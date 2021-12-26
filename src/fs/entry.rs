@@ -69,6 +69,10 @@ impl JoshutoDirEntry {
         self.path.as_path()
     }
 
+    pub fn file_path_buf(&self) -> path::PathBuf {
+        self.path.clone()
+    }
+
     pub fn is_selected(&self) -> bool {
         self.selected
     }
