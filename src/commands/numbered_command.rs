@@ -7,7 +7,6 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::event::AppEvent;
 use crate::key_command::{CommandKeybind, NumberedExecute};
 use crate::ui::views::TuiView;
-use crate::ui::RenderResult;
 use crate::ui::TuiBackend;
 use crate::util::input;
 
@@ -22,8 +21,7 @@ pub fn numbered_command(
 
     loop {
         context.message_queue_mut().push_info(prefix.clone());
-        let mut render_result = RenderResult::new();
-        backend.render(TuiView::new(context, &mut render_result));
+        backend.render(TuiView::new(context));
         context.message_queue_mut().pop_front();
 
         let event = match context.poll_event() {
