@@ -7,7 +7,6 @@ use tui::widgets::{Clear, Paragraph, Wrap};
 use crate::context::AppContext;
 use crate::event::AppEvent;
 use crate::ui::views::TuiView;
-use crate::ui::RenderResult;
 use crate::ui::TuiBackend;
 use crate::util::input;
 
@@ -32,8 +31,7 @@ impl<'a> TuiPrompt<'a> {
                 }
 
                 {
-                    let mut render_result = RenderResult::new();
-                    let mut view = TuiView::new(context, &mut render_result);
+                    let mut view = TuiView::new(context);
                     view.show_bottom_status = false;
                     frame.render_widget(view, f_size);
                 }

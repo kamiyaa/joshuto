@@ -69,6 +69,10 @@ impl TuiBackend {
         });
     }
 
+    pub fn terminal_ref(&self) -> &JoshutoTerminal {
+        self.terminal.as_ref().unwrap()
+    }
+
     pub fn terminal_mut(&mut self) -> &mut JoshutoTerminal {
         self.terminal.as_mut().unwrap()
     }

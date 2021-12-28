@@ -14,16 +14,17 @@ pub struct Rect {
     pub height: u16,
 }
 
-pub struct RenderResult {
-    pub file_preview_path: Option<path::PathBuf>,
-    pub preview_area: Option<Rect>,
+#[derive(Debug, Clone)]
+pub struct PreviewArea {
+    pub file_preview_path: path::PathBuf,
+    pub preview_area: Rect,
 }
 
-impl RenderResult {
-    pub fn new() -> RenderResult {
-        RenderResult {
-            file_preview_path: None,
-            preview_area: None,
+impl PreviewArea {
+    pub fn new(file_preview_path: path::PathBuf, preview_area: Rect) -> Self {
+        Self {
+            file_preview_path,
+            preview_area,
         }
     }
 }

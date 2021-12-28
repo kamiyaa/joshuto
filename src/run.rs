@@ -2,18 +2,21 @@ use crate::commands::numbered_command;
 use crate::config::AppKeyMapping;
 use crate::context::{AppContext, QuitType};
 use crate::event::AppEvent;
-use crate::key_command::{AppExecute, Command, CommandKeybind};
+use crate::key_command::{AppExecute, CommandKeybind};
 use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
 use crate::ui;
+use crate::ui::views;
 use crate::ui::views::TuiView;
-use crate::ui::RenderResult;
+use crate::ui::PreviewArea;
 use crate::util::input;
 use crate::util::to_string::ToString;
-use std::path;
+
+use std::path::{Path, PathBuf};
 use std::process;
 use std::thread;
 use termion::event::{Event, Key};
+use tui::layout::Rect;
 
 pub fn run(
     backend: &mut ui::TuiBackend,
@@ -29,47 +32,24 @@ pub fn run(
         // trigger a preview of child
         preview_default::load_preview(context, backend);
     }
-    let mut last_preview_file_path: Option<path::PathBuf> = None;
+
+    let mut preview_area: Option<PreviewArea> = None;
 
     while context.quit == QuitType::DoNot {
-        let mut render_result = RenderResult::new();
-        backend.render(TuiView::new(context, &mut render_result));
-        if render_result.file_preview_path != last_preview_file_path {
-            match render_result.file_preview_path.clone() {
-                Some(path_buf) => {
-                    if let Some(preview_shown_hook_script) = context
-                        .config_ref()
-                        .preview_options_ref()
-                        .preview_shown_hook_script
-                        .clone()
-                    {
-                        if let Some(preview_area) = render_result.preview_area {
-                            let _ = thread::spawn(move || {
-                                let _ = process::Command::new(preview_shown_hook_script.as_path())
-                                    .arg(path_buf)
-                                    .arg(preview_area.x.to_string())
-                                    .arg(preview_area.y.to_string())
-                                    .arg(preview_area.width.to_string())
-                                    .arg(preview_area.height.to_string())
-                                    .status();
-                            });
-                        }
-                    }
-                }
-                None => {
-                    if let Some(preview_removed_hook_script) = context
-                        .config_ref()
-                        .preview_options_ref()
-                        .preview_removed_hook_script
-                        .clone()
-                    {
-                        let _ = thread::spawn(|| {
-                            let _ = process::Command::new(preview_removed_hook_script).status();
-                        });
-                    }
-                }
+        backend.render(TuiView::new(context));
+
+        {
+            let config = context.config_ref();
+            let preview_options = config.preview_options_ref();
+            if let Ok(area) = backend.terminal_ref().size() {
+                preview_area = process_preview_on_change(
+                    &context,
+                    area,
+                    preview_area,
+                    preview_options.preview_shown_hook_script.as_ref(),
+                    preview_options.preview_removed_hook_script.as_ref(),
+                );
             }
-            last_preview_file_path = render_result.file_preview_path;
         }
 
         let event = match context.poll_event() {
@@ -129,4 +109,62 @@ pub fn run(
         context.update_watcher();
     }
     Ok(())
+}
+
+fn process_preview_on_change(
+    context: &AppContext,
+    area: Rect,
+    old_preview_area: Option<PreviewArea>,
+    preview_shown_hook_script: Option<&PathBuf>,
+    preview_removed_hook_script: Option<&PathBuf>,
+) -> Option<PreviewArea> {
+    let area = Rect {
+        y: area.top() + 1,
+        height: area.height - 2,
+        ..area
+    };
+
+    let constraints = views::get_constraints(&context);
+    let config = context.config_ref();
+    let display_options = config.display_options_ref();
+    let layout = if display_options.show_borders() {
+        views::calculate_layout_with_borders(area, constraints)
+    } else {
+        views::calculate_layout(area, constraints)
+    };
+    let new_preview_area = views::calculate_preview(&context, layout[2]);
+
+    match new_preview_area.as_ref() {
+        Some(new) => {
+            let should_preview = if let Some(old) = old_preview_area {
+                new.file_preview_path != old.file_preview_path
+            } else {
+                true
+            };
+            if should_preview {
+                if let Some(hook_script) = preview_shown_hook_script {
+                    let hook_script = hook_script.to_path_buf();
+                    let new2 = new.clone();
+                    let _ = thread::spawn(move || {
+                        let _ = process::Command::new(hook_script.as_path())
+                            .arg(new2.file_preview_path.as_path())
+                            .arg(new2.preview_area.x.to_string())
+                            .arg(new2.preview_area.y.to_string())
+                            .arg(new2.preview_area.width.to_string())
+                            .arg(new2.preview_area.height.to_string())
+                            .status();
+                    });
+                }
+            }
+        }
+        None => {
+            if let Some(hook_script) = preview_shown_hook_script {
+                let hook_script = hook_script.to_path_buf();
+                let _ = thread::spawn(|| {
+                    let _ = process::Command::new(hook_script).status();
+                });
+            }
+        }
+    }
+    new_preview_area
 }

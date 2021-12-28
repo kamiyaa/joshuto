@@ -1,5 +1,3 @@
-use std::path;
-
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
@@ -12,22 +10,20 @@ use crate::ui;
 use crate::ui::widgets::{
     TuiDirList, TuiDirListDetailed, TuiFilePreview, TuiFooter, TuiTabBar, TuiTopBar,
 };
-use crate::ui::RenderResult;
+use crate::ui::PreviewArea;
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
 pub struct TuiFolderView<'a> {
     pub context: &'a AppContext,
     pub show_bottom_status: bool,
-    pub render_result: &'a mut RenderResult,
 }
 
 impl<'a> TuiFolderView<'a> {
-    pub fn new(context: &'a AppContext, render_result: &'a mut RenderResult) -> Self {
+    pub fn new(context: &'a AppContext) -> Self {
         Self {
             context,
             show_bottom_status: true,
-            render_result,
         }
     }
 }
@@ -45,30 +41,17 @@ impl<'a> Widget for TuiFolderView<'a> {
         let config = self.context.config_ref();
         let display_options = config.display_options_ref();
 
-        let (default_layout, constraints): (bool, &[Constraint; 3]) =
-            if !display_options.collapse_preview() {
-                (true, &display_options.default_layout)
-            } else {
-                match child_list {
-                    Some(_) => (true, &display_options.default_layout),
-                    None => match curr_entry {
-                        None => (false, &display_options.no_preview_layout),
-                        Some(e) => match preview_context.get_preview_ref(e.file_path()) {
-                            Some(Some(p)) if p.status.code() != Some(1) => {
-                                (true, &display_options.default_layout)
-                            }
-                            _ => (false, &display_options.no_preview_layout),
-                        },
-                    },
-                }
-            };
+        let constraints = get_constraints(self.context);
+        let is_default_layout = constraints == &display_options.default_layout;
 
-        let layout_rect = if config.display_options_ref().show_borders() {
+        let layout_rect = if display_options.show_borders() {
             let area = Rect {
                 y: area.top() + 1,
                 height: area.height - 2,
                 ..area
             };
+
+            let layout = calculate_layout_with_borders(area, constraints);
 
             let block = Block::default().borders(Borders::ALL);
             let inner = block.inner(area);
@@ -78,6 +61,12 @@ impl<'a> Widget for TuiFolderView<'a> {
                 .direction(Direction::Horizontal)
                 .constraints(constraints.as_ref())
                 .split(inner);
+
+            let block = Block::default().borders(Borders::RIGHT);
+            block.render(layout_rect[0], buf);
+
+            let block = Block::default().borders(Borders::LEFT);
+            block.render(layout_rect[2], buf);
 
             // Render inner borders properly.
             {
@@ -97,36 +86,18 @@ impl<'a> Widget for TuiFolderView<'a> {
                     Constraint::Ratio(0, _) => (),
                     _ => intersections.render_left(buf),
                 }
-                if default_layout {
+                if is_default_layout {
                     intersections.render_right(buf);
                 }
             }
-
-            let block = Block::default().borders(Borders::RIGHT);
-            let inner1 = block.inner(layout_rect[0]);
-            block.render(layout_rect[0], buf);
-
-            let block = Block::default().borders(Borders::LEFT);
-            let inner3 = block.inner(layout_rect[2]);
-            block.render(layout_rect[2], buf);
-
-            vec![inner1, layout_rect[1], inner3]
+            layout
         } else {
-            let mut layout_rect = Layout::default()
-                .direction(Direction::Horizontal)
-                .vertical_margin(1)
-                .constraints(constraints.as_ref())
-                .split(area);
-
-            layout_rect[0] = Rect {
-                width: layout_rect[0].width - 1,
-                ..layout_rect[0]
+            let area = Rect {
+                y: area.top() + 1,
+                height: area.height - 2,
+                ..area
             };
-            layout_rect[1] = Rect {
-                width: layout_rect[1].width - 1,
-                ..layout_rect[1]
-            };
-            layout_rect
+            calculate_layout(area, constraints)
         };
 
         // render parent view
@@ -168,31 +139,24 @@ impl<'a> Widget for TuiFolderView<'a> {
             }
         }
 
-        // render preview
-        let mut file_preview_path: Option<path::PathBuf> = None;
-        let mut preview_area: Option<ui::Rect> = None;
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(list).render(layout_rect[2], buf);
-        } else if let Some(entry) = curr_entry {
-            if let Some(Some(preview)) = preview_context.get_preview_ref(entry.file_path()) {
-                match preview.status.code() {
-                    Some(1) | None => {}
-                    _ => {
-                        let rect = layout_rect[2];
-                        TuiFilePreview::new(entry, preview).render(rect, buf);
-                        file_preview_path = Some(entry.file_path_buf());
-                        preview_area = Some(ui::Rect {
-                            x: rect.x,
-                            y: rect.y,
-                            width: rect.width,
-                            height: rect.height,
-                        })
-                    }
+        } else if curr_entry.is_some() {
+            let preview_area = calculate_preview(self.context, layout_rect[2]);
+            if let Some(preview_area) = preview_area {
+                let area = Rect {
+                    x: preview_area.preview_area.x,
+                    y: preview_area.preview_area.y,
+                    width: preview_area.preview_area.width,
+                    height: preview_area.preview_area.height,
+                };
+                if let Some(Some(preview)) =
+                    preview_context.get_preview_ref(&preview_area.file_preview_path)
+                {
+                    TuiFilePreview::new(preview).render(area, buf);
                 }
             }
         }
-        self.render_result.file_preview_path = file_preview_path;
-        self.render_result.preview_area = preview_area;
 
         let topbar_width = area.width;
         let rect = Rect {
@@ -250,5 +214,102 @@ impl Intersections {
             .set_symbol(HORIZONTAL_DOWN);
         buf.get_mut(self.right, self.bottom)
             .set_symbol(HORIZONTAL_UP);
+    }
+}
+
+pub fn get_constraints(context: &AppContext) -> &[Constraint; 3] {
+    let preview_context = context.preview_context_ref();
+    let curr_tab = context.tab_context_ref().curr_tab_ref();
+
+    let curr_list = curr_tab.curr_list_ref();
+    let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
+
+    let child_list = curr_tab.child_list_ref();
+
+    let config = context.config_ref();
+    let display_options = config.display_options_ref();
+
+    if !display_options.collapse_preview() {
+        &display_options.default_layout
+    } else {
+        match child_list {
+            Some(_) => &display_options.default_layout,
+            None => match curr_entry {
+                None => &display_options.no_preview_layout,
+                Some(e) => match preview_context.get_preview_ref(e.file_path()) {
+                    Some(Some(p)) if p.status.code() != Some(1) => &display_options.default_layout,
+                    _ => &display_options.no_preview_layout,
+                },
+            },
+        }
+    }
+}
+
+pub fn calculate_layout(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
+    let mut layout_rect = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(constraints.as_ref())
+        .split(area);
+
+    layout_rect[0] = Rect {
+        width: layout_rect[0].width - 1,
+        ..layout_rect[0]
+    };
+    layout_rect[1] = Rect {
+        width: layout_rect[1].width - 1,
+        ..layout_rect[1]
+    };
+    layout_rect
+}
+
+pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
+    let block = Block::default().borders(Borders::ALL);
+    let inner = block.inner(area);
+
+    let layout_rect = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(constraints.as_ref())
+        .split(inner);
+
+    let block = Block::default().borders(Borders::RIGHT);
+    let inner1 = block.inner(layout_rect[0]);
+
+    let block = Block::default().borders(Borders::LEFT);
+    let inner3 = block.inner(layout_rect[2]);
+
+    vec![inner1, layout_rect[1], inner3]
+}
+
+pub fn calculate_preview(context: &AppContext, rect: Rect) -> Option<PreviewArea> {
+    let preview_context = context.preview_context_ref();
+    let curr_tab = context.tab_context_ref().curr_tab_ref();
+
+    let child_list = curr_tab.child_list_ref();
+
+    let curr_list = curr_tab.curr_list_ref();
+    let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
+
+    if child_list.as_ref().is_some() {
+        None
+    } else if let Some(entry) = curr_entry {
+        if let Some(Some(preview)) = preview_context.get_preview_ref(entry.file_path()) {
+            match preview.status.code() {
+                Some(1) | None => None,
+                _ => {
+                    let file_preview_path = entry.file_path_buf();
+                    let preview_area = ui::Rect {
+                        x: rect.x,
+                        y: rect.y,
+                        width: rect.width,
+                        height: rect.height,
+                    };
+                    Some(PreviewArea::new(file_preview_path, preview_area))
+                }
+            }
+        } else {
+            None
+        }
+    } else {
+        None
     }
 }
