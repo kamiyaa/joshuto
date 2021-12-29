@@ -237,8 +237,7 @@ pub fn process_mouse(
                     )
                 };
                 if let Some(dirlist) = dirlist {
-                    let skip_dist =
-                        dirlist.first_index_for_viewport(layout_rect[1].height as usize);
+                    let skip_dist = dirlist.first_index_for_viewport();
                     let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
                     if is_parent {
                         if let Err(e) = parent_cursor_move::parent_cursor_move(context, new_index) {

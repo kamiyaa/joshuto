@@ -4,10 +4,16 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use crate::config::option::DisplayOption;
+use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
 
 pub trait DirectoryHistory {
-    fn populate_to_root(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;
+    fn populate_to_root(
+        &mut self,
+        path: &Path,
+        ui_context: &UiContext,
+        options: &DisplayOption,
+    ) -> io::Result<()>;
     fn create_or_soft_update(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;
     fn create_or_reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;
     fn reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;
@@ -19,7 +25,12 @@ pub trait DirectoryHistory {
 pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
 
 impl DirectoryHistory for JoshutoHistory {
-    fn populate_to_root(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()> {
+    fn populate_to_root(
+        &mut self,
+        path: &Path,
+        ui_context: &UiContext,
+        options: &DisplayOption,
+    ) -> io::Result<()> {
         let mut dirlists = Vec::new();
 
         let mut prev: Option<&Path> = None;
@@ -28,7 +39,7 @@ impl DirectoryHistory for JoshutoHistory {
                 let mut new_dirlist = create_dirlist_with_history(self, curr, options)?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
-                        new_dirlist.index = Some(i);
+                        new_dirlist.set_index(Some(i), &ui_context);
                     }
                 }
                 dirlists.push(new_dirlist);
@@ -37,7 +48,7 @@ impl DirectoryHistory for JoshutoHistory {
                     JoshutoDirList::from_path(curr.to_path_buf().clone(), options)?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
-                        new_dirlist.index = Some(i);
+                        new_dirlist.set_index(Some(i), &ui_context);
                     }
                 }
                 dirlists.push(new_dirlist);
@@ -127,7 +138,7 @@ pub fn create_dirlist_with_history(
         None
     } else {
         match history.get(path) {
-            Some(dirlist) => match dirlist.index {
+            Some(dirlist) => match dirlist.get_index() {
                 Some(i) if i >= contents_len => Some(contents_len - 1),
                 Some(i) => {
                     let entry = &dirlist.contents[i];
@@ -145,7 +156,7 @@ pub fn create_dirlist_with_history(
     };
 
     let metadata = JoshutoMetadata::from(path)?;
-    let dirlist = JoshutoDirList::new(path.to_path_buf(), contents, index, metadata);
+    let dirlist = JoshutoDirList::new(path.to_path_buf(), contents, index, metadata, options);
 
     Ok(dirlist)
 }

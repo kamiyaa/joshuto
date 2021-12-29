@@ -13,11 +13,12 @@ pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
 fn change_directory_helper(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     cd(path, context)?;
     let options = context.config_ref().display_options_ref().clone();
+    let ui_context = context.ui_context_ref().clone();
     context
         .tab_context_mut()
         .curr_tab_mut()
         .history_mut()
-        .populate_to_root(path, &options)?;
+        .populate_to_root(path, &ui_context, &options)?;
     Ok(())
 }
 

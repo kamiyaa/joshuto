@@ -12,7 +12,6 @@ use crate::ui::PreviewArea;
 use crate::util::input;
 use crate::util::to_string::ToString;
 
-use std::path::{Path, PathBuf};
 use std::process;
 use std::thread;
 use termion::event::{Event, Key};
@@ -26,7 +25,11 @@ pub fn run(
     let curr_path = std::env::current_dir()?;
     {
         // Initialize an initial tab
-        let tab = JoshutoTab::new(curr_path, context.config_ref().display_options_ref())?;
+        let tab = JoshutoTab::new(
+            curr_path,
+            context.ui_context_ref(),
+            context.config_ref().display_options_ref(),
+        )?;
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child
@@ -36,27 +39,25 @@ pub fn run(
     let mut preview_area: Option<PreviewArea> = None;
 
     while context.quit == QuitType::DoNot {
-        backend.render(TuiView::new(context));
+        // do the ui
+        if let Ok(area) = backend.terminal_ref().size() {
+            // pre-calculate some ui attributes
+            calculate_ui_context(context, area);
 
-        {
-            let config = context.config_ref();
-            let preview_options = config.preview_options_ref();
-            if let Ok(area) = backend.terminal_ref().size() {
-                preview_area = process_preview_on_change(
-                    &context,
-                    area,
-                    preview_area,
-                    preview_options.preview_shown_hook_script.as_ref(),
-                    preview_options.preview_removed_hook_script.as_ref(),
-                );
-            }
+            // render the ui
+            backend.render(TuiView::new(context));
+
+            // invoke preview hooks, if appropriate
+            preview_area = process_preview_on_change(&context, preview_area);
         }
 
+        // wait for an event and pop it
         let event = match context.poll_event() {
             Ok(event) => event,
             Err(_) => return Ok(()), // TODO
         };
 
+        // handle the event
         match event {
             AppEvent::Termion(Event::Mouse(event)) => {
                 input::process_mouse(event, context, backend, &keymap_t);
@@ -106,34 +107,41 @@ pub fn run(
             }
             event => input::process_noninteractive(event, context),
         }
+
+        // update the file system supervisor that watches for changes in the FS
         context.update_watcher();
-    }
+    } // end of main loop
     Ok(())
 }
 
-fn process_preview_on_change(
-    context: &AppContext,
-    area: Rect,
-    old_preview_area: Option<PreviewArea>,
-    preview_shown_hook_script: Option<&PathBuf>,
-    preview_removed_hook_script: Option<&PathBuf>,
-) -> Option<PreviewArea> {
+fn calculate_ui_context(context: &mut AppContext, area: Rect) {
     let area = Rect {
         y: area.top() + 1,
         height: area.height - 2,
         ..area
     };
-
-    let constraints = views::get_constraints(&context);
     let config = context.config_ref();
     let display_options = config.display_options_ref();
+    let constraints = views::get_constraints(&context);
     let layout = if display_options.show_borders() {
         views::calculate_layout_with_borders(area, constraints)
     } else {
         views::calculate_layout(area, constraints)
     };
-    let new_preview_area = views::calculate_preview(&context, layout[2]);
+    context.ui_context_mut().layout = layout;
+}
 
+fn process_preview_on_change(
+    context: &AppContext,
+    old_preview_area: Option<PreviewArea>,
+) -> Option<PreviewArea> {
+    let config = context.config_ref();
+    let preview_options = config.preview_options_ref();
+
+    let preview_shown_hook_script = preview_options.preview_shown_hook_script.as_ref();
+    let preview_removed_hook_script = preview_options.preview_removed_hook_script.as_ref();
+    let layout = &context.ui_context_ref().layout;
+    let new_preview_area = views::calculate_preview(&context, layout[2]);
     match new_preview_area.as_ref() {
         Some(new) => {
             let should_preview = if let Some(old) = old_preview_area {

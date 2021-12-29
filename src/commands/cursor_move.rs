@@ -41,20 +41,23 @@ pub fn lazy_load_directory_size(context: &mut AppContext) {
 pub fn cursor_move(context: &mut AppContext, new_index: usize) {
     lazy_load_directory_size(context);
     let mut new_index = new_index;
+    let ui_context = context.ui_context_ref().clone();
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         if !curr_list.is_empty() {
             let dir_len = curr_list.len();
             if new_index >= dir_len {
                 new_index = dir_len - 1;
             }
-            curr_list.index = Some(new_index);
+            curr_list.set_index(Some(new_index), &ui_context);
         }
     }
 }
 
 pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => curr_list.index.map(|idx| if idx > u { idx - u } else { 0 }),
+        Some(curr_list) => curr_list
+            .get_index()
+            .map(|idx| if idx > u { idx - u } else { 0 }),
         None => None,
     };
 
@@ -66,7 +69,7 @@ pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
 
 pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => curr_list.index.map(|idx| idx + u),
+        Some(curr_list) => curr_list.get_index().map(|idx| idx + u),
         None => None,
     };
     if let Some(s) = movement {
@@ -135,9 +138,11 @@ pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRes
     let page_size = get_page_size(context, backend).unwrap_or(10);
 
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => curr_list
-            .index
-            .map(|idx| if idx > page_size { idx - page_size } else { 0 }),
+        Some(curr_list) => {
+            curr_list
+                .get_index()
+                .map(|idx| if idx > page_size { idx - page_size } else { 0 })
+        }
         None => None,
     };
 
@@ -153,7 +158,7 @@ pub fn page_down(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoR
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
             let dir_len = curr_list.len();
-            curr_list.index.map(|idx| {
+            curr_list.get_index().map(|idx| {
                 if idx + page_size > dir_len - 1 {
                     dir_len - 1
                 } else {

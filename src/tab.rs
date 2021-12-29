@@ -1,6 +1,7 @@
 use std::path;
 
 use crate::config::option::DisplayOption;
+use crate::context::UiContext;
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
 
@@ -17,9 +18,13 @@ pub struct JoshutoTab {
 }
 
 impl JoshutoTab {
-    pub fn new(cwd: path::PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
+    pub fn new(
+        cwd: path::PathBuf,
+        ui_context: &UiContext,
+        options: &DisplayOption,
+    ) -> std::io::Result<Self> {
         let mut history = JoshutoHistory::new();
-        history.populate_to_root(cwd.as_path(), options)?;
+        history.populate_to_root(cwd.as_path(), ui_context, options)?;
 
         Ok(Self { _cwd: cwd, history })
     }
@@ -51,7 +56,7 @@ impl JoshutoTab {
 
     pub fn child_list_ref(&self) -> Option<&JoshutoDirList> {
         let curr_list = self.curr_list_ref()?;
-        let index = curr_list.index?;
+        let index = curr_list.get_index()?;
         let path = curr_list.contents[index].file_path();
         self.history.get(path)
     }
@@ -69,7 +74,7 @@ impl JoshutoTab {
     pub fn child_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
         let child_path = {
             let curr_list = self.curr_list_ref()?;
-            let index = curr_list.index?;
+            let index = curr_list.get_index()?;
             curr_list.contents[index].file_path().to_path_buf()
         };
 

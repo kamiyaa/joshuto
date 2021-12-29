@@ -80,8 +80,9 @@ pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult<()
         };
 
         if let Some(index) = index {
+            let ui_context = context.ui_context_ref().clone();
             if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-                curr_list.index = Some(index);
+                curr_list.set_index(Some(index), &ui_context);
             }
         }
     }
