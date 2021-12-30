@@ -16,8 +16,6 @@ pub struct JoshutoDirList {
     index: Option<usize>,
     /// The index in this dir list to start with when rendering the list
     viewport_index: usize,
-    /// The height of the view-port when rendered last time, or 0 when not rendered yet
-    viewport_height: usize,
     _need_update: bool,
     scroll_offset: usize,
 }
@@ -36,7 +34,6 @@ impl JoshutoDirList {
             metadata,
             index,
             viewport_index: 0,
-            viewport_height: 0,
             _need_update: false,
             scroll_offset: options.scroll_offset(),
         }
@@ -60,7 +57,6 @@ impl JoshutoDirList {
             _need_update: false,
             index,
             viewport_index: 0,
-            viewport_height: 0,
             scroll_offset: options.scroll_offset(),
         })
     }
