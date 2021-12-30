@@ -154,9 +154,27 @@ pub fn create_dirlist_with_history(
             None => Some(0),
         }
     };
+    let viewport_index: usize = if contents_len == 0 {
+        0
+    } else {
+        match history.get(path) {
+            Some(dirlist) => match dirlist.first_index_for_viewport() {
+                i if i >= contents_len => contents_len - 1,
+                i => i,
+            },
+            None => 0,
+        }
+    };
 
     let metadata = JoshutoMetadata::from(path)?;
-    let dirlist = JoshutoDirList::new(path.to_path_buf(), contents, index, metadata, options);
+    let dirlist = JoshutoDirList::new(
+        path.to_path_buf(),
+        contents,
+        index,
+        viewport_index,
+        metadata,
+        options,
+    );
 
     Ok(dirlist)
 }

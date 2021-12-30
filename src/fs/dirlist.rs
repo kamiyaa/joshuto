@@ -25,6 +25,7 @@ impl JoshutoDirList {
         path: path::PathBuf,
         contents: Vec<JoshutoDirEntry>,
         index: Option<usize>,
+        viewport_index: usize,
         metadata: JoshutoMetadata,
         options: &DisplayOption,
     ) -> Self {
@@ -33,7 +34,7 @@ impl JoshutoDirList {
             contents,
             metadata,
             index,
-            viewport_index: 0,
+            viewport_index,
             _need_update: false,
             scroll_offset: options.scroll_offset(),
         }
@@ -56,7 +57,7 @@ impl JoshutoDirList {
             metadata,
             _need_update: false,
             index,
-            viewport_index: 0,
+            viewport_index: if let Some(ix) = index { ix } else { 0 },
             scroll_offset: options.scroll_offset(),
         })
     }
