@@ -173,7 +173,6 @@ pub fn create_dirlist_with_history(
         index,
         viewport_index,
         metadata,
-        options,
     );
 
     Ok(dirlist)

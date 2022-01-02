@@ -26,7 +26,6 @@ impl JoshutoDirList {
         index: Option<usize>,
         viewport_index: usize,
         metadata: JoshutoMetadata,
-        options: &DisplayOption,
     ) -> Self {
         Self {
             path,
