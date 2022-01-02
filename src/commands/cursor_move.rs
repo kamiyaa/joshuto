@@ -42,13 +42,14 @@ pub fn cursor_move(context: &mut AppContext, new_index: usize) {
     lazy_load_directory_size(context);
     let mut new_index = new_index;
     let ui_context = context.ui_context_ref().clone();
+    let display_options = context.config_ref().display_options_ref().clone();
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         if !curr_list.is_empty() {
             let dir_len = curr_list.len();
             if new_index >= dir_len {
                 new_index = dir_len - 1;
             }
-            curr_list.set_index(Some(new_index), &ui_context);
+            curr_list.set_index(Some(new_index), &ui_context, &display_options);
         }
     }
 }

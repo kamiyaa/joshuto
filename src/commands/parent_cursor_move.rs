@@ -9,6 +9,7 @@ pub fn parent_cursor_move(context: &mut AppContext, new_index: usize) -> Joshuto
 
     {
         let ui_context = context.ui_context_ref().clone();
+        let display_options = context.config_ref().display_options_ref().clone();
         let curr_tab = context.tab_context_mut().curr_tab_mut();
         if let Some(curr_list) = curr_tab.parent_list_mut() {
             if curr_list.get_index().is_some() {
@@ -19,7 +20,7 @@ pub fn parent_cursor_move(context: &mut AppContext, new_index: usize) -> Joshuto
                 let entry = &curr_list.contents[new_index];
                 if entry.file_path().is_dir() {
                     path = Some(entry.file_path().to_path_buf());
-                    curr_list.set_index(Some(new_index), &ui_context);
+                    curr_list.set_index(Some(new_index), &ui_context, &display_options);
                 }
             }
         }

@@ -17,7 +17,6 @@ pub struct JoshutoDirList {
     /// The index in this dir list to start with when rendering the list
     viewport_index: usize,
     _need_update: bool,
-    scroll_offset: usize,
 }
 
 impl JoshutoDirList {
@@ -36,7 +35,6 @@ impl JoshutoDirList {
             index,
             viewport_index,
             _need_update: false,
-            scroll_offset: options.scroll_offset(),
         }
     }
 
@@ -58,7 +56,6 @@ impl JoshutoDirList {
             _need_update: false,
             index,
             viewport_index: if let Some(ix) = index { ix } else { 0 },
-            scroll_offset: options.scroll_offset(),
         })
     }
 
@@ -66,17 +63,17 @@ impl JoshutoDirList {
         self.index
     }
 
-    fn update_viewport(&mut self, ui_context: &UiContext) {
+    fn update_viewport(&mut self, ui_context: &UiContext, options: &DisplayOption) {
         if let Some(ix) = self.index {
             let height = ui_context.layout[0].height as usize;
 
             // get scroll buffer size, corrected in case of too small terminal
             let scroll_offset = if height < 4 {
                 0
-            } else if self.scroll_offset * 2 > height - 1 {
+            } else if options.scroll_offset() * 2 > height - 1 {
                 height / 2 - 1
             } else {
-                self.scroll_offset
+                options.scroll_offset()
             };
 
             // calculate viewport
@@ -93,13 +90,18 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn set_index(&mut self, index: Option<usize>, ui_context: &UiContext) {
+    pub fn set_index(
+        &mut self,
+        index: Option<usize>,
+        ui_context: &UiContext,
+        options: &DisplayOption,
+    ) {
         if index == self.index {
             return;
         }
         self.index = index;
         if ui_context.layout.len() != 0 {
-            self.update_viewport(ui_context);
+            self.update_viewport(ui_context, options);
         }
     }
 
