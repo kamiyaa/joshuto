@@ -44,7 +44,7 @@ pub fn load_preview(context: &mut AppContext, backend: &mut TuiBackend) {
     let curr_tab = context.tab_context_ref().curr_tab_ref();
     match curr_tab.curr_list_ref() {
         Some(curr_list) => {
-            if let Some(index) = curr_list.index {
+            if let Some(index) = curr_list.get_index() {
                 let entry = &curr_list.contents[index];
                 load_list.push((entry.file_path().to_path_buf(), entry.metadata.clone()));
             }

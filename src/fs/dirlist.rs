@@ -1,7 +1,9 @@
+use std::cmp;
 use std::path;
 use std::slice::{Iter, IterMut};
 
 use crate::config::option::DisplayOption;
+use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::history::read_directory;
 
@@ -10,8 +12,10 @@ pub struct JoshutoDirList {
     path: path::PathBuf,
     pub contents: Vec<JoshutoDirEntry>,
     pub metadata: JoshutoMetadata,
-    pub index: Option<usize>,
-    pub viewport_index: usize,
+    /// The cursor position in this dir list
+    index: Option<usize>,
+    /// The index in this dir list to start with when rendering the list
+    viewport_index: usize,
     _need_update: bool,
 }
 
@@ -20,6 +24,7 @@ impl JoshutoDirList {
         path: path::PathBuf,
         contents: Vec<JoshutoDirEntry>,
         index: Option<usize>,
+        viewport_index: usize,
         metadata: JoshutoMetadata,
     ) -> Self {
         Self {
@@ -27,7 +32,7 @@ impl JoshutoDirList {
             contents,
             metadata,
             index,
-            viewport_index: 0,
+            viewport_index,
             _need_update: false,
         }
     }
@@ -41,17 +46,6 @@ impl JoshutoDirList {
 
         let index = if contents.is_empty() { None } else { Some(0) };
 
-        let viewport_index = match index {
-            None => 0,
-            Some(index) => {
-                if index < options.scroll_offset() {
-                    0
-                } else {
-                    index - options.scroll_offset()
-                }
-            }
-        };
-
         let metadata = JoshutoMetadata::from(&path)?;
 
         Ok(Self {
@@ -60,8 +54,54 @@ impl JoshutoDirList {
             metadata,
             _need_update: false,
             index,
-            viewport_index,
+            viewport_index: if let Some(ix) = index { ix } else { 0 },
         })
+    }
+
+    pub fn get_index(&self) -> Option<usize> {
+        self.index
+    }
+
+    fn update_viewport(&mut self, ui_context: &UiContext, options: &DisplayOption) {
+        if let Some(ix) = self.index {
+            let height = ui_context.layout[0].height as usize;
+
+            // get scroll buffer size, corrected in case of too small terminal
+            let scroll_offset = if height < 4 {
+                0
+            } else if options.scroll_offset() * 2 > height - 1 {
+                height / 2 - 1
+            } else {
+                options.scroll_offset()
+            };
+
+            // calculate viewport
+            let viewport_end = self.viewport_index + height;
+            if (viewport_end as i16 - ix as i16 - 1) < scroll_offset as i16 {
+                // cursor too low
+                self.viewport_index = (ix + scroll_offset - height + 1) as usize;
+            } else if (ix as i16 - self.viewport_index as i16) < scroll_offset as i16 {
+                // cursor too high
+                self.viewport_index = cmp::max(ix as i16 - scroll_offset as i16, 0) as usize;
+            }
+        } else {
+            self.viewport_index = 0;
+        }
+    }
+
+    pub fn set_index(
+        &mut self,
+        index: Option<usize>,
+        ui_context: &UiContext,
+        options: &DisplayOption,
+    ) {
+        if index == self.index {
+            return;
+        }
+        self.index = index;
+        if ui_context.layout.len() != 0 {
+            self.update_viewport(ui_context, options);
+        }
     }
 
     pub fn iter(&self) -> Iter<JoshutoDirEntry> {
@@ -138,15 +178,9 @@ impl JoshutoDirList {
         self.get_curr_mut_(self.index?)
     }
 
-    /// For a given number of entries, visible in a UI, this method returns the index of the entry
-    /// with which the UI should start to list the entries.
-    ///
-    /// This method assures that the cursor is always in the viewport of the UI.
-    pub fn first_index_for_viewport(&self, viewport_height: usize) -> usize {
-        match self.index {
-            Some(index) => index / viewport_height as usize * viewport_height as usize,
-            None => 0,
-        }
+    /// Returns the index of the first entry to be printed in a UI dir list
+    pub fn first_index_for_viewport(&self) -> usize {
+        self.viewport_index
     }
 
     fn get_curr_mut_(&mut self, index: usize) -> Option<&mut JoshutoDirEntry> {

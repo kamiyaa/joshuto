@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::sync::mpsc;
+use tui::layout::Rect;
 
 use crate::config;
 use crate::context::{
@@ -18,6 +19,11 @@ pub enum QuitType {
     Force,
     ToCurrentDirectory,
     ChooseFiles,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct UiContext {
+    pub layout: Vec<Rect>,
 }
 
 pub struct AppContext {
@@ -42,6 +48,8 @@ pub struct AppContext {
     preview_context: PreviewContext,
     // context related to command line
     commandline_context: CommandLineContext,
+    // user interface context; data which is input to both, the UI rendering and the app state
+    ui_context: UiContext,
     // filesystem watcher to inform about changes in shown directories
     #[cfg(target_os = "linux")]
     watcher: notify::INotifyWatcher,
@@ -81,6 +89,7 @@ impl AppContext {
             message_queue: MessageQueue::new(),
             worker_context: WorkerContext::new(event_tx),
             preview_context: PreviewContext::new(),
+            ui_context: UiContext { layout: vec![] },
             commandline_context,
             config,
             watcher,
@@ -170,6 +179,13 @@ impl AppContext {
     }
     pub fn preview_context_mut(&mut self) -> &mut PreviewContext {
         &mut self.preview_context
+    }
+
+    pub fn ui_context_ref(&self) -> &UiContext {
+        &self.ui_context
+    }
+    pub fn ui_context_mut(&mut self) -> &mut UiContext {
+        &mut self.ui_context
     }
 
     pub fn worker_context_ref(&self) -> &WorkerContext {

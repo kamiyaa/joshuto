@@ -4,7 +4,6 @@ This file is for general configurations.
 All options available and their default values:
 ```toml
 # This is for configuring how many items to reach before 'scrolling' the view
-# CURRENTLY DOES NOT WORK
 scroll_offset = 6
 
 # If joshuto does not know how to open the file, it can resort to opening it via xdg settings

@@ -32,8 +32,8 @@ impl<'a> Widget for TuiDirList<'a> {
             return;
         }
 
-        let curr_index = self.dirlist.index.unwrap();
-        let skip_dist = self.dirlist.first_index_for_viewport(area.height as usize);
+        let curr_index = self.dirlist.get_index().unwrap();
+        let skip_dist = self.dirlist.first_index_for_viewport();
 
         let drawing_width = area.width as usize;
 
@@ -43,26 +43,21 @@ impl<'a> Widget for TuiDirList<'a> {
             .enumerate()
             .take(area.height as usize)
             .for_each(|(i, entry)| {
-                let style = style::entry_style(entry);
+                let ix = skip_dist + i;
+
+                let style = if ix == curr_index {
+                    style::entry_style(entry).add_modifier(Modifier::REVERSED)
+                } else {
+                    style::entry_style(entry)
+                };
+
+                if ix == curr_index {
+                    let space_fill = " ".repeat(drawing_width);
+                    buf.set_string(x, y + i as u16, space_fill.as_str(), style);
+                }
+
                 print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width - 1);
             });
-
-        // draw selected entry in a different style
-        let screen_index = curr_index % area.height as usize;
-
-        let entry = self.dirlist.curr_entry_ref().unwrap();
-        let style = style::entry_style(entry).add_modifier(Modifier::REVERSED);
-
-        let space_fill = " ".repeat(drawing_width);
-        buf.set_string(x, y + screen_index as u16, space_fill.as_str(), style);
-
-        print_entry(
-            buf,
-            entry,
-            style,
-            (x + 1, y + screen_index as u16),
-            drawing_width - 1,
-        );
     }
 }
 

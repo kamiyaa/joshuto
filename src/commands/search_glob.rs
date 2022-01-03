@@ -10,7 +10,7 @@ use super::cursor_move;
 pub fn search_glob_fwd(curr_tab: &JoshutoTab, glob: &GlobMatcher) -> Option<usize> {
     let curr_list = curr_tab.curr_list_ref()?;
 
-    let offset = curr_list.index? + 1;
+    let offset = curr_list.get_index()? + 1;
     let contents_len = curr_list.len();
     for i in 0..contents_len {
         let file_name = curr_list.contents[(offset + i) % contents_len].file_name();
@@ -23,7 +23,7 @@ pub fn search_glob_fwd(curr_tab: &JoshutoTab, glob: &GlobMatcher) -> Option<usiz
 pub fn search_glob_rev(curr_tab: &JoshutoTab, glob: &GlobMatcher) -> Option<usize> {
     let curr_list = curr_tab.curr_list_ref()?;
 
-    let offset = curr_list.index?;
+    let offset = curr_list.get_index()?;
     let contents_len = curr_list.len();
     for i in (0..contents_len).rev() {
         let file_name = curr_list.contents[(offset + i) % contents_len].file_name();

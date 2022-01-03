@@ -96,7 +96,11 @@ pub fn new_tab_home_path(context: &AppContext) -> path::PathBuf {
 pub fn new_tab(context: &mut AppContext) -> JoshutoResult<()> {
     let new_tab_path = new_tab_home_path(context);
 
-    let tab = JoshutoTab::new(new_tab_path, context.config_ref().display_options_ref())?;
+    let tab = JoshutoTab::new(
+        new_tab_path,
+        context.ui_context_ref(),
+        context.config_ref().display_options_ref(),
+    )?;
     context.tab_context_mut().push_tab(tab);
     let new_index = context.tab_context_ref().len() - 1;
     context.tab_context_mut().index = new_index;

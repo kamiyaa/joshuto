@@ -22,7 +22,7 @@ impl<'a> TuiFooter<'a> {
 impl<'a> Widget for TuiFooter<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         use std::os::unix::fs::PermissionsExt;
-        match self.dirlist.index {
+        match self.dirlist.get_index() {
             Some(i) if i < self.dirlist.len() => {
                 let entry = &self.dirlist.contents[i];
 

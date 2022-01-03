@@ -37,7 +37,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
 
         let x = area.left();
         let y = area.top();
-        let curr_index = match self.dirlist.index {
+        let curr_index = match self.dirlist.get_index() {
             Some(i) => i,
             None => {
                 let style = Style::default().bg(Color::Red).fg(Color::White);
@@ -47,8 +47,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         };
 
         let drawing_width = area.width as usize;
-        let skip_dist = self.dirlist.first_index_for_viewport(area.height as usize);
-        let screen_index = curr_index % area.height as usize;
+        let skip_dist = self.dirlist.first_index_for_viewport();
         let line_num_style = self.display_options.line_nums();
         // Length (In chars) of the last entry's index on current page.
         // Using this to align all elements
@@ -64,19 +63,37 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             .enumerate()
             .take(area.height as usize)
             .for_each(|(i, entry)| {
-                let style = style::entry_style(entry);
+                let ix = skip_dist + i;
 
-                let line_number_string = match line_num_style {
-                    LineNumberStyle::Absolute => {
-                        format!("{:1$} ", skip_dist + i + 1, max_index_length)
-                    }
-                    LineNumberStyle::Relative => format!(
-                        "{:1$} ",
-                        (screen_index as i16 - i as i16).abs(),
-                        max_index_length
-                    ),
-                    LineNumberStyle::None => String::new(),
+                let style = if ix == curr_index {
+                    style::entry_style(entry).add_modifier(Modifier::REVERSED)
+                } else {
+                    style::entry_style(entry)
                 };
+
+                let line_number_string = if ix == curr_index {
+                    match line_num_style {
+                        LineNumberStyle::None => "".to_string(),
+                        _ => format!("{:<1$} ", curr_index + 1, max_index_length),
+                    }
+                } else {
+                    match line_num_style {
+                        LineNumberStyle::Absolute => {
+                            format!("{:1$} ", ix + 1, max_index_length)
+                        }
+                        LineNumberStyle::Relative => format!(
+                            "{:1$} ",
+                            (curr_index as i16 - ix as i16).abs(),
+                            max_index_length
+                        ),
+                        LineNumberStyle::None => String::new(),
+                    }
+                };
+
+                if ix == curr_index {
+                    let space_fill = " ".repeat(drawing_width);
+                    buf.set_string(x, y + i as u16, space_fill.as_str(), style);
+                }
 
                 print_entry(
                     buf,
@@ -87,27 +104,6 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     line_number_string,
                 );
             });
-
-        // draw selected entry in a different style
-        let entry = self.dirlist.curr_entry_ref().unwrap();
-        let style = style::entry_style(entry).add_modifier(Modifier::REVERSED);
-
-        let space_fill = " ".repeat(drawing_width);
-        buf.set_string(x, y + screen_index as u16, space_fill.as_str(), style);
-
-        let line_number_string = match line_num_style {
-            LineNumberStyle::None => "".to_string(),
-            _ => format!("{:<1$} ", curr_index + 1, max_index_length),
-        };
-
-        print_entry(
-            buf,
-            entry,
-            style,
-            (x + 1, y + screen_index as u16),
-            drawing_width - 1,
-            line_number_string,
-        );
     }
 }
 
