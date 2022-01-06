@@ -5,7 +5,11 @@ pub const CMD_QUIT_TO_CURRENT_DIRECTORY: &str = "quit_to_cwd";
 pub const CMD_FORCE_QUIT: &str = "force_quit";
 
 pub const CMD_BULK_RENAME: &str = "bulk_rename";
+
 pub const CMD_CHANGE_DIRECTORY: &str = "cd";
+pub const CMD_PARENT_DIRECTORY: &str = "cd ..";
+pub const CMD_PREVIOUS_DIRECTORY: &str = "cd -";
+
 pub const CMD_NEW_TAB: &str = "new_tab";
 pub const CMD_CLOSE_TAB: &str = "close_tab";
 pub const CMD_COMMAND_LINE: &str = ":";
@@ -30,7 +34,6 @@ pub const CMD_DELETE_FILES: &str = "delete_files";
 pub const CMD_NEW_DIRECTORY: &str = "mkdir";
 pub const CMD_OPEN_FILE: &str = "open";
 pub const CMD_OPEN_FILE_WITH: &str = "open_with";
-pub const CMD_PARENT_DIRECTORY: &str = "cd ..";
 pub const CMD_RELOAD_DIRECTORY_LIST: &str = "reload_dirlist";
 pub const CMD_RENAME_FILE: &str = "rename";
 pub const CMD_RENAME_FILE_APPEND: &str = "rename_append";

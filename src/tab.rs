@@ -15,6 +15,8 @@ pub enum TabHomePage {
 pub struct JoshutoTab {
     history: JoshutoHistory,
     _cwd: path::PathBuf,
+    // history is just a HashMap, so we have this property to store last workdir
+    _previous_dir: Option<path::PathBuf>,
 }
 
 impl JoshutoTab {
@@ -26,7 +28,11 @@ impl JoshutoTab {
         let mut history = JoshutoHistory::new();
         history.populate_to_root(cwd.as_path(), ui_context, options)?;
 
-        Ok(Self { _cwd: cwd, history })
+        Ok(Self {
+            history,
+            _cwd: cwd,
+            _previous_dir: None,
+        })
     }
 
     pub fn cwd(&self) -> &path::Path {
@@ -34,7 +40,16 @@ impl JoshutoTab {
     }
 
     pub fn set_cwd(&mut self, cwd: &path::Path) {
+        self._previous_dir = Some(self._cwd.to_path_buf());
         self._cwd = cwd.to_path_buf();
+    }
+
+    pub fn previous_dir(&self) -> Option<&path::Path> {
+        // This converts PathBuf to Path
+        match &self._previous_dir {
+            Some(path) => Some(path),
+            None => None,
+        }
     }
 
     pub fn history_ref(&self) -> &JoshutoHistory {
