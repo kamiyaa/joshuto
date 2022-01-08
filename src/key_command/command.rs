@@ -6,7 +6,11 @@ use crate::io::IoWorkerOptions;
 #[derive(Clone, Debug)]
 pub enum Command {
     BulkRename,
+
     ChangeDirectory(path::PathBuf),
+    ParentDirectory,
+    PreviousDirectory,
+
     CommandLine(String, String),
 
     CutFiles,
@@ -36,7 +40,6 @@ pub enum Command {
     NewDirectory(path::PathBuf),
     OpenFile,
     OpenFileWith(Option<usize>),
-    ParentDirectory,
 
     Quit,
     QuitToCurrentDirectory,

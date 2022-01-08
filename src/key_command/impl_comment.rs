@@ -8,7 +8,11 @@ impl CommandComment for Command {
     fn comment(&self) -> &'static str {
         match self {
             Self::BulkRename => "Bulk rename",
+
             Self::ChangeDirectory(_) => "Change directory",
+            Self::ParentDirectory => "CD to parent directory",
+            Self::PreviousDirectory => "CD to the last dir in history",
+
             Self::NewTab => "Open a new tab",
             Self::CloseTab => "Close current tab",
             Self::CommandLine(command, _) => match command.trim() {
@@ -53,7 +57,6 @@ impl CommandComment for Command {
             Self::NewDirectory(_) => "Make a new directory",
             Self::OpenFile => "Open a file",
             Self::OpenFileWith(_) => "Open using selected program",
-            Self::ParentDirectory => "CD to parent directory",
 
             Self::Quit => "Quit the program",
             Self::QuitToCurrentDirectory => "Quit to current directory",

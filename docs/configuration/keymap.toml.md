@@ -122,6 +122,7 @@ function joshuto() {
  - `cd`: change directory
    - `cd ..`: go to parent directory
    - `cd ~`: go to home directory
+   - `cd -`: go to previous directory in history (If it exists)
  - `open`: open file or directory
    - if joshuto does not know how to open the file format (via extension currently),
    it will prompt `:open_with ` to open with a specific command

@@ -15,10 +15,14 @@ impl AppExecute for Command {
     ) -> JoshutoResult<()> {
         match &*self {
             Self::BulkRename => bulk_rename::bulk_rename(context, backend),
+
             Self::ChangeDirectory(p) => {
                 change_directory::change_directory(context, p.as_path())?;
                 Ok(())
             }
+            Self::ParentDirectory => change_directory::parent_directory(context),
+            Self::PreviousDirectory => change_directory::previous_directory(context),
+
             Self::NewTab => tab_ops::new_tab(context),
             Self::CloseTab => tab_ops::close_tab(context),
             Self::CommandLine(p, s) => {
@@ -55,7 +59,6 @@ impl AppExecute for Command {
             Self::OpenFile => open_file::open(context, backend),
             Self::OpenFileWith(None) => open_file::open_with_interactive(context, backend),
             Self::OpenFileWith(Some(i)) => open_file::open_with_index(context, backend, *i),
-            Self::ParentDirectory => parent_directory::parent_directory(context),
 
             Self::Quit => quit::quit(context),
             Self::QuitToCurrentDirectory => quit::quit_to_current_directory(context),

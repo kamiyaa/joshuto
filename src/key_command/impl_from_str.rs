@@ -92,6 +92,7 @@ impl std::str::FromStr for Command {
                     )),
                 },
                 ".." => Ok(Self::ParentDirectory),
+                "-" => Ok(Self::PreviousDirectory),
                 arg => Ok({
                     let path_accepts_tilde = tilde_with_context(arg, home_dir);
                     Self::ChangeDirectory(path::PathBuf::from(path_accepts_tilde.as_ref()))

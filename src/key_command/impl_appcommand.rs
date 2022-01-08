@@ -11,7 +11,11 @@ impl AppCommand for Command {
             Self::ForceQuit => CMD_FORCE_QUIT,
 
             Self::BulkRename => CMD_BULK_RENAME,
+
             Self::ChangeDirectory(_) => CMD_CHANGE_DIRECTORY,
+            Self::ParentDirectory => CMD_PARENT_DIRECTORY,
+            Self::PreviousDirectory => CMD_PREVIOUS_DIRECTORY,
+
             Self::NewTab => CMD_NEW_TAB,
             Self::CloseTab => CMD_CLOSE_TAB,
             Self::CommandLine(_, _) => CMD_COMMAND_LINE,
@@ -41,7 +45,6 @@ impl AppCommand for Command {
             Self::NewDirectory(_) => CMD_NEW_DIRECTORY,
             Self::OpenFile => CMD_OPEN_FILE,
             Self::OpenFileWith(_) => CMD_OPEN_FILE_WITH,
-            Self::ParentDirectory => CMD_PARENT_DIRECTORY,
 
             Self::ReloadDirList => CMD_RELOAD_DIRECTORY_LIST,
             Self::RenameFile(_) => CMD_RENAME_FILE,

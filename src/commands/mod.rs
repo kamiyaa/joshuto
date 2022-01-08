@@ -10,7 +10,6 @@ pub mod new_directory;
 pub mod numbered_command;
 pub mod open_file;
 pub mod parent_cursor_move;
-pub mod parent_directory;
 pub mod preview_cursor_move;
 pub mod quit;
 pub mod reload;
