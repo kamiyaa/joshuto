@@ -1,10 +1,10 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use tui::style::{Color, Modifier};
-
+use super::DEFAULT_CONFIG_FILE_PATH;
 use super::{AppStyle, RawAppStyle};
 use crate::config::{parse_to_config_file, TomlConfigFile};
+use crate::error::JoshutoResult;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AppThemeCrude {
@@ -84,6 +84,13 @@ pub struct AppTheme {
     pub ext: HashMap<String, AppStyle>,
 }
 
+impl AppTheme {
+    pub fn default_res() -> JoshutoResult<Self> {
+        let crude: AppThemeCrude = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
+        Ok(Self::from(crude))
+    }
+}
+
 impl TomlConfigFile for AppTheme {
     fn get_config(file_name: &str) -> Self {
         parse_to_config_file::<AppThemeCrude, AppTheme>(file_name).unwrap_or_else(Self::default)
@@ -92,36 +99,8 @@ impl TomlConfigFile for AppTheme {
 
 impl std::default::Default for AppTheme {
     fn default() -> Self {
-        let selection = AppStyle::default()
-            .set_fg(Color::LightYellow)
-            .insert(Modifier::BOLD);
-        let executable = AppStyle::default()
-            .set_fg(Color::LightGreen)
-            .insert(Modifier::BOLD);
-        let regular = AppStyle::default().set_fg(Color::White);
-        let directory = AppStyle::default()
-            .set_fg(Color::LightBlue)
-            .insert(Modifier::BOLD);
-        let link = AppStyle::default()
-            .set_fg(Color::LightCyan)
-            .insert(Modifier::BOLD);
-        let link_invalid = AppStyle::default()
-            .set_fg(Color::Red)
-            .insert(Modifier::BOLD);
-        let socket = AppStyle::default()
-            .set_fg(Color::LightMagenta)
-            .insert(Modifier::BOLD);
-        let ext = HashMap::new();
-
-        Self {
-            selection,
-            executable,
-            regular,
-            directory,
-            link,
-            link_invalid,
-            socket,
-            ext,
-        }
+        // This should not fail.
+        // If it fails then there is a (syntax) error in the default config file
+        Self::default_res().unwrap()
     }
 }

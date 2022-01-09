@@ -1,4 +1,8 @@
+use super::DEFAULT_CONFIG_FILE_PATH;
+
+use super::app_crude::AppConfigCrude;
 use crate::config::option::{DisplayOption, PreviewOption, SortOption, TabOption};
+use crate::error::JoshutoResult;
 
 #[derive(Debug, Clone)]
 pub struct AppConfig {
@@ -10,6 +14,11 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
+    pub fn default_res() -> JoshutoResult<Self> {
+        let crude: AppConfigCrude = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
+        Ok(Self::from(crude))
+    }
+
     pub fn display_options_ref(&self) -> &DisplayOption {
         &self._display_options
     }
@@ -38,12 +47,8 @@ impl AppConfig {
 
 impl std::default::Default for AppConfig {
     fn default() -> Self {
-        Self {
-            use_trash: true,
-            xdg_open: false,
-            _display_options: DisplayOption::default(),
-            _preview_options: PreviewOption::default(),
-            _tab_options: TabOption::default(),
-        }
+        // This should not fail.
+        // If it fails then there is a (syntax) error in the default config file
+        Self::default_res().unwrap()
     }
 }

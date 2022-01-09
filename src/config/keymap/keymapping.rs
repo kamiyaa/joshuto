@@ -13,7 +13,7 @@ use crate::error::JoshutoResult;
 use crate::key_command::{Command, CommandKeybind};
 use crate::util::keyparse::str_to_event;
 
-use super::default_keymap::DEFAULT_KEYMAP;
+use super::DEFAULT_CONFIG_FILE_PATH;
 
 #[derive(Debug, Deserialize)]
 struct CommandKeymap {
@@ -40,7 +40,7 @@ impl AppKeyMapping {
     }
 
     pub fn default_res() -> JoshutoResult<Self> {
-        let crude: AppKeyMappingCrude = toml::from_str(DEFAULT_KEYMAP)?;
+        let crude: AppKeyMappingCrude = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
         let keymapping: Self = Self::from(crude);
         Ok(keymapping)
     }
@@ -99,6 +99,8 @@ impl TomlConfigFile for AppKeyMapping {
 
 impl std::default::Default for AppKeyMapping {
     fn default() -> Self {
+        // This should not fail.
+        // If it fails then there is a (syntax) error in the default config file
         AppKeyMapping::default_res().unwrap()
     }
 }

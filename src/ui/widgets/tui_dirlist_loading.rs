@@ -1,12 +1,7 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Color, Style};
 use tui::widgets::Widget;
-use unicode_width::UnicodeWidthStr;
-
-use crate::fs::{JoshutoDirEntry, JoshutoDirList};
-use crate::ui::widgets::trim_file_label;
-use crate::util::style;
 
 pub struct TuiDirListLoading;
 
