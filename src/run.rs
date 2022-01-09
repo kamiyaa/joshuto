@@ -166,7 +166,7 @@ fn process_preview_on_change(
             }
         }
         None => {
-            if let Some(hook_script) = preview_shown_hook_script {
+            if let Some(hook_script) = preview_removed_hook_script {
                 let hook_script = hook_script.to_path_buf();
                 let _ = thread::spawn(|| {
                     let _ = process::Command::new(hook_script).status();
