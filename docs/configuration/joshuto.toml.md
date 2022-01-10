@@ -12,8 +12,10 @@ xdg_open = false
 # Use system trash can instead of permanently removing files
 use_trash = true
 
+# Watch for filesystem changes and update directory listings accordingly
+watch_files = true
+
 # The maximum file size to show a preview for
-# CURRENTLY DOES NOT WORK
 max_preview_size = 2097152 # 2MB
 
 # Configurations related to the display

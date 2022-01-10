@@ -8,6 +8,7 @@ use crate::error::JoshutoResult;
 pub struct AppConfig {
     pub use_trash: bool,
     pub xdg_open: bool,
+    pub watch_files: bool,
     pub _display_options: DisplayOption,
     pub _preview_options: PreviewOption,
     pub _tab_options: TabOption,

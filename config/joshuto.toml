@@ -1,5 +1,6 @@
 xdg_open = false
 use_trash = true
+watch_files = true
 
 [display]
 automatically_count_files = false

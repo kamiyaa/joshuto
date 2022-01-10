@@ -109,7 +109,9 @@ pub fn run(
         }
 
         // update the file system supervisor that watches for changes in the FS
-        context.update_watcher();
+        if context.config_ref().watch_files {
+            context.update_watcher();
+        }
     } // end of main loop
     Ok(())
 }
