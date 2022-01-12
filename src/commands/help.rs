@@ -27,6 +27,9 @@ pub fn help_loop(
         } else {
             widgets::get_keymap_table(keymap_t, &search_query[1..], sort_by)
         };
+
+        context.invoke_preview_removed_hook();
+
         backend.render(TuiHelp::new(&keymap, &mut offset, &search_query));
 
         let event = match context.poll_event() {

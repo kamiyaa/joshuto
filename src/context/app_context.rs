@@ -1,5 +1,7 @@
 use std::collections::HashSet;
+use std::process;
 use std::sync::mpsc;
+use std::thread;
 use tui::layout::Rect;
 
 use crate::config;
@@ -7,6 +9,8 @@ use crate::context::{
     CommandLineContext, LocalStateContext, MessageQueue, PreviewContext, TabContext, WorkerContext,
 };
 use crate::event::{AppEvent, Events};
+use crate::ui::views;
+use crate::ui::PreviewArea;
 use crate::util::search::SearchPattern;
 use crate::Args;
 use notify::{RecursiveMode, Watcher};
@@ -59,6 +63,9 @@ pub struct AppContext {
     watcher: notify::NullWatcher,
     // list of watched paths; seems not to be possible to get them from a notify::Watcher
     watched_paths: HashSet<path::PathBuf>,
+    // the last preview area (or None if now preview shown) to check if a preview hook script needs
+    // to be called
+    preview_area: Option<PreviewArea>,
 }
 
 impl AppContext {
@@ -94,6 +101,61 @@ impl AppContext {
             config,
             watcher,
             watched_paths,
+            preview_area: None,
+        }
+    }
+
+    fn call_preview_shown_hook(&self, preview_area: PreviewArea) {
+        let preview_options = self.config_ref().preview_options_ref();
+        let preview_shown_hook_script = preview_options.preview_shown_hook_script.as_ref();
+        if let Some(hook_script) = preview_shown_hook_script {
+            let hook_script = hook_script.to_path_buf();
+            let _ = thread::spawn(move || {
+                let _ = process::Command::new(hook_script.as_path())
+                    .arg(preview_area.file_preview_path.as_path())
+                    .arg(preview_area.preview_area.x.to_string())
+                    .arg(preview_area.preview_area.y.to_string())
+                    .arg(preview_area.preview_area.width.to_string())
+                    .arg(preview_area.preview_area.height.to_string())
+                    .status();
+            });
+        }
+    }
+
+    fn call_preview_removed_hook(&self) {
+        let preview_options = self.config_ref().preview_options_ref();
+        let preview_removed_hook_script = preview_options.preview_removed_hook_script.as_ref();
+        if let Some(hook_script) = preview_removed_hook_script {
+            let hook_script = hook_script.to_path_buf();
+            let _ = thread::spawn(|| {
+                let _ = process::Command::new(hook_script).status();
+            });
+        }
+    }
+
+    pub fn invoke_preview_hook_scripts(&mut self) {
+        let layout = &self.ui_context_ref().layout;
+        let new_preview_area = views::calculate_preview(self, layout[2]);
+        match new_preview_area.as_ref() {
+            Some(new) => {
+                let should_preview = if let Some(old) = &self.preview_area {
+                    new.file_preview_path != old.file_preview_path
+                } else {
+                    true
+                };
+                if should_preview {
+                    self.call_preview_shown_hook(new.clone())
+                }
+            }
+            None => self.call_preview_removed_hook(),
+        }
+        self.preview_area = new_preview_area
+    }
+
+    pub fn invoke_preview_removed_hook(&mut self) {
+        if let Some(_) = &self.preview_area {
+            self.call_preview_removed_hook();
+            self.preview_area = None;
         }
     }
 
