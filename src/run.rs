@@ -43,7 +43,7 @@ pub fn run(
             backend.render(TuiView::new(context));
 
             // invoke preview hooks, if appropriate
-            context.invoke_preview_hook_scripts();
+            context.update_external_preview();
         }
 
         // wait for an event and pop it

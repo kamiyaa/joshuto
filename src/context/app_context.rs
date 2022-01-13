@@ -105,6 +105,10 @@ impl AppContext {
         }
     }
 
+    /// Calls the "preview shown hook script" if it's configured.
+    ///
+    /// This method takes the current preview area as argument to check for both, the path of the
+    /// currently previewed file and the geometry of the preview area.
     fn call_preview_shown_hook(&self, preview_area: PreviewArea) {
         let preview_options = self.config_ref().preview_options_ref();
         let preview_shown_hook_script = preview_options.preview_shown_hook_script.as_ref();
@@ -122,6 +126,7 @@ impl AppContext {
         }
     }
 
+    /// Calls the "preview removed hook script" if it's configured.
     fn call_preview_removed_hook(&self) {
         let preview_options = self.config_ref().preview_options_ref();
         let preview_removed_hook_script = preview_options.preview_removed_hook_script.as_ref();
@@ -133,7 +138,17 @@ impl AppContext {
         }
     }
 
-    pub fn invoke_preview_hook_scripts(&mut self) {
+    /// Updates the external preview to the current preview in Joshuto.
+    ///
+    /// The function checks if the current preview content is the same as the preview content which
+    /// has been last communicated to an external preview logic with the preview hook scripts.
+    /// If the preview content has changed, one of the hook scripts is called. Either the "preview
+    /// shown hook", if a preview is shown in Joshuto, or the "preview removed hook", if Joshuto has
+    /// changed from an entry with preview to an entry without a preview.
+    ///
+    /// This function shall be called each time a change of Joshuto's preview can be expected.
+    /// (As of now, it's called in each cycle of the main loop.)
+    pub fn update_external_preview(&mut self) {
         let layout = &self.ui_context_ref().layout;
         let new_preview_area = views::calculate_preview(self, layout[2]);
         match new_preview_area.as_ref() {
@@ -152,13 +167,25 @@ impl AppContext {
         self.preview_area = new_preview_area
     }
 
-    pub fn invoke_preview_removed_hook(&mut self) {
+    /// Remove the external preview, if any is present.
+    ///
+    /// If the last preview hook script called was the "preview shown hook", this function will
+    /// call the "preview removed hook" to remove any external preview.
+    /// Otherwise it won't do anything.
+    ///
+    /// To restore the external preview, `update_external_preview` is called which will detect the
+    /// difference and call the "preview shown hook" again for the current preview (if any).
+    ///
+    /// This function can be called if an external preview shall be temporarily removed, for example
+    /// when entering the help screen.
+    pub fn remove_external_preview(&mut self) {
         if let Some(_) = &self.preview_area {
             self.call_preview_removed_hook();
             self.preview_area = None;
         }
     }
 
+    /// Updates the file system supervision with the currently shown directories.
     pub fn update_watcher(&mut self) {
         // collect the paths that shall be watched...
         let mut new_paths_to_watch: HashSet<path::PathBuf> = HashSet::with_capacity(3);
