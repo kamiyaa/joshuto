@@ -8,6 +8,8 @@ scroll_offset = 6
 
 # If joshuto does not know how to open the file, it can resort to opening it via xdg settings
 xdg_open = false
+# Fork xdg_open so you can continue using joshuto with application open
+xdg_open_fork = false
 
 # Use system trash can instead of permanently removing files
 use_trash = true
