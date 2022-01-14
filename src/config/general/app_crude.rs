@@ -24,6 +24,8 @@ pub struct AppConfigCrude {
     pub use_trash: bool,
     #[serde(default)]
     pub xdg_open: bool,
+    #[serde(default)]
+    pub xdg_open_fork: bool,
     #[serde(default = "default_true")]
     pub watch_files: bool,
     #[serde(default, rename = "display")]
@@ -39,6 +41,7 @@ impl From<AppConfigCrude> for AppConfig {
         Self {
             use_trash: crude.use_trash,
             xdg_open: crude.xdg_open,
+            xdg_open_fork: crude.xdg_open_fork,
             watch_files: crude.watch_files,
             _display_options: DisplayOption::from(crude.display_options),
             _preview_options: PreviewOption::from(crude.preview_options),

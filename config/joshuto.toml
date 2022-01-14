@@ -1,4 +1,5 @@
 xdg_open = false
+xdg_open_fork = false
 use_trash = true
 watch_files = true
 
