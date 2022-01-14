@@ -8,12 +8,9 @@ use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::views;
 use crate::ui::views::TuiView;
-use crate::ui::PreviewArea;
 use crate::util::input;
 use crate::util::to_string::ToString;
 
-use std::process;
-use std::thread;
 use termion::event::{Event, Key};
 use tui::layout::Rect;
 
@@ -36,8 +33,6 @@ pub fn run(
         preview_default::load_preview(context, backend);
     }
 
-    let mut preview_area: Option<PreviewArea> = None;
-
     while context.quit == QuitType::DoNot {
         // do the ui
         if let Ok(area) = backend.terminal_ref().size() {
@@ -48,7 +43,7 @@ pub fn run(
             backend.render(TuiView::new(context));
 
             // invoke preview hooks, if appropriate
-            preview_area = process_preview_on_change(&context, preview_area);
+            context.update_external_preview();
         }
 
         // wait for an event and pop it
@@ -131,50 +126,4 @@ fn calculate_ui_context(context: &mut AppContext, area: Rect) {
         views::calculate_layout(area, constraints)
     };
     context.ui_context_mut().layout = layout;
-}
-
-fn process_preview_on_change(
-    context: &AppContext,
-    old_preview_area: Option<PreviewArea>,
-) -> Option<PreviewArea> {
-    let config = context.config_ref();
-    let preview_options = config.preview_options_ref();
-
-    let preview_shown_hook_script = preview_options.preview_shown_hook_script.as_ref();
-    let preview_removed_hook_script = preview_options.preview_removed_hook_script.as_ref();
-    let layout = &context.ui_context_ref().layout;
-    let new_preview_area = views::calculate_preview(&context, layout[2]);
-    match new_preview_area.as_ref() {
-        Some(new) => {
-            let should_preview = if let Some(old) = old_preview_area {
-                new.file_preview_path != old.file_preview_path
-            } else {
-                true
-            };
-            if should_preview {
-                if let Some(hook_script) = preview_shown_hook_script {
-                    let hook_script = hook_script.to_path_buf();
-                    let new2 = new.clone();
-                    let _ = thread::spawn(move || {
-                        let _ = process::Command::new(hook_script.as_path())
-                            .arg(new2.file_preview_path.as_path())
-                            .arg(new2.preview_area.x.to_string())
-                            .arg(new2.preview_area.y.to_string())
-                            .arg(new2.preview_area.width.to_string())
-                            .arg(new2.preview_area.height.to_string())
-                            .status();
-                    });
-                }
-            }
-        }
-        None => {
-            if let Some(hook_script) = preview_removed_hook_script {
-                let hook_script = hook_script.to_path_buf();
-                let _ = thread::spawn(|| {
-                    let _ = process::Command::new(hook_script).status();
-                });
-            }
-        }
-    }
-    new_preview_area
 }
