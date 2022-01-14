@@ -155,6 +155,7 @@ impl AppContext {
             Some(new) => {
                 let should_preview = if let Some(old) = &self.preview_area {
                     new.file_preview_path != old.file_preview_path
+                        || new.preview_area != old.preview_area
                 } else {
                     true
                 };
