@@ -44,8 +44,8 @@ impl Foreground {
         backend: &mut TuiBackend,
         p: path::PathBuf,
     ) -> io::Result<Output> {
-        let preview_options = context.config_ref().preview_options_ref();
         let config = context.config_ref();
+        let preview_options = config.preview_options_ref();
 
         match preview_options.preview_script.as_ref() {
             None => Err(io::Error::new(
@@ -57,21 +57,40 @@ impl Foreground {
                 let display_options = config.display_options_ref();
                 let constraints: &[Constraint; 3] = &display_options.default_layout;
 
-                let layout_rect = ui::build_layout(area, constraints, display_options)[2];
+                let ui_context = context.ui_context_ref();
+                if ui_context.layout.is_empty() {
+                    return Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        "No preview area",
+                    ));
+                }
+                let layout_rect = &ui_context.layout[ui_context.layout.len() - 1];
 
                 let file_full_path = p.as_path();
                 let preview_width = layout_rect.width;
                 let preview_height = layout_rect.height;
+                let preview_x_coord = layout_rect.x;
+                let preview_y_coord = layout_rect.y;
+
                 let image_cache = 0;
                 let preview_image = if preview_options.preview_images { 1 } else { 0 };
 
                 // spawn preview process
                 Command::new(script)
+                    .arg("--path")
                     .arg(file_full_path)
+                    .arg("--preview-width")
                     .arg(preview_width.to_string())
+                    .arg("--preview-height")
                     .arg(preview_height.to_string())
-                    .arg(image_cache.to_string())
+                    .arg("--x-coord")
+                    .arg(preview_x_coord.to_string())
+                    .arg("--y-coord")
+                    .arg(preview_y_coord.to_string())
+                    .arg("--preview-images")
                     .arg(preview_image.to_string())
+                    .arg("--image-cache")
+                    .arg(image_cache.to_string())
                     .output()
             }
         }
@@ -109,10 +128,17 @@ impl Background {
             let display_options = config.display_options_ref();
             let constraints: &[Constraint; 3] = &display_options.default_layout;
 
-            let layout_rect = ui::build_layout(area, constraints, display_options)[2];
+            let ui_context = context.ui_context_ref();
+            if ui_context.layout.is_empty() {
+                return;
+            }
+            let layout_rect = &ui_context.layout[ui_context.layout.len() - 1];
 
             let preview_width = layout_rect.width;
             let preview_height = layout_rect.height;
+            let preview_x_coord = layout_rect.x;
+            let preview_y_coord = layout_rect.y;
+
             let image_cache = 0;
             let preview_image = if preview_options.preview_images { 1 } else { 0 };
 
@@ -122,11 +148,20 @@ impl Background {
                 let file_full_path = path.as_path();
 
                 let res = Command::new(script)
+                    .arg("--path")
                     .arg(file_full_path)
+                    .arg("--preview-width")
                     .arg(preview_width.to_string())
+                    .arg("--preview-height")
                     .arg(preview_height.to_string())
-                    .arg(image_cache.to_string())
+                    .arg("--x-coord")
+                    .arg(preview_x_coord.to_string())
+                    .arg("--y-coord")
+                    .arg(preview_y_coord.to_string())
+                    .arg("--preview-images")
                     .arg(preview_image.to_string())
+                    .arg("--image-cache")
+                    .arg(image_cache.to_string())
                     .output();
                 match res {
                     Ok(output) => {
