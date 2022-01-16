@@ -59,10 +59,7 @@ impl Foreground {
 
                 let ui_context = context.ui_context_ref();
                 if ui_context.layout.is_empty() {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        "No preview area",
-                    ));
+                    return Err(io::Error::new(io::ErrorKind::Other, "No preview area"));
                 }
                 let layout_rect = &ui_context.layout[ui_context.layout.len() - 1];
 
