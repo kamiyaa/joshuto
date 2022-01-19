@@ -163,7 +163,11 @@ impl AppContext {
                     self.call_preview_shown_hook(new.clone())
                 }
             }
-            None => self.call_preview_removed_hook(),
+            None => {
+                if !self.preview_area.is_none() {
+                    self.call_preview_removed_hook()
+                }
+            }
         }
         self.preview_area = new_preview_area
     }
