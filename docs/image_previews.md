@@ -250,6 +250,8 @@ case $(file -b --mime-type "${file}") in
 	image/*)
 		image "${file}"
 		;;
+    *)
+	    kitty +kitten icat --transfer-mode=file --clear 2>/dev/null
 esac
 ```
 
