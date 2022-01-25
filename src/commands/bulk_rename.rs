@@ -121,6 +121,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
 }
 
 pub fn bulk_rename(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+    context.remove_external_preview();
     backend.terminal_drop();
     let res = _bulk_rename(context);
     backend.terminal_restore()?;
