@@ -27,7 +27,7 @@ signal-hook = "^0"
 structopt = "^0"
 termion = "^1"
 toml = "^0"
-tui = "^0"
+tui = { version = "^0", default-features = false, features = ["termion"] }
 unicode-width = "^0"
 users = "^0"
 whoami = "^0"
