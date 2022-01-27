@@ -30,7 +30,7 @@ pub fn run(
         context.tab_context_mut().push_tab(tab);
 
         // trigger a preview of child
-        preview_default::load_preview(context, backend);
+        preview_default::load_preview(context);
     }
 
     while context.quit == QuitType::DoNot {
@@ -56,7 +56,7 @@ pub fn run(
         match event {
             AppEvent::Termion(Event::Mouse(event)) => {
                 input::process_mouse(event, context, backend, &keymap_t);
-                preview_default::load_preview(context, backend);
+                preview_default::load_preview(context);
             }
             AppEvent::Termion(key) => {
                 if context.message_queue_ref().current_message().is_some() {
@@ -97,7 +97,7 @@ pub fn run(
                         }
                     },
                 }
-                preview_default::load_preview(context, backend);
+                preview_default::load_preview(context);
                 context.flush_event();
             }
             event => input::process_noninteractive(event, context),
