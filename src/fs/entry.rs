@@ -53,10 +53,6 @@ impl JoshutoDirEntry {
         })
     }
 
-    pub fn update_label(&mut self, label: String) {
-        self.label = label;
-    }
-
     pub fn file_name(&self) -> &str {
         self.name.as_str()
     }
