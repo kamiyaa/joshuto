@@ -194,15 +194,21 @@ impl AppContext {
     pub fn update_watcher(&mut self) {
         // collect the paths that shall be watched...
         let mut new_paths_to_watch: HashSet<path::PathBuf> = HashSet::with_capacity(3);
-        if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().curr_list_ref() {
-            new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
+
+        let curr_tab_ref = self.tab_context_ref().curr_tab_ref();
+
+        let watched_lists = [
+            curr_tab_ref.parent_list_ref(),
+            curr_tab_ref.curr_list_ref(),
+            curr_tab_ref.child_list_ref(),
+        ];
+
+        for list in watched_lists {
+            if let Some(dir_list) = list {
+                new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
+            }
         }
-        if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().parent_list_ref() {
-            new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
-        }
-        if let Some(dir_list) = self.tab_context_ref().curr_tab_ref().child_list_ref() {
-            new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
-        }
+
         // remove paths from watcher which don't need to be watched anymore...
         for old_watched_path in &self.watched_paths {
             if !new_paths_to_watch.contains(old_watched_path.as_path()) {
