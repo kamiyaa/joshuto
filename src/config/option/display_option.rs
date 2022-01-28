@@ -16,7 +16,6 @@ pub struct DisplayOption {
     pub _show_borders: bool,
     pub _show_hidden: bool,
     pub _show_icons: bool,
-    pub _show_preview: bool,
     pub _sort_options: SortOption,
     pub _tilde_in_titlebar: bool,
     pub _line_nums: LineNumberStyle,
@@ -55,10 +54,6 @@ impl DisplayOption {
 
     pub fn show_icons(&self) -> bool {
         self._show_icons
-    }
-
-    pub fn show_preview(&self) -> bool {
-        self._show_preview
     }
 
     pub fn set_show_hidden(&mut self, show_hidden: bool) {
@@ -118,7 +113,6 @@ impl std::default::Default for DisplayOption {
             _show_borders: true,
             _show_hidden: false,
             _show_icons: false,
-            _show_preview: true,
             _sort_options: SortOption::default(),
             _tilde_in_titlebar: true,
             _line_nums: LineNumberStyle::None,

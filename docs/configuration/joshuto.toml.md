@@ -33,9 +33,6 @@ show_borders = true
 show_hidden = false
 # Show file icons (requires a supporting font)
 show_icons = true
-# Show file previews
-# CURRENTLY DOES NOT WORK
-show_preview = true
 # Shorten /home/$USER to ~
 tilde_in_titlebar = true
 # Options include

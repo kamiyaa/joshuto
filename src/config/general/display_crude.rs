@@ -43,9 +43,6 @@ pub struct DisplayOptionCrude {
     pub show_icons: bool,
 
     #[serde(default = "default_true")]
-    pub show_preview: bool,
-
-    #[serde(default = "default_true")]
     pub tilde_in_titlebar: bool,
 
     #[serde(default, rename = "sort")]
@@ -65,7 +62,6 @@ impl std::default::Default for DisplayOptionCrude {
             show_borders: true,
             show_hidden: false,
             show_icons: false,
-            show_preview: true,
             sort_options: SortOptionCrude::default(),
             tilde_in_titlebar: true,
             line_number_style: "none".to_string(),
@@ -107,7 +103,6 @@ impl From<DisplayOptionCrude> for DisplayOption {
             _show_borders: crude.show_borders,
             _show_hidden: crude.show_hidden,
             _show_icons: crude.show_icons,
-            _show_preview: crude.show_preview,
             _sort_options: crude.sort_options.into(),
             _tilde_in_titlebar: crude.tilde_in_titlebar,
             _line_nums,
