@@ -43,7 +43,6 @@ impl Background {
             let preview_y_coord = layout_rect.y;
 
             let image_cache = 0;
-            let preview_image = if preview_options.preview_images { 1 } else { 0 };
 
             let script = script.clone();
             let event_tx = context.clone_event_tx();
@@ -61,8 +60,6 @@ impl Background {
                     .arg(preview_x_coord.to_string())
                     .arg("--y-coord")
                     .arg(preview_y_coord.to_string())
-                    .arg("--preview-images")
-                    .arg(preview_image.to_string())
                     .arg("--image-cache")
                     .arg(image_cache.to_string())
                     .output();
