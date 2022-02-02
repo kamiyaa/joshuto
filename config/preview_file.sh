@@ -28,7 +28,6 @@ IFS=$'\n'
 ## 7    | image      | Display the file directly as an image
 
 FILE_PATH=""
-PREVIEW_IMAGE_ENABLED=0
 PREVIEW_WIDTH=10
 PREVIEW_HEIGHT=10
 PREVIEW_X_COORD=0
@@ -58,10 +57,6 @@ while [ "$#" -gt 0 ]; do
 		"--y-coord")
 			shift
 			PREVIEW_Y_COORD="$1"
-			;;
-		"--preview-images")
-			shift
-			PREVIEW_IMAGE_ENABLED="$1"
 			;;
 		"--image-cache")
 			shift
@@ -248,9 +243,6 @@ handle_fallback() {
 
 
 MIMETYPE="$( file --dereference --brief --mime-type -- "${FILE_PATH}" )"
-if [[ "${PREVIEW_IMAGE_ENABLED}" -eq 1 ]]; then
-    handle_image "${MIMETYPE}"
-fi
 handle_extension
 handle_mime "${MIMETYPE}"
 handle_fallback

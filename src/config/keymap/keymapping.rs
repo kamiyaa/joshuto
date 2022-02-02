@@ -5,8 +5,6 @@ use std::convert::{AsMut, AsRef, From};
 use std::str::FromStr;
 
 use termion::event::Event;
-#[cfg(feature = "mouse")]
-use termion::event::MouseEvent;
 
 use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;

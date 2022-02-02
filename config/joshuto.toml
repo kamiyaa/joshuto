@@ -12,7 +12,6 @@ scroll_offset = 6
 show_borders = true
 show_hidden = false
 show_icons = true
-show_preview = true
 tilde_in_titlebar = true
 # none, absolute, relative
 line_number_style = "none"
@@ -26,7 +25,6 @@ reverse = false
 
 [preview]
 max_preview_size = 2097152 # 2MB
-preview_images = false
 preview_script = "~/.config/joshuto/preview_file.sh"
 
 [tab]

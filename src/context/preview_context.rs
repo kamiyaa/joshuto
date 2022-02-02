@@ -14,10 +14,6 @@ impl PreviewContext {
         }
     }
 
-    pub fn preview_exists(&self, p: &path::Path) -> bool {
-        self.previews.get(p).is_some()
-    }
-
     pub fn get_preview_ref(&self, p: &path::Path) -> Option<&Option<FilePreview>> {
         self.previews.get(p)
     }
