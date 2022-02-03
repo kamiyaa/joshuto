@@ -1,7 +1,7 @@
 use ansi_to_tui::ansi_to_text;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::text::{Span, Text};
+use tui::text::Span;
 use tui::widgets::Widget;
 
 use crate::preview::preview_file::FilePreview;

@@ -16,8 +16,6 @@ pub struct PreviewOptionCrude {
     #[serde(default = "default_max_preview_size")]
     pub max_preview_size: u64,
     #[serde(default)]
-    pub preview_images: bool,
-    #[serde(default)]
     pub preview_script: Option<String>,
     #[serde(default)]
     pub preview_shown_hook_script: Option<String>,
@@ -29,7 +27,6 @@ impl std::default::Default for PreviewOptionCrude {
     fn default() -> Self {
         Self {
             max_preview_size: default_max_preview_size(),
-            preview_images: false,
             preview_script: None,
             preview_shown_hook_script: None,
             preview_removed_hook_script: None,
@@ -66,7 +63,6 @@ impl From<PreviewOptionCrude> for PreviewOption {
 
         Self {
             max_preview_size: crude.max_preview_size,
-            preview_images: crude.preview_images,
             preview_script,
             preview_shown_hook_script,
             preview_removed_hook_script,
