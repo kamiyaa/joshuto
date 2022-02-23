@@ -8,6 +8,7 @@ mod impl_appexecute;
 mod impl_comment;
 mod impl_display;
 mod impl_from_str;
+mod impl_interactive;
 mod impl_numbered;
 
 pub use self::command::*;

@@ -220,6 +220,8 @@ impl std::str::FromStr for Command {
                 )),
                 arg => Ok(Self::SearchString(arg.to_string())),
             }
+        } else if command == CMD_SEARCH_INCREMENTAL {
+            Ok(Self::SearchIncremental(arg.to_string()))
         } else if command == CMD_SEARCH_GLOB {
             match arg {
                 "" => Err(JoshutoError::new(
