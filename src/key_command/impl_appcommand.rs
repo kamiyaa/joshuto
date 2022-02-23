@@ -52,6 +52,7 @@ impl AppCommand for Command {
             Self::RenameFilePrepend => CMD_RENAME_FILE_PREPEND,
 
             Self::SearchString(_) => CMD_SEARCH_STRING,
+            Self::SearchIncremental(_) => CMD_SEARCH_INCREMENTAL,
             Self::SearchGlob(_) => CMD_SEARCH_GLOB,
             Self::SearchFzf => CMD_SEARCH_FZF,
             Self::SearchNext => CMD_SEARCH_NEXT,

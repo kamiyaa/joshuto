@@ -53,6 +53,7 @@ cmd_constants![
     (CMD_RENAME_FILE_APPEND, "rename_append"),
     (CMD_RENAME_FILE_PREPEND, "rename_prepend"),
     (CMD_SEARCH_STRING, "search"),
+    (CMD_SEARCH_INCREMENTAL, "search_inc"),
     (CMD_SEARCH_GLOB, "search_glob"),
     (CMD_SEARCH_FZF, "search_fzf"),
     (CMD_SEARCH_NEXT, "search_next"),

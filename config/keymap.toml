@@ -74,6 +74,7 @@ mapcommand = [
 	{ keys = [ "c", "w" ],		command = ":rename " },
 
 	{ keys = [ "/" ],		command = ":search " },
+	{ keys = [ "|" ],		command = ":search_inc " },
 	{ keys = [ "\\" ],		command = ":search_glob " },
 	{ keys = [ "S" ],		command = "search_fzf" },
 	{ keys = [ "C" ],		command = "subdir_fzf" },

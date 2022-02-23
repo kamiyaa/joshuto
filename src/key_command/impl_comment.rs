@@ -68,6 +68,7 @@ impl CommandComment for Command {
             Self::RenameFilePrepend => "Rename a file",
 
             Self::SearchString(_) => "Search",
+            Self::SearchIncremental(_) => "Search as you type",
             Self::SearchGlob(_) => "Search with globbing",
             Self::SearchFzf => "Search via fzf",
             Self::SearchNext => "Next search entry",

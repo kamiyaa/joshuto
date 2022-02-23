@@ -9,7 +9,7 @@ pub trait AppExecute {
         context: &mut AppContext,
         backend: &mut TuiBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult<()>;
+    ) -> JoshutoResult;
 }
 
 pub trait NumberedExecute {
@@ -19,7 +19,11 @@ pub trait NumberedExecute {
         context: &mut AppContext,
         backend: &mut TuiBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult<()>;
+    ) -> JoshutoResult;
+}
+
+pub trait InteractiveExecute {
+    fn interactive_execute(&self, context: &mut AppContext);
 }
 
 pub trait AppCommand: AppExecute + std::fmt::Display + std::fmt::Debug {
