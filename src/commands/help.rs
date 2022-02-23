@@ -54,8 +54,8 @@ pub fn help_loop(
                                     Command::CursorMoveDown(_) => move_offset(&mut offset, 1),
                                     Command::CursorMoveHome => offset = 0,
                                     Command::CursorMoveEnd => offset = 255,
-                                    Command::CursorMovePageUp => move_offset(&mut offset, -10),
-                                    Command::CursorMovePageDown => move_offset(&mut offset, 10),
+                                    Command::CursorMovePageUp(_) => move_offset(&mut offset, -10),
+                                    Command::CursorMovePageDown(_) => move_offset(&mut offset, 10),
                                     Command::CloseTab | Command::Help => break,
                                     _ => (),
                                 }
