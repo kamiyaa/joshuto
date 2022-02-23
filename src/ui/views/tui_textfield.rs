@@ -8,6 +8,7 @@ use unicode_width::UnicodeWidthStr;
 
 use crate::context::AppContext;
 use crate::event::AppEvent;
+use crate::key_command::complete_command;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::TuiBackend;
@@ -228,8 +229,13 @@ impl<'a> TuiTextField<'a> {
                             }
                             Key::Char('\t') => {
                                 if completion_tracker.is_none() {
-                                    let res = completer
-                                        .complete_path(line_buffer.as_str(), line_buffer.pos());
+                                    let line = line_buffer.as_str().split_once(' ');
+                                    let res = match line {
+                                        None => Ok((0, complete_command(line_buffer.as_str()))),
+                                        Some((_command, _files)) => completer
+                                            .complete_path(line_buffer.as_str(), line_buffer.pos()),
+                                    };
+
                                     if let Ok((pos, mut candidates)) = res {
                                         candidates.sort_by(|x, y| {
                                             x.display()
@@ -253,7 +259,7 @@ impl<'a> TuiTextField<'a> {
                                             s.pos,
                                             candidate.display(),
                                         );
-                                        s.index += 1;
+                                        s.index = (s.index + 1) % s.candidates.len();
                                     }
                                 }
                             }
