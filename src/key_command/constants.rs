@@ -1,61 +1,85 @@
-pub const CMD_HELP: &str = "help";
+use rustyline::completion::Pair;
 
-pub const CMD_QUIT: &str = "quit";
-pub const CMD_QUIT_TO_CURRENT_DIRECTORY: &str = "quit_to_cwd";
-pub const CMD_FORCE_QUIT: &str = "force_quit";
-
-pub const CMD_BULK_RENAME: &str = "bulk_rename";
-
-pub const CMD_CHANGE_DIRECTORY: &str = "cd";
-pub const CMD_PARENT_DIRECTORY: &str = "cd ..";
-pub const CMD_PREVIOUS_DIRECTORY: &str = "cd -";
-
-pub const CMD_NEW_TAB: &str = "new_tab";
-pub const CMD_CLOSE_TAB: &str = "close_tab";
 pub const CMD_COMMAND_LINE: &str = ":";
-pub const CMD_CUT_FILES: &str = "cut_files";
-pub const CMD_COPY_FILES: &str = "copy_files";
-pub const CMD_PASTE_FILES: &str = "paste_files";
-pub const CMD_COPY_FILENAME: &str = "copy_filename";
-pub const CMD_COPY_FILENAME_WITHOUT_EXTENSION: &str = "copy_filename_without_extension";
-pub const CMD_COPY_FILEPATH: &str = "copy_filepath";
-pub const CMD_COPY_DIRECTORY_PATH: &str = "copy_dirpath";
-pub const CMD_CURSOR_MOVE_UP: &str = "cursor_move_up";
-pub const CMD_CURSOR_MOVE_DOWN: &str = "cursor_move_down";
-pub const CMD_CURSOR_MOVE_HOME: &str = "cursor_move_home";
-pub const CMD_CURSOR_MOVE_END: &str = "cursor_move_end";
-pub const CMD_CURSOR_MOVE_PAGEUP: &str = "cursor_move_page_up";
-pub const CMD_CURSOR_MOVE_PAGEDOWN: &str = "cursor_move_page_down";
-pub const CMD_PARENT_CURSOR_MOVE_UP: &str = "parent_cursor_move_up";
-pub const CMD_PARENT_CURSOR_MOVE_DOWN: &str = "parent_cursor_move_down";
-pub const CMD_PREVIEW_CURSOR_MOVE_UP: &str = "preview_cursor_move_up";
-pub const CMD_PREVIEW_CURSOR_MOVE_DOWN: &str = "preview_cursor_move_down";
-pub const CMD_DELETE_FILES: &str = "delete_files";
-pub const CMD_NEW_DIRECTORY: &str = "mkdir";
-pub const CMD_OPEN_FILE: &str = "open";
-pub const CMD_OPEN_FILE_WITH: &str = "open_with";
-pub const CMD_RELOAD_DIRECTORY_LIST: &str = "reload_dirlist";
-pub const CMD_RENAME_FILE: &str = "rename";
-pub const CMD_RENAME_FILE_APPEND: &str = "rename_append";
-pub const CMD_RENAME_FILE_PREPEND: &str = "rename_prepend";
 
-pub const CMD_SEARCH_STRING: &str = "search";
-pub const CMD_SEARCH_GLOB: &str = "search_glob";
-pub const CMD_SEARCH_FZF: &str = "search_fzf";
-pub const CMD_SEARCH_NEXT: &str = "search_next";
-pub const CMD_SEARCH_PREV: &str = "search_prev";
+macro_rules! cmd_constants {
+    ($( ($cmd_name:ident, $cmd_value:literal), )*) => {
+        $(
+            pub const $cmd_name: &str = $cmd_value;
+        )*
 
-pub const CMD_SUBDIR_FZF: &str = "subdir_fzf";
+        pub fn commands() -> Vec<&'static str> {
+            vec![$($cmd_value,)*]
+        }
+    };
+}
 
-pub const CMD_SELECT_FILES: &str = "select";
-pub const CMD_SET_MODE: &str = "set_mode";
-pub const CMD_SORT: &str = "sort";
-pub const CMD_SORT_REVERSE: &str = "sort reverse";
-pub const CMD_SUBPROCESS_FOREGROUND: &str = "shell";
-pub const CMD_SUBPROCESS_BACKGROUND: &str = "spawn";
-pub const CMD_SHOW_WORKERS: &str = "show_workers";
-pub const CMD_TAB_SWITCH: &str = "tab_switch";
-pub const CMD_TAB_SWITCH_INDEX: &str = "tab_switch_index";
-pub const CMD_TOGGLE_HIDDEN: &str = "toggle_hidden";
-pub const CMD_SWITCH_LINE_NUMBERS: &str = "line_nums";
-pub const CMD_TOUCH_FILE: &str = "touch";
+cmd_constants![
+    (CMD_QUIT, "quit"),
+    (CMD_QUIT_TO_CURRENT_DIRECTORY, "quit_to_cwd"),
+    (CMD_FORCE_QUIT, "force_quit"),
+    (CMD_BULK_RENAME, "bulk_rename"),
+    (CMD_CHANGE_DIRECTORY, "cd"),
+    (CMD_PARENT_DIRECTORY, "cd .."),
+    (CMD_PREVIOUS_DIRECTORY, "cd -"),
+    (CMD_NEW_TAB, "new_tab"),
+    (CMD_CLOSE_TAB, "close_tab"),
+    (CMD_CUT_FILES, "cut_files"),
+    (CMD_COPY_FILES, "copy_files"),
+    (CMD_PASTE_FILES, "paste_files"),
+    (CMD_COPY_FILENAME, "copy_filename"),
+    (
+        CMD_COPY_FILENAME_WITHOUT_EXTENSION,
+        "copy_filename_without_extension"
+    ),
+    (CMD_COPY_FILEPATH, "copy_filepath"),
+    (CMD_COPY_DIRECTORY_PATH, "copy_dirpath"),
+    (CMD_CURSOR_MOVE_UP, "cursor_move_up"),
+    (CMD_CURSOR_MOVE_DOWN, "cursor_move_down"),
+    (CMD_CURSOR_MOVE_HOME, "cursor_move_home"),
+    (CMD_CURSOR_MOVE_END, "cursor_move_end"),
+    (CMD_CURSOR_MOVE_PAGEUP, "cursor_move_page_up"),
+    (CMD_CURSOR_MOVE_PAGEDOWN, "cursor_move_page_down"),
+    (CMD_PARENT_CURSOR_MOVE_UP, "parent_cursor_move_up"),
+    (CMD_PARENT_CURSOR_MOVE_DOWN, "parent_cursor_move_down"),
+    (CMD_PREVIEW_CURSOR_MOVE_UP, "preview_cursor_move_up"),
+    (CMD_PREVIEW_CURSOR_MOVE_DOWN, "preview_cursor_move_down"),
+    (CMD_DELETE_FILES, "delete_files"),
+    (CMD_NEW_DIRECTORY, "mkdir"),
+    (CMD_OPEN_FILE, "open"),
+    (CMD_OPEN_FILE_WITH, "open_with"),
+    (CMD_RELOAD_DIRECTORY_LIST, "reload_dirlist"),
+    (CMD_RENAME_FILE, "rename"),
+    (CMD_RENAME_FILE_APPEND, "rename_append"),
+    (CMD_RENAME_FILE_PREPEND, "rename_prepend"),
+    (CMD_SEARCH_STRING, "search"),
+    (CMD_SEARCH_GLOB, "search_glob"),
+    (CMD_SEARCH_FZF, "search_fzf"),
+    (CMD_SEARCH_NEXT, "search_next"),
+    (CMD_SEARCH_PREV, "search_prev"),
+    (CMD_SUBDIR_FZF, "subdir_fzf"),
+    (CMD_SELECT_FILES, "select"),
+    (CMD_SET_MODE, "set_mode"),
+    (CMD_SORT, "sort"),
+    (CMD_SORT_REVERSE, "sort reverse"),
+    (CMD_SUBPROCESS_FOREGROUND, "shell"),
+    (CMD_SUBPROCESS_BACKGROUND, "spawn"),
+    (CMD_SHOW_WORKERS, "show_workers"),
+    (CMD_TAB_SWITCH, "tab_switch"),
+    (CMD_TAB_SWITCH_INDEX, "tab_switch_index"),
+    (CMD_TOGGLE_HIDDEN, "toggle_hidden"),
+    (CMD_SWITCH_LINE_NUMBERS, "line_nums"),
+    (CMD_TOUCH_FILE, "touch"),
+    (CMD_HELP, "help"),
+];
+
+pub fn complete_command(partial_command: &str) -> Vec<Pair> {
+    commands()
+        .into_iter()
+        .filter(|command| command.starts_with(partial_command))
+        .map(|command| Pair {
+            display: command.to_string(),
+            replacement: command.to_string(),
+        })
+        .collect()
+}
