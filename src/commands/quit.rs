@@ -3,7 +3,7 @@ use std::io;
 use crate::context::{AppContext, QuitType};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 
-pub fn quit(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn quit(context: &mut AppContext) -> JoshutoResult {
     let worker_context = context.worker_context_ref();
     if worker_context.is_busy() || !worker_context.is_empty() {
         Err(JoshutoError::new(
@@ -16,7 +16,7 @@ pub fn quit(context: &mut AppContext) -> JoshutoResult<()> {
     }
 }
 
-pub fn quit_to_current_directory(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn quit_to_current_directory(context: &mut AppContext) -> JoshutoResult {
     let worker_context = context.worker_context_ref();
     if worker_context.is_busy() || !worker_context.is_empty() {
         Err(JoshutoError::new(
@@ -29,7 +29,7 @@ pub fn quit_to_current_directory(context: &mut AppContext) -> JoshutoResult<()> 
     }
 }
 
-pub fn force_quit(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn force_quit(context: &mut AppContext) -> JoshutoResult {
     context.quit = QuitType::Force;
     Ok(())
 }

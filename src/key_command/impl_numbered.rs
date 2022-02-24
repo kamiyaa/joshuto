@@ -17,7 +17,7 @@ impl NumberedExecute for Command {
         context: &mut AppContext,
         backend: &mut TuiBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult<()> {
+    ) -> JoshutoResult {
         match self {
             Self::CursorMoveUp(_) => cursor_move::up(context, number_prefix),
             Self::CursorMoveDown(_) => cursor_move::down(context, number_prefix),

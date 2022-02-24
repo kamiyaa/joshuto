@@ -13,7 +13,7 @@ pub struct JoshutoDirEntry {
     path: path::PathBuf,
     pub metadata: JoshutoMetadata,
     selected: bool,
-    marked: bool,
+    _marked: bool,
 }
 
 impl JoshutoDirEntry {
@@ -49,7 +49,7 @@ impl JoshutoDirEntry {
             path,
             metadata,
             selected: false,
-            marked: false,
+            _marked: false,
         })
     }
 

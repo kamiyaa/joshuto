@@ -6,7 +6,7 @@ use super::{AppStyle, RawAppStyle};
 use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Default)]
 pub struct AppThemeCrude {
     #[serde(default)]
     pub regular: RawAppStyle,
@@ -24,21 +24,6 @@ pub struct AppThemeCrude {
     pub socket: RawAppStyle,
     #[serde(default)]
     pub ext: HashMap<String, RawAppStyle>,
-}
-
-impl std::default::Default for AppThemeCrude {
-    fn default() -> Self {
-        Self {
-            regular: RawAppStyle::default(),
-            selection: RawAppStyle::default(),
-            directory: RawAppStyle::default(),
-            executable: RawAppStyle::default(),
-            link: RawAppStyle::default(),
-            link_invalid: RawAppStyle::default(),
-            socket: RawAppStyle::default(),
-            ext: HashMap::default(),
-        }
-    }
 }
 
 impl From<AppThemeCrude> for AppTheme {
@@ -93,7 +78,7 @@ impl AppTheme {
 
 impl TomlConfigFile for AppTheme {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppThemeCrude, AppTheme>(file_name).unwrap_or_else(Self::default)
+        parse_to_config_file::<AppThemeCrude, AppTheme>(file_name).unwrap_or_default()
     }
 }
 

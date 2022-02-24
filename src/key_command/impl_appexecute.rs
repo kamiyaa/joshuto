@@ -70,11 +70,10 @@ impl AppExecute for Command {
             Self::RenameFilePrepend => rename_file::rename_file_prepend(context, backend, keymap_t),
             Self::TouchFile(arg) => touch_file::touch_file(context, arg.as_str()),
             Self::SearchGlob(pattern) => search_glob::search_glob(context, pattern.as_str()),
-            Self::SearchString(pattern) => Ok(search_string::search_string(
-                context,
-                pattern.as_str(),
-                false,
-            )),
+            Self::SearchString(pattern) => {
+                search_string::search_string(context, pattern.as_str(), false);
+                Ok(())
+            }
             // We call `interactive_execute` on each key press, so even before Enter is pressed the
             // cursor will be one the selected word. And as `interactive_execute` for
             // `SearchIncremental` always starts from index 0, this operation will be a no-op

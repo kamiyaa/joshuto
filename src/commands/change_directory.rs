@@ -12,7 +12,7 @@ pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn change_directory(context: &mut AppContext, path: &path::Path) -> JoshutoResult<()> {
+pub fn change_directory(context: &mut AppContext, path: &path::Path) -> JoshutoResult {
     let new_cwd = if path.is_absolute() {
         path.canonicalize()?
     } else {
@@ -33,7 +33,7 @@ pub fn change_directory(context: &mut AppContext, path: &path::Path) -> JoshutoR
 }
 
 // ParentDirectory command
-pub fn parent_directory(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn parent_directory(context: &mut AppContext) -> JoshutoResult {
     if let Some(parent) = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -52,7 +52,7 @@ pub fn parent_directory(context: &mut AppContext) -> JoshutoResult<()> {
 }
 
 // PreviousDirectory command
-pub fn previous_directory(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn previous_directory(context: &mut AppContext) -> JoshutoResult {
     if let Some(path) = context.tab_context_ref().curr_tab_ref().previous_dir() {
         let path = path.to_path_buf();
         std::env::set_current_dir(&path)?;

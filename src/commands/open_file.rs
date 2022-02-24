@@ -23,7 +23,7 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
     options
 }
 
-pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
     let config = context.config_ref();
 
     if let Some(entry) = context
@@ -146,10 +146,7 @@ where
     }
 }
 
-pub fn open_with_interactive(
-    context: &mut AppContext,
-    backend: &mut TuiBackend,
-) -> JoshutoResult<()> {
+pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
     let paths = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -173,7 +170,7 @@ pub fn open_with_index(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     index: usize,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     let paths = context
         .tab_context_ref()
         .curr_tab_ref()

@@ -10,7 +10,7 @@ pub fn select_files(
     context: &mut AppContext,
     pattern: &str,
     options: &SelectOption,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     if pattern.is_empty() {
         select_without_pattern(context, options)
     } else {
@@ -18,7 +18,7 @@ pub fn select_files(
     }
 }
 
-fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> JoshutoResult<()> {
+fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> JoshutoResult {
     if options.all {
         if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
             curr_list.iter_mut().for_each(|e| {
@@ -53,7 +53,7 @@ fn select_with_pattern(
     context: &mut AppContext,
     pattern: &str,
     options: &SelectOption,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     let glob = Glob::new(pattern)?.compile_matcher();
 
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {

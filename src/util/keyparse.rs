@@ -3,10 +3,8 @@ use termion::event::{Event, Key, MouseButton, MouseEvent};
 pub fn str_to_event(s: &str) -> Option<Event> {
     if let Some(k) = str_to_key(s) {
         Some(Event::Key(k))
-    } else if let Some(m) = str_to_mouse(s) {
-        Some(Event::Mouse(m))
     } else {
-        None
+        str_to_mouse(s).map(Event::Mouse)
     }
 }
 

@@ -42,6 +42,7 @@ pub struct CursorInfo {
     pub y: usize,
 }
 
+#[derive(Default)]
 pub struct TuiTextField<'a> {
     _prompt: &'a str,
     _prefix: &'a str,
@@ -376,15 +377,4 @@ fn get_candidates(
         }
     };
     res.ok()
-}
-
-impl<'a> std::default::Default for TuiTextField<'a> {
-    fn default() -> Self {
-        Self {
-            _prompt: "",
-            _prefix: "",
-            _suffix: "",
-            _menu_items: vec![],
-        }
-    }
 }

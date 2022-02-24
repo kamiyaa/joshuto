@@ -6,7 +6,7 @@ use super::cursor_move;
 use super::search_glob;
 use super::search_string;
 
-pub fn search_next(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn search_next(context: &mut AppContext) -> JoshutoResult {
     if let Some(search_context) = context.get_search_context() {
         let index = match search_context {
             SearchPattern::Glob(s) => {
@@ -23,7 +23,7 @@ pub fn search_next(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn search_prev(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn search_prev(context: &mut AppContext) -> JoshutoResult {
     if let Some(search_context) = context.get_search_context() {
         let index = match search_context {
             SearchPattern::Glob(s) => {

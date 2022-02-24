@@ -18,18 +18,17 @@ fn _create_file(file: &path::Path) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn touch_file(context: &mut AppContext, arg: &str) -> JoshutoResult<()> {
+pub fn touch_file(context: &mut AppContext, arg: &str) -> JoshutoResult {
     match arg {
         "" => {
-            match context
+            if let Some(selected_file_path) = context
                 .tab_context_ref()
                 .curr_tab_ref()
                 .curr_list_ref()
                 .and_then(|s| s.curr_entry_ref())
                 .map(|s| s.file_path().to_path_buf())
             {
-                Some(selected_file_path) => _update_actime(&selected_file_path)?,
-                None => {}
+                _update_actime(&selected_file_path)?
             }
         }
         file_arg => {

@@ -34,7 +34,7 @@ pub fn search_glob_rev(curr_tab: &JoshutoTab, glob: &GlobMatcher) -> Option<usiz
     None
 }
 
-pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult<()> {
+pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult {
     let glob = GlobBuilder::new(pattern)
         .case_insensitive(true)
         .build()?

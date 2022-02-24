@@ -2,18 +2,10 @@ use std::slice::IterMut;
 
 use crate::tab::JoshutoTab;
 
+#[derive(Default)]
 pub struct TabContext {
     pub index: usize,
     tabs: Vec<JoshutoTab>,
-}
-
-impl std::default::Default for TabContext {
-    fn default() -> Self {
-        Self {
-            index: 0,
-            tabs: Vec::new(),
-        }
-    }
 }
 
 impl TabContext {

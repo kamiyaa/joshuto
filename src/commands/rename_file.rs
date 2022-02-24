@@ -36,7 +36,7 @@ pub fn _rename_file(
     Ok(())
 }
 
-pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult<()> {
+pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult {
     let path: Option<path::PathBuf> = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -55,7 +55,7 @@ pub fn _rename_file_append(
     backend: &mut TuiBackend,
     keymap_t: &AppKeyMapping,
     file_name: &str,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     let (prefix, suffix): (String, String) = match file_name.rfind('.') {
         Some(ext) => (
             format!("rename {}", &file_name[0..ext]),
@@ -70,7 +70,7 @@ pub fn rename_file_append(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     let mut file_name: Option<String> = None;
 
     if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
@@ -90,7 +90,7 @@ pub fn _rename_file_prepend(
     backend: &mut TuiBackend,
     keymap_t: &AppKeyMapping,
     file_name: String,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     let prefix = String::from("rename ");
     let suffix = file_name;
     command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)
@@ -100,7 +100,7 @@ pub fn rename_file_prepend(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     let mut file_name: Option<String> = None;
 
     if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {

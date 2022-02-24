@@ -4,10 +4,7 @@ use crate::error::JoshutoResult;
 
 use super::reload;
 
-pub fn switch_line_numbering(
-    context: &mut AppContext,
-    style: LineNumberStyle,
-) -> JoshutoResult<()> {
+pub fn switch_line_numbering(context: &mut AppContext, style: LineNumberStyle) -> JoshutoResult {
     context
         .config_mut()
         .display_options_mut()

@@ -5,7 +5,7 @@ use crate::history::DirectoryHistory;
 
 use super::reload;
 
-pub fn set_sort(context: &mut AppContext, method: SortType) -> JoshutoResult<()> {
+pub fn set_sort(context: &mut AppContext, method: SortType) -> JoshutoResult {
     context
         .config_mut()
         .sort_options_mut()
@@ -16,7 +16,7 @@ pub fn set_sort(context: &mut AppContext, method: SortType) -> JoshutoResult<()>
     refresh(context)
 }
 
-pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult {
     let reversed = !context.config_ref().sort_options_ref().reverse;
     context.config_mut().sort_options_mut().reverse = reversed;
 
@@ -26,7 +26,7 @@ pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult<()> {
     refresh(context)
 }
 
-fn refresh(context: &mut AppContext) -> JoshutoResult<()> {
+fn refresh(context: &mut AppContext) -> JoshutoResult {
     reload::soft_reload(context.tab_context_ref().index, context)?;
     Ok(())
 }

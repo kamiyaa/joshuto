@@ -10,6 +10,7 @@ impl FileType {
     pub fn is_dir(&self) -> bool {
         *self == Self::Directory
     }
+    #[allow(dead_code)]
     pub fn is_file(&self) -> bool {
         *self == Self::File
     }

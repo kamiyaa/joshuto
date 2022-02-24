@@ -7,7 +7,7 @@ use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::TuiBackend;
 
-pub fn search_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn search_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
     let items = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -16,7 +16,7 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> Joshuto
             let v: Vec<String> = list
                 .iter()
                 .enumerate()
-                .map(|(i, entry)| format!("{} {}\n", i, entry.file_name().to_string()))
+                .map(|(i, entry)| format!("{} {}\n", i, entry.file_name()))
                 .collect();
             v
         })
@@ -36,14 +36,11 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> Joshuto
         .stdout(Stdio::piped())
         .spawn()?;
 
-    match fzf.stdin.as_mut() {
-        Some(fzf_stdin) => {
-            let mut writer = io::BufWriter::new(fzf_stdin);
-            for item in items {
-                writer.write_all(item.as_bytes())?;
-            }
+    if let Some(fzf_stdin) = fzf.stdin.as_mut() {
+        let mut writer = io::BufWriter::new(fzf_stdin);
+        for item in items {
+            writer.write_all(item.as_bytes())?;
         }
-        None => {}
     }
     let fzf_output = fzf.wait_with_output();
 

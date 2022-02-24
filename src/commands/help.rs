@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use termion::event::{Event, Key};
 
 use crate::config::AppKeyMapping;
@@ -14,7 +16,7 @@ pub fn help_loop(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     context.flush_event();
 
     let mut offset = 0;
@@ -84,13 +86,17 @@ pub fn help_loop(
 // offset is a u8, so if we make it negative program will fail.
 // This function prevents this error
 fn move_offset(offset: &mut u8, moving_amount: i8) {
-    if moving_amount > 0 {
-        *offset += moving_amount as u8;
-    } else if moving_amount < 0 {
-        if *offset > -moving_amount as u8 {
-            *offset -= -moving_amount as u8;
-        } else {
-            *offset = 0;
+    match moving_amount.cmp(&0) {
+        Ordering::Greater => {
+            *offset += moving_amount as u8;
         }
+        Ordering::Less => {
+            if *offset > -moving_amount as u8 {
+                *offset -= -moving_amount as u8;
+            } else {
+                *offset = 0;
+            }
+        }
+        Ordering::Equal => (),
     }
 }

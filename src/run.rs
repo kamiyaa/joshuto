@@ -119,7 +119,7 @@ fn calculate_ui_context(context: &mut AppContext, area: Rect) {
     };
     let config = context.config_ref();
     let display_options = config.display_options_ref();
-    let constraints = views::get_constraints(&context);
+    let constraints = views::get_constraints(context);
     let layout = if display_options.show_borders() {
         views::calculate_layout_with_borders(area, constraints)
     } else {

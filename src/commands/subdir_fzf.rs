@@ -9,7 +9,7 @@ use crate::ui::TuiBackend;
 
 use super::change_directory::change_directory;
 
-pub fn subdir_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn subdir_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
     let fzf_default_command = std::env::var("FZF_DEFAULT_COMMAND")?;
 
     backend.terminal_drop();
@@ -20,12 +20,9 @@ pub fn subdir_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> Joshuto
             .stdout(Stdio::piped())
             .spawn()?;
 
-        match fzf_results.stdin.as_mut() {
-            Some(fzf_stdin) => {
-                let mut writer = io::BufWriter::new(fzf_stdin);
-                writer.write_all(fzf_default_command.as_bytes())?;
-            }
-            None => {}
+        if let Some(fzf_stdin) = fzf_results.stdin.as_mut() {
+            let mut writer = io::BufWriter::new(fzf_stdin);
+            writer.write_all(fzf_default_command.as_bytes())?;
         }
         fzf_results.wait_with_output()?
     };
@@ -35,12 +32,9 @@ pub fn subdir_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> Joshuto
         .stdout(Stdio::piped())
         .spawn()?;
 
-    match fzf.stdin.as_mut() {
-        Some(fzf_stdin) => {
-            let mut writer = io::BufWriter::new(fzf_stdin);
-            writer.write_all(&fzf_default_command_output.stdout)?;
-        }
-        None => {}
+    if let Some(fzf_stdin) = fzf.stdin.as_mut() {
+        let mut writer = io::BufWriter::new(fzf_stdin);
+        writer.write_all(&fzf_default_command_output.stdout)?;
     }
     let fzf_output = fzf.wait_with_output();
 
@@ -59,7 +53,7 @@ pub fn subdir_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> Joshuto
     Ok(())
 }
 
-pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult<()> {
+pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult {
     if path.is_dir() {
         change_directory(context, path)?;
     } else if let Some(parent) = path.parent() {

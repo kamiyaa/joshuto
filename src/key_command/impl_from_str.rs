@@ -281,7 +281,7 @@ impl std::str::FromStr for Command {
                 Ok(s) => Ok(Self::TabSwitch(s)),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
-                    format!("{}: {}", command, e.to_string()),
+                    format!("{}: {}", command, e),
                 )),
             }
         } else if command == CMD_TAB_SWITCH_INDEX {
@@ -289,7 +289,7 @@ impl std::str::FromStr for Command {
                 Ok(s) => Ok(Self::TabSwitchIndex(s)),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
-                    format!("{}: {}", command, e.to_string()),
+                    format!("{}: {}", command, e),
                 )),
             }
         } else if command == CMD_TOUCH_FILE {
