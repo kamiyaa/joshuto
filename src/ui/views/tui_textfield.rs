@@ -1,7 +1,10 @@
 use std::str::FromStr;
 
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
-use rustyline::line_buffer;
+use rustyline::{
+    line_buffer::{self, LineBuffer},
+    At, Word,
+};
 
 use termion::event::{Event, Key};
 use tui::layout::Rect;
@@ -162,35 +165,11 @@ impl<'a> TuiTextField<'a> {
             if let Ok(event) = context.poll_event() {
                 match event {
                     AppEvent::Termion(Event::Key(key)) => {
-                        match key {
-                            Key::Backspace => {
-                                if line_buffer.backspace(1) {
-                                    completion_tracker.take();
-                                }
-                            }
-                            Key::Left => {
-                                if line_buffer.move_backward(1) {
-                                    completion_tracker.take();
-                                }
-                            }
-                            Key::Right => {
-                                if line_buffer.move_forward(1) {
-                                    completion_tracker.take();
-                                }
-                            }
-                            Key::Delete => {
-                                if line_buffer.delete(1).is_some() {
-                                    completion_tracker.take();
-                                }
-                            }
-                            Key::Home => {
-                                line_buffer.move_home();
-                                completion_tracker.take();
-                            }
-                            Key::End => {
-                                line_buffer.move_end();
-                                completion_tracker.take();
-                            }
+                        let dirty = match key {
+                            Key::Backspace => line_buffer.backspace(1),
+                            Key::Delete => line_buffer.delete(1).is_some(),
+                            Key::Home => line_buffer.move_home(),
+                            Key::End => line_buffer.move_end(),
                             Key::Up => {
                                 curr_history_index = if curr_history_index > 0 {
                                     curr_history_index - 1
@@ -206,6 +185,7 @@ impl<'a> TuiTextField<'a> {
                                 {
                                     line_buffer.insert_str(0, s);
                                 }
+                                true
                             }
                             Key::Down => {
                                 curr_history_index = if curr_history_index
@@ -224,21 +204,21 @@ impl<'a> TuiTextField<'a> {
                                 {
                                     line_buffer.insert_str(0, s);
                                 }
+                                true
                             }
                             Key::Esc => {
                                 let _ = terminal.hide_cursor();
                                 return None;
                             }
                             Key::Char('\t') => {
-                                if completion_tracker.is_none() {
-                                    let line = line_buffer.as_str().split_once(' ');
-                                    let res = match line {
-                                        None => Ok((0, complete_command(line_buffer.as_str()))),
-                                        Some((_command, _files)) => completer
-                                            .complete_path(line_buffer.as_str(), line_buffer.pos()),
-                                    };
+                                // If we are in the middle of a word, move to the end of it,
+                                // so we don't split it with autocompletion.
+                                move_to_the_end(&mut line_buffer);
 
-                                    if let Ok((pos, mut candidates)) = res {
+                                if completion_tracker.is_none() {
+                                    if let Some((pos, mut candidates)) =
+                                        get_candidates(&completer, &mut line_buffer)
+                                    {
                                         candidates.sort_by(|x, y| {
                                             x.display()
                                                 .partial_cmp(y.display())
@@ -254,30 +234,72 @@ impl<'a> TuiTextField<'a> {
                                 }
 
                                 if let Some(ref mut s) = completion_tracker {
-                                    if s.index < s.candidates.len() {
+                                    if !s.candidates.is_empty() {
                                         let candidate = &s.candidates[s.index];
+
                                         completer.update(
                                             &mut line_buffer,
                                             s.pos,
                                             candidate.display(),
                                         );
+
                                         s.index = (s.index + 1) % s.candidates.len();
                                     }
                                 }
+                                false
                             }
+
+                            // Current `completion_tracker` should be droped
+                            // only if we moved to another word
+                            Key::Ctrl('a') => {
+                                moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                    line_buffer.move_home()
+                                })
+                            }
+                            Key::Ctrl('e') => {
+                                moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                    line_buffer.move_end()
+                                })
+                            }
+                            Key::Ctrl('f') | Key::Right => {
+                                moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                    line_buffer.move_forward(1)
+                                })
+                            }
+                            Key::Ctrl('b') | Key::Left => {
+                                moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                    line_buffer.move_backward(1)
+                                })
+                            }
+                            Key::Alt('f') => {
+                                moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                    line_buffer.move_to_next_word(At::Start, Word::Vi, 1)
+                                })
+                            }
+                            Key::Alt('b') => {
+                                moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                    line_buffer.move_to_prev_word(Word::Vi, 1)
+                                })
+                            }
+
+                            Key::Ctrl('w') => line_buffer.delete_prev_word(Word::Vi, 1),
+                            Key::Ctrl('u') => line_buffer.discard_line(),
+                            Key::Ctrl('d') => line_buffer.delete(1).is_some(),
                             Key::Char('\n') => {
                                 break;
                             }
                             Key::Char(c) => {
-                                if line_buffer.insert(c, 1).is_some() {
-                                    completion_tracker.take();
-                                }
+                                let dirty = line_buffer.insert(c, 1).is_some();
 
                                 if let Ok(command) = Command::from_str(line_buffer.as_str()) {
                                     command.interactive_execute(context)
                                 }
+                                dirty
                             }
-                            _ => {}
+                            _ => false,
+                        };
+                        if dirty {
+                            completion_tracker.take();
                         }
                         context.flush_event();
                     }
@@ -297,6 +319,63 @@ impl<'a> TuiTextField<'a> {
             Some(input_string)
         }
     }
+}
+
+fn moved_to_another_word<F, Any>(line_buffer: &mut LineBuffer, action: F) -> bool
+where
+    F: FnOnce(&mut LineBuffer) -> Any,
+{
+    let old_pos = line_buffer.pos();
+    action(line_buffer);
+    let new_pos = line_buffer.pos();
+
+    let left_pos = usize::min(old_pos, new_pos);
+    let right_pos = usize::max(old_pos, new_pos);
+
+    line_buffer.as_str()[left_pos..right_pos].contains(' ')
+}
+
+// We shout take into account the fact that `pos` returns a
+// *byte position*, while we need to move by characters.
+fn move_to_the_end(line_buffer: &mut LineBuffer) {
+    let mut curr_pos = line_buffer.pos();
+    let mut found = false;
+    let buffer = line_buffer.to_string();
+    for value in buffer.chars() {
+        if !found {
+            if curr_pos != 0 {
+                curr_pos -= value.len_utf8();
+                continue;
+            }
+            found = true;
+        }
+        if value == ' ' {
+            break;
+        }
+        if !line_buffer.move_forward(1) {
+            break;
+        }
+    }
+}
+
+fn get_candidates(
+    completer: &FilenameCompleter,
+    line_buffer: &mut LineBuffer,
+) -> Option<(usize, Vec<Pair>)> {
+    let line = line_buffer.as_str().split_once(' ');
+    let res = match line {
+        None => Ok((0, complete_command(line_buffer.as_str()))),
+
+        Some((command, _files)) => {
+            // We want to autocomplete a command if we are inside it.
+            if line_buffer.pos() <= command.len() {
+                Ok((0, complete_command(command)))
+            } else {
+                completer.complete_path(line_buffer.as_str(), line_buffer.pos())
+            }
+        }
+    };
+    res.ok()
 }
 
 impl<'a> std::default::Default for TuiTextField<'a> {
