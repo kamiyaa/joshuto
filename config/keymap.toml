@@ -27,6 +27,8 @@ mapcommand = [
 	{ keys = [ "home" ],		command = "cursor_move_home" },
 	{ keys = [ "page_up" ],		command = "cursor_move_page_up" },
 	{ keys = [ "page_down" ],	command = "cursor_move_page_down" },
+	{ keys = [ "ctrl+u" ],  	command = "cursor_move_page_up 0.5" },
+	{ keys = [ "ctrl+d" ], 		command = "cursor_move_page_down 0.5" },
 
 	# vim-like keybindings
 	{ keys = [ "j" ],		command = "cursor_move_down" },

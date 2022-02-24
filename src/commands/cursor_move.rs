@@ -54,7 +54,7 @@ pub fn cursor_move(context: &mut AppContext, new_index: usize) {
     }
 }
 
-pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
+pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult {
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => curr_list
             .get_index()
@@ -68,7 +68,7 @@ pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
+pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult {
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => curr_list.get_index().map(|idx| idx + u),
         None => None,
@@ -79,7 +79,7 @@ pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn home(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn home(context: &mut AppContext) -> JoshutoResult {
     let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
             let len = curr_list.len();
@@ -98,7 +98,7 @@ pub fn home(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn end(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn end(context: &mut AppContext) -> JoshutoResult {
     let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
             let len = curr_list.len();
@@ -135,8 +135,13 @@ fn get_page_size(context: &AppContext, backend: &TuiBackend) -> Option<usize> {
     }
 }
 
-pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-    let page_size = get_page_size(context, backend).unwrap_or(10);
+pub fn page_up(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+    proportion: f64,
+) -> JoshutoResult {
+    let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
+    let page_size = page_size as usize;
 
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {
@@ -153,8 +158,13 @@ pub fn page_up(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoRes
     Ok(())
 }
 
-pub fn page_down(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
-    let page_size = get_page_size(context, backend).unwrap_or(10);
+pub fn page_down(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+    proportion: f64,
+) -> JoshutoResult {
+    let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
+    let page_size = page_size as usize;
 
     let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         Some(curr_list) => {

@@ -48,12 +48,6 @@ impl std::str::FromStr for Command {
 
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_HOME, Self::CursorMoveHome);
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_END, Self::CursorMoveEnd);
-        simple_command_conversion_case!(command, CMD_CURSOR_MOVE_PAGEUP, Self::CursorMovePageUp);
-        simple_command_conversion_case!(
-            command,
-            CMD_CURSOR_MOVE_PAGEDOWN,
-            Self::CursorMovePageDown
-        );
 
         simple_command_conversion_case!(command, CMD_CUT_FILES, Self::CutFiles);
         simple_command_conversion_case!(command, CMD_DELETE_FILES, Self::DeleteFiles);
@@ -109,6 +103,12 @@ impl std::str::FromStr for Command {
                     )),
                 },
             }
+        } else if command == CMD_CURSOR_MOVE_PAGEUP {
+            let p = arg.trim().parse::<f64>().unwrap_or(1.);
+            Ok(Self::CursorMovePageUp(p))
+        } else if command == CMD_CURSOR_MOVE_PAGEDOWN {
+            let p = arg.trim().parse::<f64>().unwrap_or(1.);
+            Ok(Self::CursorMovePageDown(p))
         } else if command == CMD_CURSOR_MOVE_UP {
             match arg {
                 "" => Ok(Self::CursorMoveUp(1)),
