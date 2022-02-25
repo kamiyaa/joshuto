@@ -211,44 +211,18 @@ impl<'a> TuiTextField<'a> {
                                 let _ = terminal.hide_cursor();
                                 return None;
                             }
-                            Key::Char('\t') => {
-                                // If we are in the middle of a word, move to the end of it,
-                                // so we don't split it with autocompletion.
-                                move_to_the_end(&mut line_buffer);
-
-                                if completion_tracker.is_none() {
-                                    if let Some((pos, mut candidates)) =
-                                        get_candidates(&completer, &mut line_buffer)
-                                    {
-                                        candidates.sort_by(|x, y| {
-                                            x.display()
-                                                .partial_cmp(y.display())
-                                                .unwrap_or(std::cmp::Ordering::Less)
-                                        });
-                                        let ct = CompletionTracker::new(
-                                            pos,
-                                            candidates,
-                                            String::from(line_buffer.as_str()),
-                                        );
-                                        completion_tracker = Some(ct);
-                                    }
-                                }
-
-                                if let Some(ref mut s) = completion_tracker {
-                                    if !s.candidates.is_empty() {
-                                        let candidate = &s.candidates[s.index];
-
-                                        completer.update(
-                                            &mut line_buffer,
-                                            s.pos,
-                                            candidate.display(),
-                                        );
-
-                                        s.index = (s.index + 1) % s.candidates.len();
-                                    }
-                                }
-                                false
-                            }
+                            Key::Char('\t') => autocomplete(
+                                &mut line_buffer,
+                                &mut completion_tracker,
+                                &completer,
+                                false,
+                            ),
+                            Key::BackTab => autocomplete(
+                                &mut line_buffer,
+                                &mut completion_tracker,
+                                &completer,
+                                true,
+                            ),
 
                             // Current `completion_tracker` should be droped
                             // only if we moved to another word
@@ -320,6 +294,48 @@ impl<'a> TuiTextField<'a> {
             Some(input_string)
         }
     }
+}
+
+fn autocomplete(
+    line_buffer: &mut LineBuffer,
+    completion_tracker: &mut Option<CompletionTracker>,
+    completer: &FilenameCompleter,
+    reversed: bool,
+) -> bool {
+    // If we are in the middle of a word, move to the end of it,
+    // so we don't split it with autocompletion.
+    move_to_the_end(line_buffer);
+
+    if let Some(ref mut ct) = completion_tracker {
+        ct.index = if reversed {
+            ct.index.checked_sub(1).unwrap_or(ct.candidates.len() - 1)
+        } else {
+            (ct.index + 1) % ct.candidates.len()
+        };
+
+        let candidate = &ct.candidates[ct.index];
+        completer.update(line_buffer, ct.pos, candidate.display());
+    } else if let Some((pos, mut candidates)) = get_candidates(completer, line_buffer) {
+        if !candidates.is_empty() {
+            candidates.sort_by(|x, y| {
+                x.display()
+                    .partial_cmp(y.display())
+                    .unwrap_or(std::cmp::Ordering::Less)
+            });
+
+            let first_idx = if reversed { candidates.len() - 1 } else { 0 };
+            let first = candidates[first_idx].display().to_string();
+
+            let mut ct =
+                CompletionTracker::new(pos, candidates, String::from(line_buffer.as_str()));
+            ct.index = first_idx;
+
+            *completion_tracker = Some(ct);
+            completer.update(line_buffer, pos, &first);
+        }
+    }
+
+    false
 }
 
 fn moved_to_another_word<F, Any>(line_buffer: &mut LineBuffer, action: F) -> bool
