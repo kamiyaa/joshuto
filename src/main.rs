@@ -147,7 +147,7 @@ fn main() {
     let args = Args::from_args();
 
     if let Err(e) = run_joshuto(args) {
-        eprintln!("{}", e.to_string());
+        eprintln!("{}", e);
         process::exit(1);
     }
 }

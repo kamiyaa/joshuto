@@ -9,19 +9,10 @@ pub struct JoshutoPreviewEntry {
     pub args: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 struct JoshutoPreviewCrude {
     pub extension: Option<HashMap<String, JoshutoPreviewEntry>>,
     pub mimetype: Option<HashMap<String, JoshutoPreviewEntry>>,
-}
-
-impl std::default::Default for JoshutoPreviewCrude {
-    fn default() -> Self {
-        Self {
-            extension: None,
-            mimetype: None,
-        }
-    }
 }
 
 impl From<JoshutoPreviewCrude> for JoshutoPreview {
@@ -36,7 +27,7 @@ impl From<JoshutoPreviewCrude> for JoshutoPreview {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct JoshutoPreview {
     pub extension: HashMap<String, JoshutoPreviewEntry>,
     pub mimetype: HashMap<String, JoshutoPreviewEntry>,
@@ -44,16 +35,6 @@ pub struct JoshutoPreview {
 
 impl TomlConfigFile for JoshutoPreview {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<JoshutoPreviewCrude, JoshutoPreview>(file_name)
-            .unwrap_or_else(JoshutoPreview::default)
-    }
-}
-
-impl std::default::Default for JoshutoPreview {
-    fn default() -> Self {
-        JoshutoPreview {
-            extension: HashMap::new(),
-            mimetype: HashMap::new(),
-        }
+        parse_to_config_file::<JoshutoPreviewCrude, JoshutoPreview>(file_name).unwrap_or_default()
     }
 }

@@ -31,7 +31,7 @@ impl AppConfig {
     pub fn preview_options_ref(&self) -> &PreviewOption {
         &self._preview_options
     }
-    pub fn preview_options_mut(&mut self) -> &mut PreviewOption {
+    pub fn _preview_options_mut(&mut self) -> &mut PreviewOption {
         &mut self._preview_options
     }
 

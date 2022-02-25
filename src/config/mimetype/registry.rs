@@ -15,7 +15,7 @@ pub struct AppMimetypeRegistryCrude {
     pub _extension: MimetypeRegistry,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct AppMimetypeRegistry {
     //    pub _class: HashMap<String, Vec<AppMimetypeEntry>>,
     pub _extension: MimetypeRegistry,
@@ -54,17 +54,9 @@ impl From<AppMimetypeRegistryCrude> for AppMimetypeRegistry {
     }
 }
 
-impl std::default::Default for AppMimetypeRegistry {
-    fn default() -> Self {
-        Self {
-            _extension: MimetypeRegistry::new(),
-        }
-    }
-}
-
 impl TomlConfigFile for AppMimetypeRegistry {
     fn get_config(file_name: &str) -> Self {
         parse_to_config_file::<AppMimetypeRegistryCrude, AppMimetypeRegistry>(file_name)
-            .unwrap_or_else(Self::default)
+            .unwrap_or_default()
     }
 }

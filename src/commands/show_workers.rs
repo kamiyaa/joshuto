@@ -12,7 +12,7 @@ pub fn show_workers(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     _keymap_t: &AppKeyMapping,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     context.flush_event();
 
     loop {
@@ -21,6 +21,7 @@ pub fn show_workers(
         if let Ok(event) = context.poll_event() {
             match event {
                 AppEvent::Termion(event) => {
+                    #[allow(clippy::single_match)]
                     match event {
                         Event::Key(Key::Esc) => break,
                         _ => {}

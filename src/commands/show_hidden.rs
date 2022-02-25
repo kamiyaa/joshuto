@@ -19,7 +19,7 @@ pub fn _toggle_hidden(context: &mut AppContext) {
     }
 }
 
-pub fn toggle_hidden(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn toggle_hidden(context: &mut AppContext) -> JoshutoResult {
     _toggle_hidden(context);
     reload::reload_dirlist(context)
 }

@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 
-fn preview_cursor_move(context: &mut AppContext, new_index: usize) -> JoshutoResult<()> {
+fn preview_cursor_move(context: &mut AppContext, new_index: usize) -> JoshutoResult {
     let file_path: Option<PathBuf> = {
         let curr_tab = context.tab_context_ref().curr_tab_ref();
         let curr_list = curr_tab.curr_list_ref();
@@ -20,7 +20,7 @@ fn preview_cursor_move(context: &mut AppContext, new_index: usize) -> JoshutoRes
     Ok(())
 }
 
-pub fn preview_up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
+pub fn preview_up(context: &mut AppContext, u: usize) -> JoshutoResult {
     let new_index = {
         let curr_tab = context.tab_context_ref().curr_tab_ref();
         let curr_list = curr_tab.curr_list_ref();
@@ -49,7 +49,7 @@ pub fn preview_up(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn preview_down(context: &mut AppContext, u: usize) -> JoshutoResult<()> {
+pub fn preview_down(context: &mut AppContext, u: usize) -> JoshutoResult {
     let new_index = {
         let curr_tab = context.tab_context_ref().curr_tab_ref();
         let curr_list = curr_tab.curr_list_ref();

@@ -39,7 +39,7 @@ impl DirectoryHistory for JoshutoHistory {
                 let mut new_dirlist = create_dirlist_with_history(self, curr, options)?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
-                        new_dirlist.set_index(Some(i), &ui_context, &options);
+                        new_dirlist.set_index(Some(i), ui_context, options);
                     }
                 }
                 dirlists.push(new_dirlist);
@@ -48,7 +48,7 @@ impl DirectoryHistory for JoshutoHistory {
                     JoshutoDirList::from_path(curr.to_path_buf().clone(), options)?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
-                        new_dirlist.set_index(Some(i), &ui_context, &options);
+                        new_dirlist.set_index(Some(i), ui_context, options);
                     }
                 }
                 dirlists.push(new_dirlist);

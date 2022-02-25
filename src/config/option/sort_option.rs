@@ -29,7 +29,7 @@ impl SortOption {
         }
 
         // let mut res = self.sort_method.cmp(f1, f2, &self);
-        let mut res = self.sort_methods.cmp(f1, f2, &self);
+        let mut res = self.sort_methods.cmp(f1, f2, self);
         if self.reverse {
             res = match res {
                 cmp::Ordering::Less => cmp::Ordering::Greater,

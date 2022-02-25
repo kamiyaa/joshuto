@@ -52,6 +52,6 @@ impl From<AppConfigCrude> for AppConfig {
 
 impl TomlConfigFile for AppConfig {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppConfigCrude, AppConfig>(file_name).unwrap_or_else(Self::default)
+        parse_to_config_file::<AppConfigCrude, AppConfig>(file_name).unwrap_or_default()
     }
 }

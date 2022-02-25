@@ -15,7 +15,7 @@ use super::reload;
 const ENV_TMP_DIR: &str = "TMP_DIR";
 const ENV_EDITOR: &str = "EDITOR";
 
-pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
     let tmp_directory = env::var(ENV_TMP_DIR).unwrap_or_else(|_| "/tmp".to_string());
 
     const PREFIX: &str = "joshuto-";
@@ -120,7 +120,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn bulk_rename(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult<()> {
+pub fn bulk_rename(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
     context.remove_external_preview();
     backend.terminal_drop();
     let res = _bulk_rename(context);

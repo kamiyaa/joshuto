@@ -13,6 +13,7 @@ impl Message {
     }
 }
 
+#[derive(Default)]
 pub struct MessageQueue {
     contents: VecDeque<Message>,
 }
@@ -47,13 +48,5 @@ impl MessageQueue {
 
     pub fn current_message(&self) -> Option<&Message> {
         self.contents.front()
-    }
-}
-
-impl std::default::Default for MessageQueue {
-    fn default() -> Self {
-        Self {
-            contents: VecDeque::new(),
-        }
     }
 }

@@ -7,7 +7,7 @@ use crate::io::FileOp;
 
 use crate::io::{IoWorkerOptions, IoWorkerThread};
 
-pub fn cut(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn cut(context: &mut AppContext) -> JoshutoResult {
     if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         let selected = list.get_selected_paths();
 
@@ -20,7 +20,7 @@ pub fn cut(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn copy(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy(context: &mut AppContext) -> JoshutoResult {
     if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         let selected = list.get_selected_paths();
 
@@ -33,7 +33,7 @@ pub fn copy(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResult<()> {
+pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResult {
     match context.take_local_state() {
         Some(state) if !state.paths.is_empty() => {
             let dest = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
@@ -48,7 +48,7 @@ pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResul
     }
 }
 
-pub fn copy_filename(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy_filename(context: &mut AppContext) -> JoshutoResult {
     let entry_file_name = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -62,7 +62,7 @@ pub fn copy_filename(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResult {
     let entry_file_name = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -79,7 +79,7 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResul
     Ok(())
 }
 
-pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult {
     let entry_file_path = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -94,7 +94,7 @@ pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult {
     let opt_entry = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -109,7 +109,7 @@ pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-fn copy_string_to_buffer(string: String) -> JoshutoResult<()> {
+fn copy_string_to_buffer(string: String) -> JoshutoResult {
     let clipboards = [
         (
             "wl-copy",

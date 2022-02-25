@@ -77,11 +77,10 @@ impl AppContext {
         commandline_context.history_mut().set_max_len(20);
 
         let event_tx_for_fs_notification = event_tx.clone();
-        let watcher = notify::recommended_watcher(move |res| match res {
-            Ok(event) => {
+        let watcher = notify::recommended_watcher(move |res| {
+            if let Ok(event) = res {
                 let _ = event_tx_for_fs_notification.send(AppEvent::Filesystem(event));
             }
-            Err(_) => {}
         })
         .unwrap();
         let watched_paths = HashSet::with_capacity(3);
@@ -164,7 +163,7 @@ impl AppContext {
                 }
             }
             None => {
-                if !self.preview_area.is_none() {
+                if self.preview_area.is_some() {
                     self.call_preview_removed_hook()
                 }
             }
@@ -184,7 +183,7 @@ impl AppContext {
     /// This function can be called if an external preview shall be temporarily removed, for example
     /// when entering the help screen.
     pub fn remove_external_preview(&mut self) {
-        if let Some(_) = &self.preview_area {
+        if self.preview_area.is_some() {
             self.call_preview_removed_hook();
             self.preview_area = None;
         }
@@ -203,10 +202,8 @@ impl AppContext {
             curr_tab_ref.child_list_ref(),
         ];
 
-        for list in watched_lists {
-            if let Some(dir_list) = list {
-                new_paths_to_watch.insert(dir_list.file_path().to_path_buf());
-            }
+        for list in watched_lists.iter().flatten() {
+            new_paths_to_watch.insert(list.file_path().to_path_buf());
         }
 
         // remove paths from watcher which don't need to be watched anymore...

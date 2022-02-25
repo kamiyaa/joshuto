@@ -4,6 +4,7 @@ use crate::config::option::{LineNumberStyle, SelectOption, SortType};
 use crate::io::IoWorkerOptions;
 
 #[derive(Clone, Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum Command {
     BulkRename,
 

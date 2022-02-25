@@ -49,7 +49,7 @@ pub fn sub_process(
     backend: &mut TuiBackend,
     words: &[String],
     spawn: bool,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     backend.terminal_drop();
     let res = execute_sub_process(context, words, spawn);
     reload::soft_reload(context.tab_context_ref().index, context)?;

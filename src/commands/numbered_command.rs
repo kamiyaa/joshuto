@@ -15,7 +15,7 @@ pub fn numbered_command(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     keymap: &AppKeyMapping,
-) -> JoshutoResult<()> {
+) -> JoshutoResult {
     context.flush_event();
     let mut prefix = String::from(first_char);
 

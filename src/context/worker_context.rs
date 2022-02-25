@@ -29,7 +29,8 @@ impl WorkerContext {
     // worker related
     pub fn push(&mut self, thread: IoWorkerThread) {
         self.worker_queue.push_back(thread);
-        self.event_tx.send(AppEvent::IoWorkerCreate);
+        // error is ignored
+        let _ = self.event_tx.send(AppEvent::IoWorkerCreate);
     }
     pub fn is_busy(&self) -> bool {
         self.worker.is_some()

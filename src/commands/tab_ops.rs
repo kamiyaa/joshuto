@@ -66,7 +66,7 @@ pub fn tab_switch(offset: i32, context: &mut AppContext) -> std::io::Result<()> 
     _tab_switch(new_index, context)
 }
 
-pub fn tab_switch_index(new_index: usize, context: &mut AppContext) -> JoshutoResult<()> {
+pub fn tab_switch_index(new_index: usize, context: &mut AppContext) -> JoshutoResult {
     if new_index <= context.tab_context_ref().len() {
         _tab_switch(new_index - 1, context)?;
         Ok(())
@@ -93,7 +93,7 @@ pub fn new_tab_home_path(context: &AppContext) -> path::PathBuf {
     }
 }
 
-pub fn new_tab(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn new_tab(context: &mut AppContext) -> JoshutoResult {
     let new_tab_path = new_tab_home_path(context);
 
     let tab = JoshutoTab::new(
@@ -108,7 +108,7 @@ pub fn new_tab(context: &mut AppContext) -> JoshutoResult<()> {
     Ok(())
 }
 
-pub fn close_tab(context: &mut AppContext) -> JoshutoResult<()> {
+pub fn close_tab(context: &mut AppContext) -> JoshutoResult {
     if context.tab_context_ref().len() <= 1 {
         return quit::quit(context);
     }
