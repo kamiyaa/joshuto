@@ -26,54 +26,53 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
 pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
     let config = context.config_ref();
 
-    if let Some(entry) = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-        .and_then(|s| s.curr_entry_ref())
-    {
-        if entry.file_path().is_dir() {
+    let curr_list = context.tab_context_ref().curr_tab_ref().curr_list_ref();
+    let entry = curr_list.and_then(|s| s.curr_entry_ref());
+
+    match entry {
+        None => (),
+        Some(entry) if entry.file_path().is_dir() => {
             let path = entry.file_path().to_path_buf();
             change_directory::cd(path.as_path(), context)?;
             reload::soft_reload(context.tab_context_ref().index, context)?;
-        } else {
-            let paths = context
-                .tab_context_ref()
-                .curr_tab_ref()
-                .curr_list_ref()
-                .map_or(vec![], |s| s.get_selected_paths());
-
-            if paths.is_empty() {
-                return Err(JoshutoError::new(
+        }
+        Some(_) if context.args.choosefiles.is_some() => {
+            context.quit = QuitType::ChooseFiles;
+        }
+        Some(_) => {
+            let paths = curr_list.map_or_else(Vec::new, |s| s.get_selected_paths());
+            let path = paths.get(0).ok_or_else(|| {
+                JoshutoError::new(
                     JoshutoErrorKind::Io(io::ErrorKind::NotFound),
                     String::from("No files selected"),
-                ));
-            }
+                )
+            })?;
+
             let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
+            let option = get_options(path)
+                .into_iter()
+                .find(|option| option.program_exists());
 
-            let options = get_options(paths[0].as_path());
-
-            if context.args.choosefiles.is_some() {
-                context.quit = QuitType::ChooseFiles;
-            } else if !options.is_empty() {
-                if options[0].get_fork() {
-                    options[0].execute_with(files.as_slice())?;
+            if let Some(option) = option {
+                if option.get_fork() {
+                    option.execute_with(files.as_slice())?;
                 } else {
                     backend.terminal_drop();
-                    let res = options[0].execute_with(files.as_slice());
+                    let result = option.execute_with(files.as_slice());
                     backend.terminal_restore()?;
-                    res?;
+                    result?;
                 }
             } else if config.xdg_open {
                 if config.xdg_open_fork {
-                    open::that_in_background(paths[0].as_path());
+                    open::that_in_background(path);
                 } else {
                     backend.terminal_drop();
-                    open::that(paths[0].as_path())?;
+                    let result = open::that(path);
                     backend.terminal_restore()?;
+                    result?;
                 }
             } else {
-                open_with_helper(context, backend, options, files)?;
+                open_with_helper(context, backend, get_options(path), files)?;
             }
         }
     }

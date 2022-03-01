@@ -1,4 +1,5 @@
 use serde_derive::Deserialize;
+use std::env;
 use std::fmt;
 use std::io::Read;
 use std::process;
@@ -104,6 +105,14 @@ impl AppMimetypeEntry {
 
     pub fn get_confirm_exit(&self) -> bool {
         self._confirm_exit
+    }
+
+    // TODO: Windows support
+    pub fn program_exists(&self) -> bool {
+        let program = self.get_command();
+        env::var_os("PATH")
+            .map(|path| env::split_paths(&path).any(|dir| dir.join(program).is_file()))
+            .unwrap_or(false)
     }
 
     pub fn execute_with<I, S>(&self, paths: I) -> std::io::Result<()>
