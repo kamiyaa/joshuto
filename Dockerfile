@@ -9,7 +9,7 @@ RUN rustup target add x86_64-unknown-linux-musl \
 
 FROM busybox:latest
 
-COPY target/x86_64-unknown-linux-musl/release/joshuto /bin/joshuto
+COPY --from=builder /usr/src/joshuto/target/x86_64-unknown-linux-musl/release/joshuto /bin/joshuto
 
 WORKDIR /root
 
