@@ -174,31 +174,15 @@ impl JoshutoDirList {
     }
 
     pub fn curr_entry_ref(&self) -> Option<&JoshutoDirEntry> {
-        self.get_curr_ref_(self.index?)
+        self.contents.get(self.index?)
     }
 
     pub fn curr_entry_mut(&mut self) -> Option<&mut JoshutoDirEntry> {
-        self.get_curr_mut_(self.index?)
+        self.contents.get_mut(self.index?)
     }
 
     /// Returns the index of the first entry to be printed in a UI dir list
     pub fn first_index_for_viewport(&self) -> usize {
         self.viewport_index
-    }
-
-    fn get_curr_mut_(&mut self, index: usize) -> Option<&mut JoshutoDirEntry> {
-        if index < self.contents.len() {
-            Some(&mut self.contents[index])
-        } else {
-            None
-        }
-    }
-
-    fn get_curr_ref_(&self, index: usize) -> Option<&JoshutoDirEntry> {
-        if index < self.contents.len() {
-            Some(&self.contents[index])
-        } else {
-            None
-        }
     }
 }
