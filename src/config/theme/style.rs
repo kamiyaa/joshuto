@@ -60,6 +60,13 @@ impl RawAppStyle {
             "light_cyan" => style::Color::LightCyan,
             "white" => style::Color::White,
             "reset" => style::Color::Reset,
+            s if s.starts_with('#') => {
+                let rgb = Rgb::from_hex_str(s).unwrap();
+                let r = rgb.get_red() as u8;
+                let g = rgb.get_green() as u8;
+                let b = rgb.get_blue() as u8;
+                style::Color::Rgb(r, g, b)
+            },
             s if s.is_empty() => style::Color::Reset,
             s => match s.parse::<Rgb>() {
                 Ok(rgb) => {
