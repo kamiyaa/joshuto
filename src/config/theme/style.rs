@@ -61,7 +61,10 @@ impl RawAppStyle {
             "white" => style::Color::White,
             "reset" => style::Color::Reset,
             s if s.starts_with('#') => {
-                let rgb = Rgb::from_hex_str(s).unwrap();
+                let rgb = match Rgb::from_hex_str(s) {
+                    Ok(s) => s,
+                    _ => return style::Color::Reset,
+                };
                 let r = rgb.get_red() as u8;
                 let g = rgb.get_green() as u8;
                 let b = rgb.get_blue() as u8;
