@@ -69,7 +69,7 @@ impl RawAppStyle {
                 let g = rgb.get_green() as u8;
                 let b = rgb.get_blue() as u8;
                 style::Color::Rgb(r, g, b)
-            }
+            },
             s if s.is_empty() => style::Color::Reset,
             s => match s.parse::<Rgb>() {
                 Ok(rgb) => {
