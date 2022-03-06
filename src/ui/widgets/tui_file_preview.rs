@@ -65,4 +65,3 @@ impl<'a> Widget for TuiFilePreview<'a> {
         self.render_text_preview(area, buf, vec);
     }
 }
-
