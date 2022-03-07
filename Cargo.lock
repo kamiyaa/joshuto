@@ -19,10 +19,11 @@ checksum = "77e9c9abb82613923ec78d7a461595d52491ba7240f3c64c0bbe0e6d98e0fce0"
 
 [[package]]
 name = "ansi-to-tui"
-version = "0.5.0"
-source = "git+https://github.com/uttarayan21/ansi-to-tui#92736b3a6d8cf1f6f0225ed3f95aabe1d27efcf8"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c3fb5747c9d1b444cb6c9f96c84d09a3f7ae9e1eb77f52ec45c8bf30a6e6bdf"
 dependencies = [
- "tui",
+ "tui 0.16.0",
 ]
 
 [[package]]
@@ -358,7 +359,7 @@ dependencies = [
  "termion",
  "toml",
  "trash",
- "tui",
+ "tui 0.17.0",
  "unicode-segmentation",
  "unicode-width",
  "users",
@@ -889,6 +890,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90df96afb154814e214f37eac04920c66886fd95962f22febb4d537b0dacd512"
 dependencies = [
  "winapi",
+]
+
+[[package]]
+name = "tui"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39c8ce4e27049eed97cfa363a5048b09d995e209994634a0efc26a14ab6c0c23"
+dependencies = [
+ "bitflags",
+ "cassowary",
+ "unicode-segmentation",
+ "unicode-width",
 ]
 
 [[package]]

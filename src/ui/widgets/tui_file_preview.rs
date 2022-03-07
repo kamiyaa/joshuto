@@ -15,7 +15,8 @@ impl<'a> TuiFilePreview<'a> {
     }
 
     #[cfg(not(feature = "syntax_highlight"))]
-    fn render_text_preview(&self, area: Rect, buf: &mut Buffer, vec: Vec<u8>) {
+    fn render_text_preview(&self, area: Rect, buf: &mut Buffer, s: &str) {
+        let vec: Vec<&str> = s.split('\n').collect();
         for (line, y) in vec
             .iter()
             .skip(self.preview.index)
@@ -27,10 +28,10 @@ impl<'a> TuiFilePreview<'a> {
     }
 
     #[cfg(feature = "syntax_highlight")]
-    fn render_text_preview(&self, area: Rect, buf: &mut Buffer, vec: Vec<u8>) {
+    fn render_text_preview(&self, area: Rect, buf: &mut Buffer, s: &str) {
         use ansi_to_tui::ansi_to_text;
-
-        let res = ansi_to_text(vec.clone());
+        let vec = s.as_bytes().to_vec();
+        let res = ansi_to_text(vec);
         match res {
             Ok(text) => {
                 for (line, y) in text
@@ -45,6 +46,7 @@ impl<'a> TuiFilePreview<'a> {
             Err(e) => {
                 let span = Span::raw(format!("Failed to parse ansi colors: {}", e));
                 buf.set_span(area.x, area.y, &span, area.width);
+                let vec: Vec<&str> = s.split('\n').collect();
 
                 for (line, y) in vec
                     .iter()
@@ -61,7 +63,6 @@ impl<'a> TuiFilePreview<'a> {
 
 impl<'a> Widget for TuiFilePreview<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let vec = self.preview.output.as_str().as_bytes().to_vec();
-        self.render_text_preview(area, buf, vec);
+        self.render_text_preview(area, buf, self.preview.output.as_str());
     }
 }
