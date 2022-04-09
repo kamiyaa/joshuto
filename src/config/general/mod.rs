@@ -1,10 +1,10 @@
 pub mod app;
 
-mod app_crude;
-mod display_crude;
-mod preview_crude;
-mod sort_crude;
-mod tab_crude;
+mod app_raw;
+mod display_raw;
+mod preview_raw;
+mod sort_raw;
+mod tab_raw;
 
 pub use self::app::AppConfig;
 

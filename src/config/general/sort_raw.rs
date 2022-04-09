@@ -9,7 +9,7 @@ const fn default_true() -> bool {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct SortOptionCrude {
+pub struct SortOptionRaw {
     #[serde(default = "default_true")]
     pub directories_first: bool,
     #[serde(default)]
@@ -20,7 +20,7 @@ pub struct SortOptionCrude {
     pub sort_method: Option<String>,
 }
 
-impl std::default::Default for SortOptionCrude {
+impl std::default::Default for SortOptionRaw {
     fn default() -> Self {
         Self {
             directories_first: default_true(),
@@ -31,9 +31,9 @@ impl std::default::Default for SortOptionCrude {
     }
 }
 
-impl From<SortOptionCrude> for SortOption {
-    fn from(crude: SortOptionCrude) -> Self {
-        let sort_method = match crude.sort_method.as_ref() {
+impl From<SortOptionRaw> for SortOption {
+    fn from(raw: SortOptionRaw) -> Self {
+        let sort_method = match raw.sort_method.as_ref() {
             Some(s) => SortType::parse(s).unwrap_or(SortType::Natural),
             None => SortType::Natural,
         };
@@ -42,9 +42,9 @@ impl From<SortOptionCrude> for SortOption {
         sort_methods.reorganize(sort_method);
 
         Self {
-            directories_first: crude.directories_first,
-            case_sensitive: crude.case_sensitive,
-            reverse: crude.reverse,
+            directories_first: raw.directories_first,
+            case_sensitive: raw.case_sensitive,
+            reverse: raw.reverse,
             sort_methods,
         }
     }

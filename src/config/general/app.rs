@@ -1,6 +1,6 @@
 use super::DEFAULT_CONFIG_FILE_PATH;
 
-use super::app_crude::AppConfigCrude;
+use super::app_raw::AppConfigRaw;
 use crate::config::option::{DisplayOption, PreviewOption, SortOption, TabOption};
 use crate::error::JoshutoResult;
 
@@ -17,8 +17,8 @@ pub struct AppConfig {
 
 impl AppConfig {
     pub fn default_res() -> JoshutoResult<Self> {
-        let crude: AppConfigCrude = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
-        Ok(Self::from(crude))
+        let raw: AppConfigRaw = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
+        Ok(Self::from(raw))
     }
 
     pub fn display_options_ref(&self) -> &DisplayOption {

@@ -5,9 +5,9 @@ use serde_derive::Deserialize;
 use crate::config::option::{DisplayOption, PreviewOption, TabOption};
 use crate::config::{parse_to_config_file, AppConfig, TomlConfigFile};
 
-use super::display_crude::DisplayOptionCrude;
-use super::preview_crude::PreviewOptionCrude;
-use super::tab_crude::TabOptionCrude;
+use super::display_raw::DisplayOptionRaw;
+use super::preview_raw::PreviewOptionRaw;
+use super::tab_raw::TabOptionRaw;
 
 const fn default_true() -> bool {
     true
@@ -17,7 +17,7 @@ const fn default_scroll_offset() -> usize {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AppConfigCrude {
+pub struct AppConfigRaw {
     #[serde(default = "default_scroll_offset")]
     pub scroll_offset: usize,
     #[serde(default = "default_true")]
@@ -29,29 +29,29 @@ pub struct AppConfigCrude {
     #[serde(default = "default_true")]
     pub watch_files: bool,
     #[serde(default, rename = "display")]
-    pub display_options: DisplayOptionCrude,
+    pub display_options: DisplayOptionRaw,
     #[serde(default, rename = "preview")]
-    pub preview_options: PreviewOptionCrude,
+    pub preview_options: PreviewOptionRaw,
     #[serde(default, rename = "tab")]
-    pub tab_options: TabOptionCrude,
+    pub tab_options: TabOptionRaw,
 }
 
-impl From<AppConfigCrude> for AppConfig {
-    fn from(crude: AppConfigCrude) -> Self {
+impl From<AppConfigRaw> for AppConfig {
+    fn from(raw: AppConfigRaw) -> Self {
         Self {
-            use_trash: crude.use_trash,
-            xdg_open: crude.xdg_open,
-            xdg_open_fork: crude.xdg_open_fork,
-            watch_files: crude.watch_files,
-            _display_options: DisplayOption::from(crude.display_options),
-            _preview_options: PreviewOption::from(crude.preview_options),
-            _tab_options: TabOption::from(crude.tab_options),
+            use_trash: raw.use_trash,
+            xdg_open: raw.xdg_open,
+            xdg_open_fork: raw.xdg_open_fork,
+            watch_files: raw.watch_files,
+            _display_options: DisplayOption::from(raw.display_options),
+            _preview_options: PreviewOption::from(raw.preview_options),
+            _tab_options: TabOption::from(raw.tab_options),
         }
     }
 }
 
 impl TomlConfigFile for AppConfig {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppConfigCrude, AppConfig>(file_name).unwrap_or_default()
+        parse_to_config_file::<AppConfigRaw, AppConfig>(file_name).unwrap_or_default()
     }
 }

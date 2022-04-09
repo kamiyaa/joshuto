@@ -2,32 +2,32 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 
 use super::DEFAULT_CONFIG_FILE_PATH;
-use super::{AppStyle, RawAppStyle};
+use super::{AppStyle, AppStyleRaw};
 use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;
 
 #[derive(Clone, Debug, Deserialize, Default)]
-pub struct AppThemeCrude {
+pub struct AppThemeRaw {
     #[serde(default)]
-    pub regular: RawAppStyle,
+    pub regular: AppStyleRaw,
     #[serde(default)]
-    pub selection: RawAppStyle,
+    pub selection: AppStyleRaw,
     #[serde(default)]
-    pub directory: RawAppStyle,
+    pub directory: AppStyleRaw,
     #[serde(default)]
-    pub executable: RawAppStyle,
+    pub executable: AppStyleRaw,
     #[serde(default)]
-    pub link: RawAppStyle,
+    pub link: AppStyleRaw,
     #[serde(default)]
-    pub link_invalid: RawAppStyle,
+    pub link_invalid: AppStyleRaw,
     #[serde(default)]
-    pub socket: RawAppStyle,
+    pub socket: AppStyleRaw,
     #[serde(default)]
-    pub ext: HashMap<String, RawAppStyle>,
+    pub ext: HashMap<String, AppStyleRaw>,
 }
 
-impl From<AppThemeCrude> for AppTheme {
-    fn from(crude: AppThemeCrude) -> Self {
+impl From<AppThemeRaw> for AppTheme {
+    fn from(crude: AppThemeRaw) -> Self {
         let selection = crude.selection.to_style_theme();
         let executable = crude.executable.to_style_theme();
         let regular = crude.regular.to_style_theme();
@@ -71,14 +71,14 @@ pub struct AppTheme {
 
 impl AppTheme {
     pub fn default_res() -> JoshutoResult<Self> {
-        let crude: AppThemeCrude = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
+        let crude: AppThemeRaw = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
         Ok(Self::from(crude))
     }
 }
 
 impl TomlConfigFile for AppTheme {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppThemeCrude, AppTheme>(file_name).unwrap_or_default()
+        parse_to_config_file::<AppThemeRaw, AppTheme>(file_name).unwrap_or_default()
     }
 }
 

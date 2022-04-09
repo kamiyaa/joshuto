@@ -10,12 +10,12 @@ fn default_home_page() -> String {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct TabOptionCrude {
+pub struct TabOptionRaw {
     #[serde(default = "default_home_page")]
     pub home_page: String,
 }
 
-impl std::default::Default for TabOptionCrude {
+impl std::default::Default for TabOptionRaw {
     fn default() -> Self {
         Self {
             home_page: default_home_page(),
@@ -23,9 +23,9 @@ impl std::default::Default for TabOptionCrude {
     }
 }
 
-impl From<TabOptionCrude> for TabOption {
-    fn from(crude: TabOptionCrude) -> Self {
-        let home_page = match crude.home_page.as_str() {
+impl From<TabOptionRaw> for TabOption {
+    fn from(raw: TabOptionRaw) -> Self {
+        let home_page = match raw.home_page.as_str() {
             "inherit" => TabHomePage::Inherit,
             "home" => TabHomePage::Home,
             "root" => TabHomePage::Root,

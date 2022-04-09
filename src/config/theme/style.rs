@@ -9,7 +9,7 @@ const fn default_color() -> style::Color {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct RawAppStyle {
+pub struct AppStyleRaw {
     #[serde(default)]
     pub fg: String,
     #[serde(default)]
@@ -22,7 +22,7 @@ pub struct RawAppStyle {
     pub invert: bool,
 }
 
-impl RawAppStyle {
+impl AppStyleRaw {
     pub fn to_style_theme(&self) -> AppStyle {
         let bg = Self::str_to_color(self.bg.as_str());
         let fg = Self::str_to_color(self.fg.as_str());
@@ -84,7 +84,7 @@ impl RawAppStyle {
     }
 }
 
-impl std::default::Default for RawAppStyle {
+impl std::default::Default for AppStyleRaw {
     fn default() -> Self {
         Self {
             bg: "".to_string(),

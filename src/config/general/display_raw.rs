@@ -5,7 +5,7 @@ use tui::layout::Constraint;
 
 use crate::config::option::{DisplayOption, LineNumberStyle};
 
-use super::sort_crude::SortOptionCrude;
+use super::sort_raw::SortOptionRaw;
 
 pub const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
@@ -20,7 +20,7 @@ const fn default_scroll_offset() -> usize {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct DisplayOptionCrude {
+pub struct DisplayOptionRaw {
     #[serde(default)]
     pub automatically_count_files: bool,
 
@@ -46,13 +46,13 @@ pub struct DisplayOptionCrude {
     pub tilde_in_titlebar: bool,
 
     #[serde(default, rename = "sort")]
-    pub sort_options: SortOptionCrude,
+    pub sort_options: SortOptionRaw,
 
     #[serde(default)]
     pub line_number_style: String,
 }
 
-impl std::default::Default for DisplayOptionCrude {
+impl std::default::Default for DisplayOptionRaw {
     fn default() -> Self {
         Self {
             automatically_count_files: false,
@@ -62,16 +62,16 @@ impl std::default::Default for DisplayOptionCrude {
             show_borders: true,
             show_hidden: false,
             show_icons: false,
-            sort_options: SortOptionCrude::default(),
+            sort_options: SortOptionRaw::default(),
             tilde_in_titlebar: true,
             line_number_style: "none".to_string(),
         }
     }
 }
 
-impl From<DisplayOptionCrude> for DisplayOption {
-    fn from(crude: DisplayOptionCrude) -> Self {
-        let column_ratio = match crude.column_ratio {
+impl From<DisplayOptionRaw> for DisplayOption {
+    fn from(raw: DisplayOptionRaw) -> Self {
+        let column_ratio = match raw.column_ratio {
             Some(s) if s.len() == 3 => (s[0], s[1], s[2]),
             Some(s) if s.len() == 2 => (0, s[0], s[1]),
             _ => default_column_ratio(),
@@ -90,21 +90,21 @@ impl From<DisplayOptionCrude> for DisplayOption {
             Constraint::Ratio(0, total),
         ];
 
-        let _line_nums = match crude.line_number_style.as_ref() {
+        let _line_nums = match raw.line_number_style.as_ref() {
             "absolute" => LineNumberStyle::Absolute,
             "relative" => LineNumberStyle::Relative,
             _ => LineNumberStyle::None,
         };
 
         Self {
-            _automatically_count_files: crude.automatically_count_files,
-            _collapse_preview: crude.collapse_preview,
-            _scroll_offset: crude.scroll_offset,
-            _show_borders: crude.show_borders,
-            _show_hidden: crude.show_hidden,
-            _show_icons: crude.show_icons,
-            _sort_options: crude.sort_options.into(),
-            _tilde_in_titlebar: crude.tilde_in_titlebar,
+            _automatically_count_files: raw.automatically_count_files,
+            _collapse_preview: raw.collapse_preview,
+            _scroll_offset: raw.scroll_offset,
+            _show_borders: raw.show_borders,
+            _show_hidden: raw.show_hidden,
+            _show_icons: raw.show_icons,
+            _sort_options: raw.sort_options.into(),
+            _tilde_in_titlebar: raw.tilde_in_titlebar,
             _line_nums,
 
             column_ratio,

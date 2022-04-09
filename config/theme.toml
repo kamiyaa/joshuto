@@ -1,9 +1,6 @@
 [selection]
 fg = "light_yellow"
 bold = true
-[selection.prefix]
-prefix = "  "
-size = 2
 
 [executable]
 fg = "light_green"
