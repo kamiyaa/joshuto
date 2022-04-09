@@ -37,6 +37,8 @@ impl<'a> Widget for TuiDirList<'a> {
 
         let drawing_width = area.width as usize;
 
+        let space_fill = " ".repeat(drawing_width);
+
         self.dirlist
             .iter()
             .skip(skip_dist)
@@ -51,10 +53,7 @@ impl<'a> Widget for TuiDirList<'a> {
                     style::entry_style(entry)
                 };
 
-                if ix == curr_index {
-                    let space_fill = " ".repeat(drawing_width);
-                    buf.set_string(x, y + i as u16, space_fill.as_str(), style);
-                }
+                buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
                 print_entry(buf, entry, style, (x + 1, y + i as u16), drawing_width - 1);
             });
