@@ -75,24 +75,22 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
 
                 buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
-                let line_number_string = if ix == curr_index {
-                    match line_num_style {
-                        LineNumberStyle::None => "".to_string(),
-                        _ => format!("{:<1$} ", curr_index + 1, max_index_length),
-                    }
+                let mut prefix = if entry.is_selected() {
+                    " ".to_string()
                 } else {
-                    match line_num_style {
-                        LineNumberStyle::Absolute => {
-                            format!("{:1$} ", ix + 1, max_index_length)
-                        }
-                        LineNumberStyle::Relative => format!(
-                            "{:1$} ",
-                            (curr_index as i16 - ix as i16).abs(),
-                            max_index_length
-                        ),
-                        LineNumberStyle::None => String::new(),
-                    }
+                    "".to_string()
                 };
+                let line_number_prefix = match line_num_style {
+                    LineNumberStyle::None => "".to_string(),
+                    _ if ix == curr_index => format!("{:<1$} ", curr_index + 1, max_index_length),
+                    LineNumberStyle::Absolute => format!("{:1$} ", ix + 1, max_index_length),
+                    LineNumberStyle::Relative => format!(
+                        "{:1$} ",
+                        (curr_index as i16 - ix as i16).abs(),
+                        max_index_length
+                    ),
+                };
+                prefix.push_str(&line_number_prefix);
 
                 print_entry(
                     buf,
@@ -100,7 +98,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     style,
                     (x + 1, y + i as u16),
                     drawing_width - 1,
-                    line_number_string,
+                    &prefix,
                 );
             });
     }
@@ -112,7 +110,7 @@ fn print_entry(
     style: Style,
     (x, y): (u16, u16),
     drawing_width: usize,
-    index: String,
+    prefix: &str,
 ) {
     let size_string = match entry.metadata.file_type() {
         FileType::Directory => entry
@@ -129,19 +127,20 @@ fn print_entry(
     let left_label_original = entry.label();
     let right_label_original = format!(" {}{} ", symlink_string, size_string);
 
+    // draw prefix first
+    let prefix_width = prefix.width();
+    buf.set_stringn(x, y, prefix, prefix_width, Style::default());
+    let x = x + prefix_width as u16;
+
+    // factor left_label and right_label
+    let drawing_width = drawing_width - prefix_width as usize;
     let (left_label, right_label) = factor_labels_for_entry(
         left_label_original,
         right_label_original.as_str(),
         drawing_width,
     );
 
-    let index_width = index.width();
-    // draw_index
-    buf.set_stringn(x, y, index, index_width, Style::default());
-
-    let drawing_width = drawing_width - index_width as usize;
-    let x = x + index_width as u16;
-    // Drawing labels
+    // Draw labels
     buf.set_stringn(x, y, left_label, drawing_width, style);
     buf.set_stringn(
         x + drawing_width as u16 - right_label.width() as u16,

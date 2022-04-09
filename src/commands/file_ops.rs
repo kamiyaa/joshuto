@@ -68,7 +68,7 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResul
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
-        .map(|entry| match entry.file_name().rsplit_once(".") {
+        .map(|entry| match entry.file_name().rsplit_once('.') {
             Some((name, _)) => name.to_string(),
             _ => entry.file_name().to_string(),
         });
