@@ -56,6 +56,8 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
         .to_string()
         .len();
 
+        let space_fill = " ".repeat(drawing_width);
+
         // draw every entry
         self.dirlist
             .iter()
@@ -70,6 +72,8 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                 } else {
                     style::entry_style(entry)
                 };
+
+                buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
                 let line_number_string = if ix == curr_index {
                     match line_num_style {
@@ -89,11 +93,6 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                         LineNumberStyle::None => String::new(),
                     }
                 };
-
-                if ix == curr_index {
-                    let space_fill = " ".repeat(drawing_width);
-                    buf.set_string(x, y + i as u16, space_fill.as_str(), style);
-                }
 
                 print_entry(
                     buf,

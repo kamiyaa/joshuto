@@ -37,6 +37,10 @@ pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
 }
 
 fn file_style(entry: &JoshutoDirEntry) -> Style {
+    let regular_style = Style::default()
+        .fg(THEME_T.regular.fg)
+        .bg(THEME_T.regular.bg)
+        .add_modifier(THEME_T.regular.modifier);
     let metadata = &entry.metadata;
     if unix::is_executable(metadata.mode) {
         Style::default()
@@ -44,15 +48,14 @@ fn file_style(entry: &JoshutoDirEntry) -> Style {
             .bg(THEME_T.executable.bg)
             .add_modifier(THEME_T.executable.modifier)
     } else {
-        match entry.file_path().extension() {
-            None => Style::default(),
-            Some(os_str) => match os_str.to_str() {
-                None => Style::default(),
-                Some(s) => match THEME_T.ext.get(s) {
-                    None => Style::default(),
-                    Some(t) => Style::default().fg(t.fg).bg(t.bg).add_modifier(t.modifier),
-                },
-            },
+        match entry
+            .file_path()
+            .extension()
+            .and_then(|s| s.to_str())
+            .and_then(|s| THEME_T.ext.get(s))
+        {
+            Some(t) => Style::default().fg(t.fg).bg(t.bg).add_modifier(t.modifier),
+            None => regular_style,
         }
     }
 }
