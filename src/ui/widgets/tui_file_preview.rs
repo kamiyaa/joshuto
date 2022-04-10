@@ -20,7 +20,7 @@ impl<'a> TuiFilePreview<'a> {
         for (line, y) in vec
             .iter()
             .skip(self.preview.index)
-            .zip(area.y + 1..area.y + area.height)
+            .zip(area.y..area.y + area.height)
         {
             let span = Span::raw(line.to_string());
             buf.set_span(area.x, y, &span, area.width);
