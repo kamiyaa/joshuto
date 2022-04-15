@@ -55,12 +55,7 @@ pub struct AppContext {
     // user interface context; data which is input to both, the UI rendering and the app state
     ui_context: UiContext,
     // filesystem watcher to inform about changes in shown directories
-    #[cfg(target_os = "linux")]
-    watcher: notify::INotifyWatcher,
-    #[cfg(target_os = "macos")]
-    watcher: notify::FsEventWatcher,
-    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
-    watcher: notify::NullWatcher,
+    watcher: notify::RecommendedWatcher,
     // list of watched paths; seems not to be possible to get them from a notify::Watcher
     watched_paths: HashSet<path::PathBuf>,
     // the last preview area (or None if now preview shown) to check if a preview hook script needs
