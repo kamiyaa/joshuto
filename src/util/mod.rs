@@ -5,6 +5,7 @@ pub mod format;
 pub mod input;
 pub mod keyparse;
 pub mod name_resolution;
+pub mod process;
 pub mod search;
 pub mod string;
 pub mod style;

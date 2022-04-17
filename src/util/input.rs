@@ -64,6 +64,9 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         }
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, context),
+        AppEvent::ChildProcessComplete(child_id) => {
+            context.worker_context_mut().join_child(child_id);
+        }
         _ => {}
     }
 }

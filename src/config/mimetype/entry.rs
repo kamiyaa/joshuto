@@ -1,8 +1,6 @@
 use serde_derive::Deserialize;
 use std::env;
 use std::fmt;
-use std::io::Read;
-use std::process;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AppList {
@@ -113,33 +111,6 @@ impl AppMimetypeEntry {
         env::var_os("PATH")
             .map(|path| env::split_paths(&path).any(|dir| dir.join(program).is_file()))
             .unwrap_or(false)
-    }
-
-    pub fn execute_with<I, S>(&self, paths: I) -> std::io::Result<()>
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<std::ffi::OsStr>,
-    {
-        let program = String::from(self.get_command());
-
-        let mut command = process::Command::new(program);
-        if self.get_silent() {
-            command.stdout(process::Stdio::null());
-            command.stderr(process::Stdio::null());
-        }
-
-        command.args(self.get_args());
-        command.args(paths);
-
-        let mut handle = command.spawn()?;
-        if !self.get_fork() {
-            handle.wait()?;
-            if self.get_confirm_exit() {
-                println!(" --- Press ENTER to continue --- ");
-                std::io::stdin().bytes().next();
-            }
-        }
-        Ok(())
     }
 }
 

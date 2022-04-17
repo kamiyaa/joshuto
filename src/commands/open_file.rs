@@ -7,6 +7,7 @@ use crate::context::{AppContext, QuitType};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
+use crate::util::process::{execute_and_wait, fork_execute};
 
 use super::change_directory;
 
@@ -24,8 +25,6 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
 }
 
 pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
-    let config = context.config_ref();
-
     let curr_list = context.tab_context_ref().curr_tab_ref().curr_list_ref();
     let entry = curr_list.and_then(|s| s.curr_entry_ref());
 
@@ -49,32 +48,57 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
             })?;
 
             let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
-            let option = get_options(path)
-                .into_iter()
-                .find(|option| option.program_exists());
+            let options = get_options(path);
+            let option = options.iter().find(|option| option.program_exists());
+
+            let config = context.config_ref();
 
             if let Some(option) = option {
-                if option.get_fork() {
-                    option.execute_with(files.as_slice())?;
-                } else {
-                    backend.terminal_drop();
-                    let result = option.execute_with(files.as_slice());
-                    backend.terminal_restore()?;
-                    result?;
-                }
+                open_with_entry(context, backend, option, &files)?;
             } else if config.xdg_open {
-                if config.xdg_open_fork {
-                    open::that_in_background(path);
-                } else {
-                    backend.terminal_drop();
-                    let result = open::that(path);
-                    backend.terminal_restore()?;
-                    result?;
-                }
+                open_with_xdg(context, backend, path)?;
             } else {
-                open_with_helper(context, backend, get_options(path), files)?;
+                open_with_helper(context, backend, options, &files)?;
             }
         }
+    }
+    Ok(())
+}
+
+pub fn open_with_entry<S>(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+    option: &AppMimetypeEntry,
+    files: &[S],
+) -> std::io::Result<()>
+where
+    S: AsRef<std::ffi::OsStr>,
+{
+    if option.get_fork() {
+        let (child_id, handle) = fork_execute(&option, files, context.clone_event_tx())?;
+        context.worker_context_mut().push_child(child_id, handle);
+    } else {
+        backend.terminal_drop();
+        execute_and_wait(&option, files)?;
+        backend.terminal_restore()?;
+    }
+    Ok(())
+}
+
+pub fn open_with_xdg(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+    path: &path::Path,
+) -> std::io::Result<()> {
+    let config = context.config_ref();
+
+    if config.xdg_open_fork {
+        open::that_in_background(path);
+    } else {
+        backend.terminal_drop();
+        let result = open::that(path);
+        backend.terminal_restore()?;
+        result?;
     }
     Ok(())
 }
@@ -83,7 +107,7 @@ pub fn open_with_helper<S>(
     context: &mut AppContext,
     backend: &mut TuiBackend,
     options: Vec<&AppMimetypeEntry>,
-    files: Vec<S>,
+    files: &[S],
 ) -> std::io::Result<()>
 where
     S: AsRef<std::ffi::OsStr>,
@@ -110,39 +134,35 @@ where
             let user_input = &user_input[PROMPT.len()..];
 
             match user_input.parse::<usize>() {
-                Ok(n) if n >= options.len() => Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    "option does not exist".to_string(),
-                )),
+                Ok(n) if n >= options.len() => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "option does not exist".to_string(),
+                    ))
+                }
                 Ok(n) => {
-                    let mimetype_entry = &options[n];
-                    if mimetype_entry.get_fork() {
-                        mimetype_entry.execute_with(files.as_slice())
-                    } else {
-                        backend.terminal_drop();
-                        let res = mimetype_entry.execute_with(files.as_slice());
-                        backend.terminal_restore()?;
-                        res
-                    }
+                    let option = &options[n];
+                    open_with_entry(context, backend, option, &files)?;
                 }
                 Err(_) => {
                     let mut args_iter = user_input.split_whitespace();
                     match args_iter.next() {
                         Some(cmd) => {
                             backend.terminal_drop();
-                            let res = AppMimetypeEntry::new(String::from(cmd))
-                                .args(args_iter)
-                                .execute_with(files.as_slice());
+                            let mut option = AppMimetypeEntry::new(String::from(cmd));
+                            option.args(args_iter);
+                            let res = execute_and_wait(&option, files);
                             backend.terminal_restore()?;
-                            res
+                            res?
                         }
-                        None => Ok(()),
+                        None => {}
                     }
                 }
             }
         }
-        _ => Ok(()),
+        _ => {}
     }
+    Ok(())
 }
 
 pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
@@ -161,7 +181,7 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend)
     let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
     let options = get_options(paths[0].as_path());
 
-    open_with_helper(context, backend, options, files)?;
+    open_with_helper(context, backend, options, &files)?;
     Ok(())
 }
 
@@ -192,15 +212,7 @@ pub fn open_with_index(
         ));
     }
 
-    let mimetype_entry = &options[index];
-    if mimetype_entry.get_fork() {
-        mimetype_entry.execute_with(files.as_slice())?;
-        Ok(())
-    } else {
-        backend.terminal_drop();
-        let res = mimetype_entry.execute_with(files.as_slice());
-        backend.terminal_restore()?;
-        res?;
-        Ok(())
-    }
+    let option = &options[index];
+    open_with_entry(context, backend, option, &files)?;
+    Ok(())
 }

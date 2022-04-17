@@ -1,5 +1,5 @@
 use std::collections::vec_deque::Iter;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::sync::mpsc;
 use std::thread;
 
@@ -7,6 +7,7 @@ use crate::event::AppEvent;
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
 
 pub struct WorkerContext {
+    child_pool: HashMap<u32, thread::JoinHandle<()>>,
     // to send info
     event_tx: mpsc::Sender<AppEvent>,
     // queue of IO workers
@@ -18,6 +19,7 @@ pub struct WorkerContext {
 impl WorkerContext {
     pub fn new(event_tx: mpsc::Sender<AppEvent>) -> Self {
         Self {
+            child_pool: HashMap::new(),
             event_tx,
             worker_queue: VecDeque::new(),
             worker: None,
@@ -27,7 +29,7 @@ impl WorkerContext {
         self.event_tx.clone()
     }
     // worker related
-    pub fn push(&mut self, thread: IoWorkerThread) {
+    pub fn push_worker(&mut self, thread: IoWorkerThread) {
         self.worker_queue.push_back(thread);
         // error is ignored
         let _ = self.event_tx.send(AppEvent::IoWorkerCreate);
@@ -95,5 +97,15 @@ impl WorkerContext {
 
     pub fn remove_worker(&mut self) -> Option<IoWorkerObserver> {
         self.worker.take()
+    }
+
+    pub fn push_child(&mut self, child_id: u32, handle: thread::JoinHandle<()>) {
+        self.child_pool.insert(child_id, handle);
+    }
+
+    pub fn join_child(&mut self, child_id: u32) {
+        if let Some(handle) = self.child_pool.remove(&child_id) {
+            let _ = handle.join();
+        }
     }
 }

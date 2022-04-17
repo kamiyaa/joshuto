@@ -22,6 +22,8 @@ pub enum AppEvent {
     IoWorkerProgress(IoWorkerProgress),
     IoWorkerResult(io::Result<IoWorkerProgress>),
 
+    ChildProcessComplete(u32),
+
     PreviewDir(io::Result<JoshutoDirList>),
     PreviewFile(path::PathBuf, io::Result<FilePreview>),
 
