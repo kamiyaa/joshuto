@@ -16,18 +16,24 @@ use crate::preview::preview_file::FilePreview;
 
 #[derive(Debug)]
 pub enum AppEvent {
+    // User input events
     Termion(Event),
 
+    // background IO worker events
     IoWorkerCreate,
     IoWorkerProgress(IoWorkerProgress),
     IoWorkerResult(io::Result<IoWorkerProgress>),
 
+    // forked process events
     ChildProcessComplete(u32),
 
+    // preview thread events
     PreviewDir(io::Result<JoshutoDirList>),
     PreviewFile(path::PathBuf, io::Result<FilePreview>),
 
+    // terminal size change events
     Signal(i32),
+    // filesystem change events
     Filesystem(notify::Event),
 }
 
@@ -44,12 +50,29 @@ pub struct Events {
 
 impl Events {
     pub fn new() -> Self {
-        Events::with_config()
+        Self::default()
     }
 
-    pub fn with_config() -> Self {
+    // We need a next() and a flush() so we don't continuously consume
+    // input from the console. Sometimes, other applications need to
+    // read terminal inputs while joshuto is in the background
+    pub fn next(&self) -> Result<AppEvent, mpsc::RecvError> {
+        let event = self.event_rx.recv()?;
+        Ok(event)
+    }
+
+    pub fn flush(&self) {
+        let _ = self.input_tx.send(());
+    }
+}
+
+impl std::default::Default for Events {
+    fn default() -> Self {
         let (input_tx, input_rx) = mpsc::sync_channel(1);
         let (event_tx, event_rx) = mpsc::channel();
+
+        // edge case that starts off the input thread
+        let _ = input_tx.send(());
 
         // signal thread
         let event_tx2 = event_tx.clone();
@@ -69,25 +92,10 @@ impl Events {
         let _ = thread::spawn(move || {
             let stdin = io::stdin();
             let mut events = stdin.events();
-            match events.next() {
-                Some(event) => match event {
-                    Ok(event) => {
-                        if let Err(e) = event_tx2.send(AppEvent::Termion(event)) {
-                            eprintln!("Input thread send err: {:#?}", e);
-                            return;
-                        }
-                    }
-                    Err(_) => return,
-                },
-                None => return,
-            }
 
             while input_rx.recv().is_ok() {
                 if let Some(Ok(event)) = events.next() {
-                    if let Err(e) = event_tx2.send(AppEvent::Termion(event)) {
-                        eprintln!("Input thread send err: {:#?}", e);
-                        return;
-                    }
+                    let _ = event_tx2.send(AppEvent::Termion(event));
                 }
             }
         });
@@ -97,17 +105,5 @@ impl Events {
             event_rx,
             input_tx,
         }
-    }
-
-    // We need a next() and a flush() so we don't continuously consume
-    // input from the console. Sometimes, other applications need to
-    // read terminal inputs while joshuto is in the background
-    pub fn next(&self) -> Result<AppEvent, mpsc::RecvError> {
-        let event = self.event_rx.recv()?;
-        Ok(event)
-    }
-
-    pub fn flush(&self) {
-        let _ = self.input_tx.send(());
     }
 }

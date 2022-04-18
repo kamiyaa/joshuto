@@ -16,10 +16,12 @@ fn execute_sub_process(
             "%s" => {
                 if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
                     let mut i = 0;
-                    for entry in curr_list.iter_selected().map(|e| e.file_name()) {
-                        command.arg(entry);
-                        i += 1;
-                    }
+                    curr_list.iter_selected()
+                        .map(|e| e.file_name())
+                        .for_each(|file_name| {
+                            command.arg(file_name);
+                            i += 1;
+                        });
                     if i == 0 {
                         if let Some(entry) = curr_list.curr_entry_ref() {
                             command.arg(entry.file_name());

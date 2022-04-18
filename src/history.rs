@@ -134,7 +134,7 @@ pub fn create_dirlist_with_history(
     contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
     let contents_len = contents.len();
-    let index: Option<usize> = if contents_len == 0 {
+    let index = if contents_len == 0 {
         None
     } else {
         match history.get(path) {

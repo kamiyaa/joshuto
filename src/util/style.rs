@@ -48,14 +48,17 @@ fn file_style(entry: &JoshutoDirEntry) -> Style {
             .bg(THEME_T.executable.bg)
             .add_modifier(THEME_T.executable.modifier)
     } else {
-        match entry
+        entry
             .file_path()
             .extension()
             .and_then(|s| s.to_str())
             .and_then(|s| THEME_T.ext.get(s))
-        {
-            Some(t) => Style::default().fg(t.fg).bg(t.bg).add_modifier(t.modifier),
-            None => regular_style,
-        }
+            .map(|theme| {
+                Style::default()
+                    .fg(theme.fg)
+                    .bg(theme.bg)
+                    .add_modifier(theme.modifier)
+            })
+            .unwrap_or(regular_style)
     }
 }

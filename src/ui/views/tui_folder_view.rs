@@ -172,11 +172,7 @@ impl<'a> Widget for TuiFolderView<'a> {
 
         // render tabs
         if self.context.tab_context_ref().len() > 1 {
-            let topbar_width = if area.width > TAB_VIEW_WIDTH {
-                area.width - TAB_VIEW_WIDTH
-            } else {
-                0
-            };
+            let topbar_width = area.width.saturating_sub(TAB_VIEW_WIDTH);
 
             let rect = Rect {
                 x: topbar_width,

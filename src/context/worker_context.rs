@@ -7,6 +7,7 @@ use crate::event::AppEvent;
 use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
 
 pub struct WorkerContext {
+    // forks of applications
     child_pool: HashMap<u32, thread::JoinHandle<()>>,
     // to send info
     event_tx: mpsc::Sender<AppEvent>,

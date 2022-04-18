@@ -32,12 +32,11 @@ pub fn parent_cursor_move(context: &mut AppContext, new_index: usize) -> Joshuto
 }
 
 pub fn parent_up(context: &mut AppContext, u: usize) -> JoshutoResult {
-    let movement = match context.tab_context_ref().curr_tab_ref().parent_list_ref() {
-        Some(list) => list
-            .get_index()
-            .map(|idx| if idx > u { idx - u } else { 0 }),
-        None => None,
-    };
+    let movement = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .parent_list_ref()
+        .and_then(|list| list.get_index().map(|idx| idx.saturating_sub(u)));
 
     if let Some(s) = movement {
         parent_cursor_move(context, s)?;

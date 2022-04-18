@@ -55,12 +55,11 @@ pub fn cursor_move(context: &mut AppContext, new_index: usize) {
 }
 
 pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult {
-    let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => curr_list
-            .get_index()
-            .map(|idx| if idx > u { idx - u } else { 0 }),
-        None => None,
-    };
+    let movement = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|list| list.get_index().map(|idx| idx.saturating_sub(u)));
 
     if let Some(s) = movement {
         cursor_move(context, s);
@@ -69,10 +68,12 @@ pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult {
 }
 
 pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult {
-    let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => curr_list.get_index().map(|idx| idx + u),
-        None => None,
-    };
+    let movement = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|list| list.get_index().map(|idx| idx.saturating_add(u)));
+
     if let Some(s) = movement {
         cursor_move(context, s);
     }
@@ -80,17 +81,18 @@ pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult {
 }
 
 pub fn home(context: &mut AppContext) -> JoshutoResult {
-    let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => {
+    let movement = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|curr_list| {
             let len = curr_list.len();
             if len == 0 {
                 None
             } else {
                 Some(0)
             }
-        }
-        None => None,
-    };
+        });
 
     if let Some(s) = movement {
         cursor_move(context, s);
@@ -99,17 +101,18 @@ pub fn home(context: &mut AppContext) -> JoshutoResult {
 }
 
 pub fn end(context: &mut AppContext) -> JoshutoResult {
-    let movement: Option<usize> = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => {
+    let movement = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|curr_list| {
             let len = curr_list.len();
             if len == 0 {
                 None
             } else {
                 Some(len - 1)
             }
-        }
-        None => None,
-    };
+        });
 
     if let Some(s) = movement {
         cursor_move(context, s);
@@ -143,14 +146,11 @@ pub fn page_up(
     let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
     let page_size = page_size as usize;
 
-    let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => {
-            curr_list
-                .get_index()
-                .map(|idx| if idx > page_size { idx - page_size } else { 0 })
-        }
-        None => None,
-    };
+    let movement = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|list| list.get_index().map(|idx| idx.saturating_sub(page_size)));
 
     if let Some(s) = movement {
         cursor_move(context, s);
@@ -166,19 +166,11 @@ pub fn page_down(
     let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
     let page_size = page_size as usize;
 
-    let movement = match context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        Some(curr_list) => {
-            let dir_len = curr_list.len();
-            curr_list.get_index().map(|idx| {
-                if idx + page_size > dir_len - 1 {
-                    dir_len - 1
-                } else {
-                    idx + page_size
-                }
-            })
-        }
-        None => None,
-    };
+    let movement = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|list| list.get_index().map(|idx| idx.saturating_add(page_size)));
 
     if let Some(s) = movement {
         cursor_move(context, s);

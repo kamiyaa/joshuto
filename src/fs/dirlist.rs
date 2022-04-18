@@ -1,5 +1,5 @@
-use std::path;
 use std::slice::{Iter, IterMut};
+use std::{io, path};
 
 use crate::config::option::DisplayOption;
 use crate::context::UiContext;
@@ -36,15 +36,14 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn from_path(path: path::PathBuf, options: &DisplayOption) -> std::io::Result<Self> {
+    pub fn from_path(path: path::PathBuf, options: &DisplayOption) -> io::Result<Self> {
         let filter_func = options.filter_func();
-        let mut contents = read_directory(path.as_path(), filter_func, options)?;
-
         let sort_options = options.sort_options_ref();
+
+        let mut contents = read_directory(path.as_path(), filter_func, options)?;
         contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
-
         let metadata = JoshutoMetadata::from(&path)?;
 
         Ok(Self {
@@ -125,13 +124,10 @@ impl JoshutoDirList {
 
     pub fn modified(&self) -> bool {
         let metadata = std::fs::symlink_metadata(self.file_path());
-        match metadata {
-            Ok(m) => match m.modified() {
-                Ok(s) => s > self.metadata.modified(),
-                _ => false,
-            },
-            _ => false,
-        }
+        metadata
+            .and_then(|m| m.modified())
+            .map(|m| m > self.metadata.modified())
+            .unwrap_or(false)
     }
 
     pub fn depreciate(&mut self) {
@@ -142,8 +138,8 @@ impl JoshutoDirList {
         self._need_update || self.modified()
     }
 
-    pub fn file_path(&self) -> &path::PathBuf {
-        &self.path
+    pub fn file_path(&self) -> &path::Path {
+        self.path.as_path()
     }
 
     pub fn any_selected(&self) -> bool {

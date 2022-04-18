@@ -101,13 +101,11 @@ pub fn rename_file_prepend(
     backend: &mut TuiBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
-    let mut file_name: Option<String> = None;
-
-    if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        file_name = curr_list
-            .curr_entry_ref()
-            .map(|s| s.file_name().to_string());
-    }
+    let file_name = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|list| list.curr_entry_ref().map(|s| s.file_name().to_string()));
 
     if let Some(file_name) = file_name {
         _rename_file_prepend(context, backend, keymap_t, file_name)?;

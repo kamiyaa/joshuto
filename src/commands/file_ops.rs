@@ -68,9 +68,12 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResul
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
-        .map(|entry| match entry.file_name().rsplit_once('.') {
-            Some((name, _)) => name.to_string(),
-            _ => entry.file_name().to_string(),
+        .map(|entry| {
+            entry
+                .file_name()
+                .rsplit_once('.')
+                .map(|(name, _)| name.to_string())
+                .unwrap_or_else(|| entry.file_name().to_string())
         });
 
     if let Some(file_name) = entry_file_name {
@@ -101,10 +104,8 @@ pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult {
         .curr_list_ref()
         .map(|dirlist| dirlist.file_path());
 
-    if let Some(pathbuf) = opt_entry {
-        if let Some(dir) = pathbuf.to_str().map(String::from) {
-            copy_string_to_buffer(dir)?
-        }
+    if let Some(s) = opt_entry.and_then(|p| p.to_str().map(String::from)) {
+        copy_string_to_buffer(s)?
     };
     Ok(())
 }

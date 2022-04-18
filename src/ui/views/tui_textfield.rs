@@ -172,11 +172,7 @@ impl<'a> TuiTextField<'a> {
                             Key::Home => line_buffer.move_home(),
                             Key::End => line_buffer.move_end(),
                             Key::Up => {
-                                curr_history_index = if curr_history_index > 0 {
-                                    curr_history_index - 1
-                                } else {
-                                    0
-                                };
+                                curr_history_index = curr_history_index.saturating_sub(1);
                                 line_buffer.move_home();
                                 line_buffer.kill_line();
                                 if let Some(s) = context
