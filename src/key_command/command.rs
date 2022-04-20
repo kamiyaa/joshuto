@@ -28,6 +28,9 @@ pub enum Command {
     CursorMoveEnd,
     CursorMovePageUp(f64),
     CursorMovePageDown(f64),
+    CursorMovePageHome,
+    CursorMovePageMiddle,
+    CursorMovePageEnd,
 
     ParentCursorMoveUp(usize),
     ParentCursorMoveDown(usize),

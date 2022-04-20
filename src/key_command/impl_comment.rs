@@ -47,6 +47,10 @@ impl CommandComment for Command {
             Self::CursorMovePageUp(_) => "Move cursor one page up",
             Self::CursorMovePageDown(_) => "Move cursor one page down",
 
+            Self::CursorMovePageHome => "Move cursor to top of page",
+            Self::CursorMovePageMiddle => "Move cursor to middle of page",
+            Self::CursorMovePageEnd => "Move cursor to bottom of page",
+
             Self::ParentCursorMoveUp(_) => "Cursor up in parent list",
             Self::ParentCursorMoveDown(_) => "Cursor down in parent list",
 

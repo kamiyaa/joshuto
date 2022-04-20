@@ -45,6 +45,10 @@ impl AppExecute for Command {
             Self::CursorMovePageUp(p) => cursor_move::page_up(context, backend, *p),
             Self::CursorMovePageDown(p) => cursor_move::page_down(context, backend, *p),
 
+            Self::CursorMovePageHome => cursor_move::page_home(context, backend),
+            Self::CursorMovePageMiddle => cursor_move::page_middle(context, backend),
+            Self::CursorMovePageEnd => cursor_move::page_end(context, backend),
+
             Self::ParentCursorMoveUp(u) => parent_cursor_move::parent_up(context, *u),
             Self::ParentCursorMoveDown(u) => parent_cursor_move::parent_down(context, *u),
 

@@ -49,6 +49,18 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_HOME, Self::CursorMoveHome);
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_END, Self::CursorMoveEnd);
 
+        simple_command_conversion_case!(
+            command,
+            CMD_CURSOR_MOVE_PAGEHOME,
+            Self::CursorMovePageHome
+        );
+        simple_command_conversion_case!(
+            command,
+            CMD_CURSOR_MOVE_PAGEMIDDLE,
+            Self::CursorMovePageMiddle
+        );
+        simple_command_conversion_case!(command, CMD_CURSOR_MOVE_PAGEEND, Self::CursorMovePageEnd);
+
         simple_command_conversion_case!(command, CMD_CUT_FILES, Self::CutFiles);
         simple_command_conversion_case!(command, CMD_DELETE_FILES, Self::DeleteFiles);
 

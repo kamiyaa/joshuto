@@ -166,14 +166,54 @@ pub fn page_down(
     let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
     let page_size = page_size as usize;
 
-    let movement = context
+    let new_index = context
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|list| list.get_index().map(|idx| idx.saturating_add(page_size)));
 
-    if let Some(s) = movement {
-        cursor_move(context, s);
+    if let Some(idx) = new_index {
+        cursor_move(context, idx);
+    }
+    Ok(())
+}
+
+pub fn page_home(context: &mut AppContext, _: &mut TuiBackend) -> JoshutoResult {
+    let new_index = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|curr_list| curr_list.first_index_for_viewport());
+    if let Some(idx) = new_index {
+        cursor_move(context, idx);
+    }
+    Ok(())
+}
+
+pub fn page_middle(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+    let movement = get_page_size(context, backend).unwrap_or(10) / 2;
+
+    let new_index = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|curr_list| curr_list.first_index_for_viewport() + movement);
+    if let Some(idx) = new_index {
+        cursor_move(context, idx);
+    }
+    Ok(())
+}
+
+pub fn page_end(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+    let movement = get_page_size(context, backend).unwrap_or(10) - 1;
+
+    let new_index = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|curr_list| curr_list.first_index_for_viewport() + movement);
+    if let Some(idx) = new_index {
+        cursor_move(context, idx);
     }
     Ok(())
 }

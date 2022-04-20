@@ -34,6 +34,9 @@ impl AppCommand for Command {
             Self::CursorMoveEnd => CMD_CURSOR_MOVE_END,
             Self::CursorMovePageUp(_) => CMD_CURSOR_MOVE_PAGEUP,
             Self::CursorMovePageDown(_) => CMD_CURSOR_MOVE_PAGEDOWN,
+            Self::CursorMovePageHome => CMD_CURSOR_MOVE_PAGEUP,
+            Self::CursorMovePageMiddle => CMD_CURSOR_MOVE_PAGEDOWN,
+            Self::CursorMovePageEnd => CMD_CURSOR_MOVE_PAGEDOWN,
 
             Self::ParentCursorMoveUp(_) => CMD_PARENT_CURSOR_MOVE_UP,
             Self::ParentCursorMoveDown(_) => CMD_PARENT_CURSOR_MOVE_DOWN,

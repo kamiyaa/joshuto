@@ -39,6 +39,10 @@ mapcommand = [
 	{ keys = [ "G" ],		command = "cursor_move_end" },
 	{ keys = [ "r" ],		command = "open_with" },
 
+	{ keys = [ "H" ],		command = "cursor_move_page_home" },
+	{ keys = [ "L" ],		command = "cursor_move_page_middle" },
+	{ keys = [ "M" ],		command = "cursor_move_page_end" },
+
 	{ keys = [ "[" ],		command = "parent_cursor_move_up" },
 	{ keys = [ "]" ],		command = "parent_cursor_move_down" },
 
