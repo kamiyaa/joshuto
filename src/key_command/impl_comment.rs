@@ -62,9 +62,7 @@ impl CommandComment for Command {
             Self::OpenFile => "Open a file",
             Self::OpenFileWith(_) => "Open using selected program",
 
-            Self::Quit => "Quit the program",
-            Self::QuitToCurrentDirectory => "Quit to current directory",
-            Self::ForceQuit => "Force quit",
+            Self::Quit(_) => "Quit the program",
             Self::ReloadDirList => "Reload current dir listing",
             Self::RenameFile(_) => "Rename file",
             Self::TouchFile(_) => "Touch file",

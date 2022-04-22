@@ -20,10 +20,11 @@ use std::path::PathBuf;
 use std::process;
 use structopt::StructOpt;
 
+use crate::commands::quit::QuitAction;
 use crate::config::{
     AppConfig, AppKeyMapping, AppMimetypeRegistry, AppTheme, JoshutoPreview, TomlConfigFile,
 };
-use crate::context::{AppContext, QuitType};
+use crate::context::AppContext;
 use crate::error::JoshutoError;
 use crate::run::run;
 
@@ -78,19 +79,17 @@ lazy_static! {
 pub struct Args {
     #[structopt(long = "path", parse(from_os_str))]
     path: Option<PathBuf>,
-    #[structopt(long)]
-    choosefiles: Option<PathBuf>,
     #[structopt(short = "v", long = "version")]
     version: bool,
-    #[structopt(long = "last-dir", parse(from_os_str))]
-    last_dir: Option<PathBuf>,
+    #[structopt(long = "output-file", parse(from_os_str))]
+    output_file: Option<PathBuf>,
 }
 
-fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
+fn run_joshuto(args: Args) -> Result<i32, JoshutoError> {
     if args.version {
         let version = env!("CARGO_PKG_VERSION");
         println!("{}-{}", PROGRAM_NAME, version);
-        return Ok(());
+        return Ok(0);
     }
     if let Some(p) = args.path.as_ref() {
         if let Err(e) = std::env::set_current_dir(p.as_path()) {
@@ -107,10 +106,14 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
         let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
         run(&mut backend, &mut context, keymap)?;
     }
+    run_quit(&args, &context)?;
+    Ok(context.quit.exit_code())
+}
 
+fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
     match context.quit {
-        QuitType::ToCurrentDirectory => {
-            if let Some(p) = args.last_dir {
+        QuitAction::OutputCurrentDirectory => {
+            if let Some(p) = &args.output_file {
                 let curr_path = std::env::current_dir()?;
                 let mut file = File::create(p)?;
                 file.write_all(
@@ -123,8 +126,8 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
                 file.write_all("\n".as_bytes())?;
             }
         }
-        QuitType::ChooseFiles => {
-            if let Some(path) = args.choosefiles {
+        QuitAction::OutputSelectedFiles => {
+            if let Some(path) = &args.output_file {
                 let curr_tab = context.tab_context_ref().curr_tab_ref();
                 let final_selection = curr_tab
                     .curr_list_ref()
@@ -136,18 +139,20 @@ fn run_joshuto(args: Args) -> Result<(), JoshutoError> {
                 }
             }
         }
-        QuitType::Force => {}
+        QuitAction::Force => {}
         _ => {}
     }
-
     Ok(())
 }
 
 fn main() {
     let args = Args::from_args();
 
-    if let Err(e) = run_joshuto(args) {
-        eprintln!("{}", e);
-        process::exit(1);
+    match run_joshuto(args) {
+        Ok(exit_code) => process::exit(exit_code),
+        Err(e) => {
+            eprintln!("{}", e);
+            process::exit(1);
+        }
     }
 }

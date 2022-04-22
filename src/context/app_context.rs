@@ -4,6 +4,7 @@ use std::sync::mpsc;
 use std::thread;
 use tui::layout::Rect;
 
+use crate::commands::quit::QuitAction;
 use crate::config;
 use crate::context::{
     CommandLineContext, LocalStateContext, MessageQueue, PreviewContext, TabContext, WorkerContext,
@@ -16,22 +17,13 @@ use crate::Args;
 use notify::{RecursiveMode, Watcher};
 use std::path;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum QuitType {
-    DoNot,
-    Normal,
-    Force,
-    ToCurrentDirectory,
-    ChooseFiles,
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct UiContext {
     pub layout: Vec<Rect>,
 }
 
 pub struct AppContext {
-    pub quit: QuitType,
+    pub quit: QuitAction,
     // event loop querying
     pub events: Events,
     // args from the command line
@@ -81,7 +73,7 @@ impl AppContext {
         let watched_paths = HashSet::with_capacity(3);
 
         Self {
-            quit: QuitType::DoNot,
+            quit: QuitAction::DoNot,
             events,
             args,
             tab_context: TabContext::new(),

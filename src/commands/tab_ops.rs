@@ -7,7 +7,7 @@ use crate::tab::{JoshutoTab, TabHomePage};
 
 use crate::HOME_DIR;
 
-use super::quit;
+use super::quit::{quit_with_action, QuitAction};
 
 fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()> {
     context.tab_context_mut().index = new_index;
@@ -110,7 +110,7 @@ pub fn new_tab(context: &mut AppContext) -> JoshutoResult {
 
 pub fn close_tab(context: &mut AppContext) -> JoshutoResult {
     if context.tab_context_ref().len() <= 1 {
-        return quit::quit(context);
+        return quit_with_action(context, QuitAction::Noop);
     }
     let mut tab_index = context.tab_context_ref().index;
 

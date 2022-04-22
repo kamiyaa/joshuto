@@ -64,9 +64,7 @@ impl AppExecute for Command {
             Self::OpenFileWith(None) => open_file::open_with_interactive(context, backend),
             Self::OpenFileWith(Some(i)) => open_file::open_with_index(context, backend, *i),
 
-            Self::Quit => quit::quit(context),
-            Self::QuitToCurrentDirectory => quit::quit_to_current_directory(context),
-            Self::ForceQuit => quit::force_quit(context),
+            Self::Quit(action) => quit::quit_with_action(context, *action),
 
             Self::ReloadDirList => reload::reload_dirlist(context),
             Self::RenameFile(p) => rename_file::rename_file(context, p.as_path()),

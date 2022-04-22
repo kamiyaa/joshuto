@@ -16,8 +16,6 @@ macro_rules! cmd_constants {
 
 cmd_constants![
     (CMD_QUIT, "quit"),
-    (CMD_QUIT_TO_CURRENT_DIRECTORY, "quit_to_cwd"),
-    (CMD_FORCE_QUIT, "force_quit"),
     (CMD_BULK_RENAME, "bulk_rename"),
     (CMD_CHANGE_DIRECTORY, "cd"),
     (CMD_PARENT_DIRECTORY, "cd .."),

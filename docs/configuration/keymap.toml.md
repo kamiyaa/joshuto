@@ -56,22 +56,34 @@ f12
 ## General
  - `quit`: quit joshuto
    - will not quit if there are pending IO work (paste jobs)
+   - `quit --force`: does ***NOT*** wait for pending IO work
+   - `quit --output-current-directory`: if `--output-file` argument is set, output the current directory to it
+   - `quit --output-selected-files`: if `--output-file` argument is set, output the selected files to it
 
- - `force_quit`: forcefully quits joshuto
-   - will ***NOT*** wait for IO operations to complete
-
- - `quit_to_cwd`: quits joshuto and writes the current directory to a file specified by `--lastdir` command line option
-   - works with the following bash function:
+`quit` works best with the following bash script
 ```bash
 function joshuto() {
-	TIMESTAMP=$(date '+%Y%m%d-%H%M%S')
-	CWD_FILE="/tmp/$USER/joshuto-cwd-$TIMESTAMP"
-	env joshuto --last-dir "$CWD_FILE" $@
+	ID="$$"
+	OUTPUT_FILE="/tmp/$USER/joshuto-cwd-$ID"
+	env joshuto --output-file "$OUTPUT_FILE" $@
+	exit_code=$?
 
-	if [ -e "$CWD_FILE" ]; then
-		JOSHUTO_CWD=$(cat "$CWD_FILE")
-		rm "$CWD_FILE" && cd "$JOSHUTO_CWD"
-	fi
+	case "$exit_code" in
+		# regular exit
+		0)
+			;;
+		# output contains current directory
+		101)
+			JOSHUTO_CWD=$(cat "$OUTPUT_FILE")
+			cd "$JOSHUTO_CWD"
+			;;
+		# output selected files
+		102)
+			;;
+		*)
+			echo "Exit code: $exit_code"
+			;;
+	esac
 }
 ```
 

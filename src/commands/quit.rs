@@ -1,9 +1,35 @@
 use std::io;
 
-use crate::context::{AppContext, QuitType};
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 
-pub fn quit(context: &mut AppContext) -> JoshutoResult {
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum QuitAction {
+    DoNot,
+    Noop,
+    Force,
+    OutputCurrentDirectory,
+    OutputSelectedFiles,
+}
+
+impl QuitAction {
+    pub const fn exit_code(&self) -> i32 {
+        match *self {
+            Self::Noop => 0,
+            Self::DoNot => 10,
+            Self::Force => 100,
+            Self::OutputCurrentDirectory => 101,
+            Self::OutputSelectedFiles => 102,
+        }
+    }
+}
+
+pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> JoshutoResult {
+    if quit_action == QuitAction::Force {
+        context.quit = quit_action;
+        return Ok(());
+    }
+
     let worker_context = context.worker_context_ref();
     if worker_context.is_busy() || !worker_context.is_empty() {
         Err(JoshutoError::new(
@@ -11,25 +37,7 @@ pub fn quit(context: &mut AppContext) -> JoshutoResult {
             String::from("operations running in background, use force_quit to quit"),
         ))
     } else {
-        context.quit = QuitType::Normal;
+        context.quit = quit_action;
         Ok(())
     }
-}
-
-pub fn quit_to_current_directory(context: &mut AppContext) -> JoshutoResult {
-    let worker_context = context.worker_context_ref();
-    if worker_context.is_busy() || !worker_context.is_empty() {
-        Err(JoshutoError::new(
-            JoshutoErrorKind::Io(io::ErrorKind::Other),
-            String::from("operations running in background, use force_quit to quit"),
-        ))
-    } else {
-        context.quit = QuitType::ToCurrentDirectory;
-        Ok(())
-    }
-}
-
-pub fn force_quit(context: &mut AppContext) -> JoshutoResult {
-    context.quit = QuitType::Force;
-    Ok(())
 }

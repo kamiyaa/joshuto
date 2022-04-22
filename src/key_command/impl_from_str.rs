@@ -3,6 +3,7 @@ use std::path;
 use dirs_next::home_dir;
 use shellexpand::tilde_with_context;
 
+use crate::commands::quit::QuitAction;
 use crate::config::option::{LineNumberStyle, SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::IoWorkerOptions;
@@ -32,14 +33,6 @@ impl std::str::FromStr for Command {
             Some(i) => (&s[..i], s[i..].trim_start()),
             None => (s, ""),
         };
-
-        simple_command_conversion_case!(command, CMD_QUIT, Self::Quit);
-        simple_command_conversion_case!(
-            command,
-            CMD_QUIT_TO_CURRENT_DIRECTORY,
-            Self::QuitToCurrentDirectory
-        );
-        simple_command_conversion_case!(command, CMD_FORCE_QUIT, Self::ForceQuit);
 
         simple_command_conversion_case!(command, CMD_NEW_TAB, Self::NewTab);
         simple_command_conversion_case!(command, CMD_CLOSE_TAB, Self::CloseTab);
@@ -88,7 +81,14 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_TOGGLE_HIDDEN, Self::ToggleHiddenFiles);
         simple_command_conversion_case!(command, CMD_BULK_RENAME, Self::BulkRename);
 
-        if command == CMD_CHANGE_DIRECTORY {
+        if command == CMD_QUIT {
+            match arg {
+                "--force" => Ok(Self::Quit(QuitAction::Force)),
+                "--output-current-directory" => Ok(Self::Quit(QuitAction::OutputCurrentDirectory)),
+                "--output-selected-files" => Ok(Self::Quit(QuitAction::OutputSelectedFiles)),
+                _ => Ok(Self::Quit(QuitAction::Noop)),
+            }
+        } else if command == CMD_CHANGE_DIRECTORY {
             match arg {
                 "" => match HOME_DIR.as_ref() {
                     Some(s) => Ok(Self::ChangeDirectory(s.clone())),

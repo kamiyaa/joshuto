@@ -6,9 +6,7 @@ impl AppCommand for Command {
         match self {
             Self::Help => CMD_HELP,
 
-            Self::Quit => CMD_QUIT,
-            Self::QuitToCurrentDirectory => CMD_QUIT_TO_CURRENT_DIRECTORY,
-            Self::ForceQuit => CMD_FORCE_QUIT,
+            Self::Quit(_) => CMD_QUIT,
 
             Self::BulkRename => CMD_BULK_RENAME,
 

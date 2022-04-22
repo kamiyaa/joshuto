@@ -1,5 +1,6 @@
 use std::path;
 
+use crate::commands::quit::QuitAction;
 use crate::config::option::{LineNumberStyle, SelectOption, SortType};
 use crate::io::IoWorkerOptions;
 
@@ -45,9 +46,8 @@ pub enum Command {
     OpenFile,
     OpenFileWith(Option<usize>),
 
-    Quit,
-    QuitToCurrentDirectory,
-    ForceQuit,
+    Quit(QuitAction),
+
     ReloadDirList,
     RenameFile(path::PathBuf),
     RenameFileAppend,

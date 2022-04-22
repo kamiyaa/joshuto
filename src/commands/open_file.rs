@@ -3,7 +3,7 @@ use std::path;
 
 use crate::commands::reload;
 use crate::config::AppMimetypeEntry;
-use crate::context::{AppContext, QuitType};
+use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::TuiTextField;
 use crate::ui::TuiBackend;
@@ -34,9 +34,6 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
             let path = entry.file_path().to_path_buf();
             change_directory::cd(path.as_path(), context)?;
             reload::soft_reload(context.tab_context_ref().index, context)?;
-        }
-        Some(_) if context.args.choosefiles.is_some() => {
-            context.quit = QuitType::ChooseFiles;
         }
         Some(_) => {
             let paths = curr_list.map_or_else(Vec::new, |s| s.get_selected_paths());

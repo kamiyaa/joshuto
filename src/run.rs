@@ -1,6 +1,7 @@
 use crate::commands::numbered_command;
+use crate::commands::quit::QuitAction;
 use crate::config::AppKeyMapping;
-use crate::context::{AppContext, QuitType};
+use crate::context::AppContext;
 use crate::event::AppEvent;
 use crate::key_command::{AppExecute, CommandKeybind};
 use crate::preview::preview_default;
@@ -33,7 +34,7 @@ pub fn run(
         preview_default::load_preview(context);
     }
 
-    while context.quit == QuitType::DoNot {
+    while context.quit == QuitAction::DoNot {
         // do the ui
         if let Ok(area) = backend.terminal_ref().size() {
             // pre-calculate some ui attributes
