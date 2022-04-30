@@ -64,6 +64,7 @@ f12
 ```bash
 function joshuto() {
 	ID="$$"
+	mkdir -p /tmp/$USER
 	OUTPUT_FILE="/tmp/$USER/joshuto-cwd-$ID"
 	env joshuto --output-file "$OUTPUT_FILE" $@
 	exit_code=$?
