@@ -57,10 +57,12 @@ fn select_with_pattern(
     let glob = Glob::new(pattern)?.compile_matcher();
 
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+        let mut found = 0;
         curr_list
             .iter_mut()
             .filter(|e| glob.is_match(e.file_name()))
             .for_each(|e| {
+                found += 1;
                 if options.reverse {
                     e.set_selected(false);
                 } else if options.toggle {
@@ -69,6 +71,9 @@ fn select_with_pattern(
                     e.set_selected(true);
                 }
             });
+        context
+            .message_queue_mut()
+            .push_info(format!("{} files selected", found));
     }
     Ok(())
 }
