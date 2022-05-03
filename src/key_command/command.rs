@@ -57,11 +57,8 @@ pub enum Command {
     SearchGlob(String),
     SearchString(String),
     SearchIncremental(String),
-    SearchFzf,
     SearchNext,
     SearchPrev,
-
-    SubdirFzf,
 
     SelectFiles(String, SelectOption),
     SetMode,
@@ -80,4 +77,9 @@ pub enum Command {
     TabSwitch(i32),
     TabSwitchIndex(u32),
     Help,
+
+    SearchFzf,
+    SubdirFzf,
+    Zoxide(String),
+    ZoxideInteractive,
 }

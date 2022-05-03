@@ -72,11 +72,8 @@ impl CommandComment for Command {
             Self::SearchString(_) => "Search",
             Self::SearchIncremental(_) => "Search as you type",
             Self::SearchGlob(_) => "Search with globbing",
-            Self::SearchFzf => "Search via fzf",
             Self::SearchNext => "Next search entry",
             Self::SearchPrev => "Previous search entry",
-
-            Self::SubdirFzf => "Switch to a child directory via fzf",
 
             Self::SelectFiles(_, _) => "Select file",
             Self::SetMode => "Set file permissions",
@@ -100,6 +97,11 @@ impl CommandComment for Command {
             Self::TabSwitch(_) => "Swith to the next tab",
             Self::TabSwitchIndex(_) => "Swith to a given tab",
             Self::Help => "Open this help page",
+
+            Self::SearchFzf => "Search via fzf",
+            Self::SubdirFzf => "Switch to a child directory via fzf",
+            Self::Zoxide(_) => "Zoxide",
+            Self::ZoxideInteractive => "Zoxide interactive",
         }
     }
 }

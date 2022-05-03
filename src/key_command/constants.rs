@@ -56,10 +56,8 @@ cmd_constants![
     (CMD_SEARCH_STRING, "search"),
     (CMD_SEARCH_INCREMENTAL, "search_inc"),
     (CMD_SEARCH_GLOB, "search_glob"),
-    (CMD_SEARCH_FZF, "search_fzf"),
     (CMD_SEARCH_NEXT, "search_next"),
     (CMD_SEARCH_PREV, "search_prev"),
-    (CMD_SUBDIR_FZF, "subdir_fzf"),
     (CMD_SELECT_FILES, "select"),
     (CMD_SET_MODE, "set_mode"),
     (CMD_SORT, "sort"),
@@ -73,6 +71,10 @@ cmd_constants![
     (CMD_SWITCH_LINE_NUMBERS, "line_nums"),
     (CMD_TOUCH_FILE, "touch"),
     (CMD_HELP, "help"),
+    (CMD_SEARCH_FZF, "search_fzf"),
+    (CMD_SUBDIR_FZF, "subdir_fzf"),
+    (CMD_ZOXIDE, "z"),
+    (CMD_ZOXIDE_INTERACTIVE, "zi"),
 ];
 
 pub fn complete_command(partial_command: &str) -> Vec<Pair> {

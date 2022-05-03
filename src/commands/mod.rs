@@ -27,3 +27,4 @@ pub mod sub_process;
 pub mod subdir_fzf;
 pub mod tab_ops;
 pub mod touch_file;
+pub mod zoxide;

@@ -140,8 +140,6 @@ function joshuto() {
    it will prompt `:open_with ` to open with a specific command
    - if `xdg_open` is `true` in [joshuto.toml](https://github.com/kamiyaa/joshuto),
    joshuto will try to open it via xdg settings
- - `subdir_fzf`: go to a subdirectory via fzf
-
 
 ## Tabs
  - `new_tab`: opens a new tab
@@ -190,7 +188,6 @@ function joshuto() {
     - case insensitive
  - `search_glob`: search via shell globbing
     - `:search_glob *.png`
- - `search_fzf`: search via fzf
  - `search_next`: go to next search result
  - `search_prev`: go to previous search result
  - `select`: select current file
@@ -205,3 +202,10 @@ function joshuto() {
     - this will create a file inside `$TMP_DIR` (or `/tmp` if `$TMP_DIR` is not set) and
       open up your text editor of choice via `$EDITOR` environment variable
     - once you've made your changes to the file, saved and quit, it will use the `mv` command to rename everything
+
+## Integration
+ - `search_fzf`: search via `fzf`
+ - `subdir_fzf`: go to a subdirectory via `fzf`
+
+ - `z`: cd via `zoxide`
+ - `zi`: cd via interactive `zoxide`
