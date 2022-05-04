@@ -50,7 +50,6 @@ pub fn zoxide_query_interactive(
         .arg("-i")
         .arg("--")
         .stdin(Stdio::piped())
-        .stderr(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
     let zoxide_output = zoxide_process.wait_with_output()?;
@@ -65,7 +64,7 @@ pub fn zoxide_query_interactive(
             let path = Path::new(zoxide_path);
             context
                 .message_queue_mut()
-                .push_info(format!("z {:?}", zoxide_path));
+                .push_info(format!("zi {:?}", zoxide_path));
             change_directory::change_directory(context, &path)?;
         }
     } else {
