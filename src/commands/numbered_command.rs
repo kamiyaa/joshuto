@@ -4,11 +4,11 @@ use crate::commands::cursor_move;
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::event::process_event;
 use crate::event::AppEvent;
 use crate::key_command::{CommandKeybind, NumberedExecute};
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
-use crate::util::input;
 
 pub fn numbered_command(
     first_char: char,
@@ -66,7 +66,7 @@ pub fn numbered_command(
                 }
                 context.flush_event();
             }
-            event => input::process_noninteractive(event, context),
+            event => process_event::process_noninteractive(event, context),
         }
     }
 }

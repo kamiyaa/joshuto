@@ -55,27 +55,30 @@ impl AppCommand for Command {
             Self::SearchString(_) => CMD_SEARCH_STRING,
             Self::SearchIncremental(_) => CMD_SEARCH_INCREMENTAL,
             Self::SearchGlob(_) => CMD_SEARCH_GLOB,
-            Self::SearchFzf => CMD_SEARCH_FZF,
             Self::SearchNext => CMD_SEARCH_NEXT,
             Self::SearchPrev => CMD_SEARCH_PREV,
 
-            Self::SubdirFzf => CMD_SUBDIR_FZF,
-
             Self::SelectFiles(_, _) => CMD_SELECT_FILES,
             Self::SetMode => CMD_SET_MODE,
+
+            Self::ShowWorkers => CMD_SHOW_WORKERS,
 
             Self::Sort(_) => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,
 
             Self::SubProcess(_, false) => CMD_SUBPROCESS_FOREGROUND,
             Self::SubProcess(_, true) => CMD_SUBPROCESS_BACKGROUND,
-            Self::ShowWorkers => CMD_SHOW_WORKERS,
+            Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
 
             Self::TabSwitch(_) => CMD_TAB_SWITCH,
             Self::TabSwitchIndex(_) => CMD_TAB_SWITCH_INDEX,
             Self::ToggleHiddenFiles => CMD_TOGGLE_HIDDEN,
-            Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
             Self::TouchFile(_) => CMD_TOUCH_FILE,
+
+            Self::SearchFzf => CMD_SEARCH_FZF,
+            Self::SubdirFzf => CMD_SUBDIR_FZF,
+            Self::Zoxide(_) => CMD_ZOXIDE,
+            Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,
         }
     }
 }

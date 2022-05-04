@@ -72,14 +72,17 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_RELOAD_DIRECTORY_LIST, Self::ReloadDirList);
         simple_command_conversion_case!(command, CMD_RENAME_FILE_APPEND, Self::RenameFileAppend);
         simple_command_conversion_case!(command, CMD_RENAME_FILE_PREPEND, Self::RenameFilePrepend);
-        simple_command_conversion_case!(command, CMD_SEARCH_FZF, Self::SearchFzf);
         simple_command_conversion_case!(command, CMD_SEARCH_NEXT, Self::SearchNext);
         simple_command_conversion_case!(command, CMD_SEARCH_PREV, Self::SearchPrev);
-        simple_command_conversion_case!(command, CMD_SUBDIR_FZF, Self::SubdirFzf);
         simple_command_conversion_case!(command, CMD_SHOW_WORKERS, Self::ShowWorkers);
         simple_command_conversion_case!(command, CMD_SET_MODE, Self::SetMode);
         simple_command_conversion_case!(command, CMD_TOGGLE_HIDDEN, Self::ToggleHiddenFiles);
         simple_command_conversion_case!(command, CMD_BULK_RENAME, Self::BulkRename);
+
+        simple_command_conversion_case!(command, CMD_SEARCH_FZF, Self::SearchFzf);
+        simple_command_conversion_case!(command, CMD_SUBDIR_FZF, Self::SubdirFzf);
+        simple_command_conversion_case!(command, CMD_ZOXIDE, Self::Zoxide(arg.to_string()));
+        simple_command_conversion_case!(command, CMD_ZOXIDE_INTERACTIVE, Self::ZoxideInteractive);
 
         if command == CMD_QUIT {
             match arg {

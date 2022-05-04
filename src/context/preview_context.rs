@@ -17,7 +17,6 @@ impl PreviewContext {
     pub fn get_preview_ref(&self, p: &path::Path) -> Option<&Option<FilePreview>> {
         self.previews.get(p)
     }
-
     pub fn get_preview_mut(&mut self, p: &path::Path) -> Option<&mut Option<FilePreview>> {
         self.previews.get_mut(p)
     }

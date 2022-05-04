@@ -20,7 +20,6 @@ impl CommandLineContext {
     pub fn history_ref(&self) -> &history::History {
         &self.history
     }
-
     pub fn history_mut(&mut self) -> &mut history::History {
         &mut self.history
     }

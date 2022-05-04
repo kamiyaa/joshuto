@@ -80,27 +80,22 @@ impl AppExecute for Command {
             // cursor will be one the selected word. And as `interactive_execute` for
             // `SearchIncremental` always starts from index 0, this operation will be a no-op
             Self::SearchIncremental(_) => Ok(()),
-            Self::SearchFzf => search_fzf::search_fzf(context, backend),
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
-
-            Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),
 
             Self::SelectFiles(pattern, options) => {
                 selection::select_files(context, pattern.as_str(), options)
             }
             Self::SetMode => set_mode::set_mode(context, backend),
+            Self::ShowWorkers => show_workers::show_workers(context, backend, keymap_t),
+            Self::Sort(t) => sort::set_sort(context, *t),
+            Self::SortReverse => sort::toggle_reverse(context),
             Self::SubProcess(v, spawn) => {
                 sub_process::sub_process(context, backend, v.as_slice(), *spawn)
             }
-            Self::ShowWorkers => show_workers::show_workers(context, backend, keymap_t),
-
-            Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
-
             Self::SwitchLineNums(d) => line_nums::switch_line_numbering(context, *d),
 
-            Self::Sort(t) => sort::set_sort(context, *t),
-            Self::SortReverse => sort::toggle_reverse(context),
+            Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
             Self::TabSwitch(i) => {
                 tab_ops::tab_switch(*i, context)?;
@@ -108,6 +103,11 @@ impl AppExecute for Command {
             }
             Self::TabSwitchIndex(i) => tab_ops::tab_switch_index(*i as usize, context),
             Self::Help => help::help_loop(context, backend, keymap_t),
+
+            Self::SearchFzf => search_fzf::search_fzf(context, backend),
+            Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),
+            Self::Zoxide(arg) => zoxide::zoxide_query(context, &arg),
+            Self::ZoxideInteractive => zoxide::zoxide_query_interactive(context, backend),
         }
     }
 }

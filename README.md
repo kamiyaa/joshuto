@@ -14,6 +14,7 @@
 - [rustc](https://www.rust-lang.org/) >= 1.55
 - xsel/xclip/wl-clipboard (optional, for clipboard support)
 - fzf (optional)
+- zoxide (optional)
 
 Also see [Cargo.toml](Cargo.toml)
 

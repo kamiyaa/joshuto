@@ -5,12 +5,12 @@ use termion::event::{Event, Key};
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
+use crate::event::process_event;
 use crate::event::AppEvent;
 use crate::key_command::{Command, CommandKeybind};
 use crate::ui::widgets;
 use crate::ui::widgets::TuiHelp;
 use crate::ui::TuiBackend;
-use crate::util::input;
 
 pub fn help_loop(
     context: &mut AppContext,
@@ -76,7 +76,7 @@ pub fn help_loop(
                 }
                 context.flush_event();
             }
-            _ => input::process_noninteractive(event, context),
+            _ => process_event::process_noninteractive(event, context),
         }
     }
 
