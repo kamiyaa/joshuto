@@ -121,6 +121,10 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult {
             format!("printf '%s' '{}' | {} -ib 2> /dev/null", string, "xsel"),
         ),
         (
+            "pbcopy",
+            format!("printf '%s' '{}' | {} 2> /dev/null", string, "pbcopy"),
+        ),
+        (
             "xclip",
             format!(
                 "printf '%s' '{}' | {} -selection clipboard 2> /dev/null",
