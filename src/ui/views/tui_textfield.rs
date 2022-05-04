@@ -12,8 +12,8 @@ use tui::widgets::Clear;
 use unicode_width::UnicodeWidthStr;
 
 use crate::context::AppContext;
-use crate::event::AppEvent;
 use crate::event::process_event;
+use crate::event::AppEvent;
 use crate::key_command::{complete_command, Command, InteractiveExecute};
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};

@@ -39,7 +39,10 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> JoshutoResult {
     Ok(())
 }
 
-pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn zoxide_query_interactive(
+    context: &mut AppContext,
+    backend: &mut TuiBackend,
+) -> JoshutoResult {
     backend.terminal_drop();
 
     let zoxide_process = Command::new("zoxide")
@@ -76,9 +79,6 @@ pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut TuiBacke
 }
 
 fn zoxide_add(s: &str) -> io::Result<()> {
-    Command::new("zoxide")
-        .arg("add")
-        .arg(s)
-        .output()?;
+    Command::new("zoxide").arg("add").arg(s).output()?;
     Ok(())
 }

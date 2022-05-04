@@ -5,8 +5,8 @@ use tui::text::Span;
 use tui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::context::AppContext;
-use crate::event::AppEvent;
 use crate::event::process_event;
+use crate::event::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
 
