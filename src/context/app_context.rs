@@ -282,7 +282,6 @@ impl AppContext {
     pub fn commandline_context_ref(&self) -> &CommandLineContext {
         &self.commandline_context
     }
-
     pub fn commandline_context_mut(&mut self) -> &mut CommandLineContext {
         &mut self.commandline_context
     }

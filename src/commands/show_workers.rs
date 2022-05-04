@@ -4,9 +4,9 @@ use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::event::AppEvent;
+use crate::event::process_event;
 use crate::ui::views::TuiWorkerView;
 use crate::ui::TuiBackend;
-use crate::util::input;
 
 pub fn show_workers(
     context: &mut AppContext,
@@ -20,15 +20,13 @@ pub fn show_workers(
 
         if let Ok(event) = context.poll_event() {
             match event {
-                AppEvent::Termion(event) => {
-                    #[allow(clippy::single_match)]
-                    match event {
-                        Event::Key(Key::Esc) => break,
-                        _ => {}
-                    }
+                AppEvent::Termion(Event::Key(Key::Esc)) => {
+                    break;
+                }
+                AppEvent::Termion(_) => {
                     context.flush_event();
                 }
-                event => input::process_noninteractive(event, context),
+                event => process_event::process_noninteractive(event, context),
             };
         }
     }

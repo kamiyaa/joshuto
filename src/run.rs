@@ -3,13 +3,13 @@ use crate::commands::quit::QuitAction;
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::event::AppEvent;
+use crate::event::process_event;
 use crate::key_command::{AppExecute, CommandKeybind};
 use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
 use crate::ui;
 use crate::ui::views;
 use crate::ui::views::TuiView;
-use crate::util::input;
 use crate::util::to_string::ToString;
 
 use termion::event::{Event, Key};
@@ -56,7 +56,7 @@ pub fn run(
         // handle the event
         match event {
             AppEvent::Termion(Event::Mouse(event)) => {
-                input::process_mouse(event, context, backend, &keymap_t);
+                process_event::process_mouse(event, context, backend, &keymap_t);
                 preview_default::load_preview(context);
             }
             AppEvent::Termion(key) => {
@@ -67,7 +67,7 @@ pub fn run(
                     // in the event where mouse input is not supported
                     // but we still want to register scroll
                     Event::Unsupported(s) => {
-                        input::process_unsupported(context, backend, &keymap_t, s);
+                        process_event::process_unsupported(context, backend, &keymap_t, s);
                     }
                     Event::Key(Key::Char(c)) if c.is_numeric() && c != '0' => {
                         if let Err(e) =
@@ -88,7 +88,7 @@ pub fn run(
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let cmd = input::get_input_while_composite(backend, context, m);
+                            let cmd = process_event::get_input_while_composite(backend, context, m);
 
                             if let Some(command) = cmd {
                                 if let Err(e) = command.execute(context, backend, &keymap_t) {
@@ -101,7 +101,7 @@ pub fn run(
                 preview_default::load_preview(context);
                 context.flush_event();
             }
-            event => input::process_noninteractive(event, context),
+            event => process_event::process_noninteractive(event, context),
         }
 
         // update the file system supervisor that watches for changes in the FS

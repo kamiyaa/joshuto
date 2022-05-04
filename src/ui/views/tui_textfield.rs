@@ -13,11 +13,11 @@ use unicode_width::UnicodeWidthStr;
 
 use crate::context::AppContext;
 use crate::event::AppEvent;
+use crate::event::process_event;
 use crate::key_command::{complete_command, Command, InteractiveExecute};
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::TuiBackend;
-use crate::util::input;
 
 struct CompletionTracker {
     pub index: usize,
@@ -277,7 +277,7 @@ impl<'a> TuiTextField<'a> {
                     AppEvent::Termion(_) => {
                         context.flush_event();
                     }
-                    event => input::process_noninteractive(event, context),
+                    event => process_event::process_noninteractive(event, context),
                 };
             }
         }

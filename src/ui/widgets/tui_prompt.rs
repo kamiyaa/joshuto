@@ -6,9 +6,9 @@ use tui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::context::AppContext;
 use crate::event::AppEvent;
+use crate::event::process_event;
 use crate::ui::views::TuiView;
 use crate::ui::TuiBackend;
-use crate::util::input;
 
 pub struct TuiPrompt<'a> {
     prompt: &'a str,
@@ -62,7 +62,7 @@ impl<'a> TuiPrompt<'a> {
                     AppEvent::Termion(_) => {
                         context.flush_event();
                     }
-                    event => input::process_noninteractive(event, context),
+                    event => process_event::process_noninteractive(event, context),
                 };
             }
         }
