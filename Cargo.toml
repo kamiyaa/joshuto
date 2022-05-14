@@ -36,7 +36,7 @@ tui = { version = "0.18", default-features = false, features = ["termion"] }
 unicode-segmentation = "^1"
 unicode-width = "^0"
 users = "^0"
-whoami = "^0"
+whoami = "^1"
 xdg = "^2"
 
 [features]
