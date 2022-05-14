@@ -23,7 +23,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "432bad6a85e6443b2ba2296fb43c6d843594f2f0daa55a8b86202dd3c1dc0a99"
 dependencies = [
- "tui 0.17.0",
+ "tui",
 ]
 
 [[package]]
@@ -359,7 +359,7 @@ dependencies = [
  "termion",
  "toml",
  "trash",
- "tui 0.18.0",
+ "tui",
  "unicode-segmentation",
  "unicode-width",
  "users",
@@ -919,18 +919,6 @@ name = "tui"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23ed0a32c88b039b73f1b6c5acbd0554bfa5b6be94467375fd947c4de3a02271"
-dependencies = [
- "bitflags",
- "cassowary",
- "unicode-segmentation",
- "unicode-width",
-]
-
-[[package]]
-name = "tui"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96fe69244ec2af261bced1d9046a6fee6c8c2a6b0228e59e5ba39bc8ba4ed729"
 dependencies = [
  "bitflags",
  "cassowary",
