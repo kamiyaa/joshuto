@@ -1,0 +1,27 @@
+name: Clippy - Catch common mistakes and improve your Rust code
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  check:
+    name: Clippy - Catch common mistakes and improve your Rust code
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install minimal ${{ matrix.rust }} rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          components: clippy
+          toolchain: ${{ matrix.rust }}
+      - run: cargo -Vv && rustc -Vv
+      - run: cargo clippy -- --deny clippy::all --warn clippy::cargo
+        if: ${{ matrix.rust == 'stable' }}
