@@ -143,16 +143,13 @@ where
                 }
                 Err(_) => {
                     let mut args_iter = user_input.split_whitespace();
-                    match args_iter.next() {
-                        Some(cmd) => {
-                            backend.terminal_drop();
-                            let mut option = AppMimetypeEntry::new(String::from(cmd));
-                            option.args(args_iter);
-                            let res = execute_and_wait(&option, files);
-                            backend.terminal_restore()?;
-                            res?
-                        }
-                        None => {}
+                    if let Some(cmd) = args_iter.next() {
+                        backend.terminal_drop();
+                        let mut option = AppMimetypeEntry::new(String::from(cmd));
+                        option.args(args_iter);
+                        let res = execute_and_wait(&option, files);
+                        backend.terminal_restore()?;
+                        res?
                     }
                 }
             }
