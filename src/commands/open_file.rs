@@ -72,11 +72,11 @@ where
     S: AsRef<std::ffi::OsStr>,
 {
     if option.get_fork() {
-        let (child_id, handle) = fork_execute(&option, files, context.clone_event_tx())?;
+        let (child_id, handle) = fork_execute(option, files, context.clone_event_tx())?;
         context.worker_context_mut().push_child(child_id, handle);
     } else {
         backend.terminal_drop();
-        execute_and_wait(&option, files)?;
+        execute_and_wait(option, files)?;
         backend.terminal_restore()?;
     }
     Ok(())
@@ -139,7 +139,7 @@ where
                 }
                 Ok(n) => {
                     let option = &options[n];
-                    open_with_entry(context, backend, option, &files)?;
+                    open_with_entry(context, backend, option, files)?;
                 }
                 Err(_) => {
                     let mut args_iter = user_input.split_whitespace();
