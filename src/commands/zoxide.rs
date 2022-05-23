@@ -27,14 +27,12 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> JoshutoResult {
             context
                 .message_queue_mut()
                 .push_info(format!("z {:?}", zoxide_path));
-            change_directory::change_directory(context, &path)?;
+            change_directory::change_directory(context, path)?;
         }
-    } else {
-        if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stderr) {
-            context
-                .message_queue_mut()
-                .push_error(zoxide_str.to_string());
-        }
+    } else if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stderr) {
+        context
+            .message_queue_mut()
+            .push_error(zoxide_str.to_string());
     }
     Ok(())
 }
@@ -65,14 +63,12 @@ pub fn zoxide_query_interactive(
             context
                 .message_queue_mut()
                 .push_info(format!("zi {:?}", zoxide_path));
-            change_directory::change_directory(context, &path)?;
+            change_directory::change_directory(context, path)?;
         }
-    } else {
-        if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stderr) {
-            context
-                .message_queue_mut()
-                .push_error(zoxide_str.to_string());
-        }
+    } else if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stderr) {
+        context
+            .message_queue_mut()
+            .push_error(zoxide_str.to_string());
     }
     Ok(())
 }
