@@ -10,6 +10,7 @@ keymap = [
 
 	{ keys = [ "R" ],		command = "reload_dirlist" },
 	{ keys = [ "z", "h" ],		command = "toggle_hidden" },
+	{ keys = [ "ctrl+h" ],		command = "toggle_hidden" },
 	{ keys = [ "\t" ],		command = "tab_switch 1" },
 	{ keys = [ "backtab" ],		command = "tab_switch -1" },
 
