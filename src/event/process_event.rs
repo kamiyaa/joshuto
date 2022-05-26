@@ -6,7 +6,7 @@ use termion::event::{Event, Key, MouseButton, MouseEvent};
 use tui::layout::{Constraint, Direction, Layout};
 
 use crate::commands::{cursor_move, parent_cursor_move, reload};
-use crate::config::AppKeyMapping;
+use crate::config::{AppKeyMapping, KeyMapping};
 use crate::context::AppContext;
 use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
@@ -21,7 +21,7 @@ use crate::util::format;
 pub fn get_input_while_composite<'a>(
     backend: &mut ui::TuiBackend,
     context: &mut AppContext,
-    keymap: &'a AppKeyMapping,
+    keymap: &'a KeyMapping,
 ) -> Option<&'a Command> {
     let mut keymap = keymap;
 
@@ -35,9 +35,9 @@ pub fn get_input_while_composite<'a>(
                 AppEvent::Termion(event) => {
                     match event {
                         Event::Key(Key::Esc) => return None,
-                        event => match keymap.as_ref().get(&event) {
+                        event => match keymap.get(&event) {
                             Some(CommandKeybind::SimpleKeybind(s)) => {
-                                return Some(s);
+                                return Some(&s);
                             }
                             Some(CommandKeybind::CompositeKeybind(m)) => {
                                 keymap = m;

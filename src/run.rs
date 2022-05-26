@@ -76,7 +76,7 @@ pub fn run(
                             context.message_queue_mut().push_error(e.to_string());
                         }
                     }
-                    key => match keymap_t.as_ref().get(&key) {
+                    key => match keymap_t.default_view.get(&key) {
                         None => {
                             context
                                 .message_queue_mut()

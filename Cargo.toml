@@ -5,7 +5,7 @@ authors = ["Jiayi Zhao <jeff.no.zhao@gmail.com>"]
 description = "Terminal file manager inspired by ranger"
 homepage = "https://github.com/kamiyaa/joshuto"
 license = "LGPL-3.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 ansi-to-tui = { version = "^0", optional = true }

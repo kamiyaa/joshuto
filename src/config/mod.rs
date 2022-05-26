@@ -6,7 +6,7 @@ pub mod preview;
 pub mod theme;
 
 pub use self::general::AppConfig;
-pub use self::keymap::AppKeyMapping;
+pub use self::keymap::*;
 pub use self::mimetype::*;
 pub use self::preview::*;
 pub use self::theme::*;

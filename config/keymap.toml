@@ -1,4 +1,6 @@
-mapcommand = [
+[default_view]
+
+keymap = [
 	{ keys = [ "T" ],		command = "new_tab" },
 	{ keys = [ "ctrl+t" ],		command = "new_tab" },
 	{ keys = [ "W" ],		command = "close_tab" },
@@ -23,8 +25,8 @@ mapcommand = [
 	{ keys = [ "arrow_left" ],	command = "cd .." },
 	{ keys = [ "arrow_right" ],	command = "open" },
 	{ keys = [ "\n" ],		command = "open" },
-	{ keys = [ "end" ],		command = "cursor_move_end" },
 	{ keys = [ "home" ],		command = "cursor_move_home" },
+	{ keys = [ "end" ],		command = "cursor_move_end" },
 	{ keys = [ "page_up" ],		command = "cursor_move_page_up" },
 	{ keys = [ "page_down" ],	command = "cursor_move_page_down" },
 	{ keys = [ "ctrl+u" ],  	command = "cursor_move_page_up 0.5" },
@@ -68,7 +70,7 @@ mapcommand = [
 	{ keys = [ " " ],		command = "select --toggle=true" },
 	{ keys = [ "t" ],		command = "select --all=true --toggle=true" },
 
-	{ keys = [ "w" ],		command = "show_workers --exit-key=w" },
+	{ keys = [ "w" ],		command = "show_tasks --exit-key=w" },
 	{ keys = [ "b", "b" ],		command = "bulk_rename" },
 	{ keys = [ "=" ],		command = "set_mode" },
 
@@ -101,4 +103,42 @@ mapcommand = [
 	{ keys = [ "g", "e" ],		command = "cd /etc" },
 	{ keys = [ "g", "h" ],		command = "cd ~/" },
 	{ keys = [ "?" ],		command = "help" }
+]
+
+[task_view]
+
+keymap = [
+	# arrow keys
+	{ keys = [ "arrow_up" ],	command = "cursor_move_up" },
+	{ keys = [ "arrow_down" ],	command = "cursor_move_down" },
+	{ keys = [ "home" ],		command = "cursor_move_home" },
+	{ keys = [ "end" ],		command = "cursor_move_end" },
+
+	# vim-like keybindings
+	{ keys = [ "j" ],		command = "cursor_move_down" },
+	{ keys = [ "k" ],		command = "cursor_move_up" },
+	{ keys = [ "g", "g" ],		command = "cursor_move_home" },
+	{ keys = [ "G" ],		command = "cursor_move_end" },
+
+	{ keys = [ "w" ],		command = "show_tasks" },
+	{ keys = [ "escape" ],		command = "show_tasks" },
+]
+
+[help_view]
+
+keymap = [
+	# arrow keys
+	{ keys = [ "arrow_up" ],	command = "cursor_move_up" },
+	{ keys = [ "arrow_down" ],	command = "cursor_move_down" },
+	{ keys = [ "home" ],		command = "cursor_move_home" },
+	{ keys = [ "end" ],		command = "cursor_move_end" },
+
+	# vim-like keybindings
+	{ keys = [ "j" ],		command = "cursor_move_down" },
+	{ keys = [ "k" ],		command = "cursor_move_up" },
+	{ keys = [ "g", "g" ],		command = "cursor_move_home" },
+	{ keys = [ "G" ],		command = "cursor_move_end" },
+
+	{ keys = [ "w" ],		command = "show_tasks" },
+	{ keys = [ "escape" ],		command = "show_tasks" },
 ]

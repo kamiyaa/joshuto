@@ -74,7 +74,7 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_RENAME_FILE_PREPEND, Self::RenameFilePrepend);
         simple_command_conversion_case!(command, CMD_SEARCH_NEXT, Self::SearchNext);
         simple_command_conversion_case!(command, CMD_SEARCH_PREV, Self::SearchPrev);
-        simple_command_conversion_case!(command, CMD_SHOW_WORKERS, Self::ShowWorkers);
+        simple_command_conversion_case!(command, CMD_SHOW_TASKS, Self::ShowTasks);
         simple_command_conversion_case!(command, CMD_SET_MODE, Self::SetMode);
         simple_command_conversion_case!(command, CMD_TOGGLE_HIDDEN, Self::ToggleHiddenFiles);
         simple_command_conversion_case!(command, CMD_BULK_RENAME, Self::BulkRename);

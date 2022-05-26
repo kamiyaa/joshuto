@@ -7,7 +7,7 @@ use tui::layout::{Constraint, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Cell, Row, Table, Widget};
 
-use crate::config::AppKeyMapping;
+use crate::config::KeyMapping;
 use crate::key_command::traits::CommandComment;
 use crate::key_command::CommandKeybind;
 
@@ -96,7 +96,7 @@ impl<'a> Widget for TuiHelp<'a> {
 // Translates output from 'get_raw_keymap_table' into format,
 // readable by TUI table widget
 pub fn get_keymap_table<'a>(
-    keymap: &'a AppKeyMapping,
+    keymap: &'a KeyMapping,
     search_query: &'a str,
     sort_by: usize,
 ) -> Vec<Row<'a>> {
@@ -115,17 +115,17 @@ pub fn get_keymap_table<'a>(
 // This function is needed because we cannot access Row items, which
 // means that we won't be able to sort binds if we create Rows directly
 pub fn get_raw_keymap_table<'a>(
-    keymap: &'a AppKeyMapping,
+    keymap: &'a KeyMapping,
     search_query: &'a str,
     sort_by: usize,
 ) -> Vec<[String; 3]> {
     let mut rows = Vec::new();
-    for (event, bind) in keymap.as_ref() {
+    for (event, bind) in keymap.iter() {
         let key = key_event_to_string(event);
         let (command, comment) = match bind {
             CommandKeybind::SimpleKeybind(command) => (format!("{}", command), command.comment()),
             CommandKeybind::CompositeKeybind(sub_keymap) => {
-                let mut sub_rows = get_raw_keymap_table(sub_keymap, "", sort_by);
+                let mut sub_rows = get_raw_keymap_table(&sub_keymap, "", sort_by);
                 for _ in 0..sub_rows.len() {
                     let mut sub_row = sub_rows.pop().unwrap();
                     sub_row[0] = key.clone() + &sub_row[0];

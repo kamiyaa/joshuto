@@ -4,7 +4,7 @@ use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::widgets::{Clear, Widget};
 
-use crate::config::AppKeyMapping;
+use crate::config::KeyMapping;
 use crate::context::AppContext;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
@@ -15,11 +15,11 @@ const BOTTOM_MARGIN: usize = 1;
 
 pub struct TuiCommandMenu<'a> {
     context: &'a AppContext,
-    keymap: &'a AppKeyMapping,
+    keymap: &'a KeyMapping,
 }
 
 impl<'a> TuiCommandMenu<'a> {
-    pub fn new(context: &'a AppContext, keymap: &'a AppKeyMapping) -> Self {
+    pub fn new(context: &'a AppContext, keymap: &'a KeyMapping) -> Self {
         Self { context, keymap }
     }
 }
@@ -31,7 +31,6 @@ impl<'a> Widget for TuiCommandMenu<'a> {
         // draw menu
         let mut display_vec: Vec<String> = self
             .keymap
-            .as_ref()
             .iter()
             .map(|(k, v)| format!("  {}        {}", k.to_string(), v))
             .collect();

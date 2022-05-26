@@ -64,7 +64,7 @@ cmd_constants![
     (CMD_SORT_REVERSE, "sort reverse"),
     (CMD_SUBPROCESS_FOREGROUND, "shell"),
     (CMD_SUBPROCESS_BACKGROUND, "spawn"),
-    (CMD_SHOW_WORKERS, "show_workers"),
+    (CMD_SHOW_TASKS, "show_tasks"),
     (CMD_TAB_SWITCH, "tab_switch"),
     (CMD_TAB_SWITCH_INDEX, "tab_switch_index"),
     (CMD_TOGGLE_HIDDEN, "toggle_hidden"),

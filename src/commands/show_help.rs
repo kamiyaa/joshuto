@@ -25,9 +25,9 @@ pub fn help_loop(
 
     loop {
         let keymap = if search_query.is_empty() {
-            widgets::get_keymap_table(keymap_t, &search_query, sort_by)
+            widgets::get_keymap_table(&keymap_t.default_view, &search_query, sort_by)
         } else {
-            widgets::get_keymap_table(keymap_t, &search_query[1..], sort_by)
+            widgets::get_keymap_table(&keymap_t.default_view, &search_query[1..], sort_by)
         };
 
         context.remove_external_preview();
@@ -49,7 +49,7 @@ pub fn help_loop(
                         Event::Key(Key::Char('/')) => search_query.push('/'),
                         event => {
                             if let Some(CommandKeybind::SimpleKeybind(command)) =
-                                keymap_t.as_ref().get(&event)
+                                keymap_t.help_view.get(&event)
                             {
                                 match command {
                                     Command::CursorMoveUp(_) => move_offset(&mut offset, -1),

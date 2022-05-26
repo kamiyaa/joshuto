@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 
 use std::collections::{hash_map::Entry, HashMap};
-use std::convert::{AsMut, AsRef, From};
+use std::convert::From;
 use std::str::FromStr;
 
 use termion::event::Event;
@@ -20,75 +20,85 @@ struct CommandKeymap {
 }
 
 #[derive(Debug, Deserialize)]
-struct AppKeyMappingCrude {
+struct AppModeKeyMapping {
     #[serde(default)]
-    pub mapcommand: Vec<CommandKeymap>,
+    pub keymap: Vec<CommandKeymap>,
 }
+
+#[derive(Debug, Deserialize)]
+struct AppKeyMappingRaw {
+    pub default_view: AppModeKeyMapping,
+    pub task_view: AppModeKeyMapping,
+    pub help_view: AppModeKeyMapping,
+}
+
+pub type KeyMapping = HashMap<Event, CommandKeybind>;
 
 #[derive(Debug)]
 pub struct AppKeyMapping {
-    map: HashMap<Event, CommandKeybind>,
+    pub default_view: KeyMapping,
+    pub task_view: KeyMapping,
+    pub help_view: KeyMapping,
 }
 
 impl AppKeyMapping {
     pub fn new() -> Self {
         Self {
-            map: HashMap::new(),
+            default_view: KeyMapping::new(),
+            task_view: KeyMapping::new(),
+            help_view: KeyMapping::new(),
         }
     }
 
     pub fn default_res() -> JoshutoResult<Self> {
-        let crude: AppKeyMappingCrude = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
+        let crude: AppKeyMappingRaw = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
         let keymapping: Self = Self::from(crude);
         Ok(keymapping)
     }
 }
 
-impl AsRef<HashMap<Event, CommandKeybind>> for AppKeyMapping {
-    fn as_ref(&self) -> &HashMap<Event, CommandKeybind> {
-        &self.map
-    }
-}
+fn vec_to_map(vec: &[CommandKeymap]) -> HashMap<Event, CommandKeybind> {
+    let mut hashmap = HashMap::new();
 
-impl AsMut<HashMap<Event, CommandKeybind>> for AppKeyMapping {
-    fn as_mut(&mut self) -> &mut HashMap<Event, CommandKeybind> {
-        &mut self.map
-    }
-}
+    for m in vec {
+        match Command::from_str(m.command.as_str()) {
+            Ok(command) => {
+                let events: Vec<Event> = m
+                    .keys
+                    .iter()
+                    .filter_map(|s| str_to_event(s.as_str()))
+                    .collect();
 
-impl From<AppKeyMappingCrude> for AppKeyMapping {
-    fn from(crude: AppKeyMappingCrude) -> Self {
-        let mut keymaps = Self::new();
-        for m in crude.mapcommand {
-            match Command::from_str(m.command.as_str()) {
-                Ok(command) => {
-                    let events: Vec<Event> = m
-                        .keys
-                        .iter()
-                        .filter_map(|s| str_to_event(s.as_str()))
-                        .collect();
-
-                    if events.len() != m.keys.len() {
-                        eprintln!("Failed to parse events: {:?}", m.keys);
-                        continue;
-                    }
-
-                    let result = insert_keycommand(&mut keymaps, command, &events);
-                    match result {
-                        Ok(_) => {}
-                        Err(e) => eprintln!("{}", e),
-                    }
+                if events.len() != m.keys.len() {
+                    eprintln!("Failed to parse events: {:?}", m.keys);
+                    continue;
                 }
-                Err(e) => eprintln!("{}", e),
+
+                let result = insert_keycommand(&mut hashmap, command, &events);
+                match result {
+                    Ok(_) => {}
+                    Err(e) => eprintln!("{}", e),
+                }
             }
+            Err(e) => eprintln!("{}", e),
         }
+    }
+    hashmap
+}
+
+impl From<AppKeyMappingRaw> for AppKeyMapping {
+    fn from(raw: AppKeyMappingRaw) -> Self {
+        let mut keymaps = Self::new();
+        keymaps.default_view = vec_to_map(&raw.default_view.keymap);
+        keymaps.task_view = vec_to_map(&raw.task_view.keymap);
+        keymaps.help_view = vec_to_map(&raw.help_view.keymap);
         keymaps
     }
 }
 
 impl TomlConfigFile for AppKeyMapping {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppKeyMappingCrude, AppKeyMapping>(file_name).unwrap_or_else(|| {
+        parse_to_config_file::<AppKeyMappingRaw, AppKeyMapping>(file_name).unwrap_or_else(|| {
             eprintln!("Using default keymapping");
             Self::default()
         })
@@ -104,7 +114,7 @@ impl std::default::Default for AppKeyMapping {
 }
 
 fn insert_keycommand(
-    keymap: &mut AppKeyMapping,
+    keymap: &mut KeyMapping,
     keycommand: Command,
     events: &[Event],
 ) -> Result<(), String> {
@@ -115,7 +125,7 @@ fn insert_keycommand(
 
     let event = events[0].clone();
     if num_events == 1 {
-        match keymap.as_mut().entry(event) {
+        match keymap.entry(event) {
             Entry::Occupied(_) => {
                 return Err(format!("Error: Keybindings ambiguous for {}", keycommand))
             }
@@ -124,7 +134,7 @@ fn insert_keycommand(
         return Ok(());
     }
 
-    match keymap.as_mut().entry(event) {
+    match keymap.entry(event) {
         Entry::Occupied(mut entry) => match entry.get_mut() {
             CommandKeybind::CompositeKeybind(ref mut m) => {
                 insert_keycommand(m, keycommand, &events[1..])
@@ -132,7 +142,7 @@ fn insert_keycommand(
             _ => Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
         },
         Entry::Vacant(entry) => {
-            let mut new_map = AppKeyMapping::new();
+            let mut new_map = KeyMapping::new();
             let result = insert_keycommand(&mut new_map, keycommand, &events[1..]);
             if result.is_ok() {
                 let composite_command = CommandKeybind::CompositeKeybind(new_map);

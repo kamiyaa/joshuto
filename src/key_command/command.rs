@@ -63,7 +63,7 @@ pub enum Command {
     SelectFiles(String, SelectOption),
     SetMode,
     SubProcess(Vec<String>, bool),
-    ShowWorkers,
+    ShowTasks,
 
     ToggleHiddenFiles,
 

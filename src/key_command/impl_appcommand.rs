@@ -61,7 +61,7 @@ impl AppCommand for Command {
             Self::SelectFiles(_, _) => CMD_SELECT_FILES,
             Self::SetMode => CMD_SET_MODE,
 
-            Self::ShowWorkers => CMD_SHOW_WORKERS,
+            Self::ShowTasks => CMD_SHOW_TASKS,
 
             Self::Sort(_) => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,

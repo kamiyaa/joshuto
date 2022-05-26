@@ -2,8 +2,22 @@
 This file is for mapping keyboard keys to commands.
 
 ```toml
-mapcommand = [
+# keymapping for default view
+[default_view]
+keymap = [
     { keys = [ "T" ], command = "new_tab" },
+    # ...
+]
+
+# keymapping for task view
+[task_view]
+keymap = [
+    # ...
+]
+
+# keymapping for help view
+[help_view]
+keymap = [
     # ...
 ]
 ```

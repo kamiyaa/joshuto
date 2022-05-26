@@ -79,7 +79,7 @@ impl CommandComment for Command {
             Self::SetMode => "Set file permissions",
             Self::SubProcess(_, false) => "Run a shell command",
             Self::SubProcess(_, true) => "Run commmand in background",
-            Self::ShowWorkers => "Show IO workers",
+            Self::ShowTasks => "Show running background tasks",
 
             Self::ToggleHiddenFiles => "Toggle hidden files displaying",
 

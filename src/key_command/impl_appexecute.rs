@@ -87,7 +87,7 @@ impl AppExecute for Command {
                 selection::select_files(context, pattern.as_str(), options)
             }
             Self::SetMode => set_mode::set_mode(context, backend),
-            Self::ShowWorkers => show_workers::show_workers(context, backend, keymap_t),
+            Self::ShowTasks => show_tasks::show_tasks(context, backend, keymap_t),
             Self::Sort(t) => sort::set_sort(context, *t),
             Self::SortReverse => sort::toggle_reverse(context),
             Self::SubProcess(v, spawn) => {
@@ -102,7 +102,7 @@ impl AppExecute for Command {
                 Ok(())
             }
             Self::TabSwitchIndex(i) => tab_ops::tab_switch_index(*i as usize, context),
-            Self::Help => help::help_loop(context, backend, keymap_t),
+            Self::Help => show_help::help_loop(context, backend, keymap_t),
 
             Self::SearchFzf => search_fzf::search_fzf(context, backend),
             Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),

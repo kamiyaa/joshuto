@@ -51,7 +51,7 @@ pub fn numbered_command(
                     Event::Key(Key::Char(c)) if c.is_numeric() => {
                         prefix.push(c);
                     }
-                    key => match keymap.as_ref().get(&key) {
+                    key => match keymap.default_view.get(&key) {
                         Some(CommandKeybind::SimpleKeybind(command)) => {
                             return command.numbered_execute(num_prefix, context, backend, keymap);
                         }

@@ -1,11 +1,10 @@
-use crate::config::AppKeyMapping;
-
-use super::Command;
+use crate::config::KeyMapping;
+use crate::key_command::Command;
 
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind(Command),
-    CompositeKeybind(AppKeyMapping),
+    CompositeKeybind(KeyMapping),
 }
 
 impl std::fmt::Display for CommandKeybind {
