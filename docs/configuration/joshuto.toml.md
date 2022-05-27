@@ -8,6 +8,7 @@ scroll_offset = 6
 
 # If joshuto does not know how to open the file, it can resort to opening it via xdg settings
 xdg_open = false
+
 # Fork xdg_open so you can continue using joshuto with application open
 xdg_open_fork = false
 
@@ -22,19 +23,31 @@ max_preview_size = 2097152 # 2MB
 
 # Configurations related to the display
 [display]
+# Different view layouts
+# Options include
+# - default
+# - vsplit
+mode = "default"
+
 # Collapse the preview window when there is no preview available
 collapse_preview = true
+
 # Ratios for parent view, current view and preview. You can specify 0 for
 # parent view or omit it (So there are only 2 nums) and it won't be displayed
 column_ratio = [1, 3, 4]
+
 # Show borders around different views
 show_borders = true
+
 # Show hidden files
 show_hidden = false
+
 # Show file icons (requires a supporting font)
 show_icons = true
+
 # Shorten /home/$USER to ~
 tilde_in_titlebar = true
+
 # Options include
 # - none
 # - absolute
@@ -48,10 +61,13 @@ line_number_style = "none"
 # - natural  (2.txt comes before 10.txt)
 # - mtime
 method = "natural"
+
 # case sensitive sorting
 case_sensitive = false
+
 # show directories first
 directories_first = true
+
 # sort in reverse
 reverse = false
 ```
