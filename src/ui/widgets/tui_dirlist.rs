@@ -10,11 +10,12 @@ use crate::util::style;
 
 pub struct TuiDirList<'a> {
     dirlist: &'a JoshutoDirList,
+    pub focused: bool,
 }
 
 impl<'a> TuiDirList<'a> {
-    pub fn new(dirlist: &'a JoshutoDirList) -> Self {
-        Self { dirlist }
+    pub fn new(dirlist: &'a JoshutoDirList, focused: bool) -> Self {
+        Self { dirlist, focused }
     }
 }
 
@@ -47,7 +48,9 @@ impl<'a> Widget for TuiDirList<'a> {
             .for_each(|(i, entry)| {
                 let ix = skip_dist + i;
 
-                let style = if ix == curr_index {
+                let style = if !self.focused {
+                    style::entry_style(entry)
+                } else if ix == curr_index {
                     style::entry_style(entry).add_modifier(Modifier::REVERSED)
                 } else {
                     style::entry_style(entry)

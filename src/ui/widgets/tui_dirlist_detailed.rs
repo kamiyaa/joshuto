@@ -19,12 +19,18 @@ const ELLIPSIS: &str = "…";
 pub struct TuiDirListDetailed<'a> {
     dirlist: &'a JoshutoDirList,
     display_options: &'a DisplayOption,
+    pub focused: bool,
 }
 impl<'a> TuiDirListDetailed<'a> {
-    pub fn new(dirlist: &'a JoshutoDirList, display_options: &'a DisplayOption) -> Self {
+    pub fn new(
+        dirlist: &'a JoshutoDirList,
+        display_options: &'a DisplayOption,
+        focused: bool,
+    ) -> Self {
         Self {
             dirlist,
             display_options,
+            focused,
         }
     }
 }
@@ -67,7 +73,9 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
             .for_each(|(i, entry)| {
                 let ix = skip_dist + i;
 
-                let style = if ix == curr_index {
+                let style = if !self.focused {
+                    style::entry_style(entry)
+                } else if ix == curr_index {
                     style::entry_style(entry).add_modifier(Modifier::REVERSED)
                 } else {
                     style::entry_style(entry)

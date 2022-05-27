@@ -4,6 +4,9 @@ use_trash = true
 watch_files = true
 
 [display]
+# default, vsplit
+mode = "default"
+
 automatically_count_files = false
 collapse_preview = true
 # ratios for parent view (optional), current view and preview

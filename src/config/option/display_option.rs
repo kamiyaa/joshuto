@@ -4,12 +4,19 @@ use tui::layout::Constraint;
 
 use crate::config::option::SortOption;
 
+#[derive(Clone, Copy, Debug)]
+pub enum DisplayMode {
+    Default,
+    VSplit,
+}
+
 pub const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
 }
 
 #[derive(Clone, Debug)]
 pub struct DisplayOption {
+    pub _mode: DisplayMode,
     pub _automatically_count_files: bool,
     pub _collapse_preview: bool,
     pub _scroll_offset: usize,
@@ -32,6 +39,10 @@ pub enum LineNumberStyle {
 }
 
 impl DisplayOption {
+    pub fn mode(&self) -> DisplayMode {
+        self._mode
+    }
+
     pub fn automatically_count_files(&self) -> bool {
         self._automatically_count_files
     }
@@ -106,6 +117,7 @@ impl std::default::Default for DisplayOption {
         ];
 
         Self {
+            _mode: DisplayMode::Default,
             _automatically_count_files: false,
             _collapse_preview: true,
             column_ratio,

@@ -3,12 +3,16 @@ use std::convert::From;
 use serde_derive::Deserialize;
 use tui::layout::Constraint;
 
-use crate::config::option::{DisplayOption, LineNumberStyle};
+use crate::config::option::{DisplayMode, DisplayOption, LineNumberStyle};
 
 use super::sort_raw::SortOptionRaw;
 
 pub const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
+}
+
+fn default_mode() -> String {
+    "default".to_string()
 }
 
 const fn default_true() -> bool {
@@ -21,6 +25,9 @@ const fn default_scroll_offset() -> usize {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct DisplayOptionRaw {
+    #[serde(default = "default_mode")]
+    pub mode: String,
+
     #[serde(default)]
     pub automatically_count_files: bool,
 
@@ -55,6 +62,7 @@ pub struct DisplayOptionRaw {
 impl std::default::Default for DisplayOptionRaw {
     fn default() -> Self {
         Self {
+            mode: default_mode(),
             automatically_count_files: false,
             collapse_preview: true,
             column_ratio: None,
@@ -71,6 +79,11 @@ impl std::default::Default for DisplayOptionRaw {
 
 impl From<DisplayOptionRaw> for DisplayOption {
     fn from(raw: DisplayOptionRaw) -> Self {
+        let mode = match raw.mode.as_str() {
+            "vsplit" => DisplayMode::VSplit,
+            _ => DisplayMode::Default,
+        };
+
         let column_ratio = match raw.column_ratio {
             Some(s) if s.len() == 3 => (s[0], s[1], s[2]),
             Some(s) if s.len() == 2 => (0, s[0], s[1]),
@@ -97,6 +110,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
         };
 
         Self {
+            _mode: mode,
             _automatically_count_files: raw.automatically_count_files,
             _collapse_preview: raw.collapse_preview,
             _scroll_offset: raw.scroll_offset,

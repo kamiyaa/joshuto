@@ -106,14 +106,14 @@ impl<'a> Widget for TuiFolderView<'a> {
             Constraint::Ratio(0, _) => (),
             _ => {
                 if let Some(list) = curr_tab.parent_list_ref().as_ref() {
-                    TuiDirList::new(list).render(layout_rect[0], buf);
+                    TuiDirList::new(list, true).render(layout_rect[0], buf);
                 }
             }
         }
 
         // render current view
         if let Some(list) = curr_list.as_ref() {
-            TuiDirListDetailed::new(list, display_options).render(layout_rect[1], buf);
+            TuiDirListDetailed::new(list, display_options, true).render(layout_rect[1], buf);
             let rect = Rect {
                 x: 0,
                 y: area.height - 1,
@@ -141,7 +141,7 @@ impl<'a> Widget for TuiFolderView<'a> {
         }
 
         if let Some(list) = child_list.as_ref() {
-            TuiDirList::new(list).render(layout_rect[2], buf);
+            TuiDirList::new(list, true).render(layout_rect[2], buf);
         } else if curr_entry.is_some() {
             let preview_area = calculate_preview(self.context, layout_rect[2]);
             if let Some(preview_area) = preview_area {

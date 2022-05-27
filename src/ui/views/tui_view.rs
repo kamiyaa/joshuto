@@ -3,6 +3,8 @@ use tui::layout::Rect;
 use tui::widgets::Widget;
 
 use super::TuiFolderView;
+use super::TuiVSplitView;
+use crate::config::option::DisplayMode;
 use crate::context::AppContext;
 
 pub struct TuiView<'a> {
@@ -21,6 +23,15 @@ impl<'a> TuiView<'a> {
 
 impl<'a> Widget for TuiView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        TuiFolderView::new(self.context).render(area, buf);
+        let config = self.context.config_ref();
+        let display_options = config.display_options_ref();
+        match display_options.mode() {
+            DisplayMode::Default => {
+                TuiFolderView::new(self.context).render(area, buf);
+            }
+            DisplayMode::VSplit => {
+                TuiVSplitView::new(self.context).render(area, buf);
+            }
+        }
     }
 }
