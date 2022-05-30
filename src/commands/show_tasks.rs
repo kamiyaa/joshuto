@@ -34,7 +34,7 @@ pub fn show_tasks(
                             },
                             Some(CommandKeybind::CompositeKeybind(m)) => {
                                 let cmd =
-                                    process_event::get_input_while_composite(backend, context, &m);
+                                    process_event::get_input_while_composite(backend, context, m);
 
                                 if let Some(command) = cmd {
                                     match command {

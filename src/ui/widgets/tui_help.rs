@@ -125,7 +125,7 @@ pub fn get_raw_keymap_table<'a>(
         let (command, comment) = match bind {
             CommandKeybind::SimpleKeybind(command) => (format!("{}", command), command.comment()),
             CommandKeybind::CompositeKeybind(sub_keymap) => {
-                let mut sub_rows = get_raw_keymap_table(&sub_keymap, "", sort_by);
+                let mut sub_rows = get_raw_keymap_table(sub_keymap, "", sort_by);
                 for _ in 0..sub_rows.len() {
                     let mut sub_row = sub_rows.pop().unwrap();
                     sub_row[0] = key.clone() + &sub_row[0];

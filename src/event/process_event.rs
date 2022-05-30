@@ -37,7 +37,7 @@ pub fn get_input_while_composite<'a>(
                         Event::Key(Key::Esc) => return None,
                         event => match keymap.get(&event) {
                             Some(CommandKeybind::SimpleKeybind(s)) => {
-                                return Some(&s);
+                                return Some(s);
                             }
                             Some(CommandKeybind::CompositeKeybind(m)) => {
                                 keymap = m;
