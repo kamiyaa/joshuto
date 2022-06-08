@@ -12,17 +12,12 @@ use super::reload;
 
 fn trash_error_to_io_error(err: trash::Error) -> std::io::Error {
     match err {
-        trash::Error::Unknown => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
+        trash::Error::Unknown { description } => {
+            std::io::Error::new(std::io::ErrorKind::Other, description)
+        }
         trash::Error::TargetedRoot => {
             std::io::Error::new(std::io::ErrorKind::Other, "Targeted Root")
         }
-        trash::Error::CanonicalizePath { code: _ } => {
-            std::io::Error::new(std::io::ErrorKind::NotFound, "Not found")
-        }
-        trash::Error::Remove { code: Some(1) } => std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            "Cannot move files to trash from mounted system",
-        ),
         _ => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
     }
 }

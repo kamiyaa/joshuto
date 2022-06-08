@@ -56,19 +56,12 @@ impl From<std::env::VarError> for JoshutoError {
 impl From<trash::Error> for JoshutoError {
     fn from(err: trash::Error) -> Self {
         let err = match err {
-            trash::Error::Unknown => {
-                std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error")
+            trash::Error::Unknown { description } => {
+                std::io::Error::new(std::io::ErrorKind::Other, description)
             }
             trash::Error::TargetedRoot => {
                 std::io::Error::new(std::io::ErrorKind::Other, "Targeted Root")
             }
-            trash::Error::CanonicalizePath { code: _ } => {
-                std::io::Error::new(std::io::ErrorKind::NotFound, "Not found")
-            }
-            trash::Error::Remove { code: Some(1) } => std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                "Cannot move files to trash from mounted system",
-            ),
             _ => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
         };
         Self {
