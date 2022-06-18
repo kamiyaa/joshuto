@@ -36,7 +36,7 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
             reload::soft_reload(context.tab_context_ref().index, context)?;
         }
         Some(_) => {
-            let paths = curr_list.map_or_else(Vec::new, |s| s.get_selected_paths());
+            let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());
             let path = paths.get(0).ok_or_else(|| {
                 JoshutoError::new(
                     JoshutoErrorKind::Io(io::ErrorKind::NotFound),
@@ -44,8 +44,8 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
                 )
             })?;
 
-            let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
-            let options = get_options(path);
+            let files: Vec<&str> = paths.iter().filter_map(|e| Some(e.file_name())).collect();
+            let options = get_options(path.file_path());
             let option = options.iter().find(|option| option.program_exists());
 
             let config = context.config_ref();
@@ -53,7 +53,7 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
             if let Some(option) = option {
                 open_with_entry(context, backend, option, &files)?;
             } else if config.xdg_open {
-                open_with_xdg(context, backend, path)?;
+                open_with_xdg(context, backend, path.file_path())?;
             } else {
                 open_with_helper(context, backend, options, &files)?;
             }
@@ -164,7 +164,7 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend)
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
-        .map_or(vec![], |s| s.get_selected_paths());
+        .map_or(vec![], |s| s.iter_selected().cloned().collect());
 
     if paths.is_empty() {
         return Err(JoshutoError::new(
@@ -172,8 +172,8 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend)
             String::from("No files selected"),
         ));
     }
-    let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
-    let options = get_options(paths[0].as_path());
+    let files: Vec<&str> = paths.iter().filter_map(|e| Some(e.file_name())).collect();
+    let options = get_options(paths[0].file_path());
 
     open_with_helper(context, backend, options, &files)?;
     Ok(())
@@ -188,7 +188,7 @@ pub fn open_with_index(
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
-        .map_or(vec![], |s| s.get_selected_paths());
+        .map_or(vec![], |s| s.iter_selected().cloned().collect());
 
     if paths.is_empty() {
         return Err(JoshutoError::new(
@@ -196,8 +196,8 @@ pub fn open_with_index(
             String::from("No files selected"),
         ));
     }
-    let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
-    let options = get_options(paths[0].as_path());
+    let files: Vec<&str> = paths.iter().filter_map(|e| Some(e.file_name())).collect();
+    let options = get_options(paths[0].file_path());
 
     if index >= options.len() {
         return Err(JoshutoError::new(
