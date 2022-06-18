@@ -124,6 +124,10 @@ function joshuto() {
     - `line_nums 0` or `line_nums none`: disable displaying
     - `line_nums 1` or `line_nums absolute`: enable absolute numbers for each entry
     - `line_nums 2` or `line_nums relative`: enable numbers relative to selected entry
+ - `flat`: flattens the directory view up to the specified depth.
+    - `flat 3`: flatten directory upto 3 directories deep.
+    depth of 0 corresponds to the current directory.
+    its direct descendents have depth 1, and their descendents have depth 2, and so on.
 
 ## Navigation
  - `cursor_move_up`: moves the cursor up by x amount
