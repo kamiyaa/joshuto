@@ -20,37 +20,30 @@ impl JoshutoDirEntry {
     pub fn from(direntry: &fs::DirEntry, options: &DisplayOption) -> io::Result<Self> {
         let path = direntry.path();
 
-        let mut metadata = JoshutoMetadata::from(&path)?;
         let name = direntry
             .file_name()
             .as_os_str()
             .to_string_lossy()
             .to_string();
 
-        if options.automatically_count_files() && metadata.file_type().is_dir() {
-            if let Ok(size) = get_directory_size(path.as_path()) {
-                metadata.update_directory_size(size);
-            }
-        }
+        Self::gen_entry(path, name, options)
+    }
 
-        #[cfg(feature = "devicons")]
-        let label = if options.show_icons() {
-            create_icon_label(name.as_str(), &metadata)
-        } else {
-            name.clone()
-        };
+    pub fn from_walk(
+        direntry: &walkdir::DirEntry,
+        base: &path::Path,
+        options: &DisplayOption,
+    ) -> io::Result<Self> {
+        let path = direntry.path().to_path_buf();
 
-        #[cfg(not(feature = "devicons"))]
-        let label = name.clone();
+        let name = direntry
+            .path()
+            .strip_prefix(base)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
 
-        Ok(Self {
-            name,
-            label,
-            path,
-            metadata,
-            selected: false,
-            _marked: false,
-        })
+        Self::gen_entry(path, name, options)
     }
 
     pub fn file_name(&self) -> &str {
@@ -83,6 +76,35 @@ impl JoshutoDirEntry {
             Some(pos) => &fname[pos..],
             None => "",
         }
+    }
+
+    fn gen_entry(path: path::PathBuf, name: String, options: &DisplayOption) -> io::Result<Self> {
+        let mut metadata = JoshutoMetadata::from(&path)?;
+
+        if options.automatically_count_files() && metadata.file_type().is_dir() {
+            if let Ok(size) = get_directory_size(path.as_path()) {
+                metadata.update_directory_size(size);
+            }
+        }
+
+        #[cfg(feature = "devicons")]
+        let label = if options.show_icons() {
+            create_icon_label(name.as_str(), &metadata)
+        } else {
+            name.clone()
+        };
+
+        #[cfg(not(feature = "devicons"))]
+        let label = name.clone();
+
+        Ok(Self {
+            name,
+            label,
+            path,
+            metadata,
+            selected: false,
+            _marked: false,
+        })
     }
 }
 

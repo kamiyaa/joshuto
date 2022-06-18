@@ -38,6 +38,7 @@ unicode-width = "^0"
 users = "^0"
 whoami = "^1"
 xdg = "^2"
+walkdir = "^2"
 
 [features]
 devicons = [ "phf" ]

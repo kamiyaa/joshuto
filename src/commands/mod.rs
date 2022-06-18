@@ -4,6 +4,7 @@ pub mod command_line;
 pub mod cursor_move;
 pub mod delete_files;
 pub mod file_ops;
+pub mod flat;
 pub mod line_nums;
 pub mod new_directory;
 pub mod numbered_command;
