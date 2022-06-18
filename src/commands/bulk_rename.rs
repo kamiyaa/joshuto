@@ -33,18 +33,18 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
     let mut file_path = path::PathBuf::from(&tmp_directory);
     file_path.push(rand_str);
 
-    let paths = context
+    let entries = context
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
-        .map_or(vec![], |s| s.get_selected_paths());
+        .map_or(vec![], |s| s.iter_selected().collect());
 
     /* write file names into temporary file to edit */
     {
         let mut file = fs::File::create(&file_path)?;
-        for path in paths.iter() {
-            let file_name = path.file_name().unwrap();
-            let file_name_as_bytes = file_name.to_str().unwrap().as_bytes();
+        for path in entries.iter() {
+            let file_name = path.file_name();
+            let file_name_as_bytes = file_name.as_bytes();
             file.write_all(file_name_as_bytes)?;
             file.write_all(&[b'\n'])?;
         }
@@ -66,7 +66,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
         }
     }
 
-    let mut paths_renamed: Vec<path::PathBuf> = Vec::with_capacity(paths.len());
+    let mut paths_renamed: Vec<path::PathBuf> = Vec::with_capacity(entries.len());
     {
         let file = std::fs::File::open(&file_path)?;
 
@@ -82,7 +82,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
         }
         std::fs::remove_file(&file_path)?;
     }
-    if paths_renamed.len() < paths.len() {
+    if paths_renamed.len() < entries.len() {
         return Err(JoshutoError::new(
             JoshutoErrorKind::Io(io::ErrorKind::InvalidInput),
             "Insufficient inputs".to_string(),
@@ -90,8 +90,8 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
     }
 
     println!("{}", termion::clear::All);
-    for (p, q) in paths.iter().zip(paths_renamed.iter()) {
-        println!("{:?} -> {:?}", p, q);
+    for (p, q) in entries.iter().zip(paths_renamed.iter()) {
+        println!("{:?} -> {:?}", p.file_name(), q);
     }
     print!("Continue with rename? (Y/n): ");
     std::io::stdout().flush()?;
@@ -102,11 +102,11 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
 
     let user_input_trimmed = user_input.trim();
     if user_input_trimmed != "n" || user_input_trimmed != "no" {
-        for (p, q) in paths.iter().zip(paths_renamed.iter()) {
+        for (p, q) in entries.iter().zip(paths_renamed.iter()) {
             let mut handle = process::Command::new("mv")
                 .arg("-iv")
                 .arg("--")
-                .arg(p)
+                .arg(p.file_name())
                 .arg(q)
                 .spawn()?;
             handle.wait()?;
