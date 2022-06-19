@@ -21,7 +21,7 @@ pub fn _walk_directory(
     options: &DisplayOption,
     depth: usize,
 ) -> io::Result<Vec<JoshutoDirEntry>> {
-    let results: Vec<JoshutoDirEntry> = WalkDir::new(path.to_path_buf())
+    let results: Vec<JoshutoDirEntry> = WalkDir::new(path)
         .max_depth(depth)
         .into_iter()
         .filter_entry(|e| {
