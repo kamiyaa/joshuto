@@ -44,7 +44,7 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
                 )
             })?;
 
-            let files: Vec<&str> = paths.iter().filter_map(|e| Some(e.file_name())).collect();
+            let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
             let options = get_options(path.file_path());
             let option = options.iter().find(|option| option.program_exists());
 
@@ -172,7 +172,7 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend)
             String::from("No files selected"),
         ));
     }
-    let files: Vec<&str> = paths.iter().filter_map(|e| Some(e.file_name())).collect();
+    let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
     let options = get_options(paths[0].file_path());
 
     open_with_helper(context, backend, options, &files)?;
@@ -196,7 +196,7 @@ pub fn open_with_index(
             String::from("No files selected"),
         ));
     }
-    let files: Vec<&str> = paths.iter().filter_map(|e| Some(e.file_name())).collect();
+    let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
     let options = get_options(paths[0].file_path());
 
     if index >= options.len() {

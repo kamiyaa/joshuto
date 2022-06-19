@@ -12,7 +12,7 @@ fn _is_hidden(entry: &walkdir::DirEntry) -> bool {
     entry
         .file_name()
         .to_str()
-        .map(|s| s.starts_with("."))
+        .map(|s| s.starts_with('.'))
         .unwrap_or(false)
 }
 
@@ -32,18 +32,13 @@ pub fn _walk_directory(
             }
         })
         .filter(|e| {
-            if e.as_ref()
+            !e.as_ref()
                 .ok()
                 .unwrap()
                 .path()
                 .to_str()
                 .cmp(&path.to_str())
                 .is_eq()
-            {
-                false
-            } else {
-                true
-            }
         })
         .filter_map(|res| JoshutoDirEntry::from_walk(&res.ok()?, path, options).ok())
         .collect();
@@ -72,7 +67,7 @@ pub fn flatten(depth: usize, context: &mut AppContext) -> JoshutoResult {
     let mut contents = _walk_directory(path.as_path(), &options, depth)?;
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
 
-    if contents.len() <= 0 {
+    if contents.is_empty() {
         index = None;
     }
 
@@ -80,13 +75,7 @@ pub fn flatten(depth: usize, context: &mut AppContext) -> JoshutoResult {
     contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
     let metadata = JoshutoMetadata::from(path.as_path())?;
-    let dirlist = JoshutoDirList::new(
-        path.to_path_buf(),
-        contents,
-        index,
-        viewport_index,
-        metadata,
-    );
+    let dirlist = JoshutoDirList::new(path.clone(), contents, index, viewport_index, metadata);
     history.insert(path, dirlist);
 
     Ok(())
