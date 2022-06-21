@@ -32,13 +32,11 @@ pub fn _walk_directory(
             }
         })
         .filter(|e| {
-            !e.as_ref()
-                .ok()
-                .unwrap()
-                .path()
-                .to_str()
-                .cmp(&path.to_str())
-                .is_eq()
+            if let Ok(e) = e.as_ref() {
+                e.path().to_str().cmp(&path.to_str()).is_ne()
+            } else {
+                true
+            }
         })
         .filter_map(|res| JoshutoDirEntry::from_walk(&res.ok()?, path, options).ok())
         .collect();
