@@ -31,8 +31,7 @@ structopt = "^0"
 termion = "^1"
 toml = "^0"
 trash = { version = "^2", optional = true }
-tui_old = { package = "tui", version = "0.17", default-features = false, features = ["termion"] }
-tui = { version = "0.18", default-features = false, features = ["termion"] }
+tui = { version = "^0", default-features = false, features = ["termion"] }
 unicode-segmentation = "^1"
 unicode-width = "^0"
 users = "^0"
