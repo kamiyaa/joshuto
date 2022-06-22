@@ -95,6 +95,8 @@ impl AppExecute for Command {
             }
             Self::SwitchLineNums(d) => line_nums::switch_line_numbering(context, *d),
 
+            Self::Flat(depth) => flat::flatten(*depth, context),
+
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
             Self::TabSwitch(i) => {

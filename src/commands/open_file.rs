@@ -26,7 +26,7 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
 
 pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
     let curr_list = context.tab_context_ref().curr_tab_ref().curr_list_ref();
-    let entry = curr_list.and_then(|s| s.curr_entry_ref());
+    let entry = curr_list.and_then(|s| s.curr_entry_ref().cloned());
 
     match entry {
         None => (),
@@ -35,16 +35,15 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
             change_directory::cd(path.as_path(), context)?;
             reload::soft_reload(context.tab_context_ref().index, context)?;
         }
-        Some(_) => {
-            let paths = curr_list.map_or_else(Vec::new, |s| s.get_selected_paths());
-            let path = paths.get(0).ok_or_else(|| {
-                JoshutoError::new(
-                    JoshutoErrorKind::Io(io::ErrorKind::NotFound),
-                    String::from("No files selected"),
-                )
-            })?;
+        Some(entry) => {
+            let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());
+            let path = if paths.is_empty() {
+                entry.file_path()
+            } else {
+                paths.get(0).unwrap().file_path()
+            };
 
-            let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
+            let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
             let options = get_options(path);
             let option = options.iter().find(|option| option.program_exists());
 
@@ -160,20 +159,25 @@ where
 }
 
 pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
-    let paths = context
+    let mut paths = context
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
-        .map_or(vec![], |s| s.get_selected_paths());
+        .map_or(vec![], |s| s.iter_selected().cloned().collect());
 
     if paths.is_empty() {
-        return Err(JoshutoError::new(
-            JoshutoErrorKind::Io(io::ErrorKind::NotFound),
-            String::from("No files selected"),
-        ));
+        paths.push(
+            context
+                .tab_context_ref()
+                .curr_tab_ref()
+                .curr_list_ref()
+                .and_then(|s| s.curr_entry_ref())
+                .unwrap()
+                .clone(),
+        );
     }
-    let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
-    let options = get_options(paths[0].as_path());
+    let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
+    let options = get_options(paths[0].file_path());
 
     open_with_helper(context, backend, options, &files)?;
     Ok(())
@@ -188,7 +192,7 @@ pub fn open_with_index(
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
-        .map_or(vec![], |s| s.get_selected_paths());
+        .map_or(vec![], |s| s.iter_selected().cloned().collect());
 
     if paths.is_empty() {
         return Err(JoshutoError::new(
@@ -196,8 +200,8 @@ pub fn open_with_index(
             String::from("No files selected"),
         ));
     }
-    let files: Vec<&std::ffi::OsStr> = paths.iter().filter_map(|e| e.file_name()).collect();
-    let options = get_options(paths[0].as_path());
+    let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
+    let options = get_options(paths[0].file_path());
 
     if index >= options.len() {
         return Err(JoshutoError::new(

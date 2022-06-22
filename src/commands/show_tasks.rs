@@ -21,29 +21,25 @@ pub fn show_tasks(
         if let Ok(event) = context.poll_event() {
             match event {
                 AppEvent::Termion(key) => {
-                    match key {
-                        key => match keymap_t.task_view.get(&key) {
-                            None => {
-                                context
-                                    .message_queue_mut()
-                                    .push_info(format!("Unmapped input: {}", key.to_string()));
+                    let key = key;
+                    match keymap_t.task_view.get(&key) {
+                        None => {
+                            context
+                                .message_queue_mut()
+                                .push_info(format!("Unmapped input: {}", key.to_string()));
+                        }
+                        Some(CommandKeybind::SimpleKeybind(command)) => {
+                            if let Command::ShowTasks = command {
+                                break;
                             }
-                            Some(CommandKeybind::SimpleKeybind(command)) => match command {
-                                Command::ShowTasks => break,
-                                _ => {}
-                            },
-                            Some(CommandKeybind::CompositeKeybind(m)) => {
-                                let cmd =
-                                    process_event::get_input_while_composite(backend, context, m);
+                        }
+                        Some(CommandKeybind::CompositeKeybind(m)) => {
+                            let cmd = process_event::get_input_while_composite(backend, context, m);
 
-                                if let Some(command) = cmd {
-                                    match command {
-                                        Command::ShowTasks => break,
-                                        _ => {}
-                                    }
-                                }
+                            if let Some(Command::ShowTasks) = cmd {
+                                break;
                             }
-                        },
+                        }
                     }
                     context.flush_event();
                 }

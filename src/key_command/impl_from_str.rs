@@ -316,6 +316,14 @@ impl std::str::FromStr for Command {
                 _ => LineNumberStyle::None,
             };
             Ok(Self::SwitchLineNums(policy))
+        } else if command == CMD_FLAT {
+            match arg.parse::<usize>() {
+                Ok(i) => Ok(Self::Flat(i + 1)),
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", command, e),
+                )),
+            }
         } else {
             Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,

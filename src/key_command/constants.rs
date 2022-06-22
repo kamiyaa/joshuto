@@ -75,6 +75,7 @@ cmd_constants![
     (CMD_SUBDIR_FZF, "subdir_fzf"),
     (CMD_ZOXIDE, "z"),
     (CMD_ZOXIDE_INTERACTIVE, "zi"),
+    (CMD_FLAT, "flat"),
 ];
 
 pub fn complete_command(partial_command: &str) -> Vec<Pair> {

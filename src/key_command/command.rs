@@ -69,6 +69,8 @@ pub enum Command {
 
     SwitchLineNums(LineNumberStyle),
 
+    Flat(usize),
+
     Sort(SortType),
     SortReverse,
 

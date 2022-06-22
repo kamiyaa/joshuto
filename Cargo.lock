@@ -393,6 +393,7 @@ dependencies = [
  "unicode-segmentation",
  "unicode-width",
  "users",
+ "walkdir",
  "whoami",
  "xdg",
 ]

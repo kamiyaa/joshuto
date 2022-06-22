@@ -85,6 +85,8 @@ impl CommandComment for Command {
 
             Self::SwitchLineNums(_) => "Switch line numbering",
 
+            Self::Flat(_) => "Flattern directory list",
+
             Self::Sort(sort_type) => match sort_type {
                 SortType::Lexical => "Sort lexically",
                 SortType::Mtime => "Sort by modifiaction time",
