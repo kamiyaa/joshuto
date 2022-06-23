@@ -37,13 +37,14 @@ pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult
         }
         Some(entry) => {
             let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());
-            let path = if paths.is_empty() {
-                entry.file_path()
+            let (path, files) = if paths.is_empty() {
+                (entry.file_path(), vec![entry.file_name()])
             } else {
-                paths.get(0).unwrap().file_path()
+                (
+                    paths.get(0).unwrap().file_path(),
+                    paths.iter().map(|e| e.file_name()).collect(),
+                )
             };
-
-            let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
             let options = get_options(path);
             let option = options.iter().find(|option| option.program_exists());
 
