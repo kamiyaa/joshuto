@@ -1,6 +1,6 @@
 use super::DEFAULT_CONFIG_FILE_PATH;
-
 use super::app_raw::AppConfigRaw;
+
 use crate::config::option::{DisplayOption, PreviewOption, SortOption, TabOption};
 use crate::error::JoshutoResult;
 

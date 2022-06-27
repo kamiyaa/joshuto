@@ -1,3 +1,4 @@
+use std::io::{self, Write};
 use std::process;
 use std::sync::mpsc;
 use std::thread;
@@ -54,5 +55,19 @@ where
     command.args(paths);
 
     let _ = command.status()?;
+
+    if entry.get_confirm_exit() {
+        wait_for_enter()?;
+    }
+
+    Ok(())
+}
+
+pub fn wait_for_enter() -> io::Result<()> {
+    print!("===============\nPress ENTER to continue... ");
+    std::io::stdout().flush()?;
+
+    let mut user_input = String::with_capacity(4);
+    std::io::stdin().read_line(&mut user_input)?;
     Ok(())
 }

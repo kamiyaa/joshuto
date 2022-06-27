@@ -9,24 +9,26 @@ use rand::Rng;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::TuiBackend;
+use crate::util::process::wait_for_enter;
 
 use super::reload;
 
 const ENV_TMP_DIR: &str = "TMP_DIR";
 const ENV_EDITOR: &str = "EDITOR";
+const FILE_PREFIX: &str = "joshuto-";
+const RAND_STR_LEN: usize = 10;
 
 pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
     let tmp_directory = env::var(ENV_TMP_DIR).unwrap_or_else(|_| "/tmp".to_string());
 
-    const PREFIX: &str = "joshuto-";
     let editor = std::env::var(ENV_EDITOR)?;
 
     /* generate a random file name to write to */
-    let mut rand_str = String::with_capacity(PREFIX.len() + 10);
-    rand_str.push_str(PREFIX);
+    let mut rand_str = String::with_capacity(FILE_PREFIX.len() + RAND_STR_LEN);
+    rand_str.push_str(FILE_PREFIX);
     rand::thread_rng()
         .sample_iter(&rand::distributions::Alphanumeric)
-        .take(10)
+        .take(RAND_STR_LEN)
         .for_each(|ch| rand_str.push(ch as char));
 
     /* create this file in a temporary folder */
@@ -112,9 +114,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
             handle.wait()?;
         }
     }
-    print!("Press ENTER to continue...");
-    std::io::stdout().flush()?;
-    std::io::stdin().read_line(&mut user_input)?;
+    wait_for_enter()?;
 
     std::fs::remove_file(file_path)?;
     Ok(())
