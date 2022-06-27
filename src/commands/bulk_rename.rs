@@ -100,19 +100,21 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
 
     let mut user_input = String::with_capacity(4);
     std::io::stdin().read_line(&mut user_input)?;
-    user_input = user_input.to_lowercase();
 
-    let user_input_trimmed = user_input.trim();
-    if user_input_trimmed != "n" || user_input_trimmed != "no" {
-        for (p, q) in entries.iter().zip(paths_renamed.iter()) {
-            let mut handle = process::Command::new("mv")
-                .arg("-iv")
-                .arg("--")
-                .arg(p.file_name())
-                .arg(q)
-                .spawn()?;
-            handle.wait()?;
+    let user_input_fmt = user_input.trim().to_lowercase();
+    match user_input_fmt.as_str() {
+        "y" | "yes" => {
+            for (p, q) in entries.iter().zip(paths_renamed.iter()) {
+                let mut handle = process::Command::new("mv")
+                    .arg("-iv")
+                    .arg("--")
+                    .arg(p.file_name())
+                    .arg(q)
+                    .spawn()?;
+                handle.wait()?;
+            }
         }
+        _ => {},
     }
     wait_for_enter()?;
 

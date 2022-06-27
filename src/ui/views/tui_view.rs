@@ -2,9 +2,9 @@ use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::widgets::Widget;
 
-use crate::ui::views::{TuiFolderView, TuiHSplitView};
 use crate::config::option::DisplayMode;
 use crate::context::AppContext;
+use crate::ui::views::{TuiFolderView, TuiHSplitView};
 
 pub struct TuiView<'a> {
     pub context: &'a AppContext,
