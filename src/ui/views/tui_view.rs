@@ -2,8 +2,7 @@ use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::widgets::Widget;
 
-use super::TuiFolderView;
-use super::TuiVSplitView;
+use crate::ui::views::{TuiFolderView, TuiHSplitView};
 use crate::config::option::DisplayMode;
 use crate::context::AppContext;
 
@@ -29,8 +28,8 @@ impl<'a> Widget for TuiView<'a> {
             DisplayMode::Default => {
                 TuiFolderView::new(self.context).render(area, buf);
             }
-            DisplayMode::VSplit => {
-                TuiVSplitView::new(self.context).render(area, buf);
+            DisplayMode::HSplit => {
+                TuiHSplitView::new(self.context).render(area, buf);
             }
         }
     }

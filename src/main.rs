@@ -54,7 +54,7 @@ lazy_static! {
 
         if let Ok(p) = std::env::var("HOME") {
             let mut p = PathBuf::from(p);
-            p.push(".config/joshuto");
+            p.push(format!(".config/{}", PROGRAM_NAME));
             if p.is_dir() {
                 config_dirs.push(p);
             }

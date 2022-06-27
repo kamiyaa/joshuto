@@ -80,7 +80,7 @@ impl std::default::Default for DisplayOptionRaw {
 impl From<DisplayOptionRaw> for DisplayOption {
     fn from(raw: DisplayOptionRaw) -> Self {
         let mode = match raw.mode.as_str() {
-            "vsplit" => DisplayMode::VSplit,
+            "hsplit" => DisplayMode::HSplit,
             _ => DisplayMode::Default,
         };
 

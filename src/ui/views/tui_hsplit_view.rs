@@ -9,12 +9,12 @@ use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
-pub struct TuiVSplitView<'a> {
+pub struct TuiHSplitView<'a> {
     pub context: &'a AppContext,
     pub show_bottom_status: bool,
 }
 
-impl<'a> TuiVSplitView<'a> {
+impl<'a> TuiHSplitView<'a> {
     pub fn new(context: &'a AppContext) -> Self {
         Self {
             context,
@@ -23,7 +23,7 @@ impl<'a> TuiVSplitView<'a> {
     }
 }
 
-impl<'a> Widget for TuiVSplitView<'a> {
+impl<'a> Widget for TuiHSplitView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let tab_context = self.context.tab_context_ref();
         let tab_index = tab_context.index;

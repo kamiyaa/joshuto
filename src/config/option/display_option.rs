@@ -7,7 +7,7 @@ use crate::config::option::SortOption;
 #[derive(Clone, Copy, Debug)]
 pub enum DisplayMode {
     Default,
-    VSplit,
+    HSplit,
 }
 
 pub const fn default_column_ratio() -> (usize, usize, usize) {

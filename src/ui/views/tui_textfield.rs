@@ -86,8 +86,8 @@ impl<'a> TuiTextField<'a> {
 
         let char_idx = self._prefix.chars().map(|c| c.len_utf8()).sum();
 
-        line_buffer.insert_str(0, self._suffix);
         line_buffer.insert_str(0, self._prefix);
+        line_buffer.insert_str(line_buffer.len(), self._suffix);
         line_buffer.set_pos(char_idx);
 
         let terminal = backend.terminal_mut();
@@ -102,6 +102,7 @@ impl<'a> TuiTextField<'a> {
                     if area.height == 0 {
                         return;
                     }
+                    // redraw view
                     {
                         let mut view = TuiView::new(context);
                         view.show_bottom_status = false;
@@ -117,7 +118,7 @@ impl<'a> TuiTextField<'a> {
                     let multiline_height = multiline.height();
 
                     // render menu
-                    {
+                    if !self._menu_items.is_empty() {
                         let menu_widget = TuiMenu::new(self._menu_items.as_slice());
                         let menu_len = menu_widget.len();
                         let menu_y = if menu_len + 1 > area.height as usize {
