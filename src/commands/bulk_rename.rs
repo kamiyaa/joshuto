@@ -103,7 +103,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
 
     let user_input_fmt = user_input.trim().to_lowercase();
     match user_input_fmt.as_str() {
-        "y" | "yes" => {
+        "" | "y" | "yes" => {
             for (p, q) in entries.iter().zip(paths_renamed.iter()) {
                 let mut handle = process::Command::new("mv")
                     .arg("-iv")
