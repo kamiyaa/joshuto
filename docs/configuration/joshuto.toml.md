@@ -26,7 +26,7 @@ max_preview_size = 2097152 # 2MB
 # Different view layouts
 # Options include
 # - default
-# - vsplit
+# - hsplit
 mode = "default"
 
 # Collapse the preview window when there is no preview available

@@ -4,7 +4,7 @@ use_trash = true
 watch_files = true
 
 [display]
-# default, vsplit
+# default, hsplit
 mode = "default"
 
 automatically_count_files = false
