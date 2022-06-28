@@ -114,7 +114,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
                 handle.wait()?;
             }
         }
-        _ => {},
+        _ => {}
     }
     wait_for_enter()?;
 
