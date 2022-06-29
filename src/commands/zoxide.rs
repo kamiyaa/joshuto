@@ -5,7 +5,7 @@ use std::process::{Command, Stdio};
 use crate::commands::change_directory;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 pub fn zoxide_query(context: &mut AppContext, args: &str) -> JoshutoResult {
     let cwd = std::env::current_dir()?;
@@ -39,7 +39,7 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> JoshutoResult {
 
 pub fn zoxide_query_interactive(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
 ) -> JoshutoResult {
     backend.terminal_drop();
 

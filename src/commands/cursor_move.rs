@@ -1,6 +1,6 @@
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 pub fn lazy_load_directory_size(context: &mut AppContext) {
     let directory_size = match context
@@ -120,7 +120,7 @@ pub fn end(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
-fn get_page_size(context: &AppContext, backend: &TuiBackend) -> Option<usize> {
+fn get_page_size(context: &AppContext, backend: &AppBackend) -> Option<usize> {
     let config = context.config_ref();
     let rect = backend.terminal.as_ref().map(|t| t.size())?.ok()?;
 
@@ -140,7 +140,7 @@ fn get_page_size(context: &AppContext, backend: &TuiBackend) -> Option<usize> {
 
 pub fn page_up(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     proportion: f64,
 ) -> JoshutoResult {
     let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
@@ -160,7 +160,7 @@ pub fn page_up(
 
 pub fn page_down(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     proportion: f64,
 ) -> JoshutoResult {
     let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
@@ -178,7 +178,7 @@ pub fn page_down(
     Ok(())
 }
 
-pub fn page_home(context: &mut AppContext, _: &mut TuiBackend) -> JoshutoResult {
+pub fn page_home(context: &mut AppContext, _: &mut AppBackend) -> JoshutoResult {
     let new_index = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -190,7 +190,7 @@ pub fn page_home(context: &mut AppContext, _: &mut TuiBackend) -> JoshutoResult 
     Ok(())
 }
 
-pub fn page_middle(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn page_middle(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     let movement = get_page_size(context, backend).unwrap_or(10) / 2;
 
     let new_index = context
@@ -204,7 +204,7 @@ pub fn page_middle(context: &mut AppContext, backend: &mut TuiBackend) -> Joshut
     Ok(())
 }
 
-pub fn page_end(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn page_end(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     let movement = get_page_size(context, backend).unwrap_or(10) - 1;
 
     let new_index = context

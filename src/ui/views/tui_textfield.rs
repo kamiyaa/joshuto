@@ -17,7 +17,7 @@ use crate::event::AppEvent;
 use crate::key_command::{complete_command, Command, InteractiveExecute};
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 struct CompletionTracker {
     pub index: usize,
@@ -76,7 +76,7 @@ impl<'a> TuiTextField<'a> {
 
     pub fn get_input(
         &mut self,
-        backend: &mut TuiBackend,
+        backend: &mut AppBackend,
         context: &mut AppContext,
     ) -> Option<String> {
         let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);

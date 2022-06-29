@@ -5,11 +5,11 @@ use std::process::{Command, Stdio};
 
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 use super::change_directory::change_directory;
 
-pub fn subdir_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     let fzf_default_command = std::env::var("FZF_DEFAULT_COMMAND")?;
 
     backend.terminal_drop();

@@ -8,7 +8,7 @@ use crate::context::AppContext;
 use crate::event::process_event;
 use crate::event::AppEvent;
 use crate::ui::views::TuiView;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 pub struct TuiPrompt<'a> {
     prompt: &'a str,
@@ -19,7 +19,7 @@ impl<'a> TuiPrompt<'a> {
         Self { prompt }
     }
 
-    pub fn get_key(&mut self, backend: &mut TuiBackend, context: &mut AppContext) -> Key {
+    pub fn get_key(&mut self, backend: &mut AppBackend, context: &mut AppContext) -> Key {
         let terminal = backend.terminal_mut();
 
         context.flush_event();

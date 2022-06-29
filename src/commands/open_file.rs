@@ -6,14 +6,14 @@ use crate::config::AppMimetypeEntry;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::TuiTextField;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 use crate::util::process::{execute_and_wait, fork_execute};
 
 use super::change_directory;
 
 use crate::MIMETYPE_T;
 
-pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
+fn _get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
     let mut options: Vec<&AppMimetypeEntry> = Vec::new();
     if let Some(file_ext) = path.extension() {
         if let Some(file_ext) = file_ext.to_str() {
@@ -24,47 +24,9 @@ pub fn get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
     options
 }
 
-pub fn open(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
-    let curr_list = context.tab_context_ref().curr_tab_ref().curr_list_ref();
-    let entry = curr_list.and_then(|s| s.curr_entry_ref().cloned());
-
-    match entry {
-        None => (),
-        Some(entry) if entry.file_path().is_dir() => {
-            let path = entry.file_path().to_path_buf();
-            change_directory::cd(path.as_path(), context)?;
-            reload::soft_reload(context.tab_context_ref().index, context)?;
-        }
-        Some(entry) => {
-            let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());
-            let (path, files) = if paths.is_empty() {
-                (entry.file_path(), vec![entry.file_name()])
-            } else {
-                (
-                    paths.get(0).unwrap().file_path(),
-                    paths.iter().map(|e| e.file_name()).collect(),
-                )
-            };
-            let options = get_options(path);
-            let option = options.iter().find(|option| option.program_exists());
-
-            let config = context.config_ref();
-
-            if let Some(option) = option {
-                open_with_entry(context, backend, option, &files)?;
-            } else if config.xdg_open {
-                open_with_xdg(context, backend, path)?;
-            } else {
-                open_with_helper(context, backend, options, &files)?;
-            }
-        }
-    }
-    Ok(())
-}
-
-pub fn open_with_entry<S>(
+fn _open_with_entry<S>(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     option: &AppMimetypeEntry,
     files: &[S],
 ) -> std::io::Result<()>
@@ -82,9 +44,9 @@ where
     Ok(())
 }
 
-pub fn open_with_xdg(
+fn _open_with_xdg(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     path: &path::Path,
 ) -> std::io::Result<()> {
     let config = context.config_ref();
@@ -100,9 +62,9 @@ pub fn open_with_xdg(
     Ok(())
 }
 
-pub fn open_with_helper<S>(
+fn _open_with_helper<S>(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     options: Vec<&AppMimetypeEntry>,
     files: &[S],
 ) -> std::io::Result<()>
@@ -139,7 +101,7 @@ where
                 }
                 Ok(n) => {
                     let option = &options[n];
-                    open_with_entry(context, backend, option, files)?;
+                    _open_with_entry(context, backend, option, files)?;
                 }
                 Err(_) => {
                     let mut args_iter = user_input.split_whitespace();
@@ -159,7 +121,77 @@ where
     Ok(())
 }
 
-pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+    let curr_list = context.tab_context_ref().curr_tab_ref().curr_list_ref();
+    let entry = curr_list.and_then(|s| s.curr_entry_ref().cloned());
+
+    match entry {
+        None => (),
+        Some(entry) if entry.file_path().is_dir() => {
+            let path = entry.file_path().to_path_buf();
+            change_directory::cd(path.as_path(), context)?;
+            reload::soft_reload(context.tab_context_ref().index, context)?;
+        }
+        Some(entry) => {
+            let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());
+            let (path, files) = if paths.is_empty() {
+                (entry.file_path(), vec![entry.file_name()])
+            } else {
+                (
+                    paths.get(0).unwrap().file_path(),
+                    paths.iter().map(|e| e.file_name()).collect(),
+                )
+            };
+            let options = _get_options(path);
+            let option = options.iter().find(|option| option.program_exists());
+
+            let config = context.config_ref();
+
+            if let Some(option) = option {
+                _open_with_entry(context, backend, option, &files)?;
+            } else if config.xdg_open {
+                _open_with_xdg(context, backend, path)?;
+            } else {
+                _open_with_helper(context, backend, options, &files)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+pub fn open_with_index(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    index: usize,
+) -> JoshutoResult {
+    let paths = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map_or(vec![], |s| s.iter_selected().cloned().collect());
+
+    if paths.is_empty() {
+        return Err(JoshutoError::new(
+            JoshutoErrorKind::Io(io::ErrorKind::NotFound),
+            String::from("No files selected"),
+        ));
+    }
+    let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
+    let options = _get_options(paths[0].file_path());
+
+    if index >= options.len() {
+        return Err(JoshutoError::new(
+            JoshutoErrorKind::Io(std::io::ErrorKind::InvalidData),
+            "option does not exist".to_string(),
+        ));
+    }
+
+    let option = &options[index];
+    _open_with_entry(context, backend, option, &files)?;
+    Ok(())
+}
+
+pub fn open_with_interactive(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     let mut paths = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -178,40 +210,8 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut TuiBackend)
         );
     }
     let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
-    let options = get_options(paths[0].file_path());
+    let options = _get_options(paths[0].file_path());
 
-    open_with_helper(context, backend, options, &files)?;
-    Ok(())
-}
-
-pub fn open_with_index(
-    context: &mut AppContext,
-    backend: &mut TuiBackend,
-    index: usize,
-) -> JoshutoResult {
-    let paths = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-        .map_or(vec![], |s| s.iter_selected().cloned().collect());
-
-    if paths.is_empty() {
-        return Err(JoshutoError::new(
-            JoshutoErrorKind::Io(io::ErrorKind::NotFound),
-            String::from("No files selected"),
-        ));
-    }
-    let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
-    let options = get_options(paths[0].file_path());
-
-    if index >= options.len() {
-        return Err(JoshutoError::new(
-            JoshutoErrorKind::Io(std::io::ErrorKind::InvalidData),
-            "option does not exist".to_string(),
-        ));
-    }
-
-    let option = &options[index];
-    open_with_entry(context, backend, option, &files)?;
+    _open_with_helper(context, backend, options, &files)?;
     Ok(())
 }

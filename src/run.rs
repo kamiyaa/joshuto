@@ -16,11 +16,17 @@ use termion::event::{Event, Key};
 use tui::layout::Rect;
 
 pub fn run(
-    backend: &mut ui::TuiBackend,
+    backend: &mut ui::AppBackend,
     context: &mut AppContext,
     keymap_t: AppKeyMapping,
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
+
+    if let Ok(area) = backend.terminal_ref().size() {
+        // pre-calculate some ui attributes
+        calculate_ui_context(context, area);
+    }
+
     {
         // Initialize an initial tab
         let tab = JoshutoTab::new(

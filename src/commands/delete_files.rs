@@ -6,7 +6,7 @@ use termion::event::Key;
 use crate::context::AppContext;
 use crate::history::DirectoryHistory;
 use crate::ui::widgets::TuiPrompt;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 use super::reload;
 
@@ -50,7 +50,7 @@ where
     Ok(())
 }
 
-fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::Result<()> {
+fn delete_files(context: &mut AppContext, backend: &mut AppBackend) -> std::io::Result<()> {
     let delete_func = if context.config_ref().use_trash {
         trash_files
     } else {
@@ -79,7 +79,7 @@ fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::
     };
 
     match ch {
-        Key::Char('y') | Key::Char('\n') => {
+        Key::Char('Y') | Key::Char('y') | Key::Char('\n') => {
             let confirm_delete = if paths_len > 1 {
                 // prompt user again for deleting multiple files
                 let ch = {
@@ -112,7 +112,7 @@ fn delete_files(context: &mut AppContext, backend: &mut TuiBackend) -> std::io::
 
 pub fn delete_selected_files(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
 ) -> std::io::Result<()> {
     let _ = delete_files(context, backend)?;
 

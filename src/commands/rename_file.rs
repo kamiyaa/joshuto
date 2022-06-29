@@ -4,7 +4,7 @@ use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::create_dirlist_with_history;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 use super::command_line;
 
@@ -52,7 +52,7 @@ pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult
 
 pub fn _rename_file_append(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
     file_name: &str,
 ) -> JoshutoResult {
@@ -68,7 +68,7 @@ pub fn _rename_file_append(
 
 pub fn rename_file_append(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
     let mut file_name: Option<String> = None;
@@ -87,7 +87,7 @@ pub fn rename_file_append(
 
 pub fn _rename_file_prepend(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
     file_name: String,
 ) -> JoshutoResult {
@@ -98,7 +98,7 @@ pub fn _rename_file_prepend(
 
 pub fn rename_file_prepend(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
     let file_name = context

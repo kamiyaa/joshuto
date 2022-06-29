@@ -1,6 +1,6 @@
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 use std::process::{Command, Stdio};
 
 use super::reload;
@@ -49,7 +49,7 @@ fn execute_sub_process(
 /// Handler for Joshuto's `shell` and `spawn` commands.
 pub fn sub_process(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     words: &[String],
     spawn: bool,
 ) -> JoshutoResult {

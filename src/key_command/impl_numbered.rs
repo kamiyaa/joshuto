@@ -2,7 +2,7 @@ use crate::commands::*;
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 use super::{Command, NumberedExecute};
 
@@ -15,7 +15,7 @@ impl NumberedExecute for Command {
         &self,
         number_prefix: usize,
         context: &mut AppContext,
-        backend: &mut TuiBackend,
+        backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
     ) -> JoshutoResult {
         match self {

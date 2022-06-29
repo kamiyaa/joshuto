@@ -3,7 +3,7 @@ use std::fs;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::views::TuiTextField;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 use crate::util::unix;
 
 use super::cursor_move;
@@ -35,7 +35,7 @@ pub fn str_to_mode(s: &str) -> u32 {
     mode
 }
 
-pub fn set_mode(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn set_mode(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
 

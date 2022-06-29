@@ -2,7 +2,7 @@ use crate::commands::*;
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 use super::{AppExecute, Command};
 
@@ -10,7 +10,7 @@ impl AppExecute for Command {
     fn execute(
         &self,
         context: &mut AppContext,
-        backend: &mut TuiBackend,
+        backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
     ) -> JoshutoResult {
         match &*self {

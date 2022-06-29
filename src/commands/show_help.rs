@@ -10,11 +10,11 @@ use crate::event::AppEvent;
 use crate::key_command::{Command, CommandKeybind};
 use crate::ui::widgets;
 use crate::ui::widgets::TuiHelp;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 pub fn help_loop(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
     context.flush_event();

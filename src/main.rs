@@ -103,7 +103,7 @@ fn run_joshuto(args: Args) -> Result<i32, JoshutoError> {
 
     let mut context = AppContext::new(config, args.clone());
     {
-        let mut backend: ui::TuiBackend = ui::TuiBackend::new()?;
+        let mut backend: ui::AppBackend = ui::AppBackend::new()?;
         run(&mut backend, &mut context, keymap)?;
     }
     run_quit(&args, &context)?;

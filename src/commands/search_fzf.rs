@@ -5,9 +5,9 @@ use std::process::{Command, Stdio};
 use crate::commands::cursor_move;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
-pub fn search_fzf(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     let items = context
         .tab_context_ref()
         .curr_tab_ref()

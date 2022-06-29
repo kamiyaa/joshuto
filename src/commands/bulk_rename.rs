@@ -8,7 +8,7 @@ use rand::Rng;
 
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 use crate::util::process::wait_for_enter;
 
 use super::reload;
@@ -122,7 +122,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
-pub fn bulk_rename(context: &mut AppContext, backend: &mut TuiBackend) -> JoshutoResult {
+pub fn bulk_rename(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     context.remove_external_preview();
     backend.terminal_drop();
     let res = _bulk_rename(context);

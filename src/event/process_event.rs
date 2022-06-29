@@ -19,7 +19,7 @@ use crate::ui::views::TuiCommandMenu;
 use crate::util::format;
 
 pub fn get_input_while_composite<'a>(
-    backend: &mut ui::TuiBackend,
+    backend: &mut ui::AppBackend,
     context: &mut AppContext,
     keymap: &'a KeyMapping,
 ) -> Option<&'a Command> {
@@ -151,7 +151,7 @@ pub fn process_file_preview(
 
 pub fn process_unsupported(
     context: &mut AppContext,
-    backend: &mut ui::TuiBackend,
+    backend: &mut ui::AppBackend,
     keymap_t: &AppKeyMapping,
     event: Vec<u8>,
 ) {
@@ -175,7 +175,7 @@ pub fn process_unsupported(
 pub fn process_mouse(
     event: MouseEvent,
     context: &mut AppContext,
-    backend: &mut ui::TuiBackend,
+    backend: &mut ui::AppBackend,
     keymap_t: &AppKeyMapping,
 ) {
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();

@@ -5,11 +5,11 @@ use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::key_command::{AppExecute, Command};
 use crate::ui::views::TuiTextField;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 pub fn read_and_execute(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
     prefix: &str,
     suffix: &str,

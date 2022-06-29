@@ -5,12 +5,12 @@ use crate::event::process_event;
 use crate::event::AppEvent;
 use crate::key_command::{Command, CommandKeybind};
 use crate::ui::views::TuiWorkerView;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 use crate::util::to_string::ToString;
 
 pub fn show_tasks(
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
     context.flush_event();

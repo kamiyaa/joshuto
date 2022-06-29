@@ -8,12 +8,12 @@ use crate::event::process_event;
 use crate::event::AppEvent;
 use crate::key_command::{CommandKeybind, NumberedExecute};
 use crate::ui::views::TuiView;
-use crate::ui::TuiBackend;
+use crate::ui::AppBackend;
 
 pub fn numbered_command(
     first_char: char,
     context: &mut AppContext,
-    backend: &mut TuiBackend,
+    backend: &mut AppBackend,
     keymap: &AppKeyMapping,
 ) -> JoshutoResult {
     context.flush_event();
