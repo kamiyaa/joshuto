@@ -219,7 +219,7 @@ impl Intersections {
 pub fn get_constraints(context: &AppContext) -> &[Constraint; 3] {
     let display_options = context.config_ref().display_options_ref();
     if context.tab_context_ref().len() == 0 {
-        return &display_options.default_layout
+        return &display_options.default_layout;
     }
 
     let preview_context = context.preview_context_ref();
