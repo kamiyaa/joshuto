@@ -1,6 +1,7 @@
 use std::path;
 use std::process::{Command, Output};
 use std::thread;
+use std::time;
 
 use crate::context::AppContext;
 use crate::event::AppEvent;
@@ -10,6 +11,7 @@ pub struct FilePreview {
     pub status: std::process::ExitStatus,
     pub output: String,
     pub index: usize,
+    pub modified: time::SystemTime,
 }
 
 impl std::convert::From<Output> for FilePreview {
@@ -17,9 +19,11 @@ impl std::convert::From<Output> for FilePreview {
         let s = String::from_utf8_lossy(&output.stdout).to_string();
         let s2 = s.replace('\t', "        ");
         let status = output.status;
+        let modified = time::SystemTime::now();
         Self {
             status,
             output: s2,
+            modified,
             index: 0,
         }
     }

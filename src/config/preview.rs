@@ -10,13 +10,13 @@ pub struct JoshutoPreviewEntry {
 }
 
 #[derive(Debug, Default, Deserialize)]
-struct JoshutoPreviewCrude {
+struct JoshutoPreviewRaw {
     pub extension: Option<HashMap<String, JoshutoPreviewEntry>>,
     pub mimetype: Option<HashMap<String, JoshutoPreviewEntry>>,
 }
 
-impl From<JoshutoPreviewCrude> for JoshutoPreview {
-    fn from(crude: JoshutoPreviewCrude) -> Self {
+impl From<JoshutoPreviewRaw> for JoshutoPreview {
+    fn from(crude: JoshutoPreviewRaw) -> Self {
         let extension = crude.extension.unwrap_or_default();
         let mimetype = crude.mimetype.unwrap_or_default();
 
@@ -35,6 +35,6 @@ pub struct JoshutoPreview {
 
 impl TomlConfigFile for JoshutoPreview {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<JoshutoPreviewCrude, JoshutoPreview>(file_name).unwrap_or_default()
+        parse_to_config_file::<JoshutoPreviewRaw, JoshutoPreview>(file_name).unwrap_or_default()
     }
 }

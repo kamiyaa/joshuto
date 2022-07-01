@@ -23,7 +23,12 @@ pub fn load_preview_path(context: &mut AppContext, p: path::PathBuf, metadata: J
         let need_to_load = context
             .preview_context_ref()
             .get_preview_ref(p.as_path())
-            .is_none();
+            .map(|p| {
+                p.as_ref()
+                    .map(|p| p.modified < metadata.modified())
+                    .unwrap_or(true)
+            })
+            .unwrap_or(true);
 
         if need_to_load {
             preview_file::Background::preview_path_with_script(context, p);
