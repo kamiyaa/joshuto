@@ -363,7 +363,7 @@ checksum = "24c3f4eff5495aee4c0399d7b6a0dc2b6e81be84242ffbfcf253ebacccc1d0cb"
 
 [[package]]
 name = "joshuto"
-version = "0.9.3"
+version = "0.9.4"
 dependencies = [
  "alphanumeric-sort",
  "ansi-to-tui",
