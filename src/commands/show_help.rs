@@ -48,18 +48,24 @@ pub fn help_loop(
                         Event::Key(Key::Char('3')) => sort_by = 2,
                         Event::Key(Key::Char('/')) => search_query.push('/'),
                         event => {
-                            if let Some(CommandKeybind::SimpleKeybind(command)) =
+                            if let Some(CommandKeybind::SimpleKeybind(filetypes)) =
                                 keymap_t.help_view.get(&event)
                             {
-                                match command {
-                                    Command::CursorMoveUp(_) => move_offset(&mut offset, -1),
-                                    Command::CursorMoveDown(_) => move_offset(&mut offset, 1),
-                                    Command::CursorMoveHome => offset = 0,
-                                    Command::CursorMoveEnd => offset = 255,
-                                    Command::CursorMovePageUp(_) => move_offset(&mut offset, -10),
-                                    Command::CursorMovePageDown(_) => move_offset(&mut offset, 10),
-                                    Command::CloseTab | Command::Help => break,
-                                    _ => (),
+                                if let Some(command) = filetypes.get(&None) {
+                                    match command {
+                                        Command::CursorMoveUp(_) => move_offset(&mut offset, -1),
+                                        Command::CursorMoveDown(_) => move_offset(&mut offset, 1),
+                                        Command::CursorMoveHome => offset = 0,
+                                        Command::CursorMoveEnd => offset = 255,
+                                        Command::CursorMovePageUp(_) => {
+                                            move_offset(&mut offset, -10)
+                                        }
+                                        Command::CursorMovePageDown(_) => {
+                                            move_offset(&mut offset, 10)
+                                        }
+                                        Command::CloseTab | Command::Help => break,
+                                        _ => (),
+                                    }
                                 }
                             }
                         }

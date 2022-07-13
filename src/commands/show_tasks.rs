@@ -28,8 +28,8 @@ pub fn show_tasks(
                                 .message_queue_mut()
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
-                            if let Command::ShowTasks = command {
+                        Some(CommandKeybind::SimpleKeybind(filetypes)) => {
+                            if matches!(filetypes.get(&None), Some(Command::ShowTasks)) {
                                 break;
                             }
                         }

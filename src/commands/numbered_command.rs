@@ -51,18 +51,38 @@ pub fn numbered_command(
                     Event::Key(Key::Char(c)) if c.is_numeric() => {
                         prefix.push(c);
                     }
-                    key => match keymap.default_view.get(&key) {
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
-                            return command.numbered_execute(num_prefix, context, backend, keymap);
+                    key => {
+                        match keymap.default_view.get(&key) {
+                            Some(CommandKeybind::SimpleKeybind(filetypes)) => {
+                                let command = context
+                                    .tab_context_ref()
+                                    .curr_tab_ref()
+                                    .curr_list_ref()
+                                    .and_then(|s| s.curr_entry_ref())
+                                    .map(|entry| entry.metadata.file_type())
+                                    .and_then(|file_type| filetypes.get(&Some(*file_type)))
+                                    .or_else(|| filetypes.get(&None));
+                                match command {
+                                    Some(command) => {
+                                        return command
+                                            .numbered_execute(num_prefix, context, backend, keymap)
+                                    }
+                                    _ => return Err(JoshutoError::new(
+                                        JoshutoErrorKind::UnrecognizedCommand,
+                                        "Command cannot be prefixed by a number or does not exist"
+                                            .to_string(),
+                                    )),
+                                }
+                            }
+                            _ => {
+                                return Err(JoshutoError::new(
+                                    JoshutoErrorKind::UnrecognizedCommand,
+                                    "Command cannot be prefixed by a number or does not exist"
+                                        .to_string(),
+                                ));
+                            }
                         }
-                        _ => {
-                            return Err(JoshutoError::new(
-                                JoshutoErrorKind::UnrecognizedCommand,
-                                "Command cannot be prefixed by a number or does not exist"
-                                    .to_string(),
-                            ));
-                        }
-                    },
+                    }
                 }
                 context.flush_event();
             }

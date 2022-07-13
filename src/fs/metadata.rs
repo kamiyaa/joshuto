@@ -1,6 +1,7 @@
+use serde_derive::Deserialize;
 use std::{fs, io, path, time};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Hash, Eq, PartialEq, Debug, Deserialize)]
 pub enum FileType {
     Directory,
     File,

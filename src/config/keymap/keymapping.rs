@@ -8,6 +8,7 @@ use termion::event::Event;
 
 use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;
+use crate::fs::FileType;
 use crate::key_command::{Command, CommandKeybind};
 use crate::util::keyparse::str_to_event;
 
@@ -17,6 +18,7 @@ use super::DEFAULT_CONFIG_FILE_PATH;
 struct CommandKeymap {
     pub command: String,
     pub keys: Vec<String>,
+    pub filetype: Option<FileType>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -74,7 +76,7 @@ fn vec_to_map(vec: &[CommandKeymap]) -> HashMap<Event, CommandKeybind> {
                     continue;
                 }
 
-                let result = insert_keycommand(&mut hashmap, command, &events);
+                let result = insert_keycommand(&mut hashmap, command, m.filetype, &events);
                 match result {
                     Ok(_) => {}
                     Err(e) => eprintln!("{}", e),
@@ -116,6 +118,7 @@ impl std::default::Default for AppKeyMapping {
 fn insert_keycommand(
     keymap: &mut KeyMapping,
     keycommand: Command,
+    filetype: Option<FileType>,
     events: &[Event],
 ) -> Result<(), String> {
     let num_events = events.len();
@@ -126,10 +129,22 @@ fn insert_keycommand(
     let event = events[0].clone();
     if num_events == 1 {
         match keymap.entry(event) {
-            Entry::Occupied(_) => {
-                return Err(format!("Error: Keybindings ambiguous for {}", keycommand))
+            Entry::Occupied(mut keybind) => match keybind.get_mut() {
+                CommandKeybind::SimpleKeybind(filetypes) => match filetypes.entry(filetype) {
+                    Entry::Occupied(..) => {
+                        return Err(format!("Error: Keybindings ambiguous for {}", keycommand))
+                    }
+                    Entry::Vacant(entry) => {
+                        entry.insert(keycommand);
+                    }
+                },
+                _ => return Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
+            },
+            Entry::Vacant(entry) => {
+                let mut map = HashMap::new();
+                map.insert(filetype, keycommand);
+                entry.insert(CommandKeybind::SimpleKeybind(map));
             }
-            Entry::Vacant(entry) => entry.insert(CommandKeybind::SimpleKeybind(keycommand)),
         };
         return Ok(());
     }
@@ -137,13 +152,13 @@ fn insert_keycommand(
     match keymap.entry(event) {
         Entry::Occupied(mut entry) => match entry.get_mut() {
             CommandKeybind::CompositeKeybind(ref mut m) => {
-                insert_keycommand(m, keycommand, &events[1..])
+                insert_keycommand(m, keycommand, filetype, &events[1..])
             }
             _ => Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
         },
         Entry::Vacant(entry) => {
             let mut new_map = KeyMapping::new();
-            let result = insert_keycommand(&mut new_map, keycommand, &events[1..]);
+            let result = insert_keycommand(&mut new_map, keycommand, filetype, &events[1..]);
             if result.is_ok() {
                 let composite_command = CommandKeybind::CompositeKeybind(new_map);
                 entry.insert(composite_command);

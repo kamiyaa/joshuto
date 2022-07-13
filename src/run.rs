@@ -88,9 +88,27 @@ pub fn run(
                                 .message_queue_mut()
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
-                            if let Err(e) = command.execute(context, backend, &keymap_t) {
-                                context.message_queue_mut().push_error(e.to_string());
+                        Some(CommandKeybind::SimpleKeybind(filetypes)) => {
+                            let command = context
+                                .tab_context_ref()
+                                .curr_tab_ref()
+                                .curr_list_ref()
+                                .and_then(|s| s.curr_entry_ref())
+                                .map(|entry| *entry.metadata.file_type())
+                                .and_then(|filetype| filetypes.get(&Some(filetype)))
+                                .or_else(|| filetypes.get(&None));
+
+                            match command {
+                                Some(command) => {
+                                    if let Err(e) = command.execute(context, backend, &keymap_t) {
+                                        context.message_queue_mut().push_error(e.to_string());
+                                    }
+                                }
+                                None => {
+                                    context
+                                        .message_queue_mut()
+                                        .push_info(format!("Unmapped input: {}", key.to_string()));
+                                }
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
