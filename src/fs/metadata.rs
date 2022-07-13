@@ -2,6 +2,7 @@ use serde_derive::Deserialize;
 use std::{fs, io, path, time};
 
 #[derive(Clone, Copy, Hash, Eq, PartialEq, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum FileType {
     Directory,
     File,
