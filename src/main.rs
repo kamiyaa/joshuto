@@ -77,12 +77,12 @@ lazy_static! {
 
 #[derive(Clone, Debug, StructOpt)]
 pub struct Args {
-    #[structopt(long = "path", parse(from_os_str))]
-    path: Option<PathBuf>,
     #[structopt(short = "v", long = "version")]
     version: bool,
     #[structopt(long = "output-file", parse(from_os_str))]
     output_file: Option<PathBuf>,
+    #[structopt(name = "ARGUMENTS")]
+    rest: Vec<String>,
 }
 
 fn run_joshuto(args: Args) -> Result<i32, JoshutoError> {
@@ -91,7 +91,8 @@ fn run_joshuto(args: Args) -> Result<i32, JoshutoError> {
         println!("{}-{}", PROGRAM_NAME, version);
         return Ok(0);
     }
-    if let Some(p) = args.path.as_ref() {
+    if !args.rest.is_empty() {
+        let p = PathBuf::from(args.rest[0].as_str());
         if let Err(e) = std::env::set_current_dir(p.as_path()) {
             eprintln!("{}", e);
             process::exit(1);
