@@ -58,10 +58,8 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         AppEvent::IoWorkerCreate => process_new_worker(context),
         AppEvent::FileOperationProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
-        AppEvent::PreviewDir(Ok(dirlist)) => process_dir_preview(context, dirlist),
-        AppEvent::PreviewFile(path, file_preview) => {
-            process_file_preview(context, path, file_preview)
-        }
+        AppEvent::PreviewDir(Ok(b)) => process_dir_preview(context, *b),
+        AppEvent::PreviewFile(path, b) => process_file_preview(context, path, *b),
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, context),
         AppEvent::ChildProcessComplete(child_id) => {

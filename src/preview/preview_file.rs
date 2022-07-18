@@ -70,10 +70,10 @@ impl Background {
                 match res {
                     Ok(output) => {
                         let preview = FilePreview::from(output);
-                        let _ = event_tx.send(AppEvent::PreviewFile(path, Ok(preview)));
+                        let _ = event_tx.send(AppEvent::PreviewFile(path, Box::new(Ok(preview))));
                     }
                     Err(e) => {
-                        let _ = event_tx.send(AppEvent::PreviewFile(path, Err(e)));
+                        let _ = event_tx.send(AppEvent::PreviewFile(path, Box::new(Err(e))));
                     }
                 }
             });

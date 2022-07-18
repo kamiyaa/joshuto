@@ -28,8 +28,8 @@ pub enum AppEvent {
     ChildProcessComplete(u32),
 
     // preview thread events
-    PreviewDir(io::Result<JoshutoDirList>),
-    PreviewFile(path::PathBuf, io::Result<FilePreview>),
+    PreviewDir(io::Result<Box<JoshutoDirList>>),
+    PreviewFile(path::PathBuf, Box<io::Result<FilePreview>>),
 
     // terminal size change events
     Signal(i32),

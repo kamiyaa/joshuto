@@ -14,7 +14,7 @@ impl Background {
 
         thread::spawn(move || {
             if let Ok(dirlist) = JoshutoDirList::from_path(p, &options) {
-                let _ = event_tx.send(AppEvent::PreviewDir(Ok(dirlist)));
+                let _ = event_tx.send(AppEvent::PreviewDir(Ok(Box::new(dirlist))));
             }
         })
     }
