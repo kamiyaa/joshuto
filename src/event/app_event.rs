@@ -11,7 +11,7 @@ use termion::event::Event;
 use termion::input::TermRead;
 
 use crate::fs::JoshutoDirList;
-use crate::io::IoWorkerProgress;
+use crate::io::FileOperationProgress;
 use crate::preview::preview_file::FilePreview;
 
 #[derive(Debug)]
@@ -21,8 +21,8 @@ pub enum AppEvent {
 
     // background IO worker events
     IoWorkerCreate,
-    IoWorkerProgress(IoWorkerProgress),
-    IoWorkerResult(io::Result<IoWorkerProgress>),
+    FileOperationProgress(FileOperationProgress),
+    IoWorkerResult(io::Result<FileOperationProgress>),
 
     // forked process events
     ChildProcessComplete(u32),

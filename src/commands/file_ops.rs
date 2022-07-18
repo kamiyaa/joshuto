@@ -3,9 +3,7 @@ use std::process::Command;
 
 use crate::context::{AppContext, LocalStateContext};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
-use crate::io::FileOp;
-
-use crate::io::{IoWorkerOptions, IoWorkerThread};
+use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
 pub fn cut(context: &mut AppContext) -> JoshutoResult {
     if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
@@ -13,7 +11,7 @@ pub fn cut(context: &mut AppContext) -> JoshutoResult {
 
         let mut local_state = LocalStateContext::new();
         local_state.set_paths(selected.into_iter());
-        local_state.set_file_op(FileOp::Cut);
+        local_state.set_file_op(FileOperation::Cut);
 
         context.set_local_state(local_state);
     }
@@ -26,14 +24,14 @@ pub fn copy(context: &mut AppContext) -> JoshutoResult {
 
         let mut local_state = LocalStateContext::new();
         local_state.set_paths(selected.into_iter());
-        local_state.set_file_op(FileOp::Copy);
+        local_state.set_file_op(FileOperation::Copy);
 
         context.set_local_state(local_state);
     }
     Ok(())
 }
 
-pub fn paste(context: &mut AppContext, options: IoWorkerOptions) -> JoshutoResult {
+pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> JoshutoResult {
     match context.take_local_state() {
         Some(state) if !state.paths.is_empty() => {
             let dest = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();

@@ -11,7 +11,7 @@ use crate::context::AppContext;
 use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
-use crate::io::{FileOp, IoWorkerProgress};
+use crate::io::{FileOperation, FileOperationProgress};
 use crate::key_command::{AppExecute, Command, CommandKeybind};
 use crate::preview::preview_file::FilePreview;
 use crate::ui;
@@ -56,7 +56,7 @@ pub fn get_input_while_composite<'a>(
 pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
     match event {
         AppEvent::IoWorkerCreate => process_new_worker(context),
-        AppEvent::IoWorkerProgress(res) => process_worker_progress(context, res),
+        AppEvent::FileOperationProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
         AppEvent::PreviewDir(Ok(dirlist)) => process_dir_preview(context, dirlist),
         AppEvent::PreviewFile(path, file_preview) => {
@@ -81,13 +81,16 @@ pub fn process_new_worker(context: &mut AppContext) {
     }
 }
 
-pub fn process_worker_progress(context: &mut AppContext, res: IoWorkerProgress) {
+pub fn process_worker_progress(context: &mut AppContext, res: FileOperationProgress) {
     let worker_context = context.worker_context_mut();
     worker_context.set_progress(res);
     worker_context.update_msg();
 }
 
-pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<IoWorkerProgress>) {
+pub fn process_finished_worker(
+    context: &mut AppContext,
+    res: std::io::Result<FileOperationProgress>,
+) {
     let worker_context = context.worker_context_mut();
     let observer = worker_context.remove_worker().unwrap();
     let options = context.config_ref().display_options_ref().clone();
@@ -95,12 +98,23 @@ pub fn process_finished_worker(context: &mut AppContext, res: std::io::Result<Io
         let _ = tab.history_mut().reload(observer.dest_path(), &options);
         let _ = tab.history_mut().reload(observer.src_path(), &options);
     }
+
+    /* delete
+    // remove directory previews
+    for tab in context.tab_context_mut().iter_mut() {
+        for p in &paths {
+            tab.history_mut().remove(p.as_path());
+        }
+    }
+    */
+
     observer.join();
     match res {
         Ok(progress) => {
             let op = match progress.kind() {
-                FileOp::Copy => "copied",
-                FileOp::Cut => "moved",
+                FileOperation::Cut => "moved",
+                FileOperation::Copy => "copied",
+                FileOperation::Delete => "deleted",
             };
             let processed_size = format::file_size_to_string(progress.bytes_processed());
             let total_size = format::file_size_to_string(progress.total_bytes());

@@ -4,99 +4,23 @@ use std::io;
 use std::path;
 use std::sync::mpsc;
 
+use crate::io::{FileOperation, FileOperationOptions, FileOperationProgress};
 use crate::util::name_resolution::rename_filename_conflict;
-
-#[derive(Clone, Copy, Debug)]
-pub enum FileOp {
-    Cut,
-    Copy,
-}
-
-#[derive(Clone, Copy, Debug, Default)]
-pub struct IoWorkerOptions {
-    pub overwrite: bool,
-    pub skip_exist: bool,
-}
-
-impl std::fmt::Display for IoWorkerOptions {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "overwrite={} skip_exist={}",
-            self.overwrite, self.skip_exist
-        )
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct IoWorkerProgress {
-    _kind: FileOp,
-    _files_processed: usize,
-    _total_files: usize,
-    _bytes_processed: u64,
-    _total_bytes: u64,
-}
-
-impl IoWorkerProgress {
-    pub fn new(
-        _kind: FileOp,
-        _files_processed: usize,
-        _total_files: usize,
-        _bytes_processed: u64,
-        _total_bytes: u64,
-    ) -> Self {
-        Self {
-            _kind,
-            _files_processed,
-            _total_files,
-            _bytes_processed,
-            _total_bytes,
-        }
-    }
-
-    pub fn kind(&self) -> FileOp {
-        self._kind
-    }
-
-    pub fn files_processed(&self) -> usize {
-        self._files_processed
-    }
-
-    pub fn set_files_processed(&mut self, files_processed: usize) {
-        self._files_processed = files_processed;
-    }
-
-    pub fn total_files(&self) -> usize {
-        self._total_files
-    }
-
-    pub fn bytes_processed(&self) -> u64 {
-        self._bytes_processed
-    }
-
-    pub fn set_bytes_processed(&mut self, _bytes_processed: u64) {
-        self._bytes_processed = _bytes_processed;
-    }
-
-    pub fn total_bytes(&self) -> u64 {
-        self._total_bytes
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct IoWorkerThread {
-    _kind: FileOp,
-    pub options: IoWorkerOptions,
+    _kind: FileOperation,
+    pub options: FileOperationOptions,
     pub paths: Vec<path::PathBuf>,
     pub dest: path::PathBuf,
 }
 
 impl IoWorkerThread {
     pub fn new(
-        _kind: FileOp,
+        _kind: FileOperation,
         paths: Vec<path::PathBuf>,
         dest: path::PathBuf,
-        options: IoWorkerOptions,
+        options: FileOperationOptions,
     ) -> Self {
         Self {
             _kind,
@@ -106,88 +30,118 @@ impl IoWorkerThread {
         }
     }
 
-    pub fn kind(&self) -> FileOp {
+    pub fn kind(&self) -> FileOperation {
         self._kind
     }
 
-    pub fn start(&self, tx: mpsc::Sender<IoWorkerProgress>) -> io::Result<IoWorkerProgress> {
+    pub fn start(
+        &self,
+        tx: mpsc::Sender<FileOperationProgress>,
+    ) -> io::Result<FileOperationProgress> {
         match self.kind() {
-            FileOp::Cut => self.paste_cut(tx),
-            FileOp::Copy => self.paste_copy(tx),
+            FileOperation::Cut => self.paste_cut(tx),
+            FileOperation::Copy => self.paste_copy(tx),
+            FileOperation::Delete => self.delete(tx),
         }
     }
 
-    fn query_number_of_items(&self) -> io::Result<(usize, u64)> {
-        let mut total_bytes = 0;
-        let mut total_files = 0;
-
-        let mut dirs: VecDeque<path::PathBuf> = VecDeque::new();
+    fn paste_copy(
+        &self,
+        tx: mpsc::Sender<FileOperationProgress>,
+    ) -> io::Result<FileOperationProgress> {
+        let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
+        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
         for path in self.paths.iter() {
+            let _ = tx.send(progress.clone());
+            recursive_copy(
+                &tx,
+                path.as_path(),
+                self.dest.as_path(),
+                self.options,
+                &mut progress,
+            )?;
+        }
+        Ok(progress)
+    }
+
+    fn paste_cut(
+        &self,
+        tx: mpsc::Sender<FileOperationProgress>,
+    ) -> io::Result<FileOperationProgress> {
+        let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
+        let mut progress = FileOperationProgress::new(
+            self.kind(),
+            total_files,
+            total_files,
+            total_bytes,
+            total_bytes,
+        );
+
+        for path in self.paths.iter() {
+            let _ = tx.send(progress.clone());
+            recursive_cut(
+                &tx,
+                path.as_path(),
+                self.dest.as_path(),
+                self.options,
+                &mut progress,
+            )?;
+        }
+        Ok(progress)
+    }
+
+    fn delete(
+        &self,
+        _tx: mpsc::Sender<FileOperationProgress>,
+    ) -> io::Result<FileOperationProgress> {
+        let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
+        let progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+        if self.options.permanently {
+            remove_files(&self.paths)?;
+        } else {
+            trash_files(&self.paths)?;
+        }
+        Ok(progress)
+    }
+}
+
+fn query_number_of_items(paths: &[path::PathBuf]) -> io::Result<(usize, u64)> {
+    let mut total_bytes = 0;
+    let mut total_files = 0;
+
+    let mut dirs: VecDeque<path::PathBuf> = VecDeque::new();
+    for path in paths.iter() {
+        let metadata = path.symlink_metadata()?;
+        if metadata.is_dir() {
+            dirs.push_back(path.clone());
+        } else {
             let metadata = path.symlink_metadata()?;
-            if metadata.is_dir() {
-                dirs.push_back(path.clone());
+            total_bytes += metadata.len();
+            total_files += 1;
+        }
+    }
+
+    while let Some(dir) = dirs.pop_front() {
+        for entry in fs::read_dir(dir)? {
+            let path = entry?.path();
+            if path.is_dir() {
+                dirs.push_back(path);
             } else {
                 let metadata = path.symlink_metadata()?;
                 total_bytes += metadata.len();
                 total_files += 1;
             }
         }
-
-        while let Some(dir) = dirs.pop_front() {
-            for entry in fs::read_dir(dir)? {
-                let path = entry?.path();
-                if path.is_dir() {
-                    dirs.push_back(path);
-                } else {
-                    let metadata = path.symlink_metadata()?;
-                    total_bytes += metadata.len();
-                    total_files += 1;
-                }
-            }
-        }
-        Ok((total_files, total_bytes))
     }
-
-    fn paste_copy(&self, tx: mpsc::Sender<IoWorkerProgress>) -> io::Result<IoWorkerProgress> {
-        let (total_files, total_bytes) = self.query_number_of_items()?;
-        let mut progress = IoWorkerProgress::new(self.kind(), 0, total_files, 0, total_bytes);
-        for path in self.paths.iter() {
-            let _ = tx.send(progress.clone());
-            recursive_copy(
-                self.options,
-                path.as_path(),
-                self.dest.as_path(),
-                tx.clone(),
-                &mut progress,
-            )?;
-        }
-        Ok(progress)
-    }
-
-    fn paste_cut(&self, tx: mpsc::Sender<IoWorkerProgress>) -> io::Result<IoWorkerProgress> {
-        let (total_files, total_bytes) = self.query_number_of_items()?;
-        let mut progress = IoWorkerProgress::new(self.kind(), 0, total_files, 0, total_bytes);
-
-        for path in self.paths.iter() {
-            let _ = tx.send(progress.clone());
-            recursive_cut(
-                self.options,
-                path.as_path(),
-                self.dest.as_path(),
-                tx.clone(),
-                &mut progress,
-            )?;
-        }
-        Ok(progress)
-    }
+    Ok((total_files, total_bytes))
 }
 
 pub fn recursive_copy(
-    options: IoWorkerOptions,
+    tx: &mpsc::Sender<FileOperationProgress>,
     src: &path::Path,
     dest: &path::Path,
-    tx: mpsc::Sender<IoWorkerProgress>,
-    progress: &mut IoWorkerProgress,
+    options: FileOperationOptions,
+    progress: &mut FileOperationProgress,
 ) -> io::Result<()> {
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
@@ -210,10 +164,10 @@ pub fn recursive_copy(
             let entry = entry?;
             let entry_path = entry.path();
             recursive_copy(
-                options,
+                tx,
                 entry_path.as_path(),
                 dest_buf.as_path(),
-                tx.clone(),
+                options,
                 progress,
             )?;
             let _ = tx.send(progress.clone());
@@ -235,11 +189,11 @@ pub fn recursive_copy(
 }
 
 pub fn recursive_cut(
-    options: IoWorkerOptions,
+    tx: &mpsc::Sender<FileOperationProgress>,
     src: &path::Path,
     dest: &path::Path,
-    tx: mpsc::Sender<IoWorkerProgress>,
-    progress: &mut IoWorkerProgress,
+    options: FileOperationOptions,
+    progress: &mut FileOperationProgress,
 ) -> io::Result<()> {
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
@@ -264,10 +218,10 @@ pub fn recursive_cut(
                 for entry in fs::read_dir(src)? {
                     let entry_path = entry?.path();
                     recursive_cut(
-                        options,
+                        tx,
                         entry_path.as_path(),
                         dest_buf.as_path(),
-                        tx.clone(),
+                        options,
                         progress,
                     )?;
                     let _ = tx.send(progress.clone());
@@ -289,4 +243,44 @@ pub fn recursive_cut(
             Ok(())
         }
     }
+}
+
+fn trash_error_to_io_error(err: trash::Error) -> std::io::Error {
+    match err {
+        trash::Error::Unknown { description } => {
+            std::io::Error::new(std::io::ErrorKind::Other, description)
+        }
+        trash::Error::TargetedRoot => {
+            std::io::Error::new(std::io::ErrorKind::Other, "Targeted Root")
+        }
+        _ => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
+    }
+}
+
+fn remove_files<P>(paths: &[P]) -> std::io::Result<()>
+where
+    P: AsRef<path::Path>,
+{
+    for path in paths {
+        if let Ok(metadata) = fs::symlink_metadata(path) {
+            if metadata.is_dir() {
+                fs::remove_dir_all(&path)?;
+            } else {
+                fs::remove_file(&path)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn trash_files<P>(paths: &[P]) -> std::io::Result<()>
+where
+    P: AsRef<path::Path>,
+{
+    for path in paths {
+        if let Err(e) = trash::delete(path) {
+            return Err(trash_error_to_io_error(e));
+        }
+    }
+    Ok(())
 }

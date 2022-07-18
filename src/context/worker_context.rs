@@ -4,7 +4,7 @@ use std::sync::mpsc;
 use std::thread;
 
 use crate::event::AppEvent;
-use crate::io::{IoWorkerObserver, IoWorkerProgress, IoWorkerThread};
+use crate::io::{FileOperationProgress, IoWorkerObserver, IoWorkerThread};
 
 pub struct WorkerContext {
     // forks of applications
@@ -49,7 +49,7 @@ impl WorkerContext {
         self.worker.as_ref()
     }
 
-    pub fn set_progress(&mut self, res: IoWorkerProgress) {
+    pub fn set_progress(&mut self, res: FileOperationProgress) {
         if let Some(s) = self.worker.as_mut() {
             s.set_progress(res);
         }
@@ -77,7 +77,7 @@ impl WorkerContext {
                 let worker_handle = thread::spawn(move || worker.start(wtx));
                 // relay worker info to event loop
                 while let Ok(progress) = wrx.recv() {
-                    let _ = tx.send(AppEvent::IoWorkerProgress(progress));
+                    let _ = tx.send(AppEvent::FileOperationProgress(progress));
                 }
                 let result = worker_handle.join();
 

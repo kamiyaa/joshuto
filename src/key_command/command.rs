@@ -2,7 +2,7 @@ use std::path;
 
 use crate::commands::quit::QuitAction;
 use crate::config::option::{LineNumberStyle, SelectOption, SortType};
-use crate::io::IoWorkerOptions;
+use crate::io::FileOperationOptions;
 
 #[derive(Clone, Debug)]
 #[allow(clippy::enum_variant_names)]
@@ -17,7 +17,7 @@ pub enum Command {
 
     CutFiles,
     CopyFiles,
-    PasteFiles(IoWorkerOptions),
+    PasteFiles(FileOperationOptions),
     CopyFileName,
     CopyFileNameWithoutExtension,
     CopyFilePath,

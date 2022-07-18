@@ -1,5 +1,5 @@
 use crate::config::option::SortType;
-use crate::io::IoWorkerOptions;
+use crate::io::FileOperationOptions;
 
 use super::{Command, CommandComment};
 
@@ -27,9 +27,10 @@ impl CommandComment for Command {
 
             Self::CutFiles => "Cut selected files",
             Self::CopyFiles => "Copy selected files",
-            Self::PasteFiles(IoWorkerOptions {
+            Self::PasteFiles(FileOperationOptions {
                 overwrite,
                 skip_exist,
+                ..
             }) => match (overwrite, skip_exist) {
                 (true, false) => "Paste, overwrite",
                 (false, true) => "Paste, skip existing files",

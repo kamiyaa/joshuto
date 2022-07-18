@@ -1,13 +1,13 @@
 use std::path;
 use std::thread;
 
-use crate::io::{FileOp, IoWorkerProgress};
+use crate::io::{FileOperation, FileOperationProgress};
 use crate::util::format;
 
 #[derive(Debug)]
 pub struct IoWorkerObserver {
     pub handle: thread::JoinHandle<()>,
-    pub progress: Option<IoWorkerProgress>,
+    pub progress: Option<FileOperationProgress>,
     msg: String,
     src: path::PathBuf,
     dest: path::PathBuf,
@@ -27,7 +27,7 @@ impl IoWorkerObserver {
     pub fn join(self) -> bool {
         matches!(self.handle.join(), Ok(_))
     }
-    pub fn set_progress(&mut self, progress: IoWorkerProgress) {
+    pub fn set_progress(&mut self, progress: FileOperationProgress) {
         self.progress = Some(progress);
     }
     pub fn update_msg(&mut self) {
@@ -35,8 +35,9 @@ impl IoWorkerObserver {
             None => {}
             Some(progress) => {
                 let op_str = match progress.kind() {
-                    FileOp::Cut => "Moving",
-                    FileOp::Copy => "Copying",
+                    FileOperation::Cut => "Moving",
+                    FileOperation::Copy => "Copying",
+                    FileOperation::Delete => "Deleting",
                 };
                 let processed_size = format::file_size_to_string(progress.bytes_processed());
                 let total_size = format::file_size_to_string(progress.total_bytes());

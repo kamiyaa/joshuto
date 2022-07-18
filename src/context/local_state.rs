@@ -1,22 +1,22 @@
-use crate::io::FileOp;
+use crate::io::FileOperation;
 
 use std::iter::Iterator;
 use std::path;
 
 pub struct LocalStateContext {
     pub paths: Vec<path::PathBuf>,
-    pub file_op: FileOp,
+    pub file_op: FileOperation,
 }
 
 impl LocalStateContext {
     pub fn new() -> Self {
         Self {
             paths: Vec::new(),
-            file_op: FileOp::Copy,
+            file_op: FileOperation::Copy,
         }
     }
 
-    pub fn set_file_op(&mut self, operation: FileOp) {
+    pub fn set_file_op(&mut self, operation: FileOperation) {
         self.file_op = operation;
     }
 

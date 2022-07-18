@@ -6,7 +6,7 @@ use shellexpand::tilde_with_context;
 use crate::commands::quit::QuitAction;
 use crate::config::option::{LineNumberStyle, SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
-use crate::io::IoWorkerOptions;
+use crate::io::FileOperationOptions;
 
 use crate::HOME_DIR;
 
@@ -200,7 +200,7 @@ impl std::str::FromStr for Command {
                 },
             }
         } else if command == CMD_PASTE_FILES {
-            let mut options = IoWorkerOptions::default();
+            let mut options = FileOperationOptions::default();
             for arg in arg.split_whitespace() {
                 match arg {
                     "--overwrite=true" => options.overwrite = true,
