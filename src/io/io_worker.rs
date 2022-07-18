@@ -69,14 +69,7 @@ impl IoWorkerThread {
         tx: mpsc::Sender<FileOperationProgress>,
     ) -> io::Result<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
-        let mut progress = FileOperationProgress::new(
-            self.kind(),
-            total_files,
-            total_files,
-            total_bytes,
-            total_bytes,
-        );
-
+        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
         for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_cut(
@@ -95,7 +88,13 @@ impl IoWorkerThread {
         _tx: mpsc::Sender<FileOperationProgress>,
     ) -> io::Result<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
-        let progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+        let progress = FileOperationProgress::new(
+            self.kind(),
+            total_files,
+            total_files,
+            total_bytes,
+            total_bytes,
+        );
         if self.options.permanently {
             remove_files(&self.paths)?;
         } else {
