@@ -79,6 +79,8 @@ lazy_static! {
 pub struct Args {
     #[structopt(short = "v", long = "version")]
     version: bool,
+    #[structopt(long = "file-chooser")]
+    file_chooser: bool,
     #[structopt(long = "output-file", parse(from_os_str))]
     output_file: Option<PathBuf>,
     #[structopt(name = "ARGUMENTS")]
@@ -112,11 +114,11 @@ fn run_joshuto(args: Args) -> Result<i32, JoshutoError> {
 }
 
 fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
-    match context.quit {
-        QuitAction::OutputCurrentDirectory => {
-            if let Some(p) = &args.output_file {
+    match &args.output_file {
+        Some(output_path) => match context.quit {
+            QuitAction::OutputCurrentDirectory => {
                 let curr_path = std::env::current_dir()?;
-                let mut file = File::create(p)?;
+                let mut file = File::create(output_path)?;
                 file.write_all(
                     curr_path
                         .into_os_string()
@@ -126,22 +128,39 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
                 )?;
                 file.write_all("\n".as_bytes())?;
             }
-        }
-        QuitAction::OutputSelectedFiles => {
-            if let Some(path) = &args.output_file {
+            QuitAction::OutputSelectedFiles => {
                 let curr_tab = context.tab_context_ref().curr_tab_ref();
-                let final_selection = curr_tab
+                let selected_files = curr_tab
                     .curr_list_ref()
                     .into_iter()
                     .flat_map(|s| s.get_selected_paths());
-                let mut f = File::create(path)?;
-                for file in final_selection {
+                let mut f = File::create(output_path)?;
+                for file in selected_files {
                     writeln!(f, "{}", file.display())?;
                 }
             }
-        }
-        QuitAction::Force => {}
-        _ => {}
+            _ => {}
+        },
+        None => match context.quit {
+            QuitAction::OutputCurrentDirectory => {
+                let curr_path = std::env::current_dir()?;
+                println!(
+                    "{}",
+                    curr_path.into_os_string().as_os_str().to_string_lossy()
+                );
+            }
+            QuitAction::OutputSelectedFiles => {
+                let curr_tab = context.tab_context_ref().curr_tab_ref();
+                let selected_files = curr_tab
+                    .curr_list_ref()
+                    .into_iter()
+                    .flat_map(|s| s.get_selected_paths());
+                for file in selected_files {
+                    println!("{}", file.display());
+                }
+            }
+            _ => {}
+        },
     }
     Ok(())
 }

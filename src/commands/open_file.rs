@@ -1,7 +1,7 @@
 use std::io;
 use std::path;
 
-use crate::commands::reload;
+use crate::commands::{quit, reload};
 use crate::config::AppMimetypeEntry;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
@@ -133,6 +133,10 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult
             reload::soft_reload(context.tab_context_ref().index, context)?;
         }
         Some(entry) => {
+            if context.args.file_chooser {
+                return quit::quit_with_action(context, quit::QuitAction::OutputSelectedFiles);
+            }
+
             let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());
             let (path, files) = if paths.is_empty() {
                 (entry.file_path(), vec![entry.file_name()])
