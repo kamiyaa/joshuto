@@ -144,7 +144,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
         None => match context.quit {
             QuitAction::OutputCurrentDirectory => {
                 let curr_path = std::env::current_dir()?;
-                println!(
+                eprintln!(
                     "{}",
                     curr_path.into_os_string().as_os_str().to_string_lossy()
                 );
@@ -156,7 +156,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
                     .into_iter()
                     .flat_map(|s| s.get_selected_paths());
                 for file in selected_files {
-                    println!("{}", file.display());
+                    eprintln!("{}", file.display());
                 }
             }
             _ => {}
