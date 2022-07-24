@@ -8,7 +8,7 @@ use termion::event::Event;
 
 use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;
-use crate::key_command::{Command, CommandKeybind};
+use crate::key_command::{AppCommand, Command, CommandKeybind};
 use crate::traits::ToString;
 use crate::util::keyparse::str_to_event;
 
@@ -79,6 +79,7 @@ fn vec_to_map(vec: &[CommandKeymap]) -> HashMap<Event, CommandKeybind> {
                     continue;
                 }
 
+                let command_str = command.command();
                 let result = insert_keycommand(&mut hashmap, command, &events);
                 match result {
                     Ok(_) => {}
@@ -86,7 +87,7 @@ fn vec_to_map(vec: &[CommandKeymap]) -> HashMap<Event, CommandKeybind> {
                         KeymapError::Conflict => {
                             let events_str: Vec<String> =
                                 events.iter().map(|e| e.to_string()).collect();
-                            eprintln!("Error: Ambiguous Keymapping: Multiple commands mapped to key sequence {:?}", events_str);
+                            eprintln!("Error: Ambiguous Keymapping: Multiple commands mapped to key sequence {:?} {}", events_str, command_str);
                         }
                     },
                 }
