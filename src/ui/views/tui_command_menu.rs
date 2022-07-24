@@ -6,9 +6,9 @@ use tui::widgets::{Clear, Widget};
 
 use crate::config::KeyMapping;
 use crate::context::AppContext;
+use crate::traits::ToString;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
-use crate::util::to_string::ToString;
 
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;

@@ -10,6 +10,7 @@ mod key_command;
 mod preview;
 mod run;
 mod tab;
+mod traits;
 mod ui;
 mod util;
 

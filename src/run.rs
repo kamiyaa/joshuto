@@ -7,10 +7,10 @@ use crate::event::AppEvent;
 use crate::key_command::{AppExecute, CommandKeybind};
 use crate::preview::preview_default;
 use crate::tab::JoshutoTab;
+use crate::traits::ToString;
 use crate::ui;
 use crate::ui::views;
 use crate::ui::views::TuiView;
-use crate::util::to_string::ToString;
 
 use termion::event::{Event, Key};
 use tui::layout::Rect;

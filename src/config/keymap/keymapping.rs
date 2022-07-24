@@ -9,9 +9,14 @@ use termion::event::Event;
 use crate::config::{parse_to_config_file, TomlConfigFile};
 use crate::error::JoshutoResult;
 use crate::key_command::{Command, CommandKeybind};
+use crate::traits::ToString;
 use crate::util::keyparse::str_to_event;
 
 use super::DEFAULT_CONFIG_FILE_PATH;
+
+enum KeymapError {
+    Conflict,
+}
 
 #[derive(Debug, Deserialize)]
 struct CommandKeymap {
@@ -77,7 +82,13 @@ fn vec_to_map(vec: &[CommandKeymap]) -> HashMap<Event, CommandKeybind> {
                 let result = insert_keycommand(&mut hashmap, command, &events);
                 match result {
                     Ok(_) => {}
-                    Err(e) => eprintln!("{}", e),
+                    Err(e) => match e {
+                        KeymapError::Conflict => {
+                            let events_str: Vec<String> =
+                                events.iter().map(|e| e.to_string()).collect();
+                            eprintln!("Error: Ambiguous Keymapping: Multiple commands mapped to key sequence {:?}", events_str);
+                        }
+                    },
                 }
             }
             Err(e) => eprintln!("{}", e),
@@ -117,7 +128,7 @@ fn insert_keycommand(
     keymap: &mut KeyMapping,
     keycommand: Command,
     events: &[Event],
-) -> Result<(), String> {
+) -> Result<(), KeymapError> {
     let num_events = events.len();
     if num_events == 0 {
         return Ok(());
@@ -126,9 +137,7 @@ fn insert_keycommand(
     let event = events[0].clone();
     if num_events == 1 {
         match keymap.entry(event) {
-            Entry::Occupied(_) => {
-                return Err(format!("Error: Keybindings ambiguous for {}", keycommand))
-            }
+            Entry::Occupied(_) => return Err(KeymapError::Conflict),
             Entry::Vacant(entry) => entry.insert(CommandKeybind::SimpleKeybind(keycommand)),
         };
         return Ok(());
@@ -139,7 +148,7 @@ fn insert_keycommand(
             CommandKeybind::CompositeKeybind(ref mut m) => {
                 insert_keycommand(m, keycommand, &events[1..])
             }
-            _ => Err(format!("Error: Keybindings ambiguous for {}", keycommand)),
+            _ => Err(KeymapError::Conflict),
         },
         Entry::Vacant(entry) => {
             let mut new_map = KeyMapping::new();
