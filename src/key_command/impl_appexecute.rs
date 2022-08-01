@@ -30,13 +30,21 @@ impl AppExecute for Command {
             }
             Self::CutFiles => file_ops::cut(context),
             Self::CopyFiles => file_ops::copy(context),
-            Self::PasteFiles(options) => file_ops::paste(context, *options),
             Self::CopyFileName => file_ops::copy_filename(context),
             Self::CopyFileNameWithoutExtension => {
                 file_ops::copy_filename_without_extension(context)
             }
             Self::CopyFilePath => file_ops::copy_filepath(context),
             Self::CopyDirPath => file_ops::copy_dirpath(context),
+
+            Self::PasteFiles(options) => file_ops::paste(context, *options),
+
+            Self::DeleteFiles { background: false } => {
+                delete_files::delete_selected_files(context, backend)
+            }
+            Self::DeleteFiles { background: true } => {
+                delete_files::delete_selected_files_background(context, backend)
+            }
 
             Self::CursorMoveUp(u) => cursor_move::up(context, *u),
             Self::CursorMoveDown(u) => cursor_move::down(context, *u),
@@ -55,10 +63,6 @@ impl AppExecute for Command {
             Self::PreviewCursorMoveUp(u) => preview_cursor_move::preview_up(context, *u),
             Self::PreviewCursorMoveDown(u) => preview_cursor_move::preview_down(context, *u),
 
-            Self::DeleteFiles => {
-                delete_files::delete_selected_files(context, backend)?;
-                Ok(())
-            }
             Self::NewDirectory(p) => new_directory::new_directory(context, p.as_path()),
             Self::OpenFile => open_file::open(context, backend),
             Self::OpenFileWith(None) => open_file::open_with_interactive(context, backend),

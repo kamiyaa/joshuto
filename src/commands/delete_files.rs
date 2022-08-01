@@ -1,14 +1,20 @@
 use std::path;
+use std::sync::mpsc;
 
 use termion::event::Key;
 
 use crate::context::AppContext;
+use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::AppBackend;
 
-fn delete_files(context: &mut AppContext, backend: &mut AppBackend) -> std::io::Result<()> {
+fn delete_files(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    background: bool,
+) -> std::io::Result<()> {
     let paths = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -47,12 +53,18 @@ fn delete_files(context: &mut AppContext, backend: &mut AppBackend) -> std::io::
                 let options = FileOperationOptions {
                     overwrite: false,
                     skip_exist: false,
+                    symlink: false,
                     permanently: !context.config_ref().use_trash,
                 };
 
                 let dest = path::PathBuf::new();
                 let worker_thread = IoWorkerThread::new(file_op, paths, dest, options);
-                context.worker_context_mut().push_worker(worker_thread);
+                if background {
+                    context.worker_context_mut().push_worker(worker_thread);
+                } else {
+                    let (wtx, _) = mpsc::channel();
+                    worker_thread.start(wtx)?;
+                }
             }
             Ok(())
         }
@@ -60,16 +72,43 @@ fn delete_files(context: &mut AppContext, backend: &mut AppBackend) -> std::io::
     }
 }
 
-pub fn delete_selected_files(
+fn _delete_selected_files(
     context: &mut AppContext,
     backend: &mut AppBackend,
 ) -> std::io::Result<()> {
-    let _ = delete_files(context, backend)?;
+    let _ = delete_files(context, backend, false)?;
 
     let options = context.config_ref().display_options_ref().clone();
     let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
     for tab in context.tab_context_mut().iter_mut() {
         tab.history_mut().reload(&curr_path, &options)?;
     }
+    Ok(())
+}
+
+pub fn delete_selected_files(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+    _delete_selected_files(context, backend)?;
+    Ok(())
+}
+
+fn _delete_selected_files_background(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+) -> std::io::Result<()> {
+    let _ = delete_files(context, backend, true)?;
+
+    let options = context.config_ref().display_options_ref().clone();
+    let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+    for tab in context.tab_context_mut().iter_mut() {
+        tab.history_mut().reload(&curr_path, &options)?;
+    }
+    Ok(())
+}
+
+pub fn delete_selected_files_background(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+) -> JoshutoResult {
+    _delete_selected_files(context, backend)?;
     Ok(())
 }

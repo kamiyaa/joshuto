@@ -55,7 +55,6 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_PAGEEND, Self::CursorMovePageEnd);
 
         simple_command_conversion_case!(command, CMD_CUT_FILES, Self::CutFiles);
-        simple_command_conversion_case!(command, CMD_DELETE_FILES, Self::DeleteFiles);
 
         simple_command_conversion_case!(command, CMD_COPY_FILES, Self::CopyFiles);
         simple_command_conversion_case!(command, CMD_COPY_FILENAME, Self::CopyFileName);
@@ -216,6 +215,17 @@ impl std::str::FromStr for Command {
                 }
             }
             Ok(Self::PasteFiles(options))
+        } else if command == CMD_DELETE_FILES {
+            match arg {
+                "--foreground=true" => return Ok(Self::DeleteFiles { background: true }),
+                "--foreground=false" => return Ok(Self::DeleteFiles { background: false }),
+                _ => {
+                    return Err(JoshutoError::new(
+                        JoshutoErrorKind::UnrecognizedArgument,
+                        format!("{}: unknown option '{}'", command, arg),
+                    ));
+                }
+            }
         } else if command == CMD_RENAME_FILE {
             match arg {
                 "" => Err(JoshutoError::new(

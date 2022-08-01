@@ -20,11 +20,13 @@ impl AppCommand for Command {
 
             Self::CutFiles => CMD_CUT_FILES,
             Self::CopyFiles => CMD_COPY_FILES,
-            Self::PasteFiles(_) => CMD_PASTE_FILES,
             Self::CopyFileName => CMD_COPY_FILENAME,
             Self::CopyFileNameWithoutExtension => CMD_COPY_FILENAME_WITHOUT_EXTENSION,
             Self::CopyFilePath => CMD_COPY_FILEPATH,
             Self::CopyDirPath => CMD_COPY_DIRECTORY_PATH,
+            Self::PasteFiles(_) => CMD_PASTE_FILES,
+
+            Self::DeleteFiles { .. } => CMD_DELETE_FILES,
 
             Self::CursorMoveUp(_) => CMD_CURSOR_MOVE_UP,
             Self::CursorMoveDown(_) => CMD_CURSOR_MOVE_DOWN,
@@ -42,7 +44,6 @@ impl AppCommand for Command {
             Self::PreviewCursorMoveUp(_) => CMD_PREVIEW_CURSOR_MOVE_UP,
             Self::PreviewCursorMoveDown(_) => CMD_PREVIEW_CURSOR_MOVE_DOWN,
 
-            Self::DeleteFiles => CMD_DELETE_FILES,
             Self::NewDirectory(_) => CMD_NEW_DIRECTORY,
             Self::OpenFile => CMD_OPEN_FILE,
             Self::OpenFileWith(_) => CMD_OPEN_FILE_WITH,

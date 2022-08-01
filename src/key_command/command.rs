@@ -17,11 +17,13 @@ pub enum Command {
 
     CutFiles,
     CopyFiles,
-    PasteFiles(FileOperationOptions),
     CopyFileName,
     CopyFileNameWithoutExtension,
     CopyFilePath,
     CopyDirPath,
+    PasteFiles(FileOperationOptions),
+
+    DeleteFiles { background: bool },
 
     CursorMoveUp(usize),
     CursorMoveDown(usize),
@@ -41,7 +43,6 @@ pub enum Command {
 
     // ChildCursorMoveUp(usize),
     // ChildCursorMoveDown(usize),
-    DeleteFiles,
     NewDirectory(path::PathBuf),
     OpenFile,
     OpenFileWith(Option<usize>),

@@ -27,6 +27,11 @@ impl CommandComment for Command {
 
             Self::CutFiles => "Cut selected files",
             Self::CopyFiles => "Copy selected files",
+            Self::CopyFileName => "Copy filename",
+            Self::CopyFileNameWithoutExtension => "Copy filename without extension",
+            Self::CopyFilePath => "Copy path to file",
+            Self::CopyDirPath => "Copy directory name",
+
             Self::PasteFiles(FileOperationOptions {
                 overwrite,
                 skip_exist,
@@ -36,10 +41,7 @@ impl CommandComment for Command {
                 (false, true) => "Paste, skip existing files",
                 _ => "Paste",
             },
-            Self::CopyFileName => "Copy filename",
-            Self::CopyFileNameWithoutExtension => "Copy filename without extension",
-            Self::CopyFilePath => "Copy path to file",
-            Self::CopyDirPath => "Copy directory name",
+            Self::DeleteFiles { .. } => "Delete selected files",
 
             Self::CursorMoveUp(_) => "Move cursor up",
             Self::CursorMoveDown(_) => "Move cursor down",
@@ -58,7 +60,6 @@ impl CommandComment for Command {
             Self::PreviewCursorMoveUp(_) => "Cursor up in file preview",
             Self::PreviewCursorMoveDown(_) => "Cursor down in file preview",
 
-            Self::DeleteFiles => "Delete selected files",
             Self::NewDirectory(_) => "Make a new directory",
             Self::OpenFile => "Open a file",
             Self::OpenFileWith(_) => "Open using selected program",

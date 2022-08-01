@@ -11,6 +11,9 @@ impl std::fmt::Display for Command {
             Self::NewDirectory(d) => write!(f, "{} {:?}", self.command(), d),
 
             Self::PasteFiles(options) => write!(f, "{}  {}", self.command(), options),
+            Self::DeleteFiles { background: false } => {
+                write!(f, "{} --foreground=true", self.command(),)
+            }
 
             Self::RenameFile(name) => write!(f, "{} {:?}", self.command(), name),
 
