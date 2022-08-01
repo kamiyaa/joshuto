@@ -36,7 +36,7 @@ impl AppExecute for Command {
             }
             Self::CopyFilePath => file_ops::copy_filepath(context),
             Self::CopyDirPath => file_ops::copy_dirpath(context),
-
+            Self::SymlinkFiles => file_ops::link(context),
             Self::PasteFiles(options) => file_ops::paste(context, *options),
 
             Self::DeleteFiles { background: false } => {

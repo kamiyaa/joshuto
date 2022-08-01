@@ -25,6 +25,7 @@ impl<'a> Widget for TuiWorker<'a> {
                     let op_str = match progress.kind() {
                         FileOperation::Cut => "Moving",
                         FileOperation::Copy => "Copying",
+                        FileOperation::Symlink => "Symlinking",
                         FileOperation::Delete => "Deleting",
                     };
 
@@ -61,15 +62,10 @@ impl<'a> Widget for TuiWorker<'a> {
 
                     let style = Style::default();
                     for (i, worker) in self.context.iter().enumerate() {
-                        let op_str = match worker.kind() {
-                            FileOperation::Cut => "Move",
-                            FileOperation::Copy => "Copy",
-                            FileOperation::Delete => "Delete",
-                        };
                         let msg = format!(
                             "{:02} {} {} items {:?}",
                             i + 1,
-                            op_str,
+                            worker.kind(),
                             worker.paths.len(),
                             worker.dest
                         );

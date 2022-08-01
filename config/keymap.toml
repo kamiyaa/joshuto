@@ -52,16 +52,16 @@ keymap = [
 	{ keys = [ "c", "d" ],		command = ":cd " },
 	{ keys = [ "d", "d" ],		command = "cut_files" },
 	{ keys = [ "y", "y" ],		command = "copy_files" },
-	{ keys = [ "p", "p" ],		command = "paste_files" },
-	{ keys = [ "p", "o" ],		command = "paste_files --overwrite=true" },
-
 	{ keys = [ "y", "n" ],		command = "copy_filename" },
 	{ keys = [ "y", "." ],		command = "copy_filename_without_extension" },
 	{ keys = [ "y", "p" ],		command = "copy_filepath" },
 	{ keys = [ "y", "d" ],		command = "copy_dirpath" },
 
-	{ keys = [ "delete" ],		command = "delete_files" },
-	{ keys = [ "d", "D" ],		command = "delete_files" },
+	{ keys = [ "delete" ],		command = "delete_files --foreground=true" },
+	{ keys = [ "d", "D" ],		command = "delete_files --foreground=true" },
+
+	{ keys = [ "p", "p" ],		command = "paste_files" },
+	{ keys = [ "p", "o" ],		command = "paste_files --overwrite=true" },
 
 	{ keys = [ "a" ],		command = "rename_append" },
 	{ keys = [ "A" ],		command = "rename_prepend" },

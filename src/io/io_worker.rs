@@ -4,6 +4,9 @@ use std::io;
 use std::path;
 use std::sync::mpsc;
 
+#[cfg(unix)]
+use std::os::unix;
+
 use crate::io::{FileOperation, FileOperationOptions, FileOperationProgress};
 use crate::util::name_resolution::rename_filename_conflict;
 
@@ -41,6 +44,7 @@ impl IoWorkerThread {
         match self.kind() {
             FileOperation::Cut => self.paste_cut(tx),
             FileOperation::Copy => self.paste_copy(tx),
+            FileOperation::Symlink => self.paste_link(tx),
             FileOperation::Delete => self.delete(tx),
         }
     }
@@ -79,6 +83,31 @@ impl IoWorkerThread {
                 self.options,
                 &mut progress,
             )?;
+        }
+        Ok(progress)
+    }
+
+    fn paste_link(
+        &self,
+        tx: mpsc::Sender<FileOperationProgress>,
+    ) -> io::Result<FileOperationProgress> {
+        let total_files = self.paths.len();
+        let total_bytes = total_files as u64;
+        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+
+        #[cfg(unix)]
+        for src in self.paths.iter() {
+            let _ = tx.send(progress.clone());
+            let mut dest_buf = self.dest.to_path_buf();
+            if let Some(s) = src.file_name() {
+                dest_buf.push(s);
+            }
+            if !self.options.overwrite {
+                rename_filename_conflict(&mut dest_buf);
+            }
+            unix::fs::symlink(src, &dest_buf)?;
+            progress.set_files_processed(progress.files_processed() + 1);
+            progress.set_bytes_processed(progress.bytes_processed() + 1);
         }
         Ok(progress)
     }

@@ -31,6 +31,7 @@ impl CommandComment for Command {
             Self::CopyFileNameWithoutExtension => "Copy filename without extension",
             Self::CopyFilePath => "Copy path to file",
             Self::CopyDirPath => "Copy directory name",
+            Self::SymlinkFiles => "Symlink selected files",
 
             Self::PasteFiles(FileOperationOptions {
                 overwrite,

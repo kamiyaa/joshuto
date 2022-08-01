@@ -24,6 +24,7 @@ impl AppCommand for Command {
             Self::CopyFileNameWithoutExtension => CMD_COPY_FILENAME_WITHOUT_EXTENSION,
             Self::CopyFilePath => CMD_COPY_FILEPATH,
             Self::CopyDirPath => CMD_COPY_DIRECTORY_PATH,
+            Self::SymlinkFiles => CMD_SYMLINK_FILES,
             Self::PasteFiles(_) => CMD_PASTE_FILES,
 
             Self::DeleteFiles { .. } => CMD_DELETE_FILES,

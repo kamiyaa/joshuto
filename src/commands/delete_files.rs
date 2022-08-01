@@ -53,7 +53,6 @@ fn delete_files(
                 let options = FileOperationOptions {
                     overwrite: false,
                     skip_exist: false,
-                    symlink: false,
                     permanently: !context.config_ref().use_trash,
                 };
 

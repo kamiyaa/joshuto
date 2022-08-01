@@ -2,7 +2,19 @@
 pub enum FileOperation {
     Cut,
     Copy,
+    Symlink,
     Delete,
+}
+
+impl std::fmt::Display for FileOperation {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Cut => write!(f, "Cut"),
+            Self::Copy => write!(f, "Copy"),
+            Self::Symlink => write!(f, "Symlink"),
+            Self::Delete => write!(f, "Delete"),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -10,7 +22,6 @@ pub struct FileOperationOptions {
     // cut, copy
     pub overwrite: bool,
     pub skip_exist: bool,
-    pub symlink: bool,
 
     // delete
     pub permanently: bool,

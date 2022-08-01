@@ -21,6 +21,7 @@ pub enum Command {
     CopyFileNameWithoutExtension,
     CopyFilePath,
     CopyDirPath,
+    SymlinkFiles,
     PasteFiles(FileOperationOptions),
 
     DeleteFiles { background: bool },

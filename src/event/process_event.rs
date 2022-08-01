@@ -112,6 +112,7 @@ pub fn process_finished_worker(
             let op = match progress.kind() {
                 FileOperation::Cut => "moved",
                 FileOperation::Copy => "copied",
+                FileOperation::Symlink => "symlinked",
                 FileOperation::Delete => "deleted",
             };
             let processed_size = format::file_size_to_string(progress.bytes_processed());

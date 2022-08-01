@@ -55,7 +55,6 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_PAGEEND, Self::CursorMovePageEnd);
 
         simple_command_conversion_case!(command, CMD_CUT_FILES, Self::CutFiles);
-
         simple_command_conversion_case!(command, CMD_COPY_FILES, Self::CopyFiles);
         simple_command_conversion_case!(command, CMD_COPY_FILENAME, Self::CopyFileName);
         simple_command_conversion_case!(
@@ -65,6 +64,7 @@ impl std::str::FromStr for Command {
         );
         simple_command_conversion_case!(command, CMD_COPY_FILEPATH, Self::CopyFilePath);
         simple_command_conversion_case!(command, CMD_COPY_DIRECTORY_PATH, Self::CopyDirPath);
+        simple_command_conversion_case!(command, CMD_SYMLINK_FILES, Self::SymlinkFiles);
 
         simple_command_conversion_case!(command, CMD_OPEN_FILE, Self::OpenFile);
 

@@ -31,6 +31,19 @@ pub fn copy(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
+pub fn link(context: &mut AppContext) -> JoshutoResult {
+    if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+        let selected = list.get_selected_paths();
+
+        let mut local_state = LocalStateContext::new();
+        local_state.set_paths(selected.into_iter());
+        local_state.set_file_op(FileOperation::Symlink);
+
+        context.set_local_state(local_state);
+    }
+    Ok(())
+}
+
 pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> JoshutoResult {
     match context.take_local_state() {
         Some(state) if !state.paths.is_empty() => {

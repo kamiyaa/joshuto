@@ -37,6 +37,7 @@ impl IoWorkerObserver {
                 let op_str = match progress.kind() {
                     FileOperation::Cut => "Moving",
                     FileOperation::Copy => "Copying",
+                    FileOperation::Symlink => "Symlinking",
                     FileOperation::Delete => "Deleting",
                 };
                 let processed_size = format::file_size_to_string(progress.bytes_processed());
