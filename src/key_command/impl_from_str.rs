@@ -217,14 +217,12 @@ impl std::str::FromStr for Command {
             Ok(Self::PasteFiles(options))
         } else if command == CMD_DELETE_FILES {
             match arg {
-                "--foreground=true" => return Ok(Self::DeleteFiles { background: true }),
-                "--foreground=false" => return Ok(Self::DeleteFiles { background: false }),
-                _ => {
-                    return Err(JoshutoError::new(
-                        JoshutoErrorKind::UnrecognizedArgument,
-                        format!("{}: unknown option '{}'", command, arg),
-                    ));
-                }
+                "--foreground=true" => Ok(Self::DeleteFiles { background: true }),
+                "--foreground=false" => Ok(Self::DeleteFiles { background: false }),
+                _ => Err(JoshutoError::new(
+                    JoshutoErrorKind::UnrecognizedArgument,
+                    format!("{}: unknown option '{}'", command, arg),
+                )),
             }
         } else if command == CMD_RENAME_FILE {
             match arg {

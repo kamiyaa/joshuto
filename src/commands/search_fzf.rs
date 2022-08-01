@@ -52,7 +52,7 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
                 let selected_idx_str = selected.split_once(' ');
                 if let Some((selected_idx_str, _)) = selected_idx_str {
                     if let Ok(index) = selected_idx_str.parse::<usize>() {
-                        let _ = cursor_move::cursor_move(context, index);
+                        cursor_move::cursor_move(context, index);
                     }
                 }
             }

@@ -75,7 +75,7 @@ fn _delete_selected_files(
     context: &mut AppContext,
     backend: &mut AppBackend,
 ) -> std::io::Result<()> {
-    let _ = delete_files(context, backend, false)?;
+    delete_files(context, backend, false)?;
 
     let options = context.config_ref().display_options_ref().clone();
     let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
@@ -94,7 +94,7 @@ fn _delete_selected_files_background(
     context: &mut AppContext,
     backend: &mut AppBackend,
 ) -> std::io::Result<()> {
-    let _ = delete_files(context, backend, true)?;
+    delete_files(context, backend, true)?;
 
     let options = context.config_ref().display_options_ref().clone();
     let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();

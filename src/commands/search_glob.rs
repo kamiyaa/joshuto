@@ -42,7 +42,7 @@ pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult {
 
     let index = search_glob_fwd(context.tab_context_ref().curr_tab_ref(), &glob);
     if let Some(index) = index {
-        let _ = cursor_move::cursor_move(context, index);
+        cursor_move::cursor_move(context, index);
     }
     context.set_search_context(SearchPattern::Glob(glob));
     Ok(())

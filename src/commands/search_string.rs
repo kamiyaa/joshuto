@@ -59,7 +59,7 @@ pub fn search_string(context: &mut AppContext, pattern: &str, incremental: bool)
         search_string_fwd(curr_tab, pattern.as_str())
     };
     if let Some(index) = index {
-        let _ = cursor_move::cursor_move(context, index);
+        cursor_move::cursor_move(context, index);
     }
     context.set_search_context(SearchPattern::String(pattern));
 }
