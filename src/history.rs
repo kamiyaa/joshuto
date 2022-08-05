@@ -3,7 +3,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use crate::config::option::DisplayOption;
+use crate::config::option::{DisplayOption, TabDisplayOption};
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
 
@@ -13,10 +13,26 @@ pub trait DirectoryHistory {
         path: &Path,
         ui_context: &UiContext,
         options: &DisplayOption,
+        tab_options: &TabDisplayOption,
     ) -> io::Result<()>;
-    fn create_or_soft_update(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;
-    fn create_or_reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;
-    fn reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()>;
+    fn create_or_soft_update(
+        &mut self,
+        path: &Path,
+        options: &DisplayOption,
+        tab_options: &TabDisplayOption,
+    ) -> io::Result<()>;
+    fn create_or_reload(
+        &mut self,
+        path: &Path,
+        options: &DisplayOption,
+        tab_options: &TabDisplayOption,
+    ) -> io::Result<()>;
+    fn reload(
+        &mut self,
+        path: &Path,
+        options: &DisplayOption,
+        tab_options: &TabDisplayOption,
+    ) -> io::Result<()>;
     fn depreciate_all_entries(&mut self);
 
     fn depreciate_entry(&mut self, path: &Path);
@@ -30,13 +46,15 @@ impl DirectoryHistory for JoshutoHistory {
         path: &Path,
         ui_context: &UiContext,
         options: &DisplayOption,
+        tab_options: &TabDisplayOption,
     ) -> io::Result<()> {
         let mut dirlists = Vec::new();
 
         let mut prev: Option<&Path> = None;
         for curr in path.ancestors() {
             if self.contains_key(curr) {
-                let mut new_dirlist = create_dirlist_with_history(self, curr, options)?;
+                let mut new_dirlist =
+                    create_dirlist_with_history(self, curr, options, tab_options)?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
                         new_dirlist.set_index(Some(i), ui_context, options);
@@ -45,7 +63,7 @@ impl DirectoryHistory for JoshutoHistory {
                 dirlists.push(new_dirlist);
             } else {
                 let mut new_dirlist =
-                    JoshutoDirList::from_path(curr.to_path_buf().clone(), options)?;
+                    JoshutoDirList::from_path(curr.to_path_buf().clone(), options, tab_options)?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
                         new_dirlist.set_index(Some(i), ui_context, options);
@@ -61,7 +79,12 @@ impl DirectoryHistory for JoshutoHistory {
         Ok(())
     }
 
-    fn create_or_soft_update(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()> {
+    fn create_or_soft_update(
+        &mut self,
+        path: &Path,
+        options: &DisplayOption,
+        tab_options: &TabDisplayOption,
+    ) -> io::Result<()> {
         let (contains_key, need_update) = if let Some(dirlist) = self.get(path) {
             (true, dirlist.need_update())
         } else {
@@ -69,27 +92,37 @@ impl DirectoryHistory for JoshutoHistory {
         };
         if need_update {
             let dirlist = if contains_key {
-                create_dirlist_with_history(self, path, options)?
+                create_dirlist_with_history(self, path, options, tab_options)?
             } else {
-                JoshutoDirList::from_path(path.to_path_buf(), options)?
+                JoshutoDirList::from_path(path.to_path_buf(), options, tab_options)?
             };
             self.insert(path.to_path_buf(), dirlist);
         }
         Ok(())
     }
 
-    fn create_or_reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()> {
+    fn create_or_reload(
+        &mut self,
+        path: &Path,
+        options: &DisplayOption,
+        tab_options: &TabDisplayOption,
+    ) -> io::Result<()> {
         let dirlist = if self.contains_key(path) {
-            create_dirlist_with_history(self, path, options)?
+            create_dirlist_with_history(self, path, options, tab_options)?
         } else {
-            JoshutoDirList::from_path(path.to_path_buf(), options)?
+            JoshutoDirList::from_path(path.to_path_buf(), options, tab_options)?
         };
         self.insert(path.to_path_buf(), dirlist);
         Ok(())
     }
 
-    fn reload(&mut self, path: &Path, options: &DisplayOption) -> io::Result<()> {
-        let dirlist = create_dirlist_with_history(self, path, options)?;
+    fn reload(
+        &mut self,
+        path: &Path,
+        options: &DisplayOption,
+        tab_options: &TabDisplayOption,
+    ) -> io::Result<()> {
+        let dirlist = create_dirlist_with_history(self, path, options, tab_options)?;
         self.insert(path.to_path_buf(), dirlist);
         Ok(())
     }
@@ -119,6 +152,7 @@ pub fn create_dirlist_with_history(
     history: &JoshutoHistory,
     path: &Path,
     options: &DisplayOption,
+    tab_options: &TabDisplayOption,
 ) -> io::Result<JoshutoDirList> {
     let filter_func = options.filter_func();
     let mut contents = read_directory(path, filter_func, options)?;
@@ -130,7 +164,7 @@ pub fn create_dirlist_with_history(
         }
     }
 
-    let sort_options = options.sort_options_ref();
+    let sort_options = tab_options.sort_options_ref();
     contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
     let contents_len = contents.len();

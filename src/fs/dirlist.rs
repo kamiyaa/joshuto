@@ -1,7 +1,7 @@
 use std::slice::{Iter, IterMut};
 use std::{io, path};
 
-use crate::config::option::DisplayOption;
+use crate::config::option::{DisplayOption, TabDisplayOption};
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::history::read_directory;
@@ -36,12 +36,14 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn from_path(path: path::PathBuf, options: &DisplayOption) -> io::Result<Self> {
+    pub fn from_path(
+        path: path::PathBuf,
+        options: &DisplayOption,
+        tab_options: &TabDisplayOption,
+    ) -> io::Result<Self> {
         let filter_func = options.filter_func();
-        let sort_options = options.sort_options_ref();
-
         let mut contents = read_directory(path.as_path(), filter_func, options)?;
-        contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
+        contents.sort_by(|f1, f2| tab_options.sort_options_ref().compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
         let metadata = JoshutoMetadata::from(&path)?;

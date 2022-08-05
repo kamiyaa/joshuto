@@ -48,6 +48,11 @@ pub fn flatten(depth: usize, context: &mut AppContext) -> JoshutoResult {
     let path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
 
     let options = context.config_ref().display_options_ref().clone();
+    let tab_options = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .option_ref()
+        .clone();
 
     let mut index: Option<usize> = context
         .tab_context_ref()
@@ -69,7 +74,8 @@ pub fn flatten(depth: usize, context: &mut AppContext) -> JoshutoResult {
         index = None;
     }
 
-    let sort_options = options.sort_options_ref();
+    let sort_options = tab_options.sort_options_ref();
+
     contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
     let metadata = JoshutoMetadata::from(path.as_path())?;

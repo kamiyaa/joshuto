@@ -92,9 +92,18 @@ pub fn process_finished_worker(
     let worker_context = context.worker_context_mut();
     let observer = worker_context.remove_worker().unwrap();
     let options = context.config_ref().display_options_ref().clone();
+    let tab_options = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .option_ref()
+        .clone();
     for tab in context.tab_context_mut().iter_mut() {
-        let _ = tab.history_mut().reload(observer.dest_path(), &options);
-        let _ = tab.history_mut().reload(observer.src_path(), &options);
+        let _ = tab
+            .history_mut()
+            .reload(observer.dest_path(), &options, &tab_options);
+        let _ = tab
+            .history_mut()
+            .reload(observer.src_path(), &options, &tab_options);
     }
 
     /* delete

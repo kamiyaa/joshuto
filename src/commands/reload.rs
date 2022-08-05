@@ -25,13 +25,19 @@ pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()
 
     if !paths.is_empty() {
         let options = context.config_ref().display_options_ref().clone();
+        let tab_options = context
+            .tab_context_ref()
+            .curr_tab_ref()
+            .option_ref()
+            .clone();
         if let Some(history) = context
             .tab_context_mut()
             .tab_mut(index)
             .map(|t| t.history_mut())
         {
             for path in paths {
-                let new_dirlist = create_dirlist_with_history(history, path.as_path(), &options)?;
+                let new_dirlist =
+                    create_dirlist_with_history(history, path.as_path(), &options, &tab_options)?;
                 history.insert(path, new_dirlist);
             }
         }
@@ -55,13 +61,19 @@ pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
 
     if !paths.is_empty() {
         let options = context.config_ref().display_options_ref().clone();
+        let tab_options = context
+            .tab_context_ref()
+            .curr_tab_ref()
+            .option_ref()
+            .clone();
         if let Some(history) = context
             .tab_context_mut()
             .tab_mut(index)
             .map(|t| t.history_mut())
         {
             for path in paths {
-                let new_dirlist = create_dirlist_with_history(history, path.as_path(), &options)?;
+                let new_dirlist =
+                    create_dirlist_with_history(history, path.as_path(), &options, &tab_options)?;
                 history.insert(path, new_dirlist);
             }
         }

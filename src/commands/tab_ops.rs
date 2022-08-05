@@ -32,23 +32,31 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
     };
 
     let options = context.config_ref().display_options_ref().clone();
+    let tab_options = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .option_ref()
+        .clone();
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
     if history
-        .create_or_soft_update(cwd.as_path(), &options)
+        .create_or_soft_update(cwd.as_path(), &options, &tab_options)
         .is_err()
     {
         history.remove(cwd.as_path());
     }
 
     if let Some(cwd_parent) = cwd.parent() {
-        if history.create_or_soft_update(cwd_parent, &options).is_err() {
+        if history
+            .create_or_soft_update(cwd_parent, &options, &tab_options)
+            .is_err()
+        {
             history.remove(cwd_parent);
         }
     }
 
     if let Some(file_path) = entry_path {
         if history
-            .create_or_soft_update(file_path.as_path(), &options)
+            .create_or_soft_update(file_path.as_path(), &options, &tab_options)
             .is_err()
         {
             history.remove(file_path.as_path());

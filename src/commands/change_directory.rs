@@ -24,11 +24,16 @@ pub fn change_directory(context: &mut AppContext, path: &path::Path) -> JoshutoR
     cd(new_cwd.as_path(), context)?;
     let options = context.config_ref().display_options_ref().clone();
     let ui_context = context.ui_context_ref().clone();
+    let tab_options = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .option_ref()
+        .clone();
     context
         .tab_context_mut()
         .curr_tab_mut()
         .history_mut()
-        .populate_to_root(new_cwd.as_path(), &ui_context, &options)?;
+        .populate_to_root(new_cwd.as_path(), &ui_context, &options, &tab_options)?;
     Ok(())
 }
 

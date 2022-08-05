@@ -3,7 +3,7 @@ use std::convert::From;
 use serde_derive::Deserialize;
 use tui::layout::Constraint;
 
-use crate::config::option::{DisplayMode, DisplayOption, LineNumberStyle};
+use crate::config::option::{DisplayMode, DisplayOption, LineNumberStyle, TabDisplayOption};
 
 use super::sort_raw::SortOptionRaw;
 
@@ -117,13 +117,15 @@ impl From<DisplayOptionRaw> for DisplayOption {
             _show_borders: raw.show_borders,
             _show_hidden: raw.show_hidden,
             _show_icons: raw.show_icons,
-            _sort_options: raw.sort_options.into(),
             _tilde_in_titlebar: raw.tilde_in_titlebar,
             _line_nums,
 
             column_ratio,
             default_layout,
             no_preview_layout,
+            default_tab_display_option: TabDisplayOption {
+                _sort_options: raw.sort_options.into(),
+            },
         }
     }
 }

@@ -7,9 +7,15 @@ use crate::history::DirectoryHistory;
 pub fn new_directory(context: &mut AppContext, p: &path::Path) -> JoshutoResult {
     std::fs::create_dir_all(p)?;
     let options = context.config_ref().display_options_ref().clone();
+    let tab_options = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .option_ref()
+        .clone();
     let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
     for tab in context.tab_context_mut().iter_mut() {
-        tab.history_mut().reload(&curr_path, &options)?;
+        tab.history_mut()
+            .reload(&curr_path, &options, &tab_options)?;
     }
     Ok(())
 }
