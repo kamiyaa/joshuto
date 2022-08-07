@@ -156,10 +156,25 @@ pub fn create_dirlist_with_history(
 ) -> io::Result<JoshutoDirList> {
     let filter_func = options.filter_func();
     let mut contents = read_directory(path, filter_func, options)?;
+
+    // re-use directory size information on reload
     for entry in contents.iter_mut() {
         if entry.metadata.is_dir() {
             if let Some(lst) = history.get(entry.file_path()) {
                 entry.metadata.update_directory_size(lst.len());
+            }
+        }
+    }
+
+    // preserve selection status of entries on reload
+    if let Some(former_dir_list) = history.get(path) {
+        let former_entries_by_file_name = HashMap::<&str, &JoshutoDirEntry>::from_iter(
+            former_dir_list.contents.iter().map(|e| (e.file_name(), e)),
+        );
+        for entry in contents.iter_mut() {
+            if let Some(former_entry) = former_entries_by_file_name.get(entry.file_name()) {
+                entry.set_permanent_selected(former_entry.is_permanent_selected());
+                entry.set_visual_mode_selected(former_entry.is_visual_mode_selected());
             }
         }
     }
@@ -199,6 +214,19 @@ pub fn create_dirlist_with_history(
             None => 0,
         }
     };
+    let visual_mode_anchor_index = match history.get(path) {
+        None => None,
+        Some(dirlist) => match dirlist.get_visual_mode_anchor_index() {
+            None => None,
+            Some(old_visual_mode_anchor_index) => {
+                Some(if old_visual_mode_anchor_index < contents_len {
+                    old_visual_mode_anchor_index
+                } else {
+                    contents_len - 1
+                })
+            }
+        },
+    };
 
     let metadata = JoshutoMetadata::from(path)?;
     let dirlist = JoshutoDirList::new(
@@ -206,6 +234,7 @@ pub fn create_dirlist_with_history(
         contents,
         index,
         viewport_index,
+        visual_mode_anchor_index,
         metadata,
     );
 

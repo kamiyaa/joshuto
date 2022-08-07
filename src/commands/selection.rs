@@ -23,11 +23,11 @@ fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> J
         if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
             curr_list.iter_mut().for_each(|e| {
                 if options.reverse {
-                    e.set_selected(false);
+                    e.set_permanent_selected(false);
                 } else if options.toggle {
-                    e.set_selected(!e.is_selected());
+                    e.set_permanent_selected(!e.is_selected());
                 } else {
-                    e.set_selected(true);
+                    e.set_permanent_selected(true);
                 }
             });
         }
@@ -38,11 +38,11 @@ fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> J
         .and_then(|s| s.curr_entry_mut())
     {
         if options.reverse {
-            entry.set_selected(false);
+            entry.set_permanent_selected(false);
         } else if options.toggle {
-            entry.set_selected(!entry.is_selected());
+            entry.set_permanent_selected(!entry.is_selected());
         } else {
-            entry.set_selected(true);
+            entry.set_permanent_selected(true);
         }
         cursor_move::down(context, 1)?;
     }
@@ -64,11 +64,11 @@ fn select_with_pattern(
             .for_each(|e| {
                 found += 1;
                 if options.reverse {
-                    e.set_selected(false);
+                    e.set_permanent_selected(false);
                 } else if options.toggle {
-                    e.set_selected(!e.is_selected());
+                    e.set_permanent_selected(!e.is_selected());
                 } else {
-                    e.set_selected(true);
+                    e.set_permanent_selected(true);
                 }
             });
         context

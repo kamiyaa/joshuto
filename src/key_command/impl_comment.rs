@@ -7,7 +7,10 @@ impl CommandComment for Command {
     // These comments are displayed at the help page
     fn comment(&self) -> &'static str {
         match self {
+            Self::Escape => "Escape from visual mode (cancel)",
             Self::BulkRename => "Bulk rename",
+
+            Self::ToggleVisualMode => "Toggle visual mode",
 
             Self::ChangeDirectory(_) => "Change directory",
             Self::ParentDirectory => "CD to parent directory",

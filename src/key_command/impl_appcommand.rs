@@ -8,6 +8,9 @@ impl AppCommand for Command {
 
             Self::Quit(_) => CMD_QUIT,
 
+            Self::ToggleVisualMode => CMD_TOGGLE_VISUAL,
+            Self::Escape => CMD_ESCAPE,
+
             Self::BulkRename => CMD_BULK_RENAME,
 
             Self::ChangeDirectory(_) => CMD_CHANGE_DIRECTORY,
