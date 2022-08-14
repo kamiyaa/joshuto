@@ -14,6 +14,7 @@ pub const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
 }
 
+/// Display options globally valid for Joshuto (for all tabs)
 #[derive(Clone, Debug)]
 pub struct DisplayOption {
     pub _mode: DisplayMode,
@@ -23,12 +24,18 @@ pub struct DisplayOption {
     pub _show_borders: bool,
     pub _show_hidden: bool,
     pub _show_icons: bool,
-    pub _sort_options: SortOption,
     pub _tilde_in_titlebar: bool,
     pub _line_nums: LineNumberStyle,
     pub column_ratio: (usize, usize, usize),
     pub default_layout: [Constraint; 3],
     pub no_preview_layout: [Constraint; 3],
+    pub default_tab_display_option: TabDisplayOption,
+}
+
+/// Display options valid per JoshutoTab
+#[derive(Clone, Debug)]
+pub struct TabDisplayOption {
+    pub _sort_options: SortOption,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -36,6 +43,16 @@ pub enum LineNumberStyle {
     None,
     Relative,
     Absolute,
+}
+
+impl TabDisplayOption {
+    pub fn sort_options_ref(&self) -> &SortOption {
+        &self._sort_options
+    }
+
+    pub fn sort_options_mut(&mut self) -> &mut SortOption {
+        &mut self._sort_options
+    }
 }
 
 impl DisplayOption {
@@ -69,14 +86,6 @@ impl DisplayOption {
 
     pub fn set_show_hidden(&mut self, show_hidden: bool) {
         self._show_hidden = show_hidden;
-    }
-
-    pub fn sort_options_ref(&self) -> &SortOption {
-        &self._sort_options
-    }
-
-    pub fn sort_options_mut(&mut self) -> &mut SortOption {
-        &mut self._sort_options
     }
 
     pub fn tilde_in_titlebar(&self) -> bool {
@@ -125,11 +134,13 @@ impl std::default::Default for DisplayOption {
             _show_borders: true,
             _show_hidden: false,
             _show_icons: false,
-            _sort_options: SortOption::default(),
             _tilde_in_titlebar: true,
             _line_nums: LineNumberStyle::None,
             default_layout,
             no_preview_layout,
+            default_tab_display_option: TabDisplayOption {
+                _sort_options: SortOption::default(),
+            },
         }
     }
 }

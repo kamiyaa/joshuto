@@ -6,23 +6,20 @@ use crate::history::DirectoryHistory;
 use super::reload;
 
 pub fn set_sort(context: &mut AppContext, method: SortType) -> JoshutoResult {
-    context
-        .config_mut()
+    let curr_tab = context.tab_context_mut().curr_tab_mut();
+    curr_tab
+        .option_mut()
         .sort_options_mut()
         .set_sort_method(method);
-    for tab in context.tab_context_mut().iter_mut() {
-        tab.history_mut().depreciate_all_entries();
-    }
+    curr_tab.history_mut().depreciate_all_entries();
     refresh(context)
 }
 
 pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult {
-    let reversed = !context.config_ref().sort_options_ref().reverse;
-    context.config_mut().sort_options_mut().reverse = reversed;
-
-    for tab in context.tab_context_mut().iter_mut() {
-        tab.history_mut().depreciate_all_entries();
-    }
+    let curr_tab = context.tab_context_mut().curr_tab_mut();
+    let reversed = !curr_tab.option_mut().sort_options_ref().reverse;
+    curr_tab.option_mut().sort_options_mut().reverse = reversed;
+    curr_tab.history_mut().depreciate_all_entries();
     refresh(context)
 }
 

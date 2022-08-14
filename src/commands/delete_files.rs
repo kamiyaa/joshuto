@@ -77,10 +77,13 @@ fn _delete_selected_files(
 ) -> std::io::Result<()> {
     delete_files(context, backend, false)?;
 
+    let curr_tab = context.tab_context_ref().curr_tab_ref();
     let options = context.config_ref().display_options_ref().clone();
-    let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+    let curr_path = curr_tab.cwd().to_path_buf();
+    let tab_option = curr_tab.option_ref().clone();
     for tab in context.tab_context_mut().iter_mut() {
-        tab.history_mut().reload(&curr_path, &options)?;
+        tab.history_mut()
+            .reload(&curr_path, &options, &tab_option)?;
     }
     Ok(())
 }
@@ -96,10 +99,13 @@ fn _delete_selected_files_background(
 ) -> std::io::Result<()> {
     delete_files(context, backend, true)?;
 
+    let curr_tab = context.tab_context_ref().curr_tab_ref();
     let options = context.config_ref().display_options_ref().clone();
-    let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+    let curr_path = curr_tab.cwd().to_path_buf();
+    let tab_option = curr_tab.option_ref().clone();
     for tab in context.tab_context_mut().iter_mut() {
-        tab.history_mut().reload(&curr_path, &options)?;
+        tab.history_mut()
+            .reload(&curr_path, &options, &tab_option)?;
     }
     Ok(())
 }

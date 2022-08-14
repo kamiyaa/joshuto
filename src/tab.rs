@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::config::option::DisplayOption;
+use crate::config::option::{DisplayOption, TabDisplayOption};
 use crate::context::UiContext;
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
@@ -17,6 +17,7 @@ pub struct JoshutoTab {
     _cwd: path::PathBuf,
     // history is just a HashMap, so we have this property to store last workdir
     _previous_dir: Option<path::PathBuf>,
+    options: TabDisplayOption,
 }
 
 impl JoshutoTab {
@@ -26,13 +27,25 @@ impl JoshutoTab {
         options: &DisplayOption,
     ) -> std::io::Result<Self> {
         let mut history = JoshutoHistory::new();
-        history.populate_to_root(cwd.as_path(), ui_context, options)?;
+        let tab_options = options.default_tab_display_option.clone();
 
-        Ok(Self {
+        history.populate_to_root(cwd.as_path(), ui_context, options, &tab_options)?;
+        let new_tab = Self {
             history,
             _cwd: cwd,
             _previous_dir: None,
-        })
+            options: tab_options,
+        };
+
+        Ok(new_tab)
+    }
+
+    pub fn option_ref(&self) -> &TabDisplayOption {
+        &self.options
+    }
+
+    pub fn option_mut(&mut self) -> &mut TabDisplayOption {
+        &mut self.options
     }
 
     pub fn cwd(&self) -> &path::Path {

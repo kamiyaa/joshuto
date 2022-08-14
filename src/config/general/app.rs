@@ -1,7 +1,7 @@
 use super::app_raw::AppConfigRaw;
 use super::DEFAULT_CONFIG_FILE_PATH;
 
-use crate::config::option::{DisplayOption, PreviewOption, SortOption, TabOption};
+use crate::config::option::{DisplayOption, PreviewOption, TabOption};
 use crate::error::JoshutoResult;
 
 #[derive(Debug, Clone)]
@@ -33,13 +33,6 @@ impl AppConfig {
     }
     pub fn _preview_options_mut(&mut self) -> &mut PreviewOption {
         &mut self._preview_options
-    }
-
-    pub fn sort_options_ref(&self) -> &SortOption {
-        self.display_options_ref().sort_options_ref()
-    }
-    pub fn sort_options_mut(&mut self) -> &mut SortOption {
-        self.display_options_mut().sort_options_mut()
     }
 
     pub fn tab_options_ref(&self) -> &TabOption {

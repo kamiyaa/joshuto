@@ -20,17 +20,22 @@ pub fn _rename_file(
     }
     std::fs::rename(&src, &dest)?;
 
-    let path = context
-        .tab_context_ref()
-        .curr_tab_ref()
+    let curr_tab = context.tab_context_ref().curr_tab_ref();
+
+    let path = curr_tab
         .curr_list_ref()
         .map(|lst| lst.file_path().to_path_buf());
 
     if let Some(path) = path {
         let options = context.config_ref().display_options_ref().clone();
-
+        let tab_options = context
+            .tab_context_ref()
+            .curr_tab_ref()
+            .option_ref()
+            .clone();
         let history = context.tab_context_mut().curr_tab_mut().history_mut();
-        let new_dirlist = create_dirlist_with_history(history, path.as_path(), &options)?;
+        let new_dirlist =
+            create_dirlist_with_history(history, path.as_path(), &options, &tab_options)?;
         history.insert(path, new_dirlist);
     }
     Ok(())
