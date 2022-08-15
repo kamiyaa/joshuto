@@ -74,14 +74,22 @@ impl JoshutoDirList {
     fn update_visual_mode_selection(&mut self) {
         //! To be invoked any time the cursor index, the visual mode anchor index,
         //! or the shown sub-set of entries changes.
-        if let Some(vmix) = self.visual_mode_anchor_index && let Some(cix) = self.index {
-            self.iter_mut().enumerate().for_each(|(i, entry)| {
-                entry.set_visual_mode_selected(
-                    (if vmix > cix {cix..vmix+1} else {vmix..cix+1}).contains(&i)
-                )
-            })
+        if let Some(vmix) = self.visual_mode_anchor_index {
+            if let Some(cix) = self.index {
+                self.iter_mut().enumerate().for_each(|(i, entry)| {
+                    entry.set_visual_mode_selected(
+                        (if vmix > cix {
+                            cix..vmix + 1
+                        } else {
+                            vmix..cix + 1
+                        })
+                        .contains(&i),
+                    )
+                })
+            }
         } else {
-            self.iter_mut().for_each(|entry| {entry.set_visual_mode_selected(false)})
+            self.iter_mut()
+                .for_each(|entry| entry.set_visual_mode_selected(false))
         }
     }
 
