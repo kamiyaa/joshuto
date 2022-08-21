@@ -216,16 +216,17 @@ pub fn create_dirlist_with_history(
     };
     let visual_mode_anchor_index = match history.get(path) {
         None => None,
-        Some(dirlist) => match dirlist.get_visual_mode_anchor_index() {
-            None => None,
-            Some(old_visual_mode_anchor_index) => {
-                Some(if old_visual_mode_anchor_index < contents_len {
-                    old_visual_mode_anchor_index
-                } else {
-                    contents_len - 1
+        Some(dirlist) => {
+            dirlist
+                .get_visual_mode_anchor_index()
+                .map(|old_visual_mode_anchor_index| {
+                    if old_visual_mode_anchor_index < contents_len {
+                        old_visual_mode_anchor_index
+                    } else {
+                        contents_len - 1
+                    }
                 })
-            }
-        },
+        }
     };
 
     let metadata = JoshutoMetadata::from(path)?;

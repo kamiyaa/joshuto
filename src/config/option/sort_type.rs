@@ -8,7 +8,7 @@ use serde_derive::Deserialize;
 use crate::config::option::SortOption;
 use crate::fs::JoshutoDirEntry;
 
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
 pub enum SortType {
     Lexical,
     Mtime,

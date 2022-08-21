@@ -1,6 +1,6 @@
 use std::{fs, io, path, time};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FileType {
     Directory,
     File,
