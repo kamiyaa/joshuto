@@ -18,7 +18,7 @@ pub mod search;
 pub mod search_fzf;
 pub mod search_glob;
 pub mod search_string;
-pub mod selection;
+pub mod select;
 pub mod set_mode;
 pub mod show_help;
 pub mod show_hidden;

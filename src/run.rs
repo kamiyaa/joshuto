@@ -15,7 +15,7 @@ use crate::ui::views::TuiView;
 use termion::event::{Event, Key};
 use tui::layout::Rect;
 
-pub fn run(
+pub fn run_loop(
     backend: &mut ui::AppBackend,
     context: &mut AppContext,
     keymap_t: AppKeyMapping,

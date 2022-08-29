@@ -27,7 +27,6 @@ use crate::config::{
 };
 use crate::context::AppContext;
 use crate::error::JoshutoError;
-use crate::run::run;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_HOME: &str = "JOSHUTO_CONFIG_HOME";
@@ -88,7 +87,7 @@ pub struct Args {
     rest: Vec<String>,
 }
 
-fn run_joshuto(args: Args) -> Result<i32, JoshutoError> {
+fn run_main(args: Args) -> Result<i32, JoshutoError> {
     if args.version {
         let version = env!("CARGO_PKG_VERSION");
         println!("{}-{}", PROGRAM_NAME, version);
@@ -102,13 +101,20 @@ fn run_joshuto(args: Args) -> Result<i32, JoshutoError> {
         }
     }
 
+    // make sure all configs have been loaded before starting
     let config = AppConfig::get_config(CONFIG_FILE);
     let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
+    lazy_static::initialize(&THEME_T);
+    lazy_static::initialize(&MIMETYPE_T);
+    lazy_static::initialize(&PREVIEW_T);
+    lazy_static::initialize(&HOME_DIR);
+    lazy_static::initialize(&USERNAME);
+    lazy_static::initialize(&HOSTNAME);
 
     let mut context = AppContext::new(config, args.clone());
     {
         let mut backend: ui::AppBackend = ui::AppBackend::new()?;
-        run(&mut backend, &mut context, keymap)?;
+        run::run_loop(&mut backend, &mut context, keymap)?;
     }
     run_quit(&args, &context)?;
     Ok(context.quit.exit_code())
@@ -169,7 +175,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
 fn main() {
     let args = Args::from_args();
 
-    match run_joshuto(args) {
+    match run_main(args) {
         Ok(exit_code) => process::exit(exit_code),
         Err(e) => {
             eprintln!("{}", e);

@@ -92,7 +92,7 @@ fn vec_to_map(vec: &[CommandKeymap]) -> HashMap<Event, CommandKeybind> {
                     },
                 }
             }
-            Err(e) => eprintln!("{}", e),
+            Err(e) => eprintln!("Keymap error: {}", e),
         }
     }
     hashmap

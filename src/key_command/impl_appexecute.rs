@@ -88,7 +88,7 @@ impl AppExecute for Command {
             Self::SearchPrev => search::search_prev(context),
 
             Self::SelectFiles(pattern, options) => {
-                selection::select_files(context, pattern.as_str(), options)
+                select::select_files(context, pattern.as_str(), options)
             }
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShowTasks => show_tasks::show_tasks(context, backend, keymap_t),
