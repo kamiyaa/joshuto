@@ -79,7 +79,14 @@ pub fn flatten(depth: usize, context: &mut AppContext) -> JoshutoResult {
     contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
     let metadata = JoshutoMetadata::from(path.as_path())?;
-    let dirlist = JoshutoDirList::new(path.clone(), contents, index, viewport_index, metadata);
+    let dirlist = JoshutoDirList::new(
+        path.clone(),
+        contents,
+        index,
+        viewport_index,
+        None,
+        metadata,
+    );
     history.insert(path, dirlist);
 
     Ok(())

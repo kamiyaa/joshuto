@@ -15,6 +15,8 @@ pub struct JoshutoDirList {
     index: Option<usize>,
     /// The index in this dir list to start with when rendering the list
     viewport_index: usize,
+    /// The index in this dir list where visual mode has started or None if not in visual mode
+    visual_mode_anchor_index: Option<usize>,
     _need_update: bool,
 }
 
@@ -24,6 +26,7 @@ impl JoshutoDirList {
         contents: Vec<JoshutoDirEntry>,
         index: Option<usize>,
         viewport_index: usize,
+        visual_mode_anchor_index: Option<usize>,
         metadata: JoshutoMetadata,
     ) -> Self {
         Self {
@@ -32,6 +35,7 @@ impl JoshutoDirList {
             metadata,
             index,
             viewport_index,
+            visual_mode_anchor_index,
             _need_update: false,
         }
     }
@@ -55,11 +59,68 @@ impl JoshutoDirList {
             _need_update: false,
             index,
             viewport_index: if let Some(ix) = index { ix } else { 0 },
+            visual_mode_anchor_index: None,
         })
     }
 
     pub fn get_index(&self) -> Option<usize> {
         self.index
+    }
+
+    pub fn get_visual_mode_anchor_index(&self) -> Option<usize> {
+        self.visual_mode_anchor_index
+    }
+
+    fn update_visual_mode_selection(&mut self) {
+        //! To be invoked any time the cursor index, the visual mode anchor index,
+        //! or the shown sub-set of entries changes.
+        if let Some(vmix) = self.visual_mode_anchor_index {
+            if let Some(cix) = self.index {
+                self.iter_mut().enumerate().for_each(|(i, entry)| {
+                    entry.set_visual_mode_selected(
+                        (if vmix > cix {
+                            cix..vmix + 1
+                        } else {
+                            vmix..cix + 1
+                        })
+                        .contains(&i),
+                    )
+                })
+            }
+        } else {
+            self.iter_mut()
+                .for_each(|entry| entry.set_visual_mode_selected(false))
+        }
+    }
+
+    fn visual_mode_enable(&mut self) {
+        if let Some(ix) = self.index {
+            self.visual_mode_anchor_index = Some(ix)
+        };
+        self.update_visual_mode_selection();
+    }
+
+    fn visual_mode_disable(&mut self) {
+        self.visual_mode_anchor_index = None;
+        self.iter_mut().for_each(|entry| {
+            if entry.is_visual_mode_selected() {
+                entry.set_permanent_selected(true)
+            }
+        });
+        self.update_visual_mode_selection();
+    }
+
+    pub fn visual_mode_cancel(&mut self) {
+        self.visual_mode_anchor_index = None;
+        self.update_visual_mode_selection();
+    }
+
+    pub fn toggle_visual_mode(&mut self) {
+        if self.get_visual_mode_anchor_index().is_none() {
+            self.visual_mode_enable()
+        } else {
+            self.visual_mode_disable()
+        }
     }
 
     fn update_viewport(&mut self, ui_context: &UiContext, options: &DisplayOption) {
@@ -106,6 +167,7 @@ impl JoshutoDirList {
         if !ui_context.layout.is_empty() {
             self.update_viewport(ui_context, options);
         }
+        self.update_visual_mode_selection();
     }
 
     pub fn iter(&self) -> Iter<JoshutoDirEntry> {
