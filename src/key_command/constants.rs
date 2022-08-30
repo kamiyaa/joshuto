@@ -69,6 +69,7 @@ cmd_constants![
     (CMD_TAB_SWITCH, "tab_switch"),
     (CMD_TAB_SWITCH_INDEX, "tab_switch_index"),
     (CMD_TOGGLE_HIDDEN, "toggle_hidden"),
+    (CMD_TOGGLE_VISUAL, "toggle_visual"),
     (CMD_SWITCH_LINE_NUMBERS, "line_nums"),
     (CMD_TOUCH_FILE, "touch"),
     (CMD_HELP, "help"),
@@ -77,6 +78,7 @@ cmd_constants![
     (CMD_ZOXIDE, "z"),
     (CMD_ZOXIDE_INTERACTIVE, "zi"),
     (CMD_FLAT, "flat"),
+    (CMD_ESCAPE, "escape"),
 ];
 
 pub fn complete_command(partial_command: &str) -> Vec<Pair> {

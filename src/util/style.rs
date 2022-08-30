@@ -10,7 +10,12 @@ pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
     let filetype = &metadata.file_type();
     let linktype = &metadata.link_type();
 
-    if entry.is_selected() {
+    if entry.is_visual_mode_selected() {
+        Style::default()
+            .fg(THEME_T.visual_mode_selection.fg)
+            .bg(THEME_T.visual_mode_selection.bg)
+            .add_modifier(THEME_T.visual_mode_selection.modifier)
+    } else if entry.is_permanent_selected() {
         Style::default()
             .fg(THEME_T.selection.fg)
             .bg(THEME_T.selection.bg)

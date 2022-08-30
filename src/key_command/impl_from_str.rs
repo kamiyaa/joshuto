@@ -34,6 +34,10 @@ impl std::str::FromStr for Command {
             None => (s, ""),
         };
 
+        simple_command_conversion_case!(command, CMD_ESCAPE, Self::Escape);
+
+        simple_command_conversion_case!(command, CMD_TOGGLE_VISUAL, Self::ToggleVisualMode);
+
         simple_command_conversion_case!(command, CMD_NEW_TAB, Self::NewTab);
         simple_command_conversion_case!(command, CMD_CLOSE_TAB, Self::CloseTab);
 

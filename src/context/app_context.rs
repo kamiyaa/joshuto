@@ -17,7 +17,7 @@ use crate::Args;
 use notify::{RecursiveMode, Watcher};
 use std::path;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UiContext {
     pub layout: Vec<Rect>,
 }

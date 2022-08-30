@@ -26,6 +26,7 @@ impl<'a> Widget for TuiFooter<'a> {
             Some(i) if i < self.dirlist.len() => {
                 let entry = &self.dirlist.contents[i];
 
+                let visual_mode_style = Style::default().fg(Color::Black).bg(Color::LightRed);
                 let mode_style = Style::default().fg(Color::Cyan);
                 let mode_str = unix::mode_to_string(entry.metadata.permissions_ref().mode());
 
@@ -33,6 +34,19 @@ impl<'a> Widget for TuiFooter<'a> {
                 let size_str = format::file_size_to_string(entry.metadata.len());
 
                 let mut text = vec![
+                    Span::styled(
+                        if self.dirlist.get_visual_mode_anchor_index().is_none() {
+                            ""
+                        } else {
+                            "VIS"
+                        },
+                        visual_mode_style,
+                    ),
+                    Span::raw(if self.dirlist.get_visual_mode_anchor_index().is_none() {
+                        ""
+                    } else {
+                        " "
+                    }),
                     Span::styled(mode_str, mode_style),
                     Span::raw("  "),
                     Span::raw(format!("{}/{}", i + 1, self.dirlist.len())),

@@ -1,6 +1,7 @@
 [default_view]
 
 keymap = [
+	{ keys = [ "escape" ],		command = "escape" },
 	{ keys = [ "T" ],		command = "new_tab" },
 	{ keys = [ "ctrl+t" ],		command = "new_tab" },
 	{ keys = [ "W" ],		command = "close_tab" },
@@ -71,6 +72,7 @@ keymap = [
 
 	{ keys = [ " " ],		command = "select --toggle=true" },
 	{ keys = [ "t" ],		command = "select --all=true --toggle=true" },
+    { keys = [ "V" ],       command = "toggle_visual"},
 
 	{ keys = [ "w" ],		command = "show_tasks --exit-key=w" },
 	{ keys = [ "b", "b" ],		command = "bulk_rename" },

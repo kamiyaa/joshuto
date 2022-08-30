@@ -13,7 +13,10 @@ impl AppExecute for Command {
         backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
     ) -> JoshutoResult {
-        match &*self {
+        match self {
+            Self::Escape => escape::escape(context),
+            Self::ToggleVisualMode => uimodes::toggle_visual_mode(context),
+
             Self::BulkRename => bulk_rename::bulk_rename(context, backend),
 
             Self::ChangeDirectory(p) => {

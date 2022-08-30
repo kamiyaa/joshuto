@@ -7,6 +7,8 @@ use crate::io::FileOperationOptions;
 #[derive(Clone, Debug)]
 #[allow(clippy::enum_variant_names)]
 pub enum Command {
+    Escape,
+    ToggleVisualMode,
     BulkRename,
 
     ChangeDirectory(path::PathBuf),
