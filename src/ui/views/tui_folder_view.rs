@@ -33,6 +33,7 @@ impl<'a> Widget for TuiFolderView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let preview_context = self.context.preview_context_ref();
         let curr_tab = self.context.tab_context_ref().curr_tab_ref();
+        let curr_tab_id = self.context.tab_context_ref().curr_tab_id();
 
         let curr_list = curr_tab.curr_list_ref();
         let child_list = curr_tab.child_list_ref();
@@ -180,13 +181,9 @@ impl<'a> Widget for TuiFolderView<'a> {
                 width: TAB_VIEW_WIDTH,
                 height: 1,
             };
-            let name = if let Some(ostr) = curr_tab.cwd().file_name() {
-                ostr.to_str().unwrap_or("")
-            } else {
-                ""
-            };
+            let name = curr_tab_id.to_string();
             TuiTabBar::new(
-                name,
+                &name[..5],
                 self.context.tab_context_ref().index,
                 self.context.tab_context_ref().len(),
             )

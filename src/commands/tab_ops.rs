@@ -1,5 +1,7 @@
 use std::path;
 
+use uuid::Uuid;
+
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
@@ -37,6 +39,7 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
         .curr_tab_ref()
         .option_ref()
         .clone();
+
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
     if history
         .create_or_soft_update(cwd.as_path(), &options, &tab_options)
@@ -103,13 +106,13 @@ pub fn new_tab_home_path(context: &AppContext) -> path::PathBuf {
 
 pub fn new_tab(context: &mut AppContext) -> JoshutoResult {
     let new_tab_path = new_tab_home_path(context);
-
+    let id = Uuid::new_v4();
     let tab = JoshutoTab::new(
         new_tab_path,
         context.ui_context_ref(),
         context.config_ref().display_options_ref(),
     )?;
-    context.tab_context_mut().push_tab(tab);
+    context.tab_context_mut().insert_tab(id, tab);
     let new_index = context.tab_context_ref().len() - 1;
     context.tab_context_mut().index = new_index;
     _tab_switch(new_index, context)?;
@@ -120,9 +123,10 @@ pub fn close_tab(context: &mut AppContext) -> JoshutoResult {
     if context.tab_context_ref().len() <= 1 {
         return quit_with_action(context, QuitAction::Noop);
     }
+    let curr_tab_id = context.tab_context_ref().curr_tab_id();
     let mut tab_index = context.tab_context_ref().index;
 
-    let _ = context.tab_context_mut().pop_tab(tab_index);
+    let _ = context.tab_context_mut().remove_tab(&curr_tab_id);
     let num_tabs = context.tab_context_ref().len();
     if tab_index >= num_tabs {
         tab_index = num_tabs - 1;

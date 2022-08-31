@@ -11,7 +11,7 @@ pub fn _toggle_hidden(context: &mut AppContext) {
         .display_options_mut()
         .set_show_hidden(opposite);
 
-    for tab in context.tab_context_mut().iter_mut() {
+    for (_, tab) in context.tab_context_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
         if let Some(s) = tab.curr_list_mut() {
             s.depreciate();
@@ -21,5 +21,6 @@ pub fn _toggle_hidden(context: &mut AppContext) {
 
 pub fn toggle_hidden(context: &mut AppContext) -> JoshutoResult {
     _toggle_hidden(context);
-    reload::reload_dirlist(context)
+    reload::soft_reload_curr_tab(context)?;
+    Ok(())
 }

@@ -127,6 +127,6 @@ pub fn bulk_rename(context: &mut AppContext, backend: &mut AppBackend) -> Joshut
     backend.terminal_drop();
     let res = _bulk_rename(context);
     backend.terminal_restore()?;
-    reload::reload(context, context.tab_context_ref().index)?;
+    reload::soft_reload_curr_tab(context)?;
     res
 }

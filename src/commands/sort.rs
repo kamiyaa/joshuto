@@ -24,6 +24,6 @@ pub fn toggle_reverse(context: &mut AppContext) -> JoshutoResult {
 }
 
 fn refresh(context: &mut AppContext) -> JoshutoResult {
-    reload::soft_reload(context.tab_context_ref().index, context)?;
+    reload::soft_reload_curr_tab(context)?;
     Ok(())
 }

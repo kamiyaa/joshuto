@@ -1,50 +1,59 @@
-use std::slice::IterMut;
+use std::collections::hash_map::IterMut;
+use std::collections::HashMap;
+
+use uuid::Uuid;
 
 use crate::tab::JoshutoTab;
 
 #[derive(Default)]
 pub struct TabContext {
     pub index: usize,
-    tabs: Vec<JoshutoTab>,
+    pub tab_order: Vec<Uuid>,
+    tabs: HashMap<Uuid, JoshutoTab>,
 }
 
 impl TabContext {
     pub fn new() -> Self {
         Self::default()
     }
-
     pub fn len(&self) -> usize {
-        self.tabs.len()
+        self.tab_order.len()
     }
 
-    pub fn tab_ref(&self, i: usize) -> Option<&JoshutoTab> {
-        if i >= self.tabs.len() {
-            return None;
-        }
-        Some(&self.tabs[i])
+    pub fn tab_ref(&self, id: &Uuid) -> Option<&JoshutoTab> {
+        self.tabs.get(id)
     }
-    pub fn tab_mut(&mut self, i: usize) -> Option<&mut JoshutoTab> {
-        if i >= self.tabs.len() {
-            return None;
-        }
-        Some(&mut self.tabs[i])
+    pub fn tab_mut(&mut self, id: &Uuid) -> Option<&mut JoshutoTab> {
+        self.tabs.get_mut(id)
     }
 
+    pub fn curr_tab_id(&self) -> Uuid {
+        self.tab_order[self.index]
+    }
     pub fn curr_tab_ref(&self) -> &JoshutoTab {
-        &self.tabs[self.index]
+        let id = &self.tab_order[self.index];
+        self.tabs.get(id).unwrap()
     }
     pub fn curr_tab_mut(&mut self) -> &mut JoshutoTab {
-        &mut self.tabs[self.index]
+        let id = &self.tab_order[self.index];
+        self.tabs.get_mut(id).unwrap()
     }
-    pub fn push_tab(&mut self, tab: JoshutoTab) {
-        self.tabs.push(tab);
-        self.index = self.tabs.len() - 1;
+    pub fn insert_tab(&mut self, id: Uuid, tab: JoshutoTab) {
+        self.tabs.insert(id, tab);
+        self.tab_order.push(id);
     }
-    pub fn pop_tab(&mut self, index: usize) -> JoshutoTab {
-        self.tabs.remove(index)
+    pub fn remove_tab(&mut self, id: &Uuid) -> Option<JoshutoTab> {
+        let tab = self.tabs.remove(id);
+        for i in 0..self.tab_order.len() {
+            if self.tab_order[i] == *id {
+                self.tab_order.remove(i);
+                break;
+            }
+        }
+        tab
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<JoshutoTab> {
+    pub fn iter_mut(&mut self) -> IterMut<Uuid, JoshutoTab> {
         self.tabs.iter_mut()
     }
 }

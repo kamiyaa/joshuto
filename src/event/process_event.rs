@@ -70,7 +70,7 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
 }
 
 fn process_filesystem_event(_event: notify::Event, context: &mut AppContext) {
-    let _ = reload::soft_reload(context.tab_context_ref().index, context);
+    let _ = reload::soft_reload_curr_tab(context);
 }
 
 pub fn process_new_worker(context: &mut AppContext) {
@@ -92,28 +92,23 @@ pub fn process_finished_worker(
     let worker_context = context.worker_context_mut();
     let observer = worker_context.remove_worker().unwrap();
     let options = context.config_ref().display_options_ref().clone();
-    let tab_options = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .option_ref()
-        .clone();
-    for tab in context.tab_context_mut().iter_mut() {
-        let _ = tab
-            .history_mut()
-            .reload(observer.dest_path(), &options, &tab_options);
-        let _ = tab
-            .history_mut()
-            .reload(observer.src_path(), &options, &tab_options);
-    }
-
-    /* delete
-    // remove directory previews
-    for tab in context.tab_context_mut().iter_mut() {
-        for p in &paths {
-            tab.history_mut().remove(p.as_path());
+    for (_, tab) in context.tab_context_mut().iter_mut() {
+        let tab_options = tab.option_ref().clone();
+        if observer.dest_path().exists() {
+            let _ = tab
+                .history_mut()
+                .reload(observer.dest_path(), &options, &tab_options);
+        } else {
+            tab.history_mut().remove(observer.dest_path());
+        }
+        if observer.src_path().exists() {
+            let _ = tab
+                .history_mut()
+                .reload(observer.src_path(), &options, &tab_options);
+        } else {
+            tab.history_mut().remove(observer.src_path());
         }
     }
-    */
 
     observer.join();
     match res {

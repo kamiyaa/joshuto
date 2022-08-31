@@ -75,7 +75,6 @@ pub fn flatten(depth: usize, context: &mut AppContext) -> JoshutoResult {
     }
 
     let sort_options = tab_options.sort_options_ref();
-
     contents.sort_by(|f1, f2| sort_options.compare(f1, f2));
 
     let metadata = JoshutoMetadata::from(path.as_path())?;

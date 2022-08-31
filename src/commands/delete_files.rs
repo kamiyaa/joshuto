@@ -80,10 +80,10 @@ fn _delete_selected_files(
     let curr_tab = context.tab_context_ref().curr_tab_ref();
     let options = context.config_ref().display_options_ref().clone();
     let curr_path = curr_tab.cwd().to_path_buf();
-    let tab_option = curr_tab.option_ref().clone();
-    for tab in context.tab_context_mut().iter_mut() {
+    for (_, tab) in context.tab_context_mut().iter_mut() {
+        let tab_options = tab.option_ref().clone();
         tab.history_mut()
-            .reload(&curr_path, &options, &tab_option)?;
+            .reload(&curr_path, &options, &tab_options)?;
     }
     Ok(())
 }
@@ -102,10 +102,10 @@ fn _delete_selected_files_background(
     let curr_tab = context.tab_context_ref().curr_tab_ref();
     let options = context.config_ref().display_options_ref().clone();
     let curr_path = curr_tab.cwd().to_path_buf();
-    let tab_option = curr_tab.option_ref().clone();
-    for tab in context.tab_context_mut().iter_mut() {
+    for (_, tab) in context.tab_context_mut().iter_mut() {
+        let tab_options = tab.option_ref().clone();
         tab.history_mut()
-            .reload(&curr_path, &options, &tab_option)?;
+            .reload(&curr_path, &options, &tab_options)?;
     }
     Ok(())
 }

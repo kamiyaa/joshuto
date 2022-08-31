@@ -12,6 +12,8 @@ use crate::ui;
 use crate::ui::views;
 use crate::ui::views::TuiView;
 
+use uuid::Uuid;
+
 use termion::event::{Event, Key};
 use tui::layout::Rect;
 
@@ -28,13 +30,14 @@ pub fn run_loop(
     }
 
     {
+        let id = Uuid::new_v4();
         // Initialize an initial tab
         let tab = JoshutoTab::new(
             curr_path,
             context.ui_context_ref(),
             context.config_ref().display_options_ref(),
         )?;
-        context.tab_context_mut().push_tab(tab);
+        context.tab_context_mut().insert_tab(id, tab);
 
         // trigger a preview of child
         preview_default::load_preview(context);

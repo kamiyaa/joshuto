@@ -26,7 +26,6 @@ impl<'a> TuiHSplitView<'a> {
 impl<'a> Widget for TuiHSplitView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let tab_context = self.context.tab_context_ref();
-        let tab_index = tab_context.index;
 
         let config = self.context.config_ref();
         let display_options = config.display_options_ref();
@@ -66,7 +65,9 @@ impl<'a> Widget for TuiHSplitView<'a> {
             calculate_layout(area, constraints)
         };
 
-        if let Some(curr_tab) = tab_context.tab_ref(tab_index) {
+        let tab_id = tab_context.curr_tab_id();
+        let tab_index = tab_context.index;
+        if let Some(curr_tab) = tab_context.tab_ref(&tab_id) {
             let curr_list = curr_tab.curr_list_ref();
 
             let layout_rect = if tab_index % 2 == 0 {
@@ -143,7 +144,8 @@ impl<'a> Widget for TuiHSplitView<'a> {
             tab_index - 1
         };
 
-        if let Some(curr_tab) = tab_context.tab_ref(other_tab_index) {
+        let other_tab_id = tab_context.tab_order[other_tab_index];
+        if let Some(curr_tab) = tab_context.tab_ref(&other_tab_id) {
             let curr_list = curr_tab.curr_list_ref();
 
             let layout_rect = if other_tab_index % 2 == 0 {

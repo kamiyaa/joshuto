@@ -41,6 +41,14 @@ whoami = "^1"
 xdg = "^2"
 walkdir = "^2"
 
+[dependencies.uuid]
+version = "^1"
+features = [
+  "v4",
+  "fast-rng",
+  "macro-diagnostics",
+]
+
 [features]
 devicons = [ "phf" ]
 file_mimetype = []
