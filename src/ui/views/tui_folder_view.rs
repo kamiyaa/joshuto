@@ -6,10 +6,11 @@ use tui::text::Span;
 use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::context::AppContext;
+use crate::preview::preview_default::PreviewState;
 use crate::ui;
 use crate::ui::widgets::{
-    TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiFooter, TuiTabBar,
-    TuiTopBar,
+    TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiFooter, TuiMessage,
+    TuiTabBar, TuiTopBar,
 };
 use crate::ui::PreviewArea;
 
@@ -34,6 +35,7 @@ impl<'a> Widget for TuiFolderView<'a> {
         let preview_context = self.context.preview_context_ref();
         let curr_tab = self.context.tab_context_ref().curr_tab_ref();
         let curr_tab_id = self.context.tab_context_ref().curr_tab_id();
+        let curr_tab_cwd = curr_tab.cwd();
 
         let curr_list = curr_tab.curr_list_ref();
         let child_list = curr_tab.child_list_ref();
@@ -139,27 +141,50 @@ impl<'a> Widget for TuiFolderView<'a> {
                     TuiFooter::new(list).render(rect, buf);
                 }
             }
+        } else {
+            match curr_tab.history_metadata_ref().get(curr_tab_cwd) {
+                Some(PreviewState::Loading) => {
+                    TuiDirListLoading::new().render(layout_rect[1], buf);
+                }
+                Some(PreviewState::Error { message }) => {
+                    TuiMessage::new(&message, Style::default().fg(Color::Red))
+                        .render(layout_rect[1], buf);
+                }
+                None => {}
+            }
         }
 
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(list, true).render(layout_rect[2], buf);
-        } else if curr_entry.is_some() {
-            let preview_area = calculate_preview(self.context, layout_rect[2]);
-            if let Some(preview_area) = preview_area {
-                let area = Rect {
-                    x: preview_area.preview_area.x,
-                    y: preview_area.preview_area.y,
-                    width: preview_area.preview_area.width,
-                    height: preview_area.preview_area.height,
-                };
-                if let Some(Some(preview)) =
-                    preview_context.get_preview_ref(&preview_area.file_preview_path)
-                {
-                    TuiFilePreview::new(preview).render(area, buf);
+        } else if let Some(entry) = curr_entry {
+            match curr_tab.history_metadata_ref().get(entry.file_path()) {
+                Some(PreviewState::Loading) => {
+                    TuiDirListLoading::new().render(layout_rect[2], buf);
+                }
+                Some(PreviewState::Error { message }) => {
+                    TuiMessage::new(&message, Style::default().fg(Color::Red))
+                        .render(layout_rect[2], buf);
+                }
+                None => {
+                    let preview_area = calculate_preview(self.context, layout_rect[2]);
+                    if let Some(preview_area) = preview_area {
+                        let area = Rect {
+                            x: preview_area.preview_area.x,
+                            y: preview_area.preview_area.y,
+                            width: preview_area.preview_area.width,
+                            height: preview_area.preview_area.height,
+                        };
+                        if let Some(Some(preview)) =
+                            preview_context.get_preview_ref(&preview_area.file_preview_path)
+                        {
+                            TuiFilePreview::new(preview).render(area, buf);
+                        }
+                    }
                 }
             }
         } else {
-            TuiDirListLoading::new().render(layout_rect[2], buf);
+            TuiMessage::new("Error loading directory", Style::default().fg(Color::Red))
+                .render(layout_rect[2], buf);
         }
 
         let topbar_width = area.width;
@@ -169,7 +194,7 @@ impl<'a> Widget for TuiFolderView<'a> {
             width: topbar_width,
             height: 1,
         };
-        TuiTopBar::new(self.context, curr_tab.cwd()).render(rect, buf);
+        TuiTopBar::new(self.context, curr_tab_cwd).render(rect, buf);
 
         // render tabs
         if self.context.tab_context_ref().len() > 1 {

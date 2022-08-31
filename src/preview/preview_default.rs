@@ -4,17 +4,37 @@ use crate::context::AppContext;
 use crate::fs::JoshutoMetadata;
 use crate::preview::{preview_dir, preview_file};
 
+#[derive(Debug, Clone)]
+pub enum PreviewState {
+    Loading,
+    Error { message: String },
+}
+
+impl PreviewState {
+    pub fn is_loading(&self) -> bool {
+        match *self {
+            Self::Loading => true,
+            _ => false,
+        }
+    }
+}
+
 pub fn load_preview_path(context: &mut AppContext, p: path::PathBuf, metadata: JoshutoMetadata) {
     let preview_options = context.config_ref().preview_options_ref();
-
     if metadata.is_dir() {
-        let need_to_load = context
-            .tab_context_ref()
-            .curr_tab_ref()
-            .history_ref()
+        let tab = context.tab_context_ref().curr_tab_ref();
+        // only load if there doesn't already exist a loading thread and
+        // there isn't an entry in history
+        let need_to_load = tab
+            .history_metadata_ref()
             .get(p.as_path())
-            .map(|e| e.need_update())
-            .unwrap_or(true);
+            .map(|m| m.is_loading())
+            .unwrap_or(true)
+            && tab
+                .history_ref()
+                .get(p.as_path())
+                .map(|e| e.need_update())
+                .unwrap_or(true);
 
         if need_to_load {
             preview_dir::Background::load_preview(context, p);

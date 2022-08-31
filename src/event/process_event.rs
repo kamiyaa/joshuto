@@ -1,9 +1,11 @@
-use notify;
-use signal_hook::consts::signal;
 use std::io;
 use std::path;
+
+use notify;
+use signal_hook::consts::signal;
 use termion::event::{Event, Key, MouseButton, MouseEvent};
 use tui::layout::{Constraint, Direction, Layout};
+use uuid::Uuid;
 
 use crate::commands::{cursor_move, parent_cursor_move, reload};
 use crate::config::{AppKeyMapping, KeyMapping};
@@ -13,6 +15,7 @@ use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOperation, FileOperationProgress};
 use crate::key_command::{AppExecute, Command, CommandKeybind};
+use crate::preview::preview_default::PreviewState;
 use crate::preview::preview_file::FilePreview;
 use crate::ui;
 use crate::ui::views::TuiCommandMenu;
@@ -58,7 +61,7 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         AppEvent::IoWorkerCreate => process_new_worker(context),
         AppEvent::FileOperationProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
-        AppEvent::PreviewDir(Ok(b)) => process_dir_preview(context, *b),
+        AppEvent::PreviewDir { id, path, res } => process_dir_preview(context, id, path, res),
         AppEvent::PreviewFile(path, b) => process_file_preview(context, path, *b),
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, context),
@@ -141,11 +144,36 @@ pub fn process_finished_worker(
     }
 }
 
-pub fn process_dir_preview(context: &mut AppContext, dirlist: JoshutoDirList) {
-    let history = context.tab_context_mut().curr_tab_mut().history_mut();
+pub fn process_dir_preview(
+    context: &mut AppContext,
+    id: Uuid,
+    path: path::PathBuf,
+    res: Box<io::Result<JoshutoDirList>>,
+) {
+    for (tab_id, tab) in context.tab_context_mut().iter_mut() {
+        if *tab_id == id {
+            match *res {
+                Ok(dirlist) => {
+                    // remove from loading state
+                    tab.history_metadata_mut().remove(dirlist.file_path());
 
-    let dir_path = dirlist.file_path().to_path_buf();
-    history.insert(dir_path, dirlist);
+                    let history = tab.history_mut();
+                    let dir_path = dirlist.file_path().to_path_buf();
+                    history.insert(dir_path, dirlist);
+                }
+                Err(e) => {
+                    // set to false so we don't load again
+                    tab.history_metadata_mut().insert(
+                        path,
+                        PreviewState::Error {
+                            message: e.to_string(),
+                        },
+                    );
+                }
+            }
+            break;
+        }
+    }
 }
 
 pub fn process_file_preview(

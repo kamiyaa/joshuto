@@ -10,6 +10,8 @@ use signal_hook::iterator::SignalsInfo;
 use termion::event::Event;
 use termion::input::TermRead;
 
+use uuid::Uuid;
+
 use crate::fs::JoshutoDirList;
 use crate::io::FileOperationProgress;
 use crate::preview::preview_file::FilePreview;
@@ -28,7 +30,11 @@ pub enum AppEvent {
     ChildProcessComplete(u32),
 
     // preview thread events
-    PreviewDir(io::Result<Box<JoshutoDirList>>),
+    PreviewDir {
+        id: Uuid,
+        path: path::PathBuf,
+        res: Box<io::Result<JoshutoDirList>>,
+    },
     PreviewFile(path::PathBuf, Box<io::Result<FilePreview>>),
 
     // terminal size change events
