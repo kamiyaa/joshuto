@@ -2,10 +2,12 @@ use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::create_dirlist_with_history;
 
+use uuid::Uuid;
+
 // reload only if we have a queued reload
-pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()> {
+pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     let mut paths = Vec::with_capacity(3);
-    if let Some(curr_tab) = context.tab_context_ref().tab_ref(index) {
+    if let Some(curr_tab) = context.tab_context_ref().tab_ref(id) {
         if let Some(curr_list) = curr_tab.curr_list_ref() {
             if curr_list.need_update() {
                 paths.push(curr_list.file_path().to_path_buf());
@@ -32,7 +34,7 @@ pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()
             .clone();
         if let Some(history) = context
             .tab_context_mut()
-            .tab_mut(index)
+            .tab_mut(id)
             .map(|t| t.history_mut())
         {
             for path in paths {
@@ -45,9 +47,14 @@ pub fn soft_reload(index: usize, context: &mut AppContext) -> std::io::Result<()
     Ok(())
 }
 
-pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
+pub fn soft_reload_curr_tab(context: &mut AppContext) -> std::io::Result<()> {
+    let curr_tab_id = context.tab_context_ref().curr_tab_id();
+    soft_reload(context, &curr_tab_id)
+}
+
+pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     let mut paths = Vec::with_capacity(3);
-    if let Some(curr_tab) = context.tab_context_ref().tab_ref(index) {
+    if let Some(curr_tab) = context.tab_context_ref().tab_ref(id) {
         if let Some(curr_list) = curr_tab.curr_list_ref() {
             paths.push(curr_list.file_path().to_path_buf());
         }
@@ -68,7 +75,7 @@ pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
             .clone();
         if let Some(history) = context
             .tab_context_mut()
-            .tab_mut(index)
+            .tab_mut(id)
             .map(|t| t.history_mut())
         {
             for path in paths {
@@ -85,6 +92,6 @@ pub fn reload(context: &mut AppContext, index: usize) -> std::io::Result<()> {
 }
 
 pub fn reload_dirlist(context: &mut AppContext) -> JoshutoResult {
-    reload(context, context.tab_context_ref().index)?;
+    reload(context, &context.tab_context_ref().curr_tab_id())?;
     Ok(())
 }

@@ -130,7 +130,7 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult
         Some(entry) if entry.file_path().is_dir() => {
             let path = entry.file_path().to_path_buf();
             change_directory::cd(path.as_path(), context)?;
-            reload::soft_reload(context.tab_context_ref().index, context)?;
+            reload::soft_reload_curr_tab(context)?;
         }
         Some(entry) => {
             if context.args.file_chooser {

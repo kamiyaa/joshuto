@@ -51,7 +51,7 @@ pub fn parent_directory(context: &mut AppContext) -> JoshutoResult {
             .tab_context_mut()
             .curr_tab_mut()
             .set_cwd(parent.as_path());
-        reload::soft_reload(context.tab_context_ref().index, context)?;
+        reload::soft_reload_curr_tab(context)?;
     }
     Ok(())
 }
@@ -65,7 +65,7 @@ pub fn previous_directory(context: &mut AppContext) -> JoshutoResult {
             .tab_context_mut()
             .curr_tab_mut()
             .set_cwd(path.as_path());
-        reload::soft_reload(context.tab_context_ref().index, context)?;
+        reload::soft_reload_curr_tab(context)?;
     }
     Ok(())
 }
