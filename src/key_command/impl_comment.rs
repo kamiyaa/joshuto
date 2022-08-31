@@ -92,6 +92,7 @@ impl CommandComment for Command {
             Self::SwitchLineNums(_) => "Switch line numbering",
 
             Self::Flat(_) => "Flattern directory list",
+            Self::NumberedCommand(_) => "Jump via input number",
 
             Self::Sort(sort_type) => match sort_type {
                 SortType::Lexical => "Sort lexically",

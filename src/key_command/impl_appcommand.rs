@@ -69,6 +69,7 @@ impl AppCommand for Command {
             Self::ShowTasks => CMD_SHOW_TASKS,
 
             Self::Flat(_) => CMD_FLAT,
+            Self::NumberedCommand(_) => CMD_NUMBERED_COMMAND,
 
             Self::Sort(_) => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,

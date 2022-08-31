@@ -103,6 +103,9 @@ impl AppExecute for Command {
             Self::SwitchLineNums(d) => line_nums::switch_line_numbering(context, *d),
 
             Self::Flat(depth) => flat::flatten(*depth, context),
+            Self::NumberedCommand(c) => {
+                numbered_command::numbered_command(*c, context, backend, keymap_t)
+            }
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 

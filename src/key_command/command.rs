@@ -70,10 +70,10 @@ pub enum Command {
     ShowTasks,
 
     ToggleHiddenFiles,
-
     SwitchLineNums(LineNumberStyle),
 
     Flat(usize),
+    NumberedCommand(char),
 
     Sort(SortType),
     SortReverse,

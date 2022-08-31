@@ -1,4 +1,3 @@
-use crate::commands::numbered_command;
 use crate::commands::quit::QuitAction;
 use crate::config::AppKeyMapping;
 use crate::context::AppContext;
@@ -14,7 +13,7 @@ use crate::ui::views::TuiView;
 
 use uuid::Uuid;
 
-use termion::event::{Event, Key};
+use termion::event::Event;
 use tui::layout::Rect;
 
 pub fn run_loop(
@@ -77,13 +76,6 @@ pub fn run_loop(
                     // but we still want to register scroll
                     Event::Unsupported(s) => {
                         process_event::process_unsupported(context, backend, &keymap_t, s);
-                    }
-                    Event::Key(Key::Char(c)) if c.is_numeric() && c != '0' => {
-                        if let Err(e) =
-                            numbered_command::numbered_command(c, context, backend, &keymap_t)
-                        {
-                            context.message_queue_mut().push_error(e.to_string());
-                        }
                     }
                     key => match keymap_t.default_view.get(&key) {
                         None => {

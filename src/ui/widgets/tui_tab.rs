@@ -1,44 +1,47 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::text::Span;
+use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget, Wrap};
 
-use unicode_width::UnicodeWidthStr;
+use uuid::Uuid;
 
 pub struct TuiTabBar<'a> {
-    name: &'a str,
-    curr: usize,
-    len: usize,
+    tabs: &'a [Uuid],
+    index: usize,
 }
 
 impl<'a> TuiTabBar<'a> {
-    pub fn new(name: &'a str, curr: usize, len: usize) -> Self {
-        Self { name, curr, len }
+    pub fn new(tabs: &'a [Uuid], index: usize) -> Self {
+        Self { tabs, index }
     }
 }
 
 impl<'a> Widget for TuiTabBar<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let selected = Style::default()
+        let regular_style = Style::default().fg(Color::White);
+        let selected_style = Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::REVERSED);
 
-        let str1 = format!("{}/{}", self.curr + 1, self.len);
-        let str2 = {
-            let space_avail = if str1.width() >= area.width as usize {
-                0
+        let mut spans_vec = vec![];
+        for i in 0..self.tabs.len() {
+            if i == self.index {
+                spans_vec.push(Span::styled(
+                    self.tabs[i].to_string()[..4].to_string(),
+                    selected_style,
+                ));
+                spans_vec.push(Span::styled(" ", regular_style));
             } else {
-                area.width as usize - str1.len()
-            };
-            if space_avail >= self.name.width() {
-                self.name
-            } else {
-                "…"
+                spans_vec.push(Span::styled(
+                    self.tabs[i].to_string()[..4].to_string(),
+                    regular_style,
+                ));
+                spans_vec.push(Span::styled(" ", regular_style));
             }
-        };
+        }
 
-        Paragraph::new(Span::styled(format!("{}: {}", str1, str2), selected))
+        Paragraph::new(Spans::from(spans_vec))
             .wrap(Wrap { trim: true })
             .render(area, buf);
     }

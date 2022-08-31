@@ -160,6 +160,10 @@ function joshuto() {
    it will prompt `:open_with ` to open with a specific command
    - if `xdg_open` is `true` in [joshuto.toml](https://github.com/kamiyaa/joshuto),
    joshuto will try to open it via xdg settings
+ - `numbered_command`: opens a new mode where user can input numbers and jump to the specified
+   location via hardcoded keybindings
+    - `numbered_command 3`: initial input is 3
+
 
 ## Tabs
  - `new_tab`: opens a new tab

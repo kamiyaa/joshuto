@@ -336,6 +336,15 @@ impl std::str::FromStr for Command {
                     format!("{}: {}", command, e),
                 )),
             }
+        } else if command == CMD_NUMBERED_COMMAND {
+            let c = arg.chars().next();
+            match c {
+                Some(c) => Ok(Self::NumberedCommand(c)),
+                None => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: no starting character given", command),
+                )),
+            }
         } else {
             Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,

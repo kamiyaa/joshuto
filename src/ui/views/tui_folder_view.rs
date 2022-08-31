@@ -15,8 +15,6 @@ use crate::ui::widgets::{
 };
 use crate::ui::PreviewArea;
 
-const TAB_VIEW_WIDTH: u16 = 15;
-
 pub struct TuiFolderView<'a> {
     pub context: &'a AppContext,
     pub show_bottom_status: bool,
@@ -35,7 +33,6 @@ impl<'a> Widget for TuiFolderView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let preview_context = self.context.preview_context_ref();
         let curr_tab = self.context.tab_context_ref().curr_tab_ref();
-        let curr_tab_id = self.context.tab_context_ref().curr_tab_id();
         let curr_tab_cwd = curr_tab.cwd();
 
         let curr_list = curr_tab.curr_list_ref();
@@ -199,23 +196,25 @@ impl<'a> Widget for TuiFolderView<'a> {
         TuiTopBar::new(self.context, curr_tab_cwd).render(rect, buf);
 
         // render tabs
-        if self.context.tab_context_ref().len() > 1 {
-            let topbar_width = area.width.saturating_sub(TAB_VIEW_WIDTH);
+        let topbar_width = (self.context.tab_context_ref().len() * 5) as u16;
+        let topbar_width = if topbar_width > area.width {
+            area.width
+        } else {
+            topbar_width
+        };
+        let topbar_x = area.width.saturating_sub(topbar_width);
 
-            let rect = Rect {
-                x: topbar_width,
-                y: 0,
-                width: TAB_VIEW_WIDTH,
-                height: 1,
-            };
-            let name = curr_tab_id.to_string();
-            TuiTabBar::new(
-                &name[..5],
-                self.context.tab_context_ref().index,
-                self.context.tab_context_ref().len(),
-            )
-            .render(rect, buf);
-        }
+        let rect = Rect {
+            x: topbar_x,
+            y: 0,
+            width: topbar_width,
+            height: 1,
+        };
+        TuiTabBar::new(
+            self.context.tab_context_ref().tab_order.as_slice(),
+            self.context.tab_context_ref().index,
+        )
+        .render(rect, buf);
     }
 }
 

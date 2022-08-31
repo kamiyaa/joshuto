@@ -124,15 +124,9 @@ impl<'a> Widget for TuiHSplitView<'a> {
                     width: TAB_VIEW_WIDTH,
                     height: 1,
                 };
-                let name = if let Some(ostr) = curr_tab.cwd().file_name() {
-                    ostr.to_str().unwrap_or("")
-                } else {
-                    ""
-                };
                 TuiTabBar::new(
-                    name,
+                    self.context.tab_context_ref().tab_order.as_slice(),
                     self.context.tab_context_ref().index,
-                    self.context.tab_context_ref().len(),
                 )
                 .render(rect, buf);
             }
