@@ -61,7 +61,7 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         AppEvent::IoWorkerCreate => process_new_worker(context),
         AppEvent::FileOperationProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
-        AppEvent::PreviewDir { id, path, res } => process_dir_preview(context, id, path, res),
+        AppEvent::PreviewDir { id, path, res } => process_dir_preview(context, id, path, *res),
         AppEvent::PreviewFile(path, b) => process_file_preview(context, path, *b),
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, context),
@@ -148,11 +148,11 @@ pub fn process_dir_preview(
     context: &mut AppContext,
     id: Uuid,
     path: path::PathBuf,
-    res: Box<io::Result<JoshutoDirList>>,
+    res: io::Result<JoshutoDirList>,
 ) {
     for (tab_id, tab) in context.tab_context_mut().iter_mut() {
         if *tab_id == id {
-            match *res {
+            match res {
                 Ok(dirlist) => {
                     // remove from loading state
                     tab.history_metadata_mut().remove(dirlist.file_path());

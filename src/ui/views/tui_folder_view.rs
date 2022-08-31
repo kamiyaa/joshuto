@@ -147,7 +147,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                     TuiDirListLoading::new().render(layout_rect[1], buf);
                 }
                 Some(PreviewState::Error { message }) => {
-                    TuiMessage::new(&message, Style::default().fg(Color::Red))
+                    TuiMessage::new(message, Style::default().fg(Color::Red))
                         .render(layout_rect[1], buf);
                 }
                 None => {}
@@ -162,7 +162,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                     TuiDirListLoading::new().render(layout_rect[2], buf);
                 }
                 Some(PreviewState::Error { message }) => {
-                    TuiMessage::new(&message, Style::default().fg(Color::Red))
+                    TuiMessage::new(message, Style::default().fg(Color::Red))
                         .render(layout_rect[2], buf);
                 }
                 None => {

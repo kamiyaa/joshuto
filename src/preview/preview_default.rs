@@ -12,10 +12,7 @@ pub enum PreviewState {
 
 impl PreviewState {
     pub fn is_loading(&self) -> bool {
-        match *self {
-            Self::Loading => true,
-            _ => false,
-        }
+        matches!(*self, Self::Loading)
     }
 }
 
