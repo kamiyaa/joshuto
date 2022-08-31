@@ -4,7 +4,18 @@ use std::thread;
 use crate::context::AppContext;
 use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
-use crate::preview::preview_default::PreviewState;
+
+#[derive(Debug, Clone)]
+pub enum PreviewDirState {
+    Loading,
+    Error { message: String },
+}
+
+impl PreviewDirState {
+    pub fn is_loading(&self) -> bool {
+        matches!(*self, Self::Loading)
+    }
+}
 
 pub struct Background {}
 
@@ -24,7 +35,7 @@ impl Background {
             .tab_context_mut()
             .curr_tab_mut()
             .history_metadata_mut()
-            .insert(p.clone(), PreviewState::Loading);
+            .insert(p.clone(), PreviewDirState::Loading);
 
         thread::spawn(move || {
             let path_clone = p.clone();

@@ -35,8 +35,10 @@ pub enum AppEvent {
         path: path::PathBuf,
         res: Box<io::Result<JoshutoDirList>>,
     },
-    PreviewFile(path::PathBuf, Box<io::Result<FilePreview>>),
-
+    PreviewFile {
+        path: path::PathBuf,
+        res: Box<io::Result<FilePreview>>,
+    },
     // terminal size change events
     Signal(i32),
     // filesystem change events

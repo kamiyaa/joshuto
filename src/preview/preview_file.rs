@@ -6,6 +6,12 @@ use std::time;
 use crate::context::AppContext;
 use crate::event::AppEvent;
 
+pub enum PreviewFileState {
+    Loading,
+    Error { message: String },
+    Success { data: FilePreview },
+}
+
 #[derive(Clone, Debug)]
 pub struct FilePreview {
     pub status: std::process::ExitStatus,
@@ -32,7 +38,7 @@ impl std::convert::From<Output> for FilePreview {
 pub struct Background {}
 
 impl Background {
-    pub fn preview_path_with_script(context: &AppContext, path: path::PathBuf) {
+    pub fn preview_path_with_script(context: &mut AppContext, path: path::PathBuf) {
         let preview_options = context.config_ref().preview_options_ref();
         if let Some(script) = preview_options.preview_script.as_ref() {
             let ui_context = context.ui_context_ref();
@@ -50,6 +56,11 @@ impl Background {
 
             let script = script.clone();
             let event_tx = context.clone_event_tx();
+            context
+                .preview_context_mut()
+                .previews_mut()
+                .insert(path.clone(), PreviewFileState::Loading);
+
             let _ = thread::spawn(move || {
                 let file_full_path = path.as_path();
 
@@ -70,10 +81,18 @@ impl Background {
                 match res {
                     Ok(output) => {
                         let preview = FilePreview::from(output);
-                        let _ = event_tx.send(AppEvent::PreviewFile(path, Box::new(Ok(preview))));
+                        let res = AppEvent::PreviewFile {
+                            path,
+                            res: Box::new(Ok(preview)),
+                        };
+                        let _ = event_tx.send(res);
                     }
                     Err(e) => {
-                        let _ = event_tx.send(AppEvent::PreviewFile(path, Box::new(Err(e))));
+                        let res = AppEvent::PreviewFile {
+                            path,
+                            res: Box::new(Err(e)),
+                        };
+                        let _ = event_tx.send(res);
                     }
                 }
             });

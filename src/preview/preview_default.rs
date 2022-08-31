@@ -4,17 +4,7 @@ use crate::context::AppContext;
 use crate::fs::JoshutoMetadata;
 use crate::preview::{preview_dir, preview_file};
 
-#[derive(Debug, Clone)]
-pub enum PreviewState {
-    Loading,
-    Error { message: String },
-}
-
-impl PreviewState {
-    pub fn is_loading(&self) -> bool {
-        matches!(*self, Self::Loading)
-    }
-}
+use super::preview_file::PreviewFileState;
 
 pub fn load_preview_path(context: &mut AppContext, p: path::PathBuf, metadata: JoshutoMetadata) {
     let preview_options = context.config_ref().preview_options_ref();
@@ -39,11 +29,11 @@ pub fn load_preview_path(context: &mut AppContext, p: path::PathBuf, metadata: J
     } else if metadata.len() <= preview_options.max_preview_size {
         let need_to_load = context
             .preview_context_ref()
-            .get_preview_ref(p.as_path())
-            .map(|p| {
-                p.as_ref()
-                    .map(|p| p.modified < metadata.modified())
-                    .unwrap_or(true)
+            .previews_ref()
+            .get(p.as_path())
+            .map(|data| match data {
+                PreviewFileState::Success { data } => data.modified < metadata.modified(),
+                _ => false,
             })
             .unwrap_or(true);
 

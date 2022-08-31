@@ -15,8 +15,8 @@ use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
 use crate::io::{FileOperation, FileOperationProgress};
 use crate::key_command::{AppExecute, Command, CommandKeybind};
-use crate::preview::preview_default::PreviewState;
-use crate::preview::preview_file::FilePreview;
+use crate::preview::preview_dir::PreviewDirState;
+use crate::preview::preview_file::{FilePreview, PreviewFileState};
 use crate::ui;
 use crate::ui::views::TuiCommandMenu;
 use crate::util::format;
@@ -62,7 +62,7 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         AppEvent::FileOperationProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
         AppEvent::PreviewDir { id, path, res } => process_dir_preview(context, id, path, *res),
-        AppEvent::PreviewFile(path, b) => process_file_preview(context, path, *b),
+        AppEvent::PreviewFile { path, res } => process_file_preview(context, path, *res),
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, context),
         AppEvent::ChildProcessComplete(child_id) => {
@@ -165,7 +165,7 @@ pub fn process_dir_preview(
                     // set to false so we don't load again
                     tab.history_metadata_mut().insert(
                         path,
-                        PreviewState::Error {
+                        PreviewDirState::Error {
                             message: e.to_string(),
                         },
                     );
@@ -179,18 +179,32 @@ pub fn process_dir_preview(
 pub fn process_file_preview(
     context: &mut AppContext,
     path: path::PathBuf,
-    file_preview: io::Result<FilePreview>,
+    res: io::Result<FilePreview>,
 ) {
-    if let Ok(preview) = file_preview {
-        if preview.status.code().is_some() {
-            context
-                .preview_context_mut()
-                .insert_preview(path, Some(preview));
-        } else {
-            context.preview_context_mut().insert_preview(path, None);
+    match res {
+        Ok(preview) => {
+            if preview.status.code().is_some() {
+                context
+                    .preview_context_mut()
+                    .previews_mut()
+                    .insert(path, PreviewFileState::Success { data: preview });
+            } else {
+                context.preview_context_mut().previews_mut().insert(
+                    path,
+                    PreviewFileState::Error {
+                        message: "Unknown error".to_string(),
+                    },
+                );
+            }
         }
-    } else {
-        context.preview_context_mut().insert_preview(path, None);
+        Err(e) => {
+            context.preview_context_mut().previews_mut().insert(
+                path,
+                PreviewFileState::Error {
+                    message: e.to_string(),
+                },
+            );
+        }
     }
 }
 

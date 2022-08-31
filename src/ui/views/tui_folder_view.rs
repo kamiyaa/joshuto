@@ -6,7 +6,8 @@ use tui::text::Span;
 use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::context::AppContext;
-use crate::preview::preview_default::PreviewState;
+use crate::preview::preview_dir::PreviewDirState;
+use crate::preview::preview_file::PreviewFileState;
 use crate::ui;
 use crate::ui::widgets::{
     TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiFooter, TuiMessage,
@@ -143,10 +144,10 @@ impl<'a> Widget for TuiFolderView<'a> {
             }
         } else {
             match curr_tab.history_metadata_ref().get(curr_tab_cwd) {
-                Some(PreviewState::Loading) => {
+                Some(PreviewDirState::Loading) => {
                     TuiDirListLoading::new().render(layout_rect[1], buf);
                 }
-                Some(PreviewState::Error { message }) => {
+                Some(PreviewDirState::Error { message }) => {
                     TuiMessage::new(message, Style::default().fg(Color::Red))
                         .render(layout_rect[1], buf);
                 }
@@ -158,10 +159,10 @@ impl<'a> Widget for TuiFolderView<'a> {
             TuiDirList::new(list, true).render(layout_rect[2], buf);
         } else if let Some(entry) = curr_entry {
             match curr_tab.history_metadata_ref().get(entry.file_path()) {
-                Some(PreviewState::Loading) => {
+                Some(PreviewDirState::Loading) => {
                     TuiDirListLoading::new().render(layout_rect[2], buf);
                 }
-                Some(PreviewState::Error { message }) => {
+                Some(PreviewDirState::Error { message }) => {
                     TuiMessage::new(message, Style::default().fg(Color::Red))
                         .render(layout_rect[2], buf);
                 }
@@ -174,10 +175,11 @@ impl<'a> Widget for TuiFolderView<'a> {
                             width: preview_area.preview_area.width,
                             height: preview_area.preview_area.height,
                         };
-                        if let Some(Some(preview)) =
-                            preview_context.get_preview_ref(&preview_area.file_preview_path)
+                        if let Some(PreviewFileState::Success { data }) = preview_context
+                            .previews_ref()
+                            .get(&preview_area.file_preview_path)
                         {
-                            TuiFilePreview::new(preview).render(area, buf);
+                            TuiFilePreview::new(data).render(area, buf);
                         }
                     }
                 }
@@ -262,8 +264,10 @@ pub fn get_constraints(context: &AppContext) -> &[Constraint; 3] {
                 Some(entry) if entry.metadata.file_type().is_dir() => {
                     &display_options.default_layout
                 }
-                Some(entry) => match preview_context.get_preview_ref(entry.file_path()) {
-                    Some(Some(p)) if p.status.code() != Some(1) => &display_options.default_layout,
+                Some(entry) => match preview_context.previews_ref().get(entry.file_path()) {
+                    Some(PreviewFileState::Success { data }) if data.status.code() != Some(1) => {
+                        &display_options.default_layout
+                    }
                     _ => &display_options.no_preview_layout,
                 },
             },
@@ -318,8 +322,10 @@ pub fn calculate_preview(context: &AppContext, rect: Rect) -> Option<PreviewArea
     if child_list.as_ref().is_some() {
         None
     } else if let Some(entry) = curr_entry {
-        if let Some(Some(preview)) = preview_context.get_preview_ref(entry.file_path()) {
-            match preview.status.code() {
+        if let Some(PreviewFileState::Success { data }) =
+            preview_context.previews_ref().get(entry.file_path())
+        {
+            match data.status.code() {
                 Some(1) | None => None,
                 _ => {
                     let file_preview_path = entry.file_path_buf();

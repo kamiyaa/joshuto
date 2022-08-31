@@ -5,9 +5,9 @@ use crate::config::option::{DisplayOption, TabDisplayOption};
 use crate::context::UiContext;
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
-use crate::preview::preview_default::PreviewState;
+use crate::preview::preview_dir::PreviewDirState;
 
-type HistoryMetadata = HashMap<path::PathBuf, PreviewState>;
+type HistoryMetadata = HashMap<path::PathBuf, PreviewDirState>;
 
 pub struct JoshutoTab {
     _cwd: path::PathBuf,

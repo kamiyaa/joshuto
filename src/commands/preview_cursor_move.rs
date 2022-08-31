@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
+use crate::preview::preview_file::PreviewFileState;
 
 fn preview_cursor_move(context: &mut AppContext, new_index: usize) -> JoshutoResult {
     let file_path: Option<PathBuf> = {
@@ -13,8 +14,10 @@ fn preview_cursor_move(context: &mut AppContext, new_index: usize) -> JoshutoRes
 
     let preview_context = context.preview_context_mut();
     if let Some(file_path) = file_path {
-        if let Some(Some(preview)) = preview_context.get_preview_mut(&file_path) {
-            preview.index = new_index;
+        if let Some(PreviewFileState::Success { data }) =
+            preview_context.previews_mut().get_mut(&file_path)
+        {
+            data.index = new_index;
         }
     }
     Ok(())
@@ -28,13 +31,14 @@ pub fn preview_up(context: &mut AppContext, u: usize) -> JoshutoResult {
         let file_path = curr_entry.map(|e| e.file_path());
 
         let preview_context = context.preview_context_ref();
-
         if let Some(file_path) = file_path {
-            if let Some(Some(preview)) = preview_context.get_preview_ref(file_path) {
-                if preview.index < u {
+            if let Some(PreviewFileState::Success { data }) =
+                preview_context.previews_ref().get(file_path)
+            {
+                if data.index < u {
                     Some(0)
                 } else {
-                    Some(preview.index - u)
+                    Some(data.index - u)
                 }
             } else {
                 None
@@ -57,10 +61,11 @@ pub fn preview_down(context: &mut AppContext, u: usize) -> JoshutoResult {
         let file_path = curr_entry.map(|e| e.file_path());
 
         let preview_context = context.preview_context_ref();
-
         if let Some(file_path) = file_path {
-            if let Some(Some(preview)) = preview_context.get_preview_ref(file_path) {
-                Some(preview.index + u)
+            if let Some(PreviewFileState::Success { data }) =
+                preview_context.previews_ref().get(file_path)
+            {
+                Some(data.index + u)
             } else {
                 None
             }
