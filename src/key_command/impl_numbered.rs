@@ -19,8 +19,8 @@ impl NumberedExecute for Command {
         keymap_t: &AppKeyMapping,
     ) -> JoshutoResult {
         match self {
-            Self::CursorMoveUp(_) => cursor_move::up(context, number_prefix),
-            Self::CursorMoveDown(_) => cursor_move::down(context, number_prefix),
+            Self::CursorMoveUp { .. } => cursor_move::up(context, number_prefix),
+            Self::CursorMoveDown { .. } => cursor_move::down(context, number_prefix),
             _ => Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,
                 "Command cannot be prefixed by a number".to_string(),

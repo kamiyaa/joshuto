@@ -4,7 +4,6 @@ use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
 use crate::context::WorkerContext;
-use crate::io::FileOperation;
 use crate::util::format;
 
 pub struct TuiWorker<'a> {
@@ -22,12 +21,7 @@ impl<'a> Widget for TuiWorker<'a> {
         match self.context.worker_ref() {
             Some(io_obs) => {
                 if let Some(progress) = io_obs.progress.as_ref() {
-                    let op_str = match progress.kind() {
-                        FileOperation::Cut => "Moving",
-                        FileOperation::Copy => "Copying",
-                        FileOperation::Symlink => "Symlinking",
-                        FileOperation::Delete => "Deleting",
-                    };
+                    let op_str = progress.kind().actioning_str();
 
                     let processed_size = format::file_size_to_string(progress.bytes_processed());
                     let total_size = format::file_size_to_string(progress.total_bytes());

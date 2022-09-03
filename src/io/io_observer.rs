@@ -1,7 +1,7 @@
 use std::path;
 use std::thread;
 
-use crate::io::{FileOperation, FileOperationProgress};
+use crate::io::FileOperationProgress;
 use crate::util::format;
 
 #[derive(Debug)]
@@ -34,12 +34,7 @@ impl IoWorkerObserver {
         match self.progress.as_ref() {
             None => {}
             Some(progress) => {
-                let op_str = match progress.kind() {
-                    FileOperation::Cut => "Moving",
-                    FileOperation::Copy => "Copying",
-                    FileOperation::Symlink => "Symlinking",
-                    FileOperation::Delete => "Deleting",
-                };
+                let op_str = progress.kind().actioning_str();
                 let processed_size = format::file_size_to_string(progress.bytes_processed());
                 let total_size = format::file_size_to_string(progress.total_bytes());
 

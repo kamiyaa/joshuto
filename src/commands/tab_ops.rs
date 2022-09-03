@@ -69,7 +69,7 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
     Ok(())
 }
 
-pub fn tab_switch(offset: i32, context: &mut AppContext) -> std::io::Result<()> {
+pub fn tab_switch(context: &mut AppContext, offset: i32) -> std::io::Result<()> {
     let index = context.tab_context_ref().index;
     let num_tabs = context.tab_context_ref().len();
     let new_index = (index as i32 + num_tabs as i32 + offset) as usize % num_tabs;
@@ -77,7 +77,7 @@ pub fn tab_switch(offset: i32, context: &mut AppContext) -> std::io::Result<()> 
     _tab_switch(new_index, context)
 }
 
-pub fn tab_switch_index(new_index: usize, context: &mut AppContext) -> JoshutoResult {
+pub fn tab_switch_index(context: &mut AppContext, new_index: usize) -> JoshutoResult {
     let num_tabs = context.tab_context_ref().len();
     if new_index <= num_tabs {
         _tab_switch(new_index - 1, context)?;

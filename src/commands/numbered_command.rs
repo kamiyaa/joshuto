@@ -11,10 +11,10 @@ use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
 
 pub fn numbered_command(
-    first_char: char,
     context: &mut AppContext,
     backend: &mut AppBackend,
     keymap: &AppKeyMapping,
+    first_char: char,
 ) -> JoshutoResult {
     context.flush_event();
     let mut prefix = String::from(first_char);

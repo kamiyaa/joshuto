@@ -3,29 +3,40 @@ use super::{AppCommand, Command};
 impl std::fmt::Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::ChangeDirectory(p) => write!(f, "{} {:?}", self.command(), p),
-            Self::CommandLine(s, p) => write!(f, "{} {} {}", self.command(), s, p),
-            Self::CursorMoveUp(i) => write!(f, "{} {}", self.command(), i),
-            Self::CursorMoveDown(i) => write!(f, "{} {}", self.command(), i),
+            Self::ChangeDirectory { path } => write!(f, "{} {:?}", self.command(), path),
+            Self::CommandLine { prefix, suffix } => {
+                write!(f, "{} {} || {}", self.command(), prefix, suffix)
+            }
+            Self::CursorMoveUp { offset } => write!(f, "{} {}", self.command(), offset),
+            Self::CursorMoveDown { offset } => write!(f, "{} {}", self.command(), offset),
 
-            Self::NewDirectory(d) => write!(f, "{} {:?}", self.command(), d),
+            Self::ParentCursorMoveUp { offset } => write!(f, "{} {}", self.command(), offset),
+            Self::ParentCursorMoveDown { offset } => write!(f, "{} {}", self.command(), offset),
 
-            Self::PasteFiles(options) => write!(f, "{}  {}", self.command(), options),
+            Self::PreviewCursorMoveUp { offset } => write!(f, "{} {}", self.command(), offset),
+            Self::PreviewCursorMoveDown { offset } => write!(f, "{} {}", self.command(), offset),
+
+            Self::NewDirectory { path } => write!(f, "{} {:?}", self.command(), path),
+
+            Self::SymlinkFiles { relative } => {
+                write!(f, "{} --relative={}", self.command(), relative)
+            }
+            Self::PasteFiles { options } => write!(f, "{}  {}", self.command(), options),
             Self::DeleteFiles { background: false } => {
                 write!(f, "{} --foreground=true", self.command(),)
             }
 
-            Self::RenameFile(name) => write!(f, "{} {:?}", self.command(), name),
+            Self::RenameFile { new_name } => write!(f, "{} {:?}", self.command(), new_name),
 
-            Self::SearchGlob(s) => write!(f, "{} {}", self.command(), s),
-            Self::SearchString(s) => write!(f, "{} {}", self.command(), s),
-            Self::SelectFiles(pattern, options) => {
+            Self::SearchGlob { pattern } => write!(f, "{} {}", self.command(), pattern),
+            Self::SearchString { pattern } => write!(f, "{} {}", self.command(), pattern),
+            Self::SelectFiles { pattern, options } => {
                 write!(f, "{} {} {}", self.command(), pattern, options)
             }
-            Self::SubProcess(c, _) => write!(f, "{} {:?}", self.command(), c),
+            Self::SubProcess { words, .. } => write!(f, "{} {:?}", self.command(), words),
             Self::Sort(t) => write!(f, "{} {}", self.command(), t),
-            Self::TabSwitch(i) => write!(f, "{} {}", self.command(), i),
-            Self::TabSwitchIndex(i) => write!(f, "{} {}", self.command(), i),
+            Self::TabSwitch { offset } => write!(f, "{} {}", self.command(), offset),
+            Self::TabSwitchIndex { index } => write!(f, "{} {}", self.command(), index),
             _ => write!(f, "{}", self.command()),
         }
     }

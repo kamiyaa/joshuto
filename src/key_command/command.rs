@@ -11,11 +11,16 @@ pub enum Command {
     ToggleVisualMode,
     BulkRename,
 
-    ChangeDirectory(path::PathBuf),
+    ChangeDirectory {
+        path: path::PathBuf,
+    },
     ParentDirectory,
     PreviousDirectory,
 
-    CommandLine(String, String),
+    CommandLine {
+        prefix: String,
+        suffix: String,
+    },
 
     CutFiles,
     CopyFiles,
@@ -23,13 +28,23 @@ pub enum Command {
     CopyFileNameWithoutExtension,
     CopyFilePath,
     CopyDirPath,
-    SymlinkFiles,
-    PasteFiles(FileOperationOptions),
+    SymlinkFiles {
+        relative: bool,
+    },
+    PasteFiles {
+        options: FileOperationOptions,
+    },
 
-    DeleteFiles { background: bool },
+    DeleteFiles {
+        background: bool,
+    },
 
-    CursorMoveUp(usize),
-    CursorMoveDown(usize),
+    CursorMoveUp {
+        offset: usize,
+    },
+    CursorMoveDown {
+        offset: usize,
+    },
     CursorMoveHome,
     CursorMoveEnd,
     CursorMovePageUp(f64),
@@ -38,50 +53,85 @@ pub enum Command {
     CursorMovePageMiddle,
     CursorMovePageEnd,
 
-    ParentCursorMoveUp(usize),
-    ParentCursorMoveDown(usize),
+    ParentCursorMoveUp {
+        offset: usize,
+    },
+    ParentCursorMoveDown {
+        offset: usize,
+    },
 
-    PreviewCursorMoveUp(usize),
-    PreviewCursorMoveDown(usize),
+    PreviewCursorMoveUp {
+        offset: usize,
+    },
+    PreviewCursorMoveDown {
+        offset: usize,
+    },
 
     // ChildCursorMoveUp(usize),
     // ChildCursorMoveDown(usize),
-    NewDirectory(path::PathBuf),
+    NewDirectory {
+        path: path::PathBuf,
+    },
     OpenFile,
-    OpenFileWith(Option<usize>),
-
+    OpenFileWith {
+        index: Option<usize>,
+    },
     Quit(QuitAction),
 
     ReloadDirList,
-    RenameFile(path::PathBuf),
+    RenameFile {
+        new_name: path::PathBuf,
+    },
     RenameFileAppend,
     RenameFilePrepend,
-    TouchFile(String),
+    TouchFile {
+        file_name: String,
+    },
 
-    SearchGlob(String),
-    SearchString(String),
-    SearchIncremental(String),
+    SearchGlob {
+        pattern: String,
+    },
+    SearchString {
+        pattern: String,
+    },
+    SearchIncremental {
+        pattern: String,
+    },
     SearchNext,
     SearchPrev,
 
-    SelectFiles(String, SelectOption),
+    SelectFiles {
+        pattern: String,
+        options: SelectOption,
+    },
     SetMode,
-    SubProcess(Vec<String>, bool),
+    SubProcess {
+        words: Vec<String>,
+        spawn: bool,
+    },
     ShowTasks,
 
     ToggleHiddenFiles,
     SwitchLineNums(LineNumberStyle),
 
-    Flat(usize),
-    NumberedCommand(char),
+    Flat {
+        depth: usize,
+    },
+    NumberedCommand {
+        initial: char,
+    },
 
     Sort(SortType),
     SortReverse,
 
     NewTab,
     CloseTab,
-    TabSwitch(i32),
-    TabSwitchIndex(u32),
+    TabSwitch {
+        offset: i32,
+    },
+    TabSwitchIndex {
+        index: usize,
+    },
     Help,
 
     SearchFzf,

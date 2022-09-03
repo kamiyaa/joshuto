@@ -2,8 +2,27 @@
 pub enum FileOperation {
     Cut,
     Copy,
-    Symlink,
+    Symlink { relative: bool },
     Delete,
+}
+
+impl FileOperation {
+    pub fn actioning_str(&self) -> &'static str {
+        match *self {
+            Self::Cut => "Moving",
+            Self::Copy => "Copying",
+            Self::Symlink { .. } => "Symlinking",
+            Self::Delete => "Deleting",
+        }
+    }
+    pub fn actioned_str(&self) -> &'static str {
+        match *self {
+            Self::Cut => "moved",
+            Self::Copy => "copied",
+            Self::Symlink { .. } => "symlinked",
+            Self::Delete => "deleted",
+        }
+    }
 }
 
 impl std::fmt::Display for FileOperation {
@@ -11,7 +30,7 @@ impl std::fmt::Display for FileOperation {
         match self {
             Self::Cut => write!(f, "Cut"),
             Self::Copy => write!(f, "Copy"),
-            Self::Symlink => write!(f, "Symlink"),
+            Self::Symlink { relative } => write!(f, "Symlink --relative={}", relative),
             Self::Delete => write!(f, "Delete"),
         }
     }

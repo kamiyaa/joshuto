@@ -44,7 +44,8 @@ impl IoWorkerThread {
         match self.kind() {
             FileOperation::Cut => self.paste_cut(tx),
             FileOperation::Copy => self.paste_copy(tx),
-            FileOperation::Symlink => self.paste_link(tx),
+            FileOperation::Symlink { relative: false } => self.paste_link_absolute(tx),
+            FileOperation::Symlink { relative: true } => self.paste_link_relative(tx),
             FileOperation::Delete => self.delete(tx),
         }
     }
@@ -87,7 +88,7 @@ impl IoWorkerThread {
         Ok(progress)
     }
 
-    fn paste_link(
+    fn paste_link_absolute(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
     ) -> io::Result<FileOperationProgress> {
@@ -106,6 +107,52 @@ impl IoWorkerThread {
                 rename_filename_conflict(&mut dest_buf);
             }
             unix::fs::symlink(src, &dest_buf)?;
+            progress.set_files_processed(progress.files_processed() + 1);
+            progress.set_bytes_processed(progress.bytes_processed() + 1);
+        }
+        Ok(progress)
+    }
+
+    fn paste_link_relative(
+        &self,
+        tx: mpsc::Sender<FileOperationProgress>,
+    ) -> io::Result<FileOperationProgress> {
+        let total_files = self.paths.len();
+        let total_bytes = total_files as u64;
+        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+
+        #[cfg(unix)]
+        for src in self.paths.iter() {
+            let _ = tx.send(progress.clone());
+            let mut dest_buf = self.dest.to_path_buf();
+            if let Some(s) = src.file_name() {
+                dest_buf.push(s);
+            }
+            if !self.options.overwrite {
+                rename_filename_conflict(&mut dest_buf);
+            }
+            let mut src_components = src.components();
+            let mut dest_components = dest_buf.components();
+
+            // skip to where the two paths diverge
+            let mut non_relative_path = path::PathBuf::new();
+            for (s, d) in src_components.by_ref().zip(dest_components.by_ref()) {
+                if s != d {
+                    non_relative_path.push(s);
+                    break;
+                }
+            }
+
+            let mut relative_path = path::PathBuf::new();
+            for _ in dest_components {
+                relative_path.push("..");
+            }
+            relative_path.push(non_relative_path);
+            for s in src_components {
+                relative_path.push(s);
+            }
+            unix::fs::symlink(relative_path, &dest_buf)?;
+
             progress.set_files_processed(progress.files_processed() + 1);
             progress.set_bytes_processed(progress.bytes_processed() + 1);
         }

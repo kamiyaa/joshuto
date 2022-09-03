@@ -5,42 +5,35 @@ use crate::context::{AppContext, LocalStateContext};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
+fn new_local_state(context: &mut AppContext, file_op: FileOperation) -> Option<()> {
+    let list = context.tab_context_ref().curr_tab_ref().curr_list_ref()?;
+    let selected = list.get_selected_paths();
+
+    let mut local_state = LocalStateContext::new();
+    local_state.set_paths(selected.into_iter());
+    local_state.set_file_op(file_op);
+
+    context.set_local_state(local_state);
+    Some(())
+}
+
 pub fn cut(context: &mut AppContext) -> JoshutoResult {
-    if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        let selected = list.get_selected_paths();
-
-        let mut local_state = LocalStateContext::new();
-        local_state.set_paths(selected.into_iter());
-        local_state.set_file_op(FileOperation::Cut);
-
-        context.set_local_state(local_state);
-    }
+    new_local_state(context, FileOperation::Cut);
     Ok(())
 }
 
 pub fn copy(context: &mut AppContext) -> JoshutoResult {
-    if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        let selected = list.get_selected_paths();
-
-        let mut local_state = LocalStateContext::new();
-        local_state.set_paths(selected.into_iter());
-        local_state.set_file_op(FileOperation::Copy);
-
-        context.set_local_state(local_state);
-    }
+    new_local_state(context, FileOperation::Copy);
     Ok(())
 }
 
-pub fn link(context: &mut AppContext) -> JoshutoResult {
-    if let Some(list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        let selected = list.get_selected_paths();
+pub fn symlink_absolute(context: &mut AppContext) -> JoshutoResult {
+    new_local_state(context, FileOperation::Symlink { relative: false });
+    Ok(())
+}
 
-        let mut local_state = LocalStateContext::new();
-        local_state.set_paths(selected.into_iter());
-        local_state.set_file_op(FileOperation::Symlink);
-
-        context.set_local_state(local_state);
-    }
+pub fn symlink_relative(context: &mut AppContext) -> JoshutoResult {
+    new_local_state(context, FileOperation::Symlink { relative: true });
     Ok(())
 }
 

@@ -44,7 +44,7 @@ pub fn _walk_directory(
     Ok(results)
 }
 
-pub fn flatten(depth: usize, context: &mut AppContext) -> JoshutoResult {
+pub fn flatten(context: &mut AppContext, depth: usize) -> JoshutoResult {
     let path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
 
     let options = context.config_ref().display_options_ref().clone();

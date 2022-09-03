@@ -52,8 +52,8 @@ pub fn help_loop(
                                 keymap_t.help_view.get(&event)
                             {
                                 match command {
-                                    Command::CursorMoveUp(_) => move_offset(&mut offset, -1),
-                                    Command::CursorMoveDown(_) => move_offset(&mut offset, 1),
+                                    Command::CursorMoveUp { .. } => move_offset(&mut offset, -1),
+                                    Command::CursorMoveDown { .. } => move_offset(&mut offset, 1),
                                     Command::CursorMoveHome => offset = 0,
                                     Command::CursorMoveEnd => offset = 255,
                                     Command::CursorMovePageUp(_) => move_offset(&mut offset, -10),

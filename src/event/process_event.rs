@@ -13,7 +13,7 @@ use crate::context::AppContext;
 use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
-use crate::io::{FileOperation, FileOperationProgress};
+use crate::io::FileOperationProgress;
 use crate::key_command::{AppExecute, Command, CommandKeybind};
 use crate::preview::preview_dir::PreviewDirState;
 use crate::preview::preview_file::{FilePreview, PreviewFileState};
@@ -116,12 +116,7 @@ pub fn process_finished_worker(
     observer.join();
     match res {
         Ok(progress) => {
-            let op = match progress.kind() {
-                FileOperation::Cut => "moved",
-                FileOperation::Copy => "copied",
-                FileOperation::Symlink => "symlinked",
-                FileOperation::Delete => "deleted",
-            };
+            let op = progress.kind().actioned_str();
             let processed_size = format::file_size_to_string(progress.bytes_processed());
             let total_size = format::file_size_to_string(progress.total_bytes());
             let msg = format!(
@@ -216,13 +211,13 @@ pub fn process_unsupported(
 ) {
     match event.as_slice() {
         [27, 79, 65] => {
-            let command = Command::CursorMoveUp(1);
+            let command = Command::CursorMoveUp { offset: 1 };
             if let Err(e) = command.execute(context, backend, keymap_t) {
                 context.message_queue_mut().push_error(e.to_string());
             }
         }
         [27, 79, 66] => {
-            let command = Command::CursorMoveDown(1);
+            let command = Command::CursorMoveDown { offset: 1 };
             if let Err(e) = command.execute(context, backend, keymap_t) {
                 context.message_queue_mut().push_error(e.to_string());
             }
@@ -255,12 +250,12 @@ pub fn process_mouse(
     match event {
         MouseEvent::Press(MouseButton::WheelUp, x, _) => {
             if x < layout_rect[1].x {
-                let command = Command::ParentCursorMoveUp(1);
+                let command = Command::ParentCursorMoveUp { offset: 1 };
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
-                let command = Command::CursorMoveUp(1);
+                let command = Command::CursorMoveUp { offset: 1 };
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
@@ -270,12 +265,12 @@ pub fn process_mouse(
         }
         MouseEvent::Press(MouseButton::WheelDown, x, _) => {
             if x < layout_rect[1].x {
-                let command = Command::ParentCursorMoveDown(1);
+                let command = Command::ParentCursorMoveDown { offset: 1 };
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
-                let command = Command::CursorMoveDown(1);
+                let command = Command::CursorMoveDown { offset: 1 };
                 if let Err(e) = command.execute(context, backend, keymap_t) {
                     context.message_queue_mut().push_error(e.to_string());
                 }

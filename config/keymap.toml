@@ -57,7 +57,9 @@ keymap = [
 	{ keys = [ "y", "." ],		command = "copy_filename_without_extension" },
 	{ keys = [ "y", "p" ],		command = "copy_filepath" },
 	{ keys = [ "y", "d" ],		command = "copy_dirpath" },
-	{ keys = [ "p", "l" ],		command = "symlink_files" },
+
+	{ keys = [ "p", "l" ],		command = "symlink_files --relative=false" },
+	{ keys = [ "p", "L" ],		command = "symlink_files --relative=true" },
 
 	{ keys = [ "delete" ],		command = "delete_files --foreground=true" },
 	{ keys = [ "d", "D" ],		command = "delete_files --foreground=true" },

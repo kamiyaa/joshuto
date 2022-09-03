@@ -26,7 +26,10 @@ impl std::str::FromStr for Command {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some(stripped) = s.strip_prefix(':') {
-            return Ok(Self::CommandLine(stripped.to_owned(), "".to_owned()));
+            return Ok(Self::CommandLine {
+                prefix: stripped.to_owned(),
+                suffix: "".to_owned(),
+            });
         }
 
         let (command, arg) = match s.find(' ') {
@@ -68,7 +71,6 @@ impl std::str::FromStr for Command {
         );
         simple_command_conversion_case!(command, CMD_COPY_FILEPATH, Self::CopyFilePath);
         simple_command_conversion_case!(command, CMD_COPY_DIRECTORY_PATH, Self::CopyDirPath);
-        simple_command_conversion_case!(command, CMD_SYMLINK_FILES, Self::SymlinkFiles);
 
         simple_command_conversion_case!(command, CMD_OPEN_FILE, Self::OpenFile);
 
@@ -97,7 +99,7 @@ impl std::str::FromStr for Command {
         } else if command == CMD_CHANGE_DIRECTORY {
             match arg {
                 "" => match HOME_DIR.as_ref() {
-                    Some(s) => Ok(Self::ChangeDirectory(s.clone())),
+                    Some(s) => Ok(Self::ChangeDirectory { path: s.clone() }),
                     None => Err(JoshutoError::new(
                         JoshutoErrorKind::EnvVarNotPresent,
                         format!("{}: Cannot find home directory", command),
@@ -105,16 +107,17 @@ impl std::str::FromStr for Command {
                 },
                 ".." => Ok(Self::ParentDirectory),
                 "-" => Ok(Self::PreviousDirectory),
-                arg => Ok({
+                arg => {
                     let path_accepts_tilde = tilde_with_context(arg, home_dir);
-                    Self::ChangeDirectory(path::PathBuf::from(path_accepts_tilde.as_ref()))
-                }),
+                    let path = path::PathBuf::from(path_accepts_tilde.as_ref());
+                    Ok(Self::ChangeDirectory { path })
+                }
             }
         } else if command == CMD_CURSOR_MOVE_DOWN {
             match arg {
-                "" => Ok(Self::CursorMoveDown(1)),
+                "" => Ok(Self::CursorMoveDown { offset: 1 }),
                 arg => match arg.trim().parse::<usize>() {
-                    Ok(s) => Ok(Self::CursorMoveDown(s)),
+                    Ok(s) => Ok(Self::CursorMoveDown { offset: s }),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
@@ -129,9 +132,9 @@ impl std::str::FromStr for Command {
             Ok(Self::CursorMovePageDown(p))
         } else if command == CMD_CURSOR_MOVE_UP {
             match arg {
-                "" => Ok(Self::CursorMoveUp(1)),
+                "" => Ok(Self::CursorMoveUp { offset: 1 }),
                 arg => match arg.trim().parse::<usize>() {
-                    Ok(s) => Ok(Self::CursorMoveUp(s)),
+                    Ok(s) => Ok(Self::CursorMoveUp { offset: s }),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
@@ -140,9 +143,9 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_PARENT_CURSOR_MOVE_DOWN {
             match arg {
-                "" => Ok(Self::ParentCursorMoveDown(1)),
+                "" => Ok(Self::ParentCursorMoveDown { offset: 1 }),
                 arg => match arg.trim().parse::<usize>() {
-                    Ok(s) => Ok(Self::ParentCursorMoveDown(s)),
+                    Ok(s) => Ok(Self::ParentCursorMoveDown { offset: s }),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
@@ -151,9 +154,9 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_PARENT_CURSOR_MOVE_UP {
             match arg {
-                "" => Ok(Self::ParentCursorMoveUp(1)),
+                "" => Ok(Self::ParentCursorMoveUp { offset: 1 }),
                 arg => match arg.trim().parse::<usize>() {
-                    Ok(s) => Ok(Self::ParentCursorMoveUp(s)),
+                    Ok(s) => Ok(Self::ParentCursorMoveUp { offset: s }),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
@@ -162,9 +165,9 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_PREVIEW_CURSOR_MOVE_DOWN {
             match arg {
-                "" => Ok(Self::PreviewCursorMoveDown(1)),
+                "" => Ok(Self::PreviewCursorMoveDown { offset: 1 }),
                 arg => match arg.trim().parse::<usize>() {
-                    Ok(s) => Ok(Self::PreviewCursorMoveDown(s)),
+                    Ok(s) => Ok(Self::PreviewCursorMoveDown { offset: s }),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
@@ -173,9 +176,9 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_PREVIEW_CURSOR_MOVE_UP {
             match arg {
-                "" => Ok(Self::PreviewCursorMoveUp(1)),
+                "" => Ok(Self::PreviewCursorMoveUp { offset: 1 }),
                 arg => match arg.trim().parse::<usize>() {
-                    Ok(s) => Ok(Self::PreviewCursorMoveUp(s)),
+                    Ok(s) => Ok(Self::PreviewCursorMoveUp { offset: s }),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
@@ -189,19 +192,35 @@ impl std::str::FromStr for Command {
                     format!("{}: no directory name given", command),
                 ))
             } else {
-                Ok(Self::NewDirectory(path::PathBuf::from(arg)))
+                let path = path::PathBuf::from(arg);
+                Ok(Self::NewDirectory { path })
             }
         } else if command == CMD_OPEN_FILE_WITH {
             match arg {
-                "" => Ok(Self::OpenFileWith(None)),
+                "" => Ok(Self::OpenFileWith { index: None }),
                 arg => match arg.trim().parse::<usize>() {
-                    Ok(s) => Ok(Self::OpenFileWith(Some(s))),
+                    Ok(s) => Ok(Self::OpenFileWith { index: Some(s) }),
                     Err(e) => Err(JoshutoError::new(
                         JoshutoErrorKind::ParseError,
                         e.to_string(),
                     )),
                 },
             }
+        } else if command == CMD_SYMLINK_FILES {
+            let mut relative = false;
+            for arg in arg.split_whitespace() {
+                match arg {
+                    "--relative=true" => relative = true,
+                    "--relative=false" => relative = false,
+                    _ => {
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::UnrecognizedArgument,
+                            format!("{}: unknown option '{}'", command, arg),
+                        ));
+                    }
+                }
+            }
+            Ok(Self::SymlinkFiles { relative })
         } else if command == CMD_PASTE_FILES {
             let mut options = FileOperationOptions::default();
             for arg in arg.split_whitespace() {
@@ -218,7 +237,7 @@ impl std::str::FromStr for Command {
                     }
                 }
             }
-            Ok(Self::PasteFiles(options))
+            Ok(Self::PasteFiles { options })
         } else if command == CMD_DELETE_FILES {
             match arg {
                 "--foreground=true" => Ok(Self::DeleteFiles { background: true }),
@@ -236,7 +255,7 @@ impl std::str::FromStr for Command {
                 )),
                 arg => {
                     let path: path::PathBuf = path::PathBuf::from(arg);
-                    Ok(Self::RenameFile(path))
+                    Ok(Self::RenameFile { new_name: path })
                 }
             }
         } else if command == CMD_SEARCH_STRING {
@@ -245,17 +264,23 @@ impl std::str::FromStr for Command {
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: Expected 1, got 0", command),
                 )),
-                arg => Ok(Self::SearchString(arg.to_string())),
+                arg => Ok(Self::SearchString {
+                    pattern: arg.to_string(),
+                }),
             }
         } else if command == CMD_SEARCH_INCREMENTAL {
-            Ok(Self::SearchIncremental(arg.to_string()))
+            Ok(Self::SearchIncremental {
+                pattern: arg.to_string(),
+            })
         } else if command == CMD_SEARCH_GLOB {
             match arg {
                 "" => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: Expected 1, got 0", command),
                 )),
-                arg => Ok(Self::SearchGlob(arg.to_string())),
+                arg => Ok(Self::SearchGlob {
+                    pattern: arg.to_string(),
+                }),
             }
         } else if command == CMD_SELECT_FILES {
             let mut options = SelectOption::default();
@@ -273,7 +298,10 @@ impl std::str::FromStr for Command {
                             s => pattern = s,
                         }
                     }
-                    Ok(Self::SelectFiles(pattern.to_string(), options))
+                    Ok(Self::SelectFiles {
+                        pattern: pattern.to_string(),
+                        options,
+                    })
                 }
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
@@ -282,7 +310,10 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_SUBPROCESS_FOREGROUND || command == CMD_SUBPROCESS_BACKGROUND {
             match shell_words::split(arg) {
-                Ok(s) if !s.is_empty() => Ok(Self::SubProcess(s, command == "spawn")),
+                Ok(s) if !s.is_empty() => Ok(Self::SubProcess {
+                    words: s,
+                    spawn: command == "spawn",
+                }),
                 Ok(_) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: No commands given", command),
@@ -305,22 +336,24 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_TAB_SWITCH {
             match arg.parse::<i32>() {
-                Ok(s) => Ok(Self::TabSwitch(s)),
+                Ok(s) => Ok(Self::TabSwitch { offset: s }),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", command, e),
                 )),
             }
         } else if command == CMD_TAB_SWITCH_INDEX {
-            match arg.parse::<u32>() {
-                Ok(s) => Ok(Self::TabSwitchIndex(s)),
+            match arg.parse::<usize>() {
+                Ok(s) => Ok(Self::TabSwitchIndex { index: s }),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", command, e),
                 )),
             }
         } else if command == CMD_TOUCH_FILE {
-            Ok(Self::TouchFile(arg.to_string()))
+            Ok(Self::TouchFile {
+                file_name: arg.to_string(),
+            })
         } else if command == CMD_SWITCH_LINE_NUMBERS {
             let policy = match arg {
                 "absolute" | "1" => LineNumberStyle::Absolute,
@@ -330,7 +363,7 @@ impl std::str::FromStr for Command {
             Ok(Self::SwitchLineNums(policy))
         } else if command == CMD_FLAT {
             match arg.parse::<usize>() {
-                Ok(i) => Ok(Self::Flat(i + 1)),
+                Ok(i) => Ok(Self::Flat { depth: i + 1 }),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", command, e),
@@ -339,7 +372,7 @@ impl std::str::FromStr for Command {
         } else if command == CMD_NUMBERED_COMMAND {
             let c = arg.chars().next();
             match c {
-                Some(c) => Ok(Self::NumberedCommand(c)),
+                Some(c) => Ok(Self::NumberedCommand { initial: c }),
                 None => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: no starting character given", command),
