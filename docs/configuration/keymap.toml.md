@@ -184,6 +184,8 @@ function joshuto() {
  - `cut_files`: store selected files (or current file if none were selected) to be moved later
  - `copy_files`: store selected files (or current file if none were selected) to be copied later
  - `symlink_files`: store selected files (or current file if none were selected) to be symlinked later
+   - `--relative=true`: relative symlink paths
+   - `--relative=false`: absolute symlink paths
  - `paste_files`: move/copy files stored from a previous `cut_files` or `copy_files` command
  - `delete_files`: delete selected files (or current file if none were selected).
     - `--foreground=true`: will delete files in the foreground
