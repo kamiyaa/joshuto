@@ -65,7 +65,7 @@ pub fn set_mode(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoRe
         if let Some(stripped) = s.strip_prefix(PREFIX) {
             let mode = str_to_mode(stripped);
             if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
-                if curr_list.any_selected() {
+                if curr_list.selected_count() > 0 {
                     for entry in curr_list.iter_selected_mut() {
                         let mut permissions = entry.metadata.permissions_ref().clone();
                         let file_mode = (permissions.mode() >> 12) << 12 | mode;

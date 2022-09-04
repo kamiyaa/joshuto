@@ -206,8 +206,8 @@ impl JoshutoDirList {
         self.path.as_path()
     }
 
-    pub fn any_selected(&self) -> bool {
-        self.contents.iter().any(|e| e.is_selected())
+    pub fn selected_count(&self) -> usize {
+        self.contents.iter().filter(|e| e.is_selected()).count()
     }
 
     pub fn iter_selected(&self) -> impl Iterator<Item = &JoshutoDirEntry> {

@@ -21,13 +21,22 @@ impl<'a> TuiFooter<'a> {
 
 impl<'a> Widget for TuiFooter<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        #[cfg(unix)]
         use std::os::unix::fs::PermissionsExt;
+
+        let visual_mode_style = Style::default().fg(Color::Black).bg(Color::LightRed);
+        let mode_style = Style::default().fg(Color::Cyan);
+
+        let selection_style = Style::default()
+            .fg(THEME_T.selection.fg)
+            .bg(THEME_T.selection.bg)
+            .add_modifier(THEME_T.selection.modifier);
+        let selected_count = self.dirlist.selected_count();
+
         match self.dirlist.get_index() {
             Some(i) if i < self.dirlist.len() => {
                 let entry = &self.dirlist.contents[i];
 
-                let visual_mode_style = Style::default().fg(Color::Black).bg(Color::LightRed);
-                let mode_style = Style::default().fg(Color::Cyan);
                 let mode_str = unix::mode_to_string(entry.metadata.permissions_ref().mode());
 
                 let mtime_str = format::mtime_to_string(entry.metadata.modified());
@@ -54,6 +63,15 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(mtime_str),
                     Span::raw(" UTC "),
                     Span::raw(size_str),
+                    Span::raw("  "),
+                    Span::styled(
+                        if selected_count > 0 {
+                            format!("{} selected", selected_count)
+                        } else {
+                            " ".to_string()
+                        },
+                        selection_style,
+                    ),
                 ];
 
                 if let LinkType::Symlink(target, valid) = entry.metadata.link_type() {
