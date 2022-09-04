@@ -74,7 +74,7 @@ keymap = [
 
 	{ keys = [ " " ],		command = "select --toggle=true" },
 	{ keys = [ "t" ],		command = "select --all=true --toggle=true" },
-    { keys = [ "V" ],       command = "toggle_visual"},
+	{ keys = [ "V" ],		command = "toggle_visual"},
 
 	{ keys = [ "w" ],		command = "show_tasks --exit-key=w" },
 	{ keys = [ "b", "b" ],		command = "bulk_rename" },
