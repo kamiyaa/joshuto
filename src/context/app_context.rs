@@ -2,12 +2,12 @@ use std::collections::HashSet;
 use std::process;
 use std::sync::mpsc;
 use std::thread;
-use tui::layout::Rect;
 
 use crate::commands::quit::QuitAction;
 use crate::config;
 use crate::context::{
-    CommandLineContext, LocalStateContext, MessageQueue, PreviewContext, TabContext, WorkerContext,
+    CommandLineContext, LocalStateContext, MessageQueue, PreviewContext, TabContext, UiContext,
+    WorkerContext,
 };
 use crate::event::{AppEvent, Events};
 use crate::ui::views;
@@ -16,11 +16,6 @@ use crate::util::search::SearchPattern;
 use crate::Args;
 use notify::{RecursiveMode, Watcher};
 use std::path;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct UiContext {
-    pub layout: Vec<Rect>,
-}
 
 pub struct AppContext {
     pub quit: QuitAction,
