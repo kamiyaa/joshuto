@@ -21,6 +21,16 @@ keymap = [
 	{ keys = [ "alt+4" ],		command = "tab_switch_index 4" },
 	{ keys = [ "alt+5" ],		command = "tab_switch_index 5" },
 
+	{ keys = [ "1" ],		command = "numbered_command 1" },
+	{ keys = [ "2" ],		command = "numbered_command 2" },
+	{ keys = [ "3" ],		command = "numbered_command 3" },
+	{ keys = [ "4" ],		command = "numbered_command 4" },
+	{ keys = [ "5" ],		command = "numbered_command 5" },
+	{ keys = [ "6" ],		command = "numbered_command 6" },
+	{ keys = [ "7" ],		command = "numbered_command 7" },
+	{ keys = [ "8" ],		command = "numbered_command 8" },
+	{ keys = [ "9" ],		command = "numbered_command 9" },
+
 	# arrow keys
 	{ keys = [ "arrow_up" ],	command = "cursor_move_up" },
 	{ keys = [ "arrow_down" ],	command = "cursor_move_down" },

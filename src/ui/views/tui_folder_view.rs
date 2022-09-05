@@ -88,7 +88,7 @@ impl<'a> TuiFolderView<'a> {
         Rect {
             y: area.top() + 1,
             height: area.bottom() - 2,
-            ..area.clone()
+            ..*area
         }
     }
 
@@ -149,8 +149,7 @@ impl<'a> Widget for TuiFolderView<'a> {
             let area = Self::folder_area(&area);
             TuiFolderViewBorders::new(constraints).render(area, buf);
 
-            let layout = calculate_layout_with_borders(area, constraints);
-            layout
+            calculate_layout_with_borders(area, constraints)
         } else {
             let area = Self::folder_area(&area);
             calculate_layout(area, constraints)
