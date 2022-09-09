@@ -50,7 +50,7 @@ features = [
 ]
 
 [features]
-devicons = [ "phf" ]
+devicons = [ "phf", "syntax_highlight" ]
 file_mimetype = []
 mouse = []
 recycle_bin = [ "trash" ]
