@@ -84,7 +84,12 @@ impl From<AppProgramRegistryRaw> for AppProgramRegistry {
 
 impl TomlConfigFile for AppProgramRegistry {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppProgramRegistryRaw, AppProgramRegistry>(file_name)
-            .unwrap_or_default()
+        match parse_to_config_file::<AppProgramRegistryRaw, AppProgramRegistry>(file_name) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Failed to parse mimetype config: {}", e);
+                Self::default()
+            }
+        }
     }
 }

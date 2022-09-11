@@ -83,7 +83,13 @@ impl AppTheme {
 
 impl TomlConfigFile for AppTheme {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppThemeRaw, AppTheme>(file_name).unwrap_or_default()
+        match parse_to_config_file::<AppThemeRaw, AppTheme>(file_name) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Failed to parse theme config: {}", e);
+                Self::default()
+            }
+        }
     }
 }
 

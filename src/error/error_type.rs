@@ -28,54 +28,50 @@ impl std::fmt::Display for JoshutoError {
 
 impl From<io::Error> for JoshutoError {
     fn from(err: io::Error) -> Self {
+        let cause = err.to_string();
         Self {
             _kind: JoshutoErrorKind::from(err.kind()),
-            _cause: err.to_string(),
+            _cause: cause,
         }
     }
 }
 
 impl From<globset::Error> for JoshutoError {
     fn from(err: globset::Error) -> Self {
+        let cause = err.to_string();
         Self {
             _kind: JoshutoErrorKind::from(err.kind()),
-            _cause: err.to_string(),
+            _cause: cause,
         }
     }
 }
 
 impl From<std::env::VarError> for JoshutoError {
     fn from(err: std::env::VarError) -> Self {
+        let cause = err.to_string();
         Self {
             _kind: JoshutoErrorKind::from(err),
-            _cause: "Environment variable not found".to_string(),
+            _cause: cause,
         }
     }
 }
 
 impl From<trash::Error> for JoshutoError {
     fn from(err: trash::Error) -> Self {
-        let err = match err {
-            trash::Error::Unknown { description } => {
-                std::io::Error::new(std::io::ErrorKind::Other, description)
-            }
-            trash::Error::TargetedRoot => {
-                std::io::Error::new(std::io::ErrorKind::Other, "Targeted Root")
-            }
-            _ => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
-        };
+        let cause = err.to_string();
         Self {
-            _kind: JoshutoErrorKind::from(err.kind()),
-            _cause: err.to_string(),
+            _kind: JoshutoErrorKind::TrashError,
+            _cause: cause,
         }
     }
 }
 
 impl From<toml::de::Error> for JoshutoError {
     fn from(err: toml::de::Error) -> Self {
+        let cause = err.to_string();
         Self {
             _kind: JoshutoErrorKind::from(err),
-            _cause: "Failed to parse TOML".to_string(),
+            _cause: cause,
         }
     }
 }

@@ -13,6 +13,7 @@ pub enum JoshutoErrorKind {
     ParseError,
     ClipboardError,
     TomlDeError(toml::de::Error),
+    TrashError,
 
     Glob,
 

@@ -52,6 +52,12 @@ impl From<AppConfigRaw> for AppConfig {
 
 impl TomlConfigFile for AppConfig {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppConfigRaw, AppConfig>(file_name).unwrap_or_default()
+        match parse_to_config_file::<AppConfigRaw, AppConfig>(file_name) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Failed to parse app config: {}", e);
+                Self::default()
+            }
+        }
     }
 }

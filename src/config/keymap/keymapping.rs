@@ -113,7 +113,7 @@ impl TomlConfigFile for AppKeyMapping {
         match parse_to_config_file::<AppKeyMappingRaw, AppKeyMapping>(file_name) {
             Ok(s) => s,
             Err(e) => {
-                eprintln!("Failed to parse keymap: {}", e);
+                eprintln!("Failed to parse keymap config: {}", e);
                 Self::default()
             }
         }
