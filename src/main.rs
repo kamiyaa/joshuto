@@ -23,7 +23,7 @@ use structopt::StructOpt;
 
 use crate::commands::quit::QuitAction;
 use crate::config::{
-    AppConfig, AppKeyMapping, AppMimetypeRegistry, AppTheme, JoshutoPreview, TomlConfigFile,
+    AppConfig, AppKeyMapping, AppProgramRegistry, AppTheme, JoshutoPreview, TomlConfigFile,
 };
 use crate::context::AppContext;
 use crate::error::JoshutoError;
@@ -67,7 +67,7 @@ lazy_static! {
         config_dirs
     };
     static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
-    static ref MIMETYPE_T: AppMimetypeRegistry = AppMimetypeRegistry::get_config(MIMETYPE_FILE);
+    static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config(MIMETYPE_FILE);
     static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config(PREVIEW_FILE);
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();

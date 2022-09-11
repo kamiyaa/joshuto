@@ -3,60 +3,88 @@ use std::collections::HashMap;
 
 use crate::config::{parse_to_config_file, TomlConfigFile};
 
-use super::{AppList, AppMimetypeEntry};
+use super::{
+    ExtensionAppList, ExtensionAppListRaw, MimetypeAppList, MimetypeAppListRaw, ProgramEntry,
+};
 
-pub type MimetypeRegistry = HashMap<String, AppList>;
+pub type ExtensionRegistryRaw = HashMap<String, ExtensionAppListRaw>;
+pub type MimetypeRegistryRaw = HashMap<String, MimetypeAppListRaw>;
+
+pub type ExtensionRegistry = HashMap<String, ExtensionAppList>;
+pub type MimetypeRegistry = HashMap<String, MimetypeAppList>;
 
 #[derive(Debug, Deserialize)]
-pub struct AppMimetypeRegistryCrude {
+pub struct AppProgramRegistryRaw {
     #[serde(default, rename = "class")]
-    pub _class: HashMap<String, Vec<AppMimetypeEntry>>,
+    pub _class: HashMap<String, Vec<ProgramEntry>>,
     #[serde(default, rename = "extension")]
-    pub _extension: MimetypeRegistry,
+    pub _extension: ExtensionRegistryRaw,
+    #[serde(default, rename = "mimetype")]
+    pub _mimetype: MimetypeRegistryRaw,
 }
 
 #[derive(Debug, Default)]
-pub struct AppMimetypeRegistry {
-    //    pub _class: HashMap<String, Vec<AppMimetypeEntry>>,
-    pub _extension: MimetypeRegistry,
+pub struct AppProgramRegistry {
+    //    pub _class: HashMap<String, Vec<ProgramEntry>>,
+    pub _extension: ExtensionRegistry,
+    pub _mimetype: MimetypeRegistry,
 }
 
-pub const EMPTY_ARR: [AppMimetypeEntry; 0] = [];
+impl AppProgramRegistry {
+    pub fn app_list_for_ext(&self, extension: &str) -> Option<&ExtensionAppList> {
+        self._extension.get(extension)
+    }
 
-impl AppMimetypeRegistry {
-    pub fn app_list_for_ext(&self, extension: &str) -> &[AppMimetypeEntry] {
-        match self._extension.get(extension) {
-            Some(s) => s.app_list(),
-            None => &EMPTY_ARR,
-        }
+    pub fn app_list_for_mimetype(&self, mimetype: &str) -> Option<&MimetypeAppList> {
+        self._mimetype.get(mimetype)
     }
 }
 
-impl From<AppMimetypeRegistryCrude> for AppMimetypeRegistry {
-    fn from(crude: AppMimetypeRegistryCrude) -> Self {
-        let mut registry = MimetypeRegistry::new();
-
-        for (ext, app_list) in crude._extension {
+impl From<AppProgramRegistryRaw> for AppProgramRegistry {
+    fn from(raw: AppProgramRegistryRaw) -> Self {
+        let mut extension = ExtensionRegistry::new();
+        for (ext, app_list) in raw._extension {
             let class = app_list.parent();
-            let mut combined_app_list: Vec<AppMimetypeEntry> = crude
+            let mut combined_app_list: ExtensionAppList = raw
                 ._class
                 .get(class)
                 .map(|v| (*v).clone())
                 .unwrap_or_default();
             combined_app_list.extend_from_slice(app_list.app_list());
-            let combined_app_list = AppList::new(class.to_string(), combined_app_list);
-            registry.insert(ext, combined_app_list);
+
+            extension.insert(ext, combined_app_list);
+        }
+
+        let mut mimetype = MimetypeRegistry::new();
+        for (ttype, data) in raw._mimetype {
+            let class = data.parent();
+            let mut combined_app_list: ExtensionAppList = raw
+                ._class
+                .get(class)
+                .map(|v| (*v).clone())
+                .unwrap_or_default();
+            combined_app_list.extend_from_slice(data.app_list());
+
+            let subtypes = data
+                .subtype
+                .unwrap_or_else(|| HashMap::new())
+                .into_iter()
+                .map(|(k, v)| (k, v.app_list))
+                .collect();
+            let app_list = MimetypeAppList::new(combined_app_list, subtypes);
+            mimetype.insert(ttype, app_list);
         }
 
         Self {
-            _extension: registry,
+            _extension: extension,
+            _mimetype: mimetype,
         }
     }
 }
 
-impl TomlConfigFile for AppMimetypeRegistry {
+impl TomlConfigFile for AppProgramRegistry {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<AppMimetypeRegistryCrude, AppMimetypeRegistry>(file_name)
+        parse_to_config_file::<AppProgramRegistryRaw, AppProgramRegistry>(file_name)
             .unwrap_or_default()
     }
 }

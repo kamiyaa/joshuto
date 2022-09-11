@@ -2,9 +2,10 @@
 This file tells joshuto what programs to use when opening files.
 
 There are currently 2 ways to configure opening files:
- - via extension
- - via mimetype (***CURRENTLY DOES NOT WORK***)
-
+ - via extension (1st priority)
+ - via mimetype (2nd priority)
+   - must have `file` command available
+   - joshuto will use `file --mime-type -Lb` to determine the file's mimetype
 
 ## Class and inherit
 To alleviate the lack of variables and programmability in TOML,
@@ -37,6 +38,16 @@ rs.app_list	= [
 	{ command = "micro" },
 	{ command = "gedit", fork = true, silent = true },
 	{ command = "bat", confirm_exit = true } ]
+
+[mimetype]
+
+# text/*
+[mimetype.text]
+inherit = "text_default"
+
+# application/octet-stream
+[mimetype.application.subtype.octet-stream]
+inherit = "video_default"
 ```
 
 each extension has the following fields:

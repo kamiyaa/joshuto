@@ -3,11 +3,11 @@ use std::process;
 use std::sync::mpsc;
 use std::thread;
 
-use crate::config::AppMimetypeEntry;
+use crate::config::ProgramEntry;
 use crate::event::AppEvent;
 
 pub fn fork_execute<I, S>(
-    entry: &AppMimetypeEntry,
+    entry: &ProgramEntry,
     paths: I,
     event_tx: mpsc::Sender<AppEvent>,
 ) -> std::io::Result<(u32, thread::JoinHandle<()>)>
@@ -38,7 +38,7 @@ where
     Ok((child_id, handle))
 }
 
-pub fn execute_and_wait<I, S>(entry: &AppMimetypeEntry, paths: I) -> std::io::Result<()>
+pub fn execute_and_wait<I, S>(entry: &ProgramEntry, paths: I) -> std::io::Result<()>
 where
     I: IntoIterator<Item = S>,
     S: AsRef<std::ffi::OsStr>,

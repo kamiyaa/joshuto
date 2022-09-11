@@ -2,23 +2,40 @@ use std::io;
 use std::path;
 
 use crate::commands::{quit, reload};
-use crate::config::AppMimetypeEntry;
+use crate::config::ProgramEntry;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::TuiTextField;
 use crate::ui::AppBackend;
+use crate::util::mimetype::get_mimetype;
 use crate::util::process::{execute_and_wait, fork_execute};
 
 use super::change_directory;
 
 use crate::MIMETYPE_T;
 
-fn _get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
-    let mut options: Vec<&AppMimetypeEntry> = Vec::new();
-    if let Some(file_ext) = path.extension() {
-        if let Some(file_ext) = file_ext.to_str() {
-            let ext_entries = MIMETYPE_T.app_list_for_ext(file_ext);
-            options.extend(ext_entries);
+fn _get_options<'a>(path: &path::Path) -> Vec<&'a ProgramEntry> {
+    let mut options: Vec<&ProgramEntry> = Vec::new();
+
+    if let Some(file_ext) = path.extension().and_then(|ext| ext.to_str()) {
+        if let Some(entries) = MIMETYPE_T.app_list_for_ext(file_ext) {
+            options.extend(entries);
+            return options;
+        }
+    }
+    if let Ok(file_mimetype) = get_mimetype(path) {
+        if let Some(entry) = MIMETYPE_T.app_list_for_mimetype(file_mimetype.get_type()) {
+            match entry.subtypes().get(file_mimetype.get_subtype()) {
+                Some(entries) => {
+                    options.extend(entries);
+                    return options;
+                }
+                None => {
+                    let entries = entry.app_list();
+                    options.extend(entries);
+                    return options;
+                }
+            }
         }
     }
     options
@@ -27,7 +44,7 @@ fn _get_options<'a>(path: &path::Path) -> Vec<&'a AppMimetypeEntry> {
 fn _open_with_entry<S>(
     context: &mut AppContext,
     backend: &mut AppBackend,
-    option: &AppMimetypeEntry,
+    option: &ProgramEntry,
     files: &[S],
 ) -> std::io::Result<()>
 where
@@ -65,7 +82,7 @@ fn _open_with_xdg(
 fn _open_with_helper<S>(
     context: &mut AppContext,
     backend: &mut AppBackend,
-    options: Vec<&AppMimetypeEntry>,
+    options: Vec<&ProgramEntry>,
     files: &[S],
 ) -> std::io::Result<()>
 where
@@ -107,7 +124,7 @@ where
                     let mut args_iter = user_input.split_whitespace();
                     if let Some(cmd) = args_iter.next() {
                         backend.terminal_drop();
-                        let mut option = AppMimetypeEntry::new(String::from(cmd));
+                        let mut option = ProgramEntry::new(String::from(cmd));
                         option.args(args_iter);
                         let res = execute_and_wait(&option, files);
                         backend.terminal_restore()?;

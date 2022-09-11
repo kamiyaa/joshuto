@@ -181,3 +181,13 @@ tex.app_list	= [
 
 torrent.app_list = [
 	{ command = "transmission-gtk" } ]
+
+[mimetype]
+
+# text/*
+[mimetype.text]
+inherit = "text_default"
+
+# application/octet-stream
+[mimetype.application.subtype.octet-stream]
+inherit = "video_default"

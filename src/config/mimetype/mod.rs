@@ -1,5 +1,7 @@
 mod entry;
+mod list;
 mod registry;
 
-pub use self::entry::{AppList, AppMimetypeEntry};
-pub use self::registry::AppMimetypeRegistry;
+pub use self::entry::*;
+pub use self::list::*;
+pub use self::registry::*;

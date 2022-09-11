@@ -3,32 +3,7 @@ use std::env;
 use std::fmt;
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AppList {
-    #[serde(default, rename = "inherit")]
-    _inherit: String,
-    #[serde(default, rename = "app_list")]
-    _app_list: Vec<AppMimetypeEntry>,
-}
-
-impl AppList {
-    pub fn new(_inherit: String, _app_list: Vec<AppMimetypeEntry>) -> Self {
-        Self {
-            _inherit,
-            _app_list,
-        }
-    }
-
-    pub fn parent(&self) -> &str {
-        self._inherit.as_str()
-    }
-
-    pub fn app_list(&self) -> &[AppMimetypeEntry] {
-        self._app_list.as_slice()
-    }
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct AppMimetypeEntry {
+pub struct ProgramEntry {
     #[serde(rename = "command")]
     _command: String,
     #[serde(default, rename = "args")]
@@ -41,7 +16,7 @@ pub struct AppMimetypeEntry {
     _confirm_exit: bool,
 }
 
-impl AppMimetypeEntry {
+impl ProgramEntry {
     pub fn new(command: String) -> Self {
         Self {
             _command: command,
@@ -114,7 +89,7 @@ impl AppMimetypeEntry {
     }
 }
 
-impl std::default::Default for AppMimetypeEntry {
+impl std::default::Default for ProgramEntry {
     fn default() -> Self {
         Self {
             _command: "".to_string(),
@@ -126,7 +101,7 @@ impl std::default::Default for AppMimetypeEntry {
     }
 }
 
-impl std::fmt::Display for AppMimetypeEntry {
+impl std::fmt::Display for ProgramEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(self.get_command()).unwrap();
         self.get_args()
