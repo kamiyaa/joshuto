@@ -3,8 +3,11 @@ use std::process::{Command, Output};
 use std::thread;
 use std::time;
 
+use tui::layout::Rect;
+
 use crate::context::AppContext;
 use crate::event::AppEvent;
+use crate::ui::{views, AppBackend};
 
 pub enum PreviewFileState {
     Loading,
@@ -38,64 +41,83 @@ impl std::convert::From<Output> for FilePreview {
 pub struct Background {}
 
 impl Background {
-    pub fn preview_path_with_script(context: &mut AppContext, path: path::PathBuf) {
+    pub fn preview_path_with_script(
+        context: &mut AppContext,
+        backend: &mut AppBackend,
+        path: path::PathBuf,
+    ) {
         let preview_options = context.config_ref().preview_options_ref();
         if let Some(script) = preview_options.preview_script.as_ref() {
-            let ui_context = context.ui_context_ref();
-            if ui_context.layout.is_empty() {
-                return;
-            }
-            let layout_rect = &ui_context.layout[ui_context.layout.len() - 1];
+            if let Ok(area) = backend.terminal_ref().size() {
+                let area = Rect {
+                    y: area.top() + 1,
+                    height: area.height - 2,
+                    ..area
+                };
 
-            let preview_width = layout_rect.width;
-            let preview_height = layout_rect.height;
-            let preview_x_coord = layout_rect.x;
-            let preview_y_coord = layout_rect.y;
+                let config = context.config_ref();
+                let display_options = config.display_options_ref();
+                let constraints = &display_options.default_layout;
+                let layout = if display_options.show_borders() {
+                    views::calculate_layout_with_borders(area, constraints)
+                } else {
+                    views::calculate_layout(area, constraints)
+                };
+                let layout_rect = layout[2];
+                let preview_width = layout_rect.width;
+                let preview_height = layout_rect.height;
+                let preview_x_coord = layout_rect.x;
+                let preview_y_coord = layout_rect.y;
 
-            let image_cache = 0;
-
-            let script = script.clone();
-            let event_tx = context.clone_event_tx();
-            context
-                .preview_context_mut()
-                .previews_mut()
-                .insert(path.clone(), PreviewFileState::Loading);
-
-            let _ = thread::spawn(move || {
-                let file_full_path = path.as_path();
-
-                let res = Command::new(script)
-                    .arg("--path")
-                    .arg(file_full_path)
-                    .arg("--preview-width")
-                    .arg(preview_width.to_string())
-                    .arg("--preview-height")
-                    .arg(preview_height.to_string())
-                    .arg("--x-coord")
-                    .arg(preview_x_coord.to_string())
-                    .arg("--y-coord")
-                    .arg(preview_y_coord.to_string())
-                    .arg("--image-cache")
-                    .arg(image_cache.to_string())
-                    .output();
-                match res {
-                    Ok(output) => {
-                        let preview = FilePreview::from(output);
-                        let res = AppEvent::PreviewFile {
-                            path,
-                            res: Box::new(Ok(preview)),
-                        };
-                        let _ = event_tx.send(res);
-                    }
-                    Err(e) => {
-                        let res = AppEvent::PreviewFile {
-                            path,
-                            res: Box::new(Err(e)),
-                        };
-                        let _ = event_tx.send(res);
-                    }
+                if preview_width == 0 || preview_height == 0 {
+                    return;
                 }
-            });
+
+                let image_cache = 0;
+
+                let script = script.clone();
+                let event_tx = context.clone_event_tx();
+                context
+                    .preview_context_mut()
+                    .previews_mut()
+                    .insert(path.clone(), PreviewFileState::Loading);
+
+                let _ = thread::spawn(move || {
+                    let file_full_path = path.as_path();
+
+                    let res = Command::new(script)
+                        .arg("--path")
+                        .arg(file_full_path)
+                        .arg("--preview-width")
+                        .arg(preview_width.to_string())
+                        .arg("--preview-height")
+                        .arg(preview_height.to_string())
+                        .arg("--x-coord")
+                        .arg(preview_x_coord.to_string())
+                        .arg("--y-coord")
+                        .arg(preview_y_coord.to_string())
+                        .arg("--image-cache")
+                        .arg(image_cache.to_string())
+                        .output();
+                    match res {
+                        Ok(output) => {
+                            let preview = FilePreview::from(output);
+                            let res = AppEvent::PreviewFile {
+                                path,
+                                res: Box::new(Ok(preview)),
+                            };
+                            let _ = event_tx.send(res);
+                        }
+                        Err(e) => {
+                            let res = AppEvent::PreviewFile {
+                                path,
+                                res: Box::new(Err(e)),
+                            };
+                            let _ = event_tx.send(res);
+                        }
+                    }
+                });
+            }
         }
     }
 }

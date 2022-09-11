@@ -39,7 +39,7 @@ pub fn run_loop(
         context.tab_context_mut().insert_tab(id, tab);
 
         // trigger a preview of child
-        preview_default::load_preview(context);
+        preview_default::load_preview(context, backend);
     }
 
     while context.quit == QuitAction::DoNot {
@@ -65,7 +65,7 @@ pub fn run_loop(
         match event {
             AppEvent::Termion(Event::Mouse(event)) => {
                 process_event::process_mouse(event, context, backend, &keymap_t);
-                preview_default::load_preview(context);
+                preview_default::load_preview(context, backend);
             }
             AppEvent::Termion(key) => {
                 if context.message_queue_ref().current_message().is_some() {
@@ -99,7 +99,7 @@ pub fn run_loop(
                         }
                     },
                 }
-                preview_default::load_preview(context);
+                preview_default::load_preview(context, backend);
                 context.flush_event();
             }
             event => process_event::process_noninteractive(event, context),
