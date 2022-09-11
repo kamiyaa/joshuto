@@ -20,7 +20,7 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
                 .collect();
             v
         })
-        .unwrap_or_else(Vec::new);
+        .unwrap_or_default();
 
     if items.is_empty() {
         return Err(JoshutoError::new(

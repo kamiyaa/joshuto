@@ -184,10 +184,14 @@ torrent.app_list = [
 
 [mimetype]
 
+# application/octet-stream
+[mimetype.application.subtype.octet-stream]
+inherit = "video_default"
+
 # text/*
 [mimetype.text]
 inherit = "text_default"
 
-# application/octet-stream
-[mimetype.application.subtype.octet-stream]
+# text/*
+[mimetype.video]
 inherit = "video_default"

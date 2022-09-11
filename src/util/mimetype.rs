@@ -21,7 +21,7 @@ impl Mimetype {
     }
 
     pub fn get_subtype(&self) -> &str {
-        &&self._subtype
+        &self._subtype
     }
 }
 
@@ -51,7 +51,7 @@ pub fn get_mimetype(p: &Path) -> JoshutoResult<Mimetype> {
                 JoshutoErrorKind::Io(io::ErrorKind::InvalidInput),
                 "Unknown mimetype".to_string(),
             );
-            return Err(error);
+            Err(error)
         }
     }
 }

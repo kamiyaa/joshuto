@@ -20,7 +20,7 @@ fn delete_files(
         .curr_tab_ref()
         .curr_list_ref()
         .map(|s| s.get_selected_paths())
-        .unwrap_or_else(Vec::new);
+        .unwrap_or_default();
     let paths_len = paths.len();
     if paths_len == 0 {
         return Err(std::io::Error::new(

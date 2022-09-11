@@ -59,7 +59,7 @@ pub fn flatten(context: &mut AppContext, depth: usize) -> JoshutoResult {
         .curr_tab_ref()
         .curr_list_ref()
         .map(|lst| lst.get_index())
-        .unwrap_or(None);
+        .unwrap_or_default();
     let viewport_index: usize = context
         .tab_context_ref()
         .curr_tab_ref()

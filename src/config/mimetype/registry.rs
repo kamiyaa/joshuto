@@ -67,7 +67,7 @@ impl From<AppProgramRegistryRaw> for AppProgramRegistry {
 
             let subtypes = data
                 .subtype
-                .unwrap_or_else(|| HashMap::new())
+                .unwrap_or_default()
                 .into_iter()
                 .map(|(k, v)| (k, v.app_list))
                 .collect();
