@@ -138,18 +138,20 @@ impl<'a> Widget for TuiHSplitView<'a> {
             tab_index - 1
         };
 
-        let other_tab_id = tab_context.tab_order[other_tab_index];
-        if let Some(curr_tab) = tab_context.tab_ref(&other_tab_id) {
-            let curr_list = curr_tab.curr_list_ref();
+        if other_tab_index < tab_context.tab_order.len() {
+            let other_tab_id = tab_context.tab_order[other_tab_index];
+            if let Some(curr_tab) = tab_context.tab_ref(&other_tab_id) {
+                let curr_list = curr_tab.curr_list_ref();
 
-            let layout_rect = if other_tab_index % 2 == 0 {
-                layout_rect[0]
-            } else {
-                layout_rect[1]
-            };
+                let layout_rect = if other_tab_index % 2 == 0 {
+                    layout_rect[0]
+                } else {
+                    layout_rect[1]
+                };
 
-            if let Some(list) = curr_list.as_ref() {
-                TuiDirListDetailed::new(list, display_options, false).render(layout_rect, buf);
+                if let Some(list) = curr_list.as_ref() {
+                    TuiDirListDetailed::new(list, display_options, false).render(layout_rect, buf);
+                }
             }
         }
     }
