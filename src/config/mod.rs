@@ -16,8 +16,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use crate::error::JoshutoError;
-use crate::error::JoshutoResult;
+use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::CONFIG_HIERARCHY;
 
 pub trait TomlConfigFile {
@@ -53,7 +52,7 @@ where
         None => {
             let error_kind = io::ErrorKind::NotFound;
             let error = JoshutoError::new(
-                crate::error::JoshutoErrorKind::Io(error_kind),
+                JoshutoErrorKind::Io(error_kind),
                 "No config directory found".to_string(),
             );
             Err(error)
