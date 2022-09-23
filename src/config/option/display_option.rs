@@ -36,6 +36,7 @@ pub struct DisplayOption {
 #[derive(Clone, Debug)]
 pub struct TabDisplayOption {
     pub _sort_options: SortOption,
+    pub filter_string: String,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -52,6 +53,14 @@ impl TabDisplayOption {
 
     pub fn sort_options_mut(&mut self) -> &mut SortOption {
         &mut self._sort_options
+    }
+
+    pub fn set_filter_string(&mut self, pattern: &str) {
+        self.filter_string = pattern.to_owned();
+    }
+
+    pub fn filter_string_ref(&self) -> &str {
+        &self.filter_string
     }
 }
 
@@ -100,12 +109,10 @@ impl DisplayOption {
         self._line_nums = style;
     }
 
-    pub fn filter_func(&self) -> fn(&Result<fs::DirEntry, std::io::Error>) -> bool {
-        if self.show_hidden() {
-            no_filter
-        } else {
-            filter_hidden
-        }
+    pub fn filter_func(
+        &self,
+    ) -> fn(&Result<fs::DirEntry, std::io::Error>, &DisplayOption, &TabDisplayOption) -> bool {
+        filter
     }
 }
 
@@ -140,22 +147,48 @@ impl std::default::Default for DisplayOption {
             no_preview_layout,
             default_tab_display_option: TabDisplayOption {
                 _sort_options: SortOption::default(),
+                filter_string: "".to_owned(),
             },
         }
     }
 }
 
-const fn no_filter(_: &Result<fs::DirEntry, std::io::Error>) -> bool {
-    true
+fn has_str(entry: &fs::DirEntry, pat: &str) -> bool {
+    match entry.file_name().into_string().ok() {
+        Some(s) => s
+            .to_ascii_lowercase()
+            .contains(pat.to_ascii_lowercase().as_str()),
+        None => false,
+    }
 }
 
-fn filter_hidden(result: &Result<fs::DirEntry, std::io::Error>) -> bool {
-    match result {
-        Err(_) => true,
-        Ok(entry) => {
-            let file_name = entry.file_name();
-            let lossy_string = file_name.as_os_str().to_string_lossy();
-            !lossy_string.starts_with('.')
+fn filter(
+    result: &Result<fs::DirEntry, std::io::Error>,
+    opt: &DisplayOption,
+    tab_opts: &TabDisplayOption,
+) -> bool {
+    if opt.show_hidden() && tab_opts.filter_string_ref().is_empty() {
+        true
+    } else {
+        match result {
+            Err(_) => true,
+            Ok(entry) => {
+                if tab_opts.filter_string_ref().is_empty() {
+                    let file_name = entry.file_name();
+                    let lossy_string = file_name.as_os_str().to_string_lossy();
+                    !lossy_string.starts_with('.')
+                } else if opt.show_hidden() {
+                    has_str(entry, tab_opts.filter_string_ref())
+                } else {
+                    let file_name = entry.file_name();
+                    let lossy_string = file_name.as_os_str().to_string_lossy();
+                    if !lossy_string.starts_with('.') {
+                        has_str(entry, tab_opts.filter_string_ref())
+                    } else {
+                        false
+                    }
+                }
+            }
         }
     }
 }

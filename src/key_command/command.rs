@@ -123,6 +123,10 @@ pub enum Command {
 
     Sort(SortType),
     SortReverse,
+    
+    Filter {
+        pattern: String,
+    },
 
     NewTab,
     CloseTab,

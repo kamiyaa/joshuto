@@ -74,6 +74,8 @@ impl AppCommand for Command {
             Self::Sort(_) => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,
 
+            Self::Filter { .. } => CMD_FILTER,
+
             Self::SubProcess { spawn: false, .. } => CMD_SUBPROCESS_FOREGROUND,
             Self::SubProcess { spawn: true, .. } => CMD_SUBPROCESS_BACKGROUND,
             Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,

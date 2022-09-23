@@ -10,6 +10,9 @@ impl InteractiveExecute for Command {
             Self::SearchIncremental { pattern } => {
                 search_string::search_string(context, pattern.as_str(), true)
             }
+            Self::Filter { pattern } => {
+                filter::filter(context, pattern).ok();
+            }
             _ => (),
         }
     }

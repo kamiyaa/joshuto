@@ -5,6 +5,7 @@ pub mod cursor_move;
 pub mod delete_files;
 pub mod escape;
 pub mod file_ops;
+pub mod filter;
 pub mod flat;
 pub mod line_nums;
 pub mod new_directory;
