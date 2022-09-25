@@ -5,9 +5,7 @@ use super::reload;
 
 pub fn filter(context: &mut AppContext, arg: &str) -> JoshutoResult {
     let curr_tab = context.tab_context_mut().curr_tab_mut();
-    curr_tab
-        .option_mut()
-        .set_filter_string(arg);
+    curr_tab.option_mut().set_filter_string(arg);
 
     if let Some(list) = curr_tab.curr_list_mut() {
         list.depreciate();

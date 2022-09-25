@@ -246,13 +246,13 @@ pub fn read_directory<F>(
     path: &Path,
     filter_func: F,
     options: &DisplayOption,
-    tab_options: &TabDisplayOption
+    tab_options: &TabDisplayOption,
 ) -> io::Result<Vec<JoshutoDirEntry>>
 where
     F: Fn(&Result<fs::DirEntry, io::Error>, &DisplayOption, &TabDisplayOption) -> bool,
 {
     let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
-        .filter(|res|filter_func(res, options, tab_options))
+        .filter(|res| filter_func(res, options, tab_options))
         .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, options).ok())
         .collect();
 
