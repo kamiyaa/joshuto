@@ -8,6 +8,7 @@ pub mod file_ops;
 pub mod filter;
 pub mod flat;
 pub mod line_nums;
+pub mod linemode;
 pub mod new_directory;
 pub mod numbered_command;
 pub mod open_file;

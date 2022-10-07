@@ -2,6 +2,7 @@ use std::fs;
 
 use tui::layout::Constraint;
 
+use crate::config::option::LineMode;
 use crate::config::option::SortOption;
 
 #[derive(Clone, Copy, Debug)]
@@ -35,8 +36,9 @@ pub struct DisplayOption {
 /// Display options valid per JoshutoTab
 #[derive(Clone, Debug)]
 pub struct TabDisplayOption {
-    pub _sort_options: SortOption,
     pub filter_string: String,
+    pub sort_options: SortOption,
+    pub linemode: LineMode,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -48,11 +50,11 @@ pub enum LineNumberStyle {
 
 impl TabDisplayOption {
     pub fn sort_options_ref(&self) -> &SortOption {
-        &self._sort_options
+        &self.sort_options
     }
 
     pub fn sort_options_mut(&mut self) -> &mut SortOption {
-        &mut self._sort_options
+        &mut self.sort_options
     }
 
     pub fn set_filter_string(&mut self, pattern: &str) {
@@ -146,8 +148,9 @@ impl std::default::Default for DisplayOption {
             default_layout,
             no_preview_layout,
             default_tab_display_option: TabDisplayOption {
-                _sort_options: SortOption::default(),
                 filter_string: "".to_owned(),
+                sort_options: SortOption::default(),
+                linemode: LineMode::Size,
             },
         }
     }

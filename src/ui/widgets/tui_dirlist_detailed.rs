@@ -5,7 +5,7 @@ use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
-use crate::config::option::{DisplayOption, LineNumberStyle};
+use crate::config::option::{DisplayOption, LineMode, LineNumberStyle, TabDisplayOption};
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::string::UnicodeTruncate;
@@ -19,17 +19,20 @@ const ELLIPSIS: &str = "…";
 pub struct TuiDirListDetailed<'a> {
     dirlist: &'a JoshutoDirList,
     display_options: &'a DisplayOption,
+    tab_display_options: &'a TabDisplayOption,
     pub focused: bool,
 }
 impl<'a> TuiDirListDetailed<'a> {
     pub fn new(
         dirlist: &'a JoshutoDirList,
         display_options: &'a DisplayOption,
+        tab_display_options: &'a TabDisplayOption,
         focused: bool,
     ) -> Self {
         Self {
             dirlist,
             display_options,
+            tab_display_options,
             focused,
         }
     }
@@ -105,10 +108,22 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     entry,
                     style,
                     (x + 1, y + i as u16),
+                    self.tab_display_options.linemode,
                     drawing_width - 1,
                     &prefix,
                 );
             });
+    }
+}
+
+fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
+    match entry.metadata.file_type() {
+        FileType::Directory => entry
+            .metadata
+            .directory_size()
+            .map(|n| n.to_string())
+            .unwrap_or_else(|| "".to_string()),
+        FileType::File => format::file_size_to_string(entry.metadata.len()),
     }
 }
 
@@ -117,23 +132,28 @@ fn print_entry(
     entry: &JoshutoDirEntry,
     style: Style,
     (x, y): (u16, u16),
+    linemode: LineMode,
     drawing_width: usize,
     prefix: &str,
 ) {
-    let size_string = match entry.metadata.file_type() {
-        FileType::Directory => entry
-            .metadata
-            .directory_size()
-            .map(|n| n.to_string())
-            .unwrap_or_else(|| "".to_string()),
-        FileType::File => format::file_size_to_string(entry.metadata.len()),
-    };
     let symlink_string = match entry.metadata.link_type() {
         LinkType::Normal => "",
         LinkType::Symlink(_, _) => "-> ",
     };
     let left_label_original = entry.label();
-    let right_label_original = format!(" {}{} ", symlink_string, size_string);
+    let right_label_original = format!(
+        " {}{} ",
+        symlink_string,
+        match linemode {
+            LineMode::Size => get_entry_size_string(entry),
+            LineMode::MTime => format::mtime_to_string(entry.metadata.modified()),
+            LineMode::SizeMTime => format!(
+                "{} {}",
+                get_entry_size_string(entry),
+                format::mtime_to_string(entry.metadata.modified())
+            ),
+        }
+    );
 
     // draw prefix first
     let prefix_width = prefix.width();
