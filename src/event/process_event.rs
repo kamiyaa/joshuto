@@ -226,6 +226,27 @@ pub fn process_unsupported(
     }
 }
 
+enum Panel {
+    Parent,
+    Current,
+    Preview,
+}
+
+fn children_cursor_move(context: &mut AppContext, new_index: usize) {
+    let mut new_index = new_index;
+    let ui_context = context.ui_context_ref().clone();
+    let display_options = context.config_ref().display_options_ref().clone();
+    if let Some(children_list) = context.tab_context_mut().curr_tab_mut().child_list_mut() {
+        if !children_list.is_empty() {
+            let dir_len = children_list.len();
+            if new_index >= dir_len {
+                new_index = dir_len - 1;
+            }
+            children_list.set_index(Some(new_index), &ui_context, &display_options);
+        }
+    }
+}
+
 pub fn process_mouse(
     event: MouseEvent,
     context: &mut AppContext,
@@ -278,37 +299,67 @@ pub fn process_mouse(
                 // TODO: scroll in child list
             }
         }
-        MouseEvent::Press(MouseButton::Left, x, y)
-            if y > layout_rect[1].y && y <= layout_rect[1].y + layout_rect[1].height =>
-        {
-            if x < layout_rect[2].x {
-                let (dirlist, is_parent) = if x < layout_rect[1].x {
+        MouseEvent::Press(button @ MouseButton::Left, x, y)
+        | MouseEvent::Press(button @ MouseButton::Right, x, y) => {
+            if y > layout_rect[1].y && y <= layout_rect[1].y + layout_rect[1].height {
+                let (dirlist, panel) = if x < layout_rect[1].x {
                     (
-                        context.tab_context_ref().curr_tab_ref().parent_list_ref(),
-                        true,
+                        context.tab_context_mut().curr_tab_mut().parent_list_ref(),
+                        Some(Panel::Parent),
+                    )
+                } else if x < layout_rect[2].x {
+                    (
+                        context.tab_context_mut().curr_tab_mut().curr_list_ref(),
+                        Some(Panel::Current),
                     )
                 } else {
                     (
-                        context.tab_context_ref().curr_tab_ref().curr_list_ref(),
-                        false,
+                        context.tab_context_mut().curr_tab_mut().child_list_ref(),
+                        Some(Panel::Preview),
                     )
                 };
                 if let Some(dirlist) = dirlist {
                     let skip_dist = dirlist.first_index_for_viewport();
                     let new_index = skip_dist + (y - layout_rect[1].y - 1) as usize;
-                    if is_parent {
-                        if let Err(e) = parent_cursor_move::parent_cursor_move(context, new_index) {
-                            context.message_queue_mut().push_error(e.to_string());
+                    match panel {
+                        Some(Panel::Parent) => {
+                            if let Err(e) =
+                                parent_cursor_move::parent_cursor_move(context, new_index)
+                            {
+                                context.message_queue_mut().push_error(e.to_string());
+                            };
+                            if button == MouseButton::Left {
+                                let command = Command::ChangeDirectory {
+                                    path: path::PathBuf::from(".."),
+                                };
+                                if let Err(e) = command.execute(context, backend, keymap_t) {
+                                    context.message_queue_mut().push_error(e.to_string());
+                                }
+                            };
                         }
-                    } else {
-                        cursor_move::cursor_move(context, new_index);
+                        Some(Panel::Current) => {
+                            cursor_move::cursor_move(context, new_index);
+                            if button == MouseButton::Right {
+                                let command = Command::OpenFile;
+                                if let Err(e) = command.execute(context, backend, keymap_t) {
+                                    context.message_queue_mut().push_error(e.to_string());
+                                }
+                            }
+                        }
+                        Some(Panel::Preview) => {
+                            children_cursor_move(context, new_index);
+                            if button == MouseButton::Left {
+                                let command = Command::OpenFile;
+                                if let Err(e) = command.execute(context, backend, keymap_t) {
+                                    context.message_queue_mut().push_error(e.to_string());
+                                }
+                            }
+                        }
+                        _ => {}
                     }
                 }
-            } else {
             }
         }
-        MouseEvent::Press(MouseButton::Left, _, y)
-            if y > layout_rect[1].y && y <= layout_rect[1].y + layout_rect[1].height => {}
         _ => {}
     }
     context.flush_event();
