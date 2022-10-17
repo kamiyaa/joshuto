@@ -41,4 +41,27 @@ This way, visual mode can be helpful to build up a selection of multiple ranges
 The other option is to issue the `escape` command, by default mapped to the `ESCAPE` key.
 When using `escape`, the current visual-mode-selection will be withdrawn.
 
+## Mouse Control
+When built with the `mouse` feature, Joshuto supports some mouse control,
+which behaves very similar to *ranger*.
 
+⚠ Disclaimer: Mouse control does not work properly in `hsplit` mode.
+(See [joshuto.toml docs](configuration/joshuto.toml.md#Different_view_layouts).)
+
+If you click a file or directory with the *left mouse button*,
+the cursor in the particular list will move to the clicked entry.
+If the file or directory clicked is in the parent or children panel,
+that directory level will be moved to the “current” panel in the middle.
+
+If you click a directory in the *parent panel with the right mouse button*,
+that directory will be opened, means, its content will appear in the middle panel.
+
+If you click a file or directory in the *middle panel with the right mouse button*,
+that file or directory will be opened, just like when pressing the “right arrow”.
+
+The cursor in the parent and in the middle panel can be scrolled by using the *mouse wheel*.
+
+Unlike ranger, it’s currently not possible to scroll the children-panel or a preview
+with the mouse wheel.
+
+Unlike ranger, Joshuto allows to set the cursor in the children-panel with a right click.
