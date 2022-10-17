@@ -125,6 +125,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
             no_preview_layout,
             default_tab_display_option: TabDisplayOption {
                 _sort_options: raw.sort_options.into(),
+                filter_string: "".to_owned(),
             },
         }
     }

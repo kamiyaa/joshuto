@@ -122,6 +122,8 @@ impl AppExecute for Command {
                 numbered_command::numbered_command(context, backend, keymap_t, *initial)
             }
 
+            Self::Filter { pattern } => filter::filter(context, pattern.as_str()),
+
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
             Self::TabSwitch { offset } => {

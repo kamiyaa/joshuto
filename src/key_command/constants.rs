@@ -80,6 +80,7 @@ cmd_constants![
     (CMD_NUMBERED_COMMAND, "numbered_command"),
     (CMD_FLAT, "flat"),
     (CMD_ESCAPE, "escape"),
+    (CMD_FILTER, "filter"),
 ];
 
 pub fn complete_command(partial_command: &str) -> Vec<Pair> {

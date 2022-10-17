@@ -378,6 +378,10 @@ impl std::str::FromStr for Command {
                     format!("{}: no starting character given", command),
                 )),
             }
+        } else if command == CMD_FILTER {
+            Ok(Self::Filter {
+                pattern: arg.to_string(),
+            })
         } else {
             Err(JoshutoError::new(
                 JoshutoErrorKind::UnrecognizedCommand,

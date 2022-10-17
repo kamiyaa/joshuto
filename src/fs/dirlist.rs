@@ -46,7 +46,7 @@ impl JoshutoDirList {
         tab_options: &TabDisplayOption,
     ) -> io::Result<Self> {
         let filter_func = options.filter_func();
-        let mut contents = read_directory(path.as_path(), filter_func, options)?;
+        let mut contents = read_directory(path.as_path(), filter_func, options, tab_options)?;
         contents.sort_by(|f1, f2| tab_options.sort_options_ref().compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };

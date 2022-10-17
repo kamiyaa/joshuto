@@ -92,6 +92,12 @@ pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
 }
 
 pub fn reload_dirlist(context: &mut AppContext) -> JoshutoResult {
+    // clear filter on reload
+    context
+        .tab_context_mut()
+        .curr_tab_mut()
+        .option_mut()
+        .set_filter_string("");
     reload(context, &context.tab_context_ref().curr_tab_id())?;
     Ok(())
 }
