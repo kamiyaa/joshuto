@@ -109,6 +109,7 @@ function joshuto() {
 
  - `shell`: runs a shell command
    - Example: `:shell touch file.txt` will create a file called `file.txt`
+
  - `spawn`: runs a shell command in the background
 
  - `sort`: change the sort method
@@ -117,13 +118,23 @@ function joshuto() {
     - `sort mtime`: sort via last modified time
     - `sort reverse`: reverse the sorting
 
+ - `linemode`: change the line-mode (textual representation of files and directories in the “current view”)
+    - `linemode size`: show the entry’s size (bytes for files, number of entries for directories) (default) <sup>✻</sup>
+    - `linemode mtime`: show the entry’s modified time (aka. “*mtime*”) <sup>✻</sup>
+    - `linemode sizemtime`: show the entry’s size and modified time <sup>✻</sup>
+
+    <sup>✻: file- or directory-name is shown on left, the respective meta-data is shown on the right, preceeded by a symlink indicator</sup>
+
  - `show_workers`: show the pending IO operations and the current progress
     - press `escape` to exit view
+
  - `toggle_hidden`: toggle hidden files
+
  - `line_nums`: switch displaying of entry numbers
     - `line_nums 0` or `line_nums none`: disable displaying
     - `line_nums 1` or `line_nums absolute`: enable absolute numbers for each entry
     - `line_nums 2` or `line_nums relative`: enable numbers relative to selected entry
+
  - `flat`: flattens the directory view up to the specified depth.
     - `flat 3`: flatten directory upto 3 directories deep.
     depth of 0 corresponds to the current directory.

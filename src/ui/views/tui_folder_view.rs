@@ -167,7 +167,8 @@ impl<'a> Widget for TuiFolderView<'a> {
 
         // render current view
         if let Some(list) = curr_list.as_ref() {
-            TuiDirListDetailed::new(list, display_options, true).render(layout_rect[1], buf);
+            TuiDirListDetailed::new(list, display_options, curr_tab.option_ref(), true)
+                .render(layout_rect[1], buf);
 
             let footer_area = Self::footer_area(&area);
             if self.show_bottom_status {

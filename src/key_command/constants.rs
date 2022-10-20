@@ -71,6 +71,7 @@ cmd_constants![
     (CMD_TOGGLE_HIDDEN, "toggle_hidden"),
     (CMD_TOGGLE_VISUAL, "toggle_visual"),
     (CMD_SWITCH_LINE_NUMBERS, "line_nums"),
+    (CMD_SET_LINEMODE, "linemode"),
     (CMD_TOUCH_FILE, "touch"),
     (CMD_HELP, "help"),
     (CMD_SEARCH_FZF, "search_fzf"),

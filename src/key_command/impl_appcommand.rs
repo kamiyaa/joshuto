@@ -79,6 +79,7 @@ impl AppCommand for Command {
             Self::SubProcess { spawn: false, .. } => CMD_SUBPROCESS_FOREGROUND,
             Self::SubProcess { spawn: true, .. } => CMD_SUBPROCESS_BACKGROUND,
             Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
+            Self::SetLineMode(_) => CMD_SET_LINEMODE,
 
             Self::TabSwitch { .. } => CMD_TAB_SWITCH,
             Self::TabSwitchIndex { .. } => CMD_TAB_SWITCH_INDEX,

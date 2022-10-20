@@ -3,7 +3,9 @@ use std::convert::From;
 use serde_derive::Deserialize;
 use tui::layout::Constraint;
 
-use crate::config::option::{DisplayMode, DisplayOption, LineNumberStyle, TabDisplayOption};
+use crate::config::option::{
+    DisplayMode, DisplayOption, LineMode, LineNumberStyle, TabDisplayOption,
+};
 
 use super::sort_raw::SortOptionRaw;
 
@@ -124,8 +126,10 @@ impl From<DisplayOptionRaw> for DisplayOption {
             default_layout,
             no_preview_layout,
             default_tab_display_option: TabDisplayOption {
-                _sort_options: raw.sort_options.into(),
                 filter_string: "".to_owned(),
+                sort_options: raw.sort_options.into(),
+                // todo: make default line mode configurable
+                linemode: LineMode::Size,
             },
         }
     }

@@ -1,4 +1,4 @@
-use crate::config::option::SortType;
+use crate::config::option::{LineMode, SortType};
 use crate::io::FileOperationOptions;
 
 use super::{Command, CommandComment};
@@ -7,6 +7,11 @@ impl CommandComment for Command {
     // These comments are displayed at the help page
     fn comment(&self) -> &'static str {
         match self {
+            Self::SetLineMode(linemode) => match linemode {
+                LineMode::Size => "Show files with size",
+                LineMode::MTime => "Show files with modified time",
+                LineMode::SizeMTime => "Show files with size and modified time",
+            },
             Self::Escape => "Escape from visual mode (cancel)",
             Self::BulkRename => "Bulk rename",
 
