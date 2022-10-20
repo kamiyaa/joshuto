@@ -2,10 +2,12 @@ use std::path;
 
 use uuid::Uuid;
 
+use crate::config::option::NewTabMode;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;
 use crate::tab::{JoshutoTab, TabHomePage};
+use crate::util::unix;
 
 use crate::HOME_DIR;
 
@@ -83,7 +85,7 @@ pub fn tab_switch_index(context: &mut AppContext, new_index: usize) -> JoshutoRe
         _tab_switch(new_index - 1, context)?;
     } else if new_index > num_tabs {
         for _ in 0..(new_index - num_tabs) {
-            new_tab(context)?;
+            new_tab(context, &NewTabMode::Default)?;
         }
         _tab_switch(new_index - 1, context)?;
     }
@@ -101,19 +103,58 @@ pub fn new_tab_home_path(context: &AppContext) -> path::PathBuf {
     }
 }
 
-pub fn new_tab(context: &mut AppContext) -> JoshutoResult {
-    let new_tab_path = new_tab_home_path(context);
-    let id = Uuid::new_v4();
-    let tab = JoshutoTab::new(
-        new_tab_path,
-        context.ui_context_ref(),
-        context.config_ref().display_options_ref(),
-    )?;
-    context.tab_context_mut().insert_tab(id, tab);
-    let new_index = context.tab_context_ref().len() - 1;
-    context.tab_context_mut().index = new_index;
-    _tab_switch(new_index, context)?;
-    Ok(())
+pub fn new_tab(context: &mut AppContext, mode: &NewTabMode) -> JoshutoResult {
+    let new_tab_path = match mode {
+        NewTabMode::Default => Ok(new_tab_home_path(context)),
+        NewTabMode::CurrentTabDir => {
+            Ok(context.tab_context_ref().curr_tab_ref().cwd().to_path_buf())
+        }
+        NewTabMode::CursorDir => context
+            .tab_context_ref()
+            .curr_tab_ref()
+            .curr_list_ref()
+            .and_then(|list| {
+                list.curr_entry_ref().and_then(|entry| {
+                    if entry.metadata.is_dir() {
+                        Some(entry.file_path_buf())
+                    } else {
+                        None
+                    }
+                })
+            })
+            .ok_or(JoshutoError::new(
+                JoshutoErrorKind::InvalidParameters,
+                "No directory at cursor.".to_string(),
+            )),
+        NewTabMode::Directory(directory) => {
+            let directory_path = unix::expand_shell_string(directory);
+            Ok(if directory_path.is_absolute() {
+                directory_path
+            } else {
+                let mut tab_dir = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+                tab_dir.push(directory_path);
+                tab_dir
+            })
+        }
+    }?;
+    if new_tab_path.exists() && new_tab_path.is_dir() {
+        let id = Uuid::new_v4();
+        let tab = JoshutoTab::new(
+            new_tab_path,
+            context.ui_context_ref(),
+            context.config_ref().display_options_ref(),
+        )?;
+        context.tab_context_mut().insert_tab(id, tab);
+        let new_index = context.tab_context_ref().len() - 1;
+        context.tab_context_mut().index = new_index;
+        _tab_switch(new_index, context)?;
+        Ok(())
+    } else {
+        JoshutoResult::Err(JoshutoError::new(
+            JoshutoErrorKind::InvalidParameters,
+            "Directory does not exist.".to_string(),
+        ))
+    }
 }
 
 pub fn close_tab(context: &mut AppContext) -> JoshutoResult {

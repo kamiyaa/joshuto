@@ -21,7 +21,7 @@ impl CommandComment for Command {
             Self::ParentDirectory => "CD to parent directory",
             Self::PreviousDirectory => "CD to the last dir in history",
 
-            Self::NewTab => "Open a new tab",
+            Self::NewTab { .. } => "Open a new tab",
             Self::CloseTab => "Close current tab",
             Self::CommandLine { prefix, .. } => match prefix.trim() {
                 "cd" => "Change directory",

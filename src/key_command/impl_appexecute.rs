@@ -26,7 +26,7 @@ impl AppExecute for Command {
             Self::ParentDirectory => change_directory::parent_directory(context),
             Self::PreviousDirectory => change_directory::previous_directory(context),
 
-            Self::NewTab => tab_ops::new_tab(context),
+            Self::NewTab { mode } => tab_ops::new_tab(context, mode),
             Self::CloseTab => tab_ops::close_tab(context),
             Self::CommandLine { prefix, suffix } => command_line::read_and_execute(
                 context,
