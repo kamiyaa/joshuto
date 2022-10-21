@@ -363,7 +363,7 @@ impl std::str::FromStr for Command {
             Ok(Self::SwitchLineNums(policy))
         } else if command == CMD_FLAT {
             match arg.parse::<usize>() {
-                Ok(i) => Ok(Self::Flat { depth: i + 1 }),
+                Ok(i) => Ok(Self::Flat { depth: i }),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", command, e),

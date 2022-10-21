@@ -1,8 +1,10 @@
 use std::collections::HashMap;
-use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use walkdir::WalkDir;
+
+use crate::config::option::DirListDisplayOptions;
 use crate::config::option::{DisplayOption, TabDisplayOption};
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
@@ -249,11 +251,31 @@ pub fn read_directory<F>(
     tab_options: &TabDisplayOption,
 ) -> io::Result<Vec<JoshutoDirEntry>>
 where
-    F: Fn(&Result<fs::DirEntry, io::Error>, &DisplayOption, &TabDisplayOption) -> bool,
+    F: Fn(&walkdir::DirEntry, &DisplayOption, &DirListDisplayOptions) -> bool,
 {
-    let results: Vec<JoshutoDirEntry> = fs::read_dir(path)?
-        .filter(|res| filter_func(res, options, tab_options))
-        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, options).ok())
+    let dirlist_opts = tab_options
+        .dirlist_options_ref(&path.to_path_buf())
+        .map(|v| v.to_owned())
+        .unwrap_or_default();
+
+    let results: Vec<JoshutoDirEntry> = WalkDir::new(path)
+        .max_depth(dirlist_opts.depth() as usize + 1)
+        .into_iter()
+        .filter_entry(|e| {
+            if e.path().to_str().cmp(&path.to_str()).is_ne() {
+                filter_func(e, options, &dirlist_opts)
+            } else {
+                true
+            }
+        })
+        .filter(|e| {
+            if let Ok(e) = e.as_ref() {
+                e.path().to_str().cmp(&path.to_str()).is_ne()
+            } else {
+                true
+            }
+        })
+        .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, path, options).ok())
         .collect();
 
     Ok(results)
