@@ -28,10 +28,12 @@ dependencies = [
 
 [[package]]
 name = "ansi-to-tui"
-version = "0.6.0"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33ef15b7b32ef426166ba4f153a0ade6fb3b81b20ff3d2cdbc89c369f5a2e620"
+checksum = "3460d7beaf8b192c09a55933da038ccd514f00efdb37d7d87f3ce078336b47e9"
 dependencies = [
+ "nom",
+ "thiserror",
  "tui",
 ]
 
@@ -508,6 +510,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "minimal-lexical"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
+
+[[package]]
 name = "mio"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -539,6 +547,16 @@ dependencies = [
  "cfg-if",
  "libc",
  "memoffset",
+]
+
+[[package]]
+name = "nom"
+version = "7.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8903e5a29a317527874d0402f867152a3d21c908bb0b933e416c65e301d4c36"
+dependencies = [
+ "memchr",
+ "minimal-lexical",
 ]
 
 [[package]]

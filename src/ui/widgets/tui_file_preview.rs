@@ -29,9 +29,9 @@ impl<'a> TuiFilePreview<'a> {
 
     #[cfg(feature = "syntax_highlight")]
     fn render_text_preview(&self, area: Rect, buf: &mut Buffer, s: &str) {
-        use ansi_to_tui::ansi_to_text;
+        use ansi_to_tui::IntoText;
         let vec = s.as_bytes().to_vec();
-        let res = ansi_to_text(vec);
+        let res = vec.into_text();
 
         match res {
             Ok(text) => {

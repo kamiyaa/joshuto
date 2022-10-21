@@ -10,7 +10,7 @@ edition = "2021"
 keywords = ["tui-rs", "ranger", "file manager", "termion"]
 
 [dependencies]
-ansi-to-tui = { version = "^0", optional = true }
+ansi-to-tui = { version = "^2", optional = true }
 alphanumeric-sort = "^1"
 chrono = "^0"
 colors-transform = "^0"
