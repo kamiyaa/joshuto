@@ -168,7 +168,14 @@ impl<'a> TuiTextField<'a> {
                 match event {
                     AppEvent::Termion(Event::Key(key)) => {
                         let dirty = match key {
-                            Key::Backspace => line_buffer.backspace(1),
+                            Key::Backspace => {
+                                let res = line_buffer.backspace(1);
+
+                                if let Ok(command) = Command::from_str(line_buffer.as_str()) {
+                                    command.interactive_execute(context)
+                                }
+                                res
+                            }
                             Key::Delete => line_buffer.delete(1).is_some(),
                             Key::Home => line_buffer.move_home(),
                             Key::End => line_buffer.move_end(),
