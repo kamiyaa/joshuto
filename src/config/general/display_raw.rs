@@ -126,10 +126,10 @@ impl From<DisplayOptionRaw> for DisplayOption {
             default_layout,
             no_preview_layout,
             default_tab_display_option: TabDisplayOption {
-                filter_string: "".to_owned(),
                 sort_options: raw.sort_options.into(),
                 // todo: make default line mode configurable
                 linemode: LineMode::Size,
+                ..Default::default()
             },
         }
     }

@@ -1,7 +1,8 @@
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, Default)]
 pub enum LineMode {
+    #[default]
     Size,
     MTime,
     SizeMTime,

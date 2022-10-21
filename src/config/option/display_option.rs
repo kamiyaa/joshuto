@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::HashMap, path::PathBuf};
 
 use tui::layout::Constraint;
 
@@ -33,10 +33,17 @@ pub struct DisplayOption {
     pub default_tab_display_option: TabDisplayOption,
 }
 
+/// Display options valid pre JoshutoDirList in a JoshutoTab
+#[derive(Clone, Debug, Default)]
+pub struct DirListDisplayOptions {
+    filter_string: String,
+    depth: u8,
+}
+
 /// Display options valid per JoshutoTab
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct TabDisplayOption {
-    pub filter_string: String,
+    pub dirlist_options: HashMap<PathBuf, DirListDisplayOptions>,
     pub sort_options: SortOption,
     pub linemode: LineMode,
 }
@@ -48,6 +55,24 @@ pub enum LineNumberStyle {
     Absolute,
 }
 
+impl DirListDisplayOptions {
+    pub fn set_filter_string(&mut self, pattern: &str) {
+        self.filter_string = pattern.to_owned();
+    }
+
+    pub fn filter_string_ref(&self) -> &str {
+        &self.filter_string
+    }
+
+    pub fn set_depth(&mut self, depth: u8) {
+        self.depth = depth;
+    }
+
+    pub fn depth(&self) -> u8 {
+        self.depth
+    }
+}
+
 impl TabDisplayOption {
     pub fn sort_options_ref(&self) -> &SortOption {
         &self.sort_options
@@ -57,12 +82,16 @@ impl TabDisplayOption {
         &mut self.sort_options
     }
 
-    pub fn set_filter_string(&mut self, pattern: &str) {
-        self.filter_string = pattern.to_owned();
+    pub fn dirlist_options_ref(&self, path: &PathBuf) -> Option<&DirListDisplayOptions> {
+        self.dirlist_options.get(path)
     }
 
-    pub fn filter_string_ref(&self) -> &str {
-        &self.filter_string
+    pub fn dirlist_options_mut(&mut self, path: &PathBuf) -> &mut DirListDisplayOptions {
+        if !self.dirlist_options.contains_key(path) {
+            self.dirlist_options
+                .insert(path.to_owned(), Default::default());
+        }
+        self.dirlist_options.get_mut(path).unwrap()
     }
 }
 
@@ -113,7 +142,7 @@ impl DisplayOption {
 
     pub fn filter_func(
         &self,
-    ) -> fn(&Result<fs::DirEntry, std::io::Error>, &DisplayOption, &TabDisplayOption) -> bool {
+    ) -> fn(&walkdir::DirEntry, &DisplayOption, &DirListDisplayOptions) -> bool {
         filter
     }
 }
@@ -147,51 +176,43 @@ impl std::default::Default for DisplayOption {
             _line_nums: LineNumberStyle::None,
             default_layout,
             no_preview_layout,
-            default_tab_display_option: TabDisplayOption {
-                filter_string: "".to_owned(),
-                sort_options: SortOption::default(),
-                linemode: LineMode::Size,
-            },
+            default_tab_display_option: TabDisplayOption::default(),
         }
     }
 }
 
-fn has_str(entry: &fs::DirEntry, pat: &str) -> bool {
-    match entry.file_name().into_string().ok() {
-        Some(s) => s
-            .to_ascii_lowercase()
-            .contains(pat.to_ascii_lowercase().as_str()),
-        None => false,
-    }
+fn has_str(entry: &walkdir::DirEntry, pat: &str) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| {
+            s.to_ascii_lowercase()
+                .as_str()
+                .contains(pat.to_ascii_lowercase().as_str())
+        })
+        .unwrap_or(false)
+}
+
+fn is_hidden(entry: &walkdir::DirEntry) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| s.starts_with('.'))
+        .unwrap_or(false)
 }
 
 fn filter(
-    result: &Result<fs::DirEntry, std::io::Error>,
+    entry: &walkdir::DirEntry,
     opt: &DisplayOption,
-    tab_opts: &TabDisplayOption,
+    dirlist_opts: &DirListDisplayOptions,
 ) -> bool {
-    if opt.show_hidden() && tab_opts.filter_string_ref().is_empty() {
+    if opt.show_hidden() && dirlist_opts.filter_string_ref().is_empty() {
         true
+    } else if dirlist_opts.filter_string_ref().is_empty() {
+        !is_hidden(entry)
+    } else if opt.show_hidden() || !is_hidden(entry) {
+        has_str(entry, dirlist_opts.filter_string_ref())
     } else {
-        match result {
-            Err(_) => true,
-            Ok(entry) => {
-                if tab_opts.filter_string_ref().is_empty() {
-                    let file_name = entry.file_name();
-                    let lossy_string = file_name.as_os_str().to_string_lossy();
-                    !lossy_string.starts_with('.')
-                } else if opt.show_hidden() {
-                    has_str(entry, tab_opts.filter_string_ref())
-                } else {
-                    let file_name = entry.file_name();
-                    let lossy_string = file_name.as_os_str().to_string_lossy();
-                    if !lossy_string.starts_with('.') {
-                        has_str(entry, tab_opts.filter_string_ref())
-                    } else {
-                        false
-                    }
-                }
-            }
-        }
+        false
     }
 }
