@@ -2,6 +2,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use tui::layout::Constraint;
 
+use crate::config::option::LineMode;
 use crate::config::option::SortOption;
 
 #[derive(Clone, Copy, Debug)]
@@ -42,8 +43,9 @@ pub struct DirListDisplayOptions {
 /// Display options valid per JoshutoTab
 #[derive(Clone, Debug, Default)]
 pub struct TabDisplayOption {
-    pub _sort_options: SortOption,
     pub dirlist_options: HashMap<PathBuf, DirListDisplayOptions>,
+    pub sort_options: SortOption,
+    pub linemode: LineMode,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -65,6 +67,8 @@ impl DirListDisplayOptions {
     pub fn set_depth(&mut self, depth: u8) {
         self.depth = depth;
     }
+46
+    pub _sort_options: SortOption,
 
     pub fn depth(&self) -> u8 {
         self.depth
@@ -73,11 +77,11 @@ impl DirListDisplayOptions {
 
 impl TabDisplayOption {
     pub fn sort_options_ref(&self) -> &SortOption {
-        &self._sort_options
+        &self.sort_options
     }
 
     pub fn sort_options_mut(&mut self) -> &mut SortOption {
-        &mut self._sort_options
+        &mut self.sort_options
     }
 
     pub fn dirlist_options_ref(&self, path: &PathBuf) -> Option<&DirListDisplayOptions> {
@@ -174,7 +178,10 @@ impl std::default::Default for DisplayOption {
             _line_nums: LineNumberStyle::None,
             default_layout,
             no_preview_layout,
-            default_tab_display_option: TabDisplayOption::default(),
+            default_tab_display_option: TabDisplayOption {
+                linemode: LineMode::Size,
+                ..Default::default()
+            },
         }
     }
 }

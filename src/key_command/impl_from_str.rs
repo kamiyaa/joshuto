@@ -4,7 +4,7 @@ use dirs_next::home_dir;
 use shellexpand::tilde_with_context;
 
 use crate::commands::quit::QuitAction;
-use crate::config::option::{LineNumberStyle, SelectOption, SortType};
+use crate::config::option::{LineMode, LineNumberStyle, SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::FileOperationOptions;
 
@@ -334,6 +334,8 @@ impl std::str::FromStr for Command {
                     )),
                 },
             }
+        } else if command == CMD_SET_LINEMODE {
+            Ok(Self::SetLineMode(LineMode::from_string(arg)?))
         } else if command == CMD_TAB_SWITCH {
             match arg.parse::<i32>() {
                 Ok(s) => Ok(Self::TabSwitch { offset: s }),

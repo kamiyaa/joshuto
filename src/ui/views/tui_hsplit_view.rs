@@ -78,7 +78,8 @@ impl<'a> Widget for TuiHSplitView<'a> {
 
             // render current view
             if let Some(list) = curr_list.as_ref() {
-                TuiDirListDetailed::new(list, display_options, true).render(layout_rect, buf);
+                TuiDirListDetailed::new(list, display_options, curr_tab.option_ref(), true)
+                    .render(layout_rect, buf);
                 let rect = Rect {
                     x: 0,
                     y: area.height - 1,
@@ -150,7 +151,8 @@ impl<'a> Widget for TuiHSplitView<'a> {
                 };
 
                 if let Some(list) = curr_list.as_ref() {
-                    TuiDirListDetailed::new(list, display_options, false).render(layout_rect, buf);
+                    TuiDirListDetailed::new(list, display_options, curr_tab.option_ref(), false)
+                        .render(layout_rect, buf);
                 }
             }
         }

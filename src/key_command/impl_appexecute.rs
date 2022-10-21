@@ -111,6 +111,7 @@ impl AppExecute for Command {
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShowTasks => show_tasks::show_tasks(context, backend, keymap_t),
             Self::Sort(t) => sort::set_sort(context, *t),
+            Self::SetLineMode(mode) => linemode::set_linemode(context, *mode),
             Self::SortReverse => sort::toggle_reverse(context),
             Self::SubProcess { words, spawn } => {
                 sub_process::sub_process(context, backend, words.as_slice(), *spawn)
