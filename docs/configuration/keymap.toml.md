@@ -224,6 +224,8 @@ function joshuto() {
     - `--deselect=true`: deselect rather than select
     - `glob`: select files based on glob (just like `search_glob`)
        - `select *.png`
+ - `filter`:Case insensitively filter the current directory list.
+    - `:filter ca`: filter the current directory and show only items with `ca` in the name
 
 ## Integration
  - `bulk_rename`: rename all selected files
