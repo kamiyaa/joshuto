@@ -67,8 +67,6 @@ impl DirListDisplayOptions {
     pub fn set_depth(&mut self, depth: u8) {
         self.depth = depth;
     }
-46
-    pub _sort_options: SortOption,
 
     pub fn depth(&self) -> u8 {
         self.depth
@@ -178,10 +176,7 @@ impl std::default::Default for DisplayOption {
             _line_nums: LineNumberStyle::None,
             default_layout,
             no_preview_layout,
-            default_tab_display_option: TabDisplayOption {
-                linemode: LineMode::Size,
-                ..Default::default()
-            },
+            default_tab_display_option: TabDisplayOption::default(),
         }
     }
 }
