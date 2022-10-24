@@ -251,7 +251,7 @@ function joshuto() {
     - `--toggle=false`: select the current file (doesn't change anything if the current file is already selected)
     - `--deselect=true`: deselect rather than select the entry
     - `--all=true`: select/deselect/toggle all *visible* files in the current view.
-      (Files not visible due to a set filter or are not affected.)
+      (Files not visible due to a set filter are not affected.)
     - `glob`: select files based on glob (just like `search_glob`)
        - `select *.png`
  - `filter`:Case insensitively filter the current directory list.
