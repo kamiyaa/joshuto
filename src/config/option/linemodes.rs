@@ -20,4 +20,12 @@ impl LineMode {
             )),
         }
     }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Size => "size",
+            Self::MTime => "mtime",
+            Self::SizeMTime => "sizemtime",
+        }
+    }
 }

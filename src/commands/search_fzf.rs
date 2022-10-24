@@ -34,7 +34,8 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
     let mut fzf = match Command::new("fzf")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .spawn() {
+        .spawn()
+    {
         Ok(child) => child,
         Err(e) => {
             backend.terminal_restore()?;

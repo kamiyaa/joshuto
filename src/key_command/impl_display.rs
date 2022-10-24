@@ -10,6 +10,8 @@ impl std::fmt::Display for Command {
             Self::CursorMoveUp { offset } => write!(f, "{} {}", self.command(), offset),
             Self::CursorMoveDown { offset } => write!(f, "{} {}", self.command(), offset),
 
+            Self::SetLineMode(mode) => write!(f, "{} {}", self.command(), mode.as_str()),
+
             Self::ParentCursorMoveUp { offset } => write!(f, "{} {}", self.command(), offset),
             Self::ParentCursorMoveDown { offset } => write!(f, "{} {}", self.command(), offset),
 
