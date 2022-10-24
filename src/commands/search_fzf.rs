@@ -31,10 +31,16 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
 
     backend.terminal_drop();
 
-    let mut fzf = Command::new("fzf")
+    let mut fzf = match Command::new("fzf")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .spawn()?;
+        .spawn() {
+        Ok(child) => child,
+        Err(e) => {
+            backend.terminal_restore()?;
+            return Err(JoshutoError::from(e));
+        }
+    };
 
     if let Some(fzf_stdin) = fzf.stdin.as_mut() {
         let mut writer = io::BufWriter::new(fzf_stdin);
