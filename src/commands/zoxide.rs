@@ -15,7 +15,7 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> JoshutoResult {
         .arg("--exclude")
         .arg(&cwd)
         .arg("--")
-        .arg(args)
+        .args(args.split(' ').collect::<Vec<&str>>())
         .output()?;
 
     if zoxide_output.status.success() {
