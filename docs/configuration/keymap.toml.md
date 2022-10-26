@@ -211,6 +211,8 @@ function joshuto() {
     (end of file name if no extension)
  - `rename_prepend`: opens the command prompt with the rename command and the current file name filled in.
     - cursor will be set to the beginning of the file name
+ - `rename_keep_ext`: opens the command prompt with the rename command and the extension of the current file filled in.
+    - cursor will be set right before the extension of the file
 
  - `copy_filename`: copy the file name to clipboard
     - clipboard support requires xsel, xclip, or wl-copy

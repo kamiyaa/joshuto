@@ -82,6 +82,7 @@ impl CommandComment for Command {
             Self::TouchFile { .. } => "Touch file",
             Self::RenameFileAppend => "Rename a file",
             Self::RenameFilePrepend => "Rename a file",
+            Self::RenameFileKeepExt => "Rename a file",
 
             Self::SearchString { .. } => "Search",
             Self::SearchIncremental { .. } => "Search as you type",
