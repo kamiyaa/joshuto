@@ -68,18 +68,15 @@ pub fn rename_file_append(
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
-    match _get_current_file_name(context) {
-        Some(file_name) => {
-            let (prefix, suffix): (String, String) = match file_name.rfind('.') {
-                Some(ext) => (
-                    format!("rename {}", &file_name[0..ext]),
-                    file_name[ext..].to_string(),
-                ),
-                None => (format!("rename {}", file_name), "".to_string()),
-            };
-            command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
-        }
-        None => {}
+    if let Some(file_name) = _get_current_file_name(context) {
+        let (prefix, suffix): (String, String) = match file_name.rfind('.') {
+            Some(ext) => (
+                format!("rename {}", &file_name[0..ext]),
+                file_name[ext..].to_string(),
+            ),
+            None => (format!("rename {}", file_name), "".to_string()),
+        };
+        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }
@@ -89,12 +86,9 @@ pub fn rename_file_prepend(
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
-    match _get_current_file_name(context) {
-        Some(file_name) => {
-            let (prefix, suffix) = ("rename ".to_string(), file_name);
-            command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
-        }
-        None => {}
+    if let Some(file_name) = _get_current_file_name(context) {
+        let (prefix, suffix) = ("rename ".to_string(), file_name);
+        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }
@@ -104,15 +98,12 @@ pub fn rename_file_keep_ext(
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
-    match _get_current_file_name(context) {
-        Some(file_name) => {
-            let (prefix, suffix): (String, String) = match file_name.rfind('.') {
-                Some(ext) => ("rename ".to_string(), file_name[ext..].to_string()),
-                None => ("rename ".to_string(), "".to_string()),
-            };
-            command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
-        }
-        None => {}
+    if let Some(file_name) = _get_current_file_name(context) {
+        let (prefix, suffix): (String, String) = match file_name.rfind('.') {
+            Some(ext) => ("rename ".to_string(), file_name[ext..].to_string()),
+            None => ("rename ".to_string(), "".to_string()),
+        };
+        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }
