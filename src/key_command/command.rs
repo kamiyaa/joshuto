@@ -86,6 +86,7 @@ pub enum Command {
     },
     RenameFileAppend,
     RenameFilePrepend,
+    RenameFileKeepExt,
     TouchFile {
         file_name: String,
     },

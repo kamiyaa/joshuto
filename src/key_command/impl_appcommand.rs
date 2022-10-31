@@ -56,6 +56,7 @@ impl AppCommand for Command {
             Self::RenameFile { .. } => CMD_RENAME_FILE,
             Self::RenameFileAppend => CMD_RENAME_FILE_APPEND,
             Self::RenameFilePrepend => CMD_RENAME_FILE_PREPEND,
+            Self::RenameFileKeepExt => CMD_RENAME_FILE_KEEP_EXT,
 
             Self::SearchString { .. } => CMD_SEARCH_STRING,
             Self::SearchIncremental { .. } => CMD_SEARCH_INCREMENTAL,

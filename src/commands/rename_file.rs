@@ -55,20 +55,12 @@ pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult
     Ok(())
 }
 
-pub fn _rename_file_append(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
-    keymap_t: &AppKeyMapping,
-    file_name: &str,
-) -> JoshutoResult {
-    let (prefix, suffix): (String, String) = match file_name.rfind('.') {
-        Some(ext) => (
-            format!("rename {}", &file_name[0..ext]),
-            file_name[ext..].to_string(),
-        ),
-        None => (format!("rename {}", file_name), "".to_string()),
-    };
-    command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)
+fn _get_current_file_name(context: &mut AppContext) -> Option<String> {
+    context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|list| list.curr_entry_ref().map(|s| s.file_name().to_string()))
 }
 
 pub fn rename_file_append(
@@ -76,29 +68,17 @@ pub fn rename_file_append(
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
-    let mut file_name: Option<String> = None;
-
-    if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-        file_name = curr_list
-            .curr_entry_ref()
-            .map(|s| s.file_name().to_string());
-    }
-
-    if let Some(file_name) = file_name {
-        _rename_file_append(context, backend, keymap_t, file_name.as_str())?;
+    if let Some(file_name) = _get_current_file_name(context) {
+        let (prefix, suffix): (String, String) = match file_name.rfind('.') {
+            Some(ext) => (
+                format!("rename {}", &file_name[0..ext]),
+                file_name[ext..].to_string(),
+            ),
+            None => (format!("rename {}", file_name), "".to_string()),
+        };
+        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
-}
-
-pub fn _rename_file_prepend(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
-    keymap_t: &AppKeyMapping,
-    file_name: String,
-) -> JoshutoResult {
-    let prefix = String::from("rename ");
-    let suffix = file_name;
-    command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)
 }
 
 pub fn rename_file_prepend(
@@ -106,14 +86,24 @@ pub fn rename_file_prepend(
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
-    let file_name = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-        .and_then(|list| list.curr_entry_ref().map(|s| s.file_name().to_string()));
+    if let Some(file_name) = _get_current_file_name(context) {
+        let (prefix, suffix) = ("rename ".to_string(), file_name);
+        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
+    }
+    Ok(())
+}
 
-    if let Some(file_name) = file_name {
-        _rename_file_prepend(context, backend, keymap_t, file_name)?;
+pub fn rename_file_keep_ext(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    keymap_t: &AppKeyMapping,
+) -> JoshutoResult {
+    if let Some(file_name) = _get_current_file_name(context) {
+        let (prefix, suffix): (String, String) = match file_name.rfind('.') {
+            Some(ext) => ("rename ".to_string(), file_name[ext..].to_string()),
+            None => ("rename ".to_string(), "".to_string()),
+        };
+        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }
