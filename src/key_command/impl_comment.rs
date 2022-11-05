@@ -74,6 +74,7 @@ impl CommandComment for Command {
 
             Self::NewDirectory { .. } => "Make a new directory",
             Self::OpenFile => "Open a file",
+            Self::OpenTerminal => "Open a terminal",
             Self::OpenFileWith { .. } => "Open using selected program",
 
             Self::Quit(_) => "Quit the program",

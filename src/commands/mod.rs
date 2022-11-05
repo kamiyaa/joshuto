@@ -33,3 +33,4 @@ pub mod tab_ops;
 pub mod touch_file;
 pub mod uimodes;
 pub mod zoxide;
+pub mod open_terminal;

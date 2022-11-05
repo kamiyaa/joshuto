@@ -6,6 +6,36 @@ use std::thread;
 use crate::config::ProgramEntry;
 use crate::event::AppEvent;
 
+pub fn fork_execute_empty()
+    -> std::io::Result<(u32, thread::JoinHandle<()>)>
+{
+    let program = String::from("/bin/zsh");
+
+    let mut command = process::Command::new(program);
+    //if entry.get_silent() {
+        //command.stdout(process::Stdio::null());
+        //command.stderr(process::Stdio::null());
+    //}
+
+    //command.args(entry.get_args());
+    command.arg("-c");
+    command.arg("alacritty");
+    //command.args(paths);
+    //command.args(["sleep","5"]);
+
+    let mut child = command.spawn()?;
+    let child_id = child.id();
+
+    let handle = thread::spawn(move || {
+        let child_id = child.id();
+        let _ = child.wait();
+        //let _ = event_tx.send(AppEvent::ChildProcessComplete(child_id));
+    });
+
+    Ok((child_id, handle))
+}
+
+
 pub fn fork_execute<I, S>(
     entry: &ProgramEntry,
     paths: I,

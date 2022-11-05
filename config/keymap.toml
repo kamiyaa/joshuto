@@ -1,6 +1,7 @@
 [default_view]
 
 keymap = [
+	{ keys = [ "f2" ],		command = "open_terminal" },
 	{ keys = [ "escape" ],		command = "escape" },
 	{ keys = [ "T" ],		command = "new_tab" },
 	{ keys = [ "ctrl+t" ],		command = "new_tab" },
@@ -122,7 +123,7 @@ keymap = [
 	{ keys = [ "g", "d" ],		command = "cd ~/Downloads" },
 	{ keys = [ "g", "e" ],		command = "cd /etc" },
 	{ keys = [ "g", "h" ],		command = "cd ~/" },
-	{ keys = [ "?" ],		command = "help" }
+	{ keys = [ "?" ],		command = "help" },
 ]
 
 [task_view]

@@ -2,22 +2,21 @@ numbered_command = false
 
 use_trash = true
 watch_files = true
-xdg_open = false
-xdg_open_fork = false
+xdg_open = true
+xdg_open_fork = true
 
 
 [display]
-# default, hsplit
 mode = "default"
 
 automatically_count_files = false
 collapse_preview = true
 # ratios for parent view (optional), current view and preview
-column_ratio = [1, 4, 4]
+column_ratio = [0, 4, 0]
 scroll_offset = 6
 show_borders = true
 show_hidden = false
-show_icons = true
+show_icons = false
 tilde_in_titlebar = true
 # none, absolute, relative
 line_number_style = "none"

@@ -73,6 +73,7 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_COPY_DIRECTORY_PATH, Self::CopyDirPath);
 
         simple_command_conversion_case!(command, CMD_OPEN_FILE, Self::OpenFile);
+        simple_command_conversion_case!(command, CMD_OPEN_TERMINAL, Self::OpenTerminal);
 
         simple_command_conversion_case!(command, CMD_RELOAD_DIRECTORY_LIST, Self::ReloadDirList);
         simple_command_conversion_case!(command, CMD_RENAME_FILE_APPEND, Self::RenameFileAppend);

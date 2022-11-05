@@ -180,6 +180,7 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult
     Ok(())
 }
 
+
 pub fn open_with_index(
     context: &mut AppContext,
     backend: &mut AppBackend,

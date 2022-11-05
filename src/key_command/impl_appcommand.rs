@@ -50,6 +50,7 @@ impl AppCommand for Command {
 
             Self::NewDirectory { .. } => CMD_NEW_DIRECTORY,
             Self::OpenFile => CMD_OPEN_FILE,
+            Self::OpenTerminal => CMD_OPEN_TERMINAL,
             Self::OpenFileWith { .. } => CMD_OPEN_FILE_WITH,
 
             Self::ReloadDirList => CMD_RELOAD_DIRECTORY_LIST,

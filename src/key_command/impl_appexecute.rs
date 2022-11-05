@@ -79,6 +79,7 @@ impl AppExecute for Command {
 
             Self::NewDirectory { path } => new_directory::new_directory(context, path.as_path()),
             Self::OpenFile => open_file::open(context, backend),
+            Self::OpenTerminal => open_terminal::open_terminal(context, backend),
             Self::OpenFileWith { index: None } => {
                 open_file::open_with_interactive(context, backend)
             }

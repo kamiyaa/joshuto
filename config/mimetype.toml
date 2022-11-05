@@ -5,26 +5,22 @@ audio_default	= [
 ]
 
 image_default	= [
-	{ command = "qimgv", args = [ "--" ], fork = true, silent = true },
-	{ command = "krita", args = [ "--" ], fork = true, silent = true },
-	{ command = "exiftool", confirm_exit = true },
-	{ command = "swappy", args = [ "-f" ], fork = true },
+	{ command = "sxiv", fork = true },
+	{ command = "dragon", fork = true },
 ]
 
 video_default	= [
-	{ command = "mpv", args = [ "--" ] , fork = true, silent = true },
+	{ command = "vlc", args = [ "--" ] , fork = true, silent = true },
 	{ command = "mediainfo", confirm_exit = true },
 	{ command = "mpv", args = [ "--mute", "on", "--" ], fork = true, silent = true },
 ]
 
 text_default	= [
-	{ command = "micro" },
-	{ command = "gedit", fork = true, silent = true },
-	{ command = "bat", args = [ "--paging=always" ] },
+	{ command = "alacritty", args = ["-e", "nvim"], fork=true},
 ]
 
 reader_default	= [
-	{ command = "evince", fork = true, silent = true },
+	{ command = "zathura", fork = true, silent = true },
 ]
 
 libreoffice_default	= [
@@ -35,7 +31,7 @@ libreoffice_default	= [
 
 ## image formats
 avif.inherit    = "image_default"
-bmp.inherit	= "image_default"
+bmp.inherit= "image_default"
 gif.inherit	= "image_default"
 heic.inherit	= "image_default"
 jpeg.inherit	= "image_default"

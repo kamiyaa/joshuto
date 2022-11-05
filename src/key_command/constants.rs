@@ -49,6 +49,7 @@ cmd_constants![
     (CMD_PREVIEW_CURSOR_MOVE_DOWN, "preview_cursor_move_down"),
     (CMD_NEW_DIRECTORY, "mkdir"),
     (CMD_OPEN_FILE, "open"),
+    (CMD_OPEN_TERMINAL, "open_terminal"),
     (CMD_OPEN_FILE_WITH, "open_with"),
     (CMD_RELOAD_DIRECTORY_LIST, "reload_dirlist"),
     (CMD_RENAME_FILE, "rename"),

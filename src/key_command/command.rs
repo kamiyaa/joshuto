@@ -75,6 +75,7 @@ pub enum Command {
         path: path::PathBuf,
     },
     OpenFile,
+    OpenTerminal,
     OpenFileWith {
         index: Option<usize>,
     },
