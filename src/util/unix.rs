@@ -1,3 +1,5 @@
+use std::path;
+
 pub fn is_executable(mode: u32) -> bool {
     const LIBC_PERMISSION_VALS: [u32; 3] = [
         libc::S_IXUSR as u32,
@@ -49,4 +51,10 @@ pub fn mode_to_string(mode: u32) -> String {
         }
     }
     mode_str
+}
+
+pub fn expand_shell_string(s: &str) -> path::PathBuf {
+    let tilde_cow = shellexpand::tilde_with_context(s, dirs_next::home_dir);
+    let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
+    tilde_path
 }

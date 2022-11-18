@@ -34,7 +34,8 @@ pub fn show_tasks(
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let cmd = process_event::get_input_while_composite(backend, context, m);
+                            let cmd =
+                                process_event::poll_event_until_simple_keybind(backend, context, m);
 
                             if let Some(Command::ShowTasks) = cmd {
                                 break;

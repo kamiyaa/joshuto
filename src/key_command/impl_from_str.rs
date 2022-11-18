@@ -1,12 +1,10 @@
 use std::path;
 
-use dirs_next::home_dir;
-use shellexpand::tilde_with_context;
-
 use crate::commands::quit::QuitAction;
 use crate::config::option::{LineMode, LineNumberStyle, SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::FileOperationOptions;
+use crate::util::unix;
 
 use crate::HOME_DIR;
 
@@ -46,9 +44,15 @@ impl std::str::FromStr for Command {
 
         simple_command_conversion_case!(command, CMD_HELP, Self::Help);
 
+        simple_command_conversion_case!(command, CMD_BOOKMARK_ADD, Self::BookmarkAdd);
+        simple_command_conversion_case!(
+            command,
+            CMD_BOOKMARK_CHANGE_DIRECTORY,
+            Self::BookmarkChangeDirectory
+        );
+
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_HOME, Self::CursorMoveHome);
         simple_command_conversion_case!(command, CMD_CURSOR_MOVE_END, Self::CursorMoveEnd);
-
         simple_command_conversion_case!(
             command,
             CMD_CURSOR_MOVE_PAGEHOME,
@@ -109,9 +113,8 @@ impl std::str::FromStr for Command {
                 ".." => Ok(Self::ParentDirectory),
                 "-" => Ok(Self::PreviousDirectory),
                 arg => {
-                    let path_accepts_tilde = tilde_with_context(arg, home_dir);
-                    let path = path::PathBuf::from(path_accepts_tilde.as_ref());
-                    Ok(Self::ChangeDirectory { path })
+                    let new_path = unix::expand_shell_string(arg);
+                    Ok(Self::ChangeDirectory { path: new_path })
                 }
             }
         } else if command == CMD_CURSOR_MOVE_DOWN {
@@ -327,7 +330,7 @@ impl std::str::FromStr for Command {
         } else if command == CMD_SORT {
             match arg {
                 "reverse" => Ok(Self::SortReverse),
-                arg => match SortType::parse(arg) {
+                arg => match SortType::from_str(arg) {
                     Some(s) => Ok(Self::Sort(s)),
                     None => Err(JoshutoError::new(
                         JoshutoErrorKind::InvalidParameters,

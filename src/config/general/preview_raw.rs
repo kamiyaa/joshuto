@@ -1,10 +1,10 @@
 use std::convert::From;
-use std::path;
 
 use serde_derive::Deserialize;
 
 use crate::config::option::PreviewOption;
 use crate::config::search_directories;
+use crate::util::unix;
 use crate::CONFIG_HIERARCHY;
 
 pub const fn default_max_preview_size() -> u64 {
@@ -36,30 +36,18 @@ impl std::default::Default for PreviewOptionRaw {
 
 impl From<PreviewOptionRaw> for PreviewOption {
     fn from(raw: PreviewOptionRaw) -> Self {
-        let preview_script = match raw.preview_script {
-            Some(s) => {
-                let tilde_cow = shellexpand::tilde_with_context(s.as_str(), dirs_next::home_dir);
-                let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
-                Some(tilde_path)
-            }
-            None => search_directories("preview.sh", &CONFIG_HIERARCHY),
-        };
-        let preview_shown_hook_script = match raw.preview_shown_hook_script {
-            Some(s) => {
-                let tilde_cow = shellexpand::tilde_with_context(s.as_str(), dirs_next::home_dir);
-                let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
-                Some(tilde_path)
-            }
-            None => None,
-        };
-        let preview_removed_hook_script = match raw.preview_removed_hook_script {
-            Some(s) => {
-                let tilde_cow = shellexpand::tilde_with_context(s.as_str(), dirs_next::home_dir);
-                let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
-                Some(tilde_path)
-            }
-            None => None,
-        };
+        let preview_script = raw
+            .preview_script
+            .map(|s| unix::expand_shell_string(&s))
+            .or_else(|| search_directories("preview.sh", &CONFIG_HIERARCHY));
+
+        let preview_shown_hook_script = raw
+            .preview_shown_hook_script
+            .map(|s| unix::expand_shell_string(&s));
+
+        let preview_removed_hook_script = raw
+            .preview_removed_hook_script
+            .map(|s| unix::expand_shell_string(&s));
 
         Self {
             max_preview_size: raw.max_preview_size,

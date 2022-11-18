@@ -91,6 +91,9 @@ impl AppCommand for Command {
             Self::SubdirFzf => CMD_SUBDIR_FZF,
             Self::Zoxide(_) => CMD_ZOXIDE,
             Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,
+
+            Self::BookmarkAdd => CMD_BOOKMARK_ADD,
+            Self::BookmarkChangeDirectory => CMD_BOOKMARK_CHANGE_DIRECTORY,
         }
     }
 }

@@ -122,6 +122,9 @@ impl CommandComment for Command {
             Self::SubdirFzf => "Switch to a child directory via fzf",
             Self::Zoxide(_) => "Zoxide",
             Self::ZoxideInteractive => "Zoxide interactive",
+
+            Self::BookmarkAdd => "Add a bookmark",
+            Self::BookmarkChangeDirectory => "Navigate to a bookmark",
         }
     }
 }

@@ -105,11 +105,8 @@ impl From<DisplayOptionRaw> for DisplayOption {
             Constraint::Ratio(0, total),
         ];
 
-        let _line_nums = match raw.line_number_style.as_ref() {
-            "absolute" => LineNumberStyle::Absolute,
-            "relative" => LineNumberStyle::Relative,
-            _ => LineNumberStyle::None,
-        };
+        let _line_nums = LineNumberStyle::from_str(raw.line_number_style.as_str())
+            .unwrap_or_else(|| LineNumberStyle::None);
 
         Self {
             _mode: mode,

@@ -21,7 +21,7 @@ use crate::ui;
 use crate::ui::views::TuiCommandMenu;
 use crate::util::format;
 
-pub fn get_input_while_composite<'a>(
+pub fn poll_event_until_simple_keybind<'a>(
     backend: &mut ui::AppBackend,
     context: &mut AppContext,
     keymap: &'a KeyMapping,

@@ -1,3 +1,4 @@
+pub mod bookmarks;
 pub mod general;
 pub mod keymap;
 pub mod mimetype;
@@ -5,7 +6,8 @@ pub mod option;
 pub mod preview;
 pub mod theme;
 
-pub use self::general::AppConfig;
+pub use self::bookmarks::*;
+pub use self::general::*;
 pub use self::keymap::*;
 pub use self::mimetype::*;
 pub use self::preview::*;

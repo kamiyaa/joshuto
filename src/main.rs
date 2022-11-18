@@ -19,22 +19,26 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
+use std::sync::Mutex;
 use structopt::StructOpt;
 
 use crate::commands::quit::QuitAction;
 use crate::config::{
-    AppConfig, AppKeyMapping, AppProgramRegistry, AppTheme, JoshutoPreview, TomlConfigFile,
+    AppConfig, AppKeyMapping, AppProgramRegistry, AppTheme, Bookmarks, JoshutoPreview,
+    TomlConfigFile,
 };
 use crate::context::AppContext;
 use crate::error::JoshutoError;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_HOME: &str = "JOSHUTO_CONFIG_HOME";
+
 const CONFIG_FILE: &str = "joshuto.toml";
 const MIMETYPE_FILE: &str = "mimetype.toml";
 const KEYMAP_FILE: &str = "keymap.toml";
 const THEME_FILE: &str = "theme.toml";
 const PREVIEW_FILE: &str = "preview.toml";
+const BOOKMARKS_FILE: &str = "bookmarks.toml";
 
 lazy_static! {
     // dynamically builds the config hierarchy
@@ -69,6 +73,7 @@ lazy_static! {
     static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
     static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config(MIMETYPE_FILE);
     static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config(PREVIEW_FILE);
+    static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config(BOOKMARKS_FILE));
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
     static ref USERNAME: String = whoami::username();
@@ -107,6 +112,8 @@ fn run_main(args: Args) -> Result<i32, JoshutoError> {
     lazy_static::initialize(&THEME_T);
     lazy_static::initialize(&MIMETYPE_T);
     lazy_static::initialize(&PREVIEW_T);
+    lazy_static::initialize(&BOOKMARKS_T);
+
     lazy_static::initialize(&HOME_DIR);
     lazy_static::initialize(&USERNAME);
     lazy_static::initialize(&HOSTNAME);

@@ -83,6 +83,8 @@ cmd_constants![
     (CMD_FLAT, "flat"),
     (CMD_ESCAPE, "escape"),
     (CMD_FILTER, "filter"),
+    (CMD_BOOKMARK_ADD, "add_bookmark"),
+    (CMD_BOOKMARK_CHANGE_DIRECTORY, "cd_bookmark"),
 ];
 
 pub fn complete_command(partial_command: &str) -> Vec<Pair> {

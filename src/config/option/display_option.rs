@@ -55,6 +55,17 @@ pub enum LineNumberStyle {
     Absolute,
 }
 
+impl LineNumberStyle {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "absolute" => Some(Self::Absolute),
+            "relative" => Some(Self::Relative),
+            "none" => Some(Self::None),
+            _ => None,
+        }
+    }
+}
+
 impl DirListDisplayOptions {
     pub fn set_filter_string(&mut self, pattern: &str) {
         self.filter_string = pattern.to_owned();

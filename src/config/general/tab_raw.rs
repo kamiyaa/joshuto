@@ -25,12 +25,8 @@ impl std::default::Default for TabOptionRaw {
 
 impl From<TabOptionRaw> for TabOption {
     fn from(raw: TabOptionRaw) -> Self {
-        let home_page = match raw.home_page.as_str() {
-            "inherit" => TabHomePage::Inherit,
-            "home" => TabHomePage::Home,
-            "root" => TabHomePage::Root,
-            _ => TabHomePage::Home,
-        };
+        let home_page =
+            TabHomePage::from_str(raw.home_page.as_str()).unwrap_or_else(|| TabHomePage::Home);
 
         Self::new(home_page)
     }

@@ -33,10 +33,10 @@ impl std::default::Default for SortOptionRaw {
 
 impl From<SortOptionRaw> for SortOption {
     fn from(raw: SortOptionRaw) -> Self {
-        let sort_method = match raw.sort_method.as_ref() {
-            Some(s) => SortType::parse(s).unwrap_or(SortType::Natural),
-            None => SortType::Natural,
-        };
+        let sort_method = raw
+            .sort_method
+            .and_then(|s| SortType::from_str(&s))
+            .unwrap_or(SortType::Natural);
 
         let mut sort_methods = SortTypes::default();
         sort_methods.reorganize(sort_method);

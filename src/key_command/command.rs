@@ -145,4 +145,7 @@ pub enum Command {
     SubdirFzf,
     Zoxide(String),
     ZoxideInteractive,
+
+    BookmarkAdd,
+    BookmarkChangeDirectory,
 }

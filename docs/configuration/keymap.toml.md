@@ -240,6 +240,10 @@ function joshuto() {
  - `filter`:Case insensitively filter the current directory list.
     - `:filter ca`: filter the current directory and show only items with `ca` in the name
 
+## Bookmarks
+ - `add_bookmark`: adds a bookmark to the `bookmarks.toml` file
+ - `cd_bookmark`: prompts a menu of bookmarks and navigates to selected bookmark
+
 ## Integration
  - `bulk_rename`: rename all selected files
     - this will create a file inside `$TMP_DIR` (or `/tmp` if `$TMP_DIR` is not set) and
