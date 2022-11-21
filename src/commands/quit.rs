@@ -22,6 +22,13 @@ impl QuitAction {
             Self::OutputSelectedFiles => 102,
         }
     }
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "noop" => Some(Self::Noop),
+            "outputdir" => Some(Self::OutputCurrentDirectory),
+            _ => None,
+        }
+    }
 }
 
 pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> JoshutoResult {

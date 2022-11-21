@@ -118,7 +118,7 @@ pub fn new_tab(context: &mut AppContext) -> JoshutoResult {
 
 pub fn close_tab(context: &mut AppContext) -> JoshutoResult {
     if context.tab_context_ref().len() <= 1 {
-        return quit_with_action(context, QuitAction::Noop);
+        return quit_with_action(context, context.config_ref().tab_options_ref().tab_quit_action());
     }
     let curr_tab_id = context.tab_context_ref().curr_tab_id();
     let mut tab_index = context.tab_context_ref().index;
