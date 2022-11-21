@@ -36,7 +36,7 @@ impl From<TabOptionRaw> for TabOption {
         let home_page =
             TabHomePage::from_str(raw.home_page.as_str()).unwrap_or_else(|| TabHomePage::Home);
         let tab_quit_action =
-            QuitAction::from_str(&raw.tab_quit_action.as_str()).unwrap_or_else(|| QuitAction::Noop);
+            QuitAction::from_str(raw.tab_quit_action.as_str()).unwrap_or_else(|| QuitAction::Noop);
 
         Self::new(home_page, tab_quit_action)
     }
