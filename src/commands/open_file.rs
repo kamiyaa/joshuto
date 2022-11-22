@@ -151,7 +151,7 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult
         }
         Some(entry) => {
             if context.args.file_chooser {
-                return quit::quit_with_action(context, quit::QuitAction::OutputSelectedFiles);
+                return quit::quit_with_action(context, Some(quit::QuitAction::OutputSelectedFiles));
             }
 
             let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());

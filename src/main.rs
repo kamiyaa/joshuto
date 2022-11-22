@@ -80,6 +80,8 @@ lazy_static! {
 pub struct Args {
     #[structopt(short = "v", long = "version")]
     version: bool,
+    #[structopt(long = "change-directory")]
+    change_directory: bool,
     #[structopt(long = "file-chooser")]
     file_chooser: bool,
     #[structopt(long = "output-file", parse(from_os_str))]

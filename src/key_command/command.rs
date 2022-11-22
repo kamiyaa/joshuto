@@ -79,7 +79,7 @@ pub enum Command {
     OpenFileWith {
         index: Option<usize>,
     },
-    Quit(QuitAction),
+    Quit(Option<QuitAction>),
 
     ReloadDirList,
     RenameFile {

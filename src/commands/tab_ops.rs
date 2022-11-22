@@ -11,7 +11,7 @@ use crate::util::unix;
 
 use crate::HOME_DIR;
 
-use super::quit::{quit_with_action, QuitAction};
+use super::quit::quit_with_action;
 
 fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()> {
     context.tab_context_mut().index = new_index;
@@ -159,7 +159,7 @@ pub fn new_tab(context: &mut AppContext, mode: &NewTabMode) -> JoshutoResult {
 
 pub fn close_tab(context: &mut AppContext) -> JoshutoResult {
     if context.tab_context_ref().len() <= 1 {
-        return quit_with_action(context, QuitAction::Noop);
+        return quit_with_action(context, None);
     }
     let curr_tab_id = context.tab_context_ref().curr_tab_id();
     let mut tab_index = context.tab_context_ref().index;
