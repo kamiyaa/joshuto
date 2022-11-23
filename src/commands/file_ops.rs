@@ -138,7 +138,7 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult {
     ];
 
     for (_, command) in clipboards.iter() {
-        match Command::new("sh").args(&["-c", command.as_str()]).status() {
+        match Command::new("sh").args(["-c", command.as_str()]).status() {
             Ok(s) if s.success() => return Ok(()),
             _ => {}
         }

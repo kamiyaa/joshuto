@@ -124,7 +124,7 @@ fn size_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering 
 fn ext_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
     let f1_ext = file1.get_ext();
     let f2_ext = file2.get_ext();
-    alphanumeric_sort::compare_str(&f1_ext, &f2_ext)
+    alphanumeric_sort::compare_str(f1_ext, f2_ext)
 }
 
 fn lexical_sort(
@@ -151,10 +151,10 @@ fn natural_sort(
     let f1_name = f1.file_name();
     let f2_name = f2.file_name();
     if sort_option.case_sensitive {
-        alphanumeric_sort::compare_str(&f1_name, &f2_name)
+        alphanumeric_sort::compare_str(f1_name, f2_name)
     } else {
         let f1_name = f1_name.to_lowercase();
         let f2_name = f2_name.to_lowercase();
-        alphanumeric_sort::compare_str(&f1_name, &f2_name)
+        alphanumeric_sort::compare_str(f1_name, f2_name)
     }
 }

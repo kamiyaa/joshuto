@@ -106,7 +106,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
         ];
 
         let _line_nums = LineNumberStyle::from_str(raw.line_number_style.as_str())
-            .unwrap_or_else(|| LineNumberStyle::None);
+            .unwrap_or(LineNumberStyle::None);
 
         Self {
             _mode: mode,

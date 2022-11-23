@@ -18,7 +18,7 @@ pub fn _rename_file(
         let err = std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Filename already exists");
         return Err(err);
     }
-    std::fs::rename(&src, &dest)?;
+    std::fs::rename(src, dest)?;
 
     let curr_tab = context.tab_context_ref().curr_tab_ref();
 

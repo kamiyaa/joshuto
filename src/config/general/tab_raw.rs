@@ -25,8 +25,7 @@ impl std::default::Default for TabOptionRaw {
 
 impl From<TabOptionRaw> for TabOption {
     fn from(raw: TabOptionRaw) -> Self {
-        let home_page =
-            TabHomePage::from_str(raw.home_page.as_str()).unwrap_or_else(|| TabHomePage::Home);
+        let home_page = TabHomePage::from_str(raw.home_page.as_str()).unwrap_or(TabHomePage::Home);
 
         Self::new(home_page)
     }

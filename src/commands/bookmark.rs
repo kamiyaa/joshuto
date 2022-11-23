@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Write;
+use std::path;
 
 use termion::event::Event;
 use tui::layout::Rect;
@@ -19,19 +20,21 @@ use crate::{BOOKMARKS_FILE, BOOKMARKS_T, CONFIG_HIERARCHY};
 
 use super::change_directory::change_directory;
 
+fn find_bookmark_file() -> Option<path::PathBuf> {
+    for p in CONFIG_HIERARCHY.iter() {
+        if p.exists() {
+            return Some(p.clone());
+        }
+    }
+    None
+}
+
 pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     let cwd = std::env::current_dir()?;
 
     let bookmark_path = match search_directories(BOOKMARKS_FILE, &CONFIG_HIERARCHY) {
         Some(file_path) => Some(file_path),
-        None => {
-            for p in CONFIG_HIERARCHY.iter() {
-                if p.exists() {
-                    Some(p.clone());
-                }
-            }
-            None
-        }
+        None => find_bookmark_file(),
     };
 
     if let Some(bookmark_path) = bookmark_path {
@@ -81,7 +84,7 @@ pub fn change_directory_bookmark(
     Ok(())
 }
 
-fn poll_for_bookmark_key<'a>(context: &mut AppContext, backend: &mut AppBackend) -> Option<Event> {
+fn poll_for_bookmark_key(context: &mut AppContext, backend: &mut AppBackend) -> Option<Event> {
     context.flush_event();
 
     let mut bookmarks: Vec<String> = BOOKMARKS_T

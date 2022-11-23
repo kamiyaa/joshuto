@@ -339,9 +339,9 @@ where
     for path in paths {
         if let Ok(metadata) = fs::symlink_metadata(path) {
             if metadata.is_dir() {
-                fs::remove_dir_all(&path)?;
+                fs::remove_dir_all(path)?;
             } else {
-                fs::remove_file(&path)?;
+                fs::remove_file(path)?;
             }
         }
     }
