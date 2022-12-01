@@ -86,7 +86,7 @@ Check out [docs](/docs) for details and [config](/config) for examples
 #### [theme.toml](/config/theme.toml)
 - color customizations
 
-#### [theme.toml](/config/bookmarks.toml)
+#### [bookmarks.toml](/config/bookmarks.toml)
 - bookmarks
 
 ## Contributing
