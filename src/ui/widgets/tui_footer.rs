@@ -33,7 +33,9 @@ impl<'a> Widget for TuiFooter<'a> {
         let mode_style = Style::default().fg(Color::Cyan);
 
         // flat and filter commands indicator style
-        let indicator_style = Style::default().fg(Color::LightBlue).add_modifier(THEME_T.selection.modifier);
+        let indicator_style = Style::default()
+            .fg(Color::LightBlue)
+            .add_modifier(THEME_T.selection.modifier);
 
         let selection_style = Style::default()
             .fg(THEME_T.selection.fg)
@@ -79,7 +81,7 @@ impl<'a> Widget for TuiFooter<'a> {
                             Some(opt) if opt.depth() > 0 => format!("flat:{} ", opt.depth()),
                             _ => "".to_owned(),
                         },
-                        indicator_style
+                        indicator_style,
                     ),
                     Span::styled(
                         match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
@@ -88,7 +90,7 @@ impl<'a> Widget for TuiFooter<'a> {
                             }
                             _ => "".to_owned(),
                         },
-                        indicator_style
+                        indicator_style,
                     ),
                     Span::styled(
                         if selected_count > 0 {
