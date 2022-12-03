@@ -185,7 +185,7 @@ impl<'a> Widget for TuiFolderView<'a> {
                         .wrap(Wrap { trim: true })
                         .render(footer_area, buf);
                 } else {
-                    TuiFooter::new(list).render(footer_area, buf);
+                    TuiFooter::new(list, curr_tab.option_ref()).render(footer_area, buf);
                 }
             }
         } else {
