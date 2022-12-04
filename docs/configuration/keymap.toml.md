@@ -108,9 +108,26 @@ function joshuto() {
    - Example: `:cd /` will open up the command prompt with `cd /` already written
 
  - `shell`: runs a shell command
+   - `%s` is substituted by a list of all selected files or by the file under the cursor, if none is selected
+   - When running the external program, the directory shown in Joshuto is set as “working directory”,
+     the file names substituded for `%s` are given without path.
    - Example: `:shell touch file.txt` will create a file called `file.txt`
+   - Example for `keymap.toml`: To open all selected files with `nvim`, one can add a keybinding like this:
+     ```toml
+     keymap = [ //..
+        { keys = [ "e", "v" ], command = "shell nvim %s" }
+     ]
+     ```
 
  - `spawn`: runs a shell command in the background
+   - Supports `%s`, just like the `shell` command.
+   - Example for `keymap.toml`: To open all selected files or directories with `sxiv`,
+     one can add a keybinding like this:
+     ```toml
+     keymap = [ //..
+        { keys = [ "i" ], command = "spawn sxiv -t %s" }
+     ]
+     ```
 
  - `sort`: change the sort method
     - `sort lexical`: sort lexically (`10.txt` comes before `2.txt`)
@@ -136,7 +153,7 @@ function joshuto() {
     - `line_nums 2` or `line_nums relative`: enable numbers relative to selected entry
 
  - `flat`: flattens the directory view up to the specified depth.
-    - `flat 3`: flatten directory upto 3 directories deep.
+    - `flat 3`: flatten directory up to 3 directories deep.
     depth of 0 corresponds to the current directory.
     its direct descendents have depth 1, and their descendents have depth 2, and so on.
 
@@ -172,7 +189,7 @@ function joshuto() {
    - if `xdg_open` is `true` in [joshuto.toml](https://github.com/kamiyaa/joshuto),
    joshuto will try to open it via xdg settings
  - `numbered_command`: opens a new mode where user can input numbers and jump to the specified
-   location via hardcoded keybindings
+   location via hard-coded keybindings
     - `numbered_command 3`: initial input is 3
 
 
@@ -223,7 +240,7 @@ function joshuto() {
  - `set_mode`: Set read, write, execute permissions of current file
  - `touch`: create a new file or update the modified date of an existing file
 
-## Search
+## Search and Selection
 
  - `search`: search the current directory via a string
     - case insensitive
@@ -232,13 +249,27 @@ function joshuto() {
  - `search_next`: go to next search result in the current directory
  - `search_prev`: go to previous search result in the current directory
  - `select`: select current file
-    - `--toggle=true`: toggle the selected files
-    - `--all=true`: selected all files
-    - `--deselect=true`: deselect rather than select
+    - `--toggle=true`: toggle the selected state rather than selecting the entry (default)
+    - `--toggle=false`: select the current file (doesn't change anything if the current file is already selected)
+    - `--deselect=true`: deselect rather than select the entry
+    - `--all=true`: select/deselect/toggle all *visible* files in the current view.
+      (Files not visible due to a set filter are not affected.)
     - `glob`: select files based on glob (just like `search_glob`)
        - `select *.png`
+
+    This example keybinding can be used for *de*selecting all files:
+    ```toml
+    keymap = [ //..
+        {keys = [ "x" ], command = "select --all=true --deselect=true"}
+    ]
+    ```
  - `filter`:Case insensitively filter the current directory list.
     - `:filter ca`: filter the current directory and show only items with `ca` in the name
+ - `toggle_visual`: Enables or disables “visual mode”.
+    When disabling, the current “visual mode selection” is turned into normal selection.
+    (See also [Visual Mode](../misc.md#visual-mode).)
+ - `escape`: Leave visual mode and withdraw the visual-mode-selection.
+    (See also [Visual Mode](../misc.md#visual-mode).)
 
 ## Bookmarks
  - `add_bookmark`: adds a bookmark to the `bookmarks.toml` file
