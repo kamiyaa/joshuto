@@ -39,7 +39,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
         .tab_context_ref()
         .curr_tab_ref()
         .curr_list_ref()
-        .map_or(vec![], |s| s.iter_selected().collect());
+        .map_or(vec![], |s| s.selected_or_current());
 
     /* write file names into temporary file to edit */
     {

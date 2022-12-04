@@ -241,6 +241,19 @@ impl JoshutoDirList {
         self.contents.get_mut(self.index?)
     }
 
+    /// Returns a vector with all selected files or - if no files are selected - with
+    /// only the "current" entry. If there is neither a selection nor a current file
+    /// (when this `JoshutoDirList` is empty), the returned vector will also be empty.
+    pub fn selected_or_current(&self) -> Vec<&JoshutoDirEntry> {
+        let mut entries: Vec<&JoshutoDirEntry> = self.iter_selected().collect();
+        if entries.is_empty() {
+            if let Some(curr_entry) = self.curr_entry_ref() {
+                entries.push(curr_entry)
+            }
+        }
+        entries
+    }
+
     /// Returns the index of the first entry to be printed in a UI dir list
     pub fn first_index_for_viewport(&self) -> usize {
         self.viewport_index
