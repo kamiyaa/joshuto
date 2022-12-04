@@ -101,7 +101,7 @@ impl<'a> Widget for TuiHSplitView<'a> {
                             .wrap(Wrap { trim: true })
                             .render(rect, buf);
                     } else {
-                        TuiFooter::new(list).render(rect, buf);
+                        TuiFooter::new(list, curr_tab.option_ref()).render(rect, buf);
                     }
                 }
             }

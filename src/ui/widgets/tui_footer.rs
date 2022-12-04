@@ -4,6 +4,7 @@ use tui::style::{Color, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Paragraph, Widget};
 
+use crate::config::option::TabDisplayOption;
 use crate::fs::{JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::unix;
@@ -11,11 +12,15 @@ use crate::THEME_T;
 
 pub struct TuiFooter<'a> {
     dirlist: &'a JoshutoDirList,
+    tab_options: &'a TabDisplayOption,
 }
 
 impl<'a> TuiFooter<'a> {
-    pub fn new(dirlist: &'a JoshutoDirList) -> Self {
-        Self { dirlist }
+    pub fn new(dirlist: &'a JoshutoDirList, tab_options: &'a TabDisplayOption) -> Self {
+        Self {
+            dirlist,
+            tab_options,
+        }
     }
 }
 
@@ -26,6 +31,11 @@ impl<'a> Widget for TuiFooter<'a> {
 
         let visual_mode_style = Style::default().fg(Color::Black).bg(Color::LightRed);
         let mode_style = Style::default().fg(Color::Cyan);
+
+        // flat and filter commands indicator style
+        let indicator_style = Style::default()
+            .fg(Color::LightBlue)
+            .add_modifier(THEME_T.selection.modifier);
 
         let selection_style = Style::default()
             .fg(THEME_T.selection.fg)
@@ -41,6 +51,8 @@ impl<'a> Widget for TuiFooter<'a> {
 
                 let mtime_str = format::mtime_to_string(entry.metadata.modified());
                 let size_str = format::file_size_to_string(entry.metadata.len());
+
+                let path = self.dirlist.file_path();
 
                 let mut text = vec![
                     Span::styled(
@@ -64,6 +76,22 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(" UTC "),
                     Span::raw(size_str),
                     Span::raw("  "),
+                    Span::styled(
+                        match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
+                            Some(opt) if opt.depth() > 0 => format!("flat:{} ", opt.depth()),
+                            _ => "".to_owned(),
+                        },
+                        indicator_style,
+                    ),
+                    Span::styled(
+                        match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
+                            Some(opt) if !opt.filter_string_ref().is_empty() => {
+                                format!("filter:{} ", opt.filter_string_ref())
+                            }
+                            _ => "".to_owned(),
+                        },
+                        indicator_style,
+                    ),
                     Span::styled(
                         if selected_count > 0 {
                             format!("{} selected", selected_count)
