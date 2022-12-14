@@ -125,11 +125,7 @@ impl<'a> Widget for TuiHSplitView<'a> {
                     width: TAB_VIEW_WIDTH,
                     height: 1,
                 };
-                TuiTabBar::new(
-                    self.context.tab_context_ref().tab_order.as_slice(),
-                    self.context.tab_context_ref().index,
-                )
-                .render(rect, buf);
+                TuiTabBar::new(self.context.tab_context_ref()).render(rect, buf);
             }
         }
 

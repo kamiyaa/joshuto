@@ -112,7 +112,7 @@ impl<'a> TuiFolderView<'a> {
 
     pub fn tab_area(&self, area: &Rect, num_tabs: usize) -> Rect {
         // render tabs
-        let tab_width = (num_tabs * 5) as u16;
+        let tab_width = (num_tabs * 8) as u16;
         let tab_width = if tab_width > area.width {
             area.width
         } else {
@@ -240,11 +240,7 @@ impl<'a> Widget for TuiFolderView<'a> {
 
         // render tabs
         let tab_area = self.tab_area(&area, self.context.tab_context_ref().len());
-        TuiTabBar::new(
-            self.context.tab_context_ref().tab_order.as_slice(),
-            self.context.tab_context_ref().index,
-        )
-        .render(tab_area, buf);
+        TuiTabBar::new(self.context.tab_context_ref()).render(tab_area, buf);
     }
 }
 
