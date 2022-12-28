@@ -55,7 +55,7 @@ where
             let error_kind = io::ErrorKind::NotFound;
             let error = JoshutoError::new(
                 JoshutoErrorKind::Io(error_kind),
-                "No config directory found".to_string(),
+                format!("Configuration file {} not found", filename),
             );
             Err(error)
         }
