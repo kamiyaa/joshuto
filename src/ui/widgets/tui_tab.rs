@@ -29,18 +29,17 @@ impl<'a> Widget for TuiTabBar<'a> {
         let tab_order = self.context.tab_order.as_slice();
 
         let mut spans_vec = vec![];
-        for i in 0..tab_order.len() {
+        for (i, tab_id) in tab_order.iter().enumerate() {
             let curr_style = if i == index {
                 selected_style
             } else {
                 regular_style
             };
-            let tab_id = &tab_order[i];
             if let Some(curr_tab) = self.context.tab_ref(tab_id) {
                 let preview_text: String = curr_tab
                     .cwd()
                     .file_name()
-                    .unwrap_or(OsStr::new("/"))
+                    .unwrap_or_else(|| OsStr::new("/"))
                     .to_string_lossy()
                     .chars()
                     .take(4)
