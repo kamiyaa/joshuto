@@ -69,7 +69,10 @@ impl JoshutoMetadata {
             }
 
             let exists = path.exists();
-            LinkType::Symlink { target: link, valid: exists }
+            LinkType::Symlink {
+                target: link,
+                valid: exists,
+            }
         } else {
             LinkType::Normal
         };

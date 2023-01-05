@@ -161,7 +161,7 @@ fn print_entry(
     let x = x + prefix_width as u16;
 
     // factor left_label and right_label
-    let drawing_width = drawing_width - prefix_width as usize;
+    let drawing_width = drawing_width - prefix_width;
     let (left_label, right_label) = factor_labels_for_entry(
         left_label_original,
         right_label_original.as_str(),
@@ -188,7 +188,7 @@ fn factor_labels_for_entry<'a>(
     let right_label_original_width = right_label_original.width();
 
     let left_width_remainder = drawing_width as i32 - right_label_original_width as i32;
-    let width_remainder = left_width_remainder as i32 - left_label_original_width as i32;
+    let width_remainder = left_width_remainder - left_label_original_width as i32;
 
     if drawing_width == 0 {
         ("".to_string(), "")
