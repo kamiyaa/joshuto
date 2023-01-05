@@ -86,7 +86,7 @@ impl std::default::Default for Events {
         let event_tx2 = event_tx.clone();
         let _ = thread::spawn(move || {
             let sigs = vec![signal::SIGWINCH];
-            let mut signals = SignalsInfo::<SignalOnly>::new(&sigs).unwrap();
+            let mut signals = SignalsInfo::<SignalOnly>::new(sigs).unwrap();
             for signal in &mut signals {
                 if let Err(e) = event_tx2.send(AppEvent::Signal(signal)) {
                     eprintln!("Signal thread send err: {:#?}", e);

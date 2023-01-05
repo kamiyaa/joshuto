@@ -1,6 +1,7 @@
 use std::path;
 
 pub fn is_executable(mode: u32) -> bool {
+    #[allow(clippy::unnecessary_cast)]
     const LIBC_PERMISSION_VALS: [u32; 3] = [
         libc::S_IXUSR as u32,
         libc::S_IXGRP as u32,
@@ -11,6 +12,7 @@ pub fn is_executable(mode: u32) -> bool {
 }
 
 pub fn mode_to_string(mode: u32) -> String {
+    #[allow(clippy::unnecessary_cast)]
     const LIBC_FILE_VALS: [(u32, char); 7] = [
         (libc::S_IFREG as u32 >> 9, '-'),
         (libc::S_IFDIR as u32 >> 9, 'd'),
@@ -21,6 +23,7 @@ pub fn mode_to_string(mode: u32) -> String {
         (libc::S_IFIFO as u32 >> 9, 'f'),
     ];
 
+    #[allow(clippy::unnecessary_cast)]
     const LIBC_PERMISSION_VALS: [(u32, char); 9] = [
         (libc::S_IRUSR as u32, 'r'),
         (libc::S_IWUSR as u32, 'w'),

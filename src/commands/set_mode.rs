@@ -11,6 +11,7 @@ use super::cursor_move;
 #[derive(Clone, Debug)]
 pub struct SetMode;
 
+#[allow(clippy::unnecessary_cast)]
 #[cfg(unix)]
 const LIBC_PERMISSION_VALS: [(u32, char); 9] = [
     (libc::S_IRUSR as u32, 'r'),
@@ -28,7 +29,7 @@ pub fn str_to_mode(s: &str) -> u32 {
     let mut mode: u32 = 0;
     for (i, ch) in s.chars().enumerate().take(LIBC_PERMISSION_VALS.len()) {
         if ch == LIBC_PERMISSION_VALS[i].1 {
-            let val: u32 = LIBC_PERMISSION_VALS[i].0 as u32;
+            let (val, _) = LIBC_PERMISSION_VALS[i];
             mode |= val;
         }
     }

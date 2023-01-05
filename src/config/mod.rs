@@ -47,7 +47,7 @@ where
 {
     match search_directories(filename, &CONFIG_HIERARCHY) {
         Some(file_path) => {
-            let file_contents = fs::read_to_string(&file_path)?;
+            let file_contents = fs::read_to_string(file_path)?;
             let config = toml::from_str::<T>(&file_contents)?;
             Ok(S::from(config))
         }
