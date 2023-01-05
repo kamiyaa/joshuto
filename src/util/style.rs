@@ -22,11 +22,11 @@ pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
             .add_modifier(THEME_T.selection.modifier)
     } else {
         match linktype {
-            LinkType::Symlink(_, true) => Style::default()
+            LinkType::Symlink { valid: true, .. } => Style::default()
                 .fg(THEME_T.link.fg)
                 .bg(THEME_T.link.bg)
                 .add_modifier(THEME_T.link.modifier),
-            LinkType::Symlink(_, false) => Style::default()
+            LinkType::Symlink { valid: false, .. } => Style::default()
                 .fg(THEME_T.link_invalid.fg)
                 .bg(THEME_T.link_invalid.bg)
                 .add_modifier(THEME_T.link_invalid.modifier),

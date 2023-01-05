@@ -313,8 +313,10 @@ fn autocomplete(
     if let Some(ref mut ct) = completion_tracker {
         ct.index = if reversed {
             ct.index.checked_sub(1).unwrap_or(ct.candidates.len() - 1)
+        } else if ct.index + 1 < ct.candidates.len() {
+            ct.index + 1
         } else {
-            (ct.index + 1) % ct.candidates.len()
+            ct.index
         };
 
         let candidate = &ct.candidates[ct.index];

@@ -19,7 +19,7 @@ impl FileType {
 #[derive(Clone, Debug)]
 pub enum LinkType {
     Normal,
-    Symlink(String, bool), // link target, link validity
+    Symlink { target: String, valid: bool },
 }
 
 #[derive(Clone, Debug)]
@@ -69,7 +69,7 @@ impl JoshutoMetadata {
             }
 
             let exists = path.exists();
-            LinkType::Symlink(link, exists)
+            LinkType::Symlink { target: link, valid: exists }
         } else {
             LinkType::Normal
         };

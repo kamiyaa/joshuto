@@ -138,7 +138,7 @@ fn print_entry(
 ) {
     let symlink_string = match entry.metadata.link_type() {
         LinkType::Normal => "",
-        LinkType::Symlink(_, _) => "-> ",
+        LinkType::Symlink { .. } => "-> ",
     };
     let left_label_original = entry.label();
     let right_label_original = format!(

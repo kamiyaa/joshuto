@@ -102,7 +102,7 @@ impl<'a> Widget for TuiFooter<'a> {
                     ),
                 ];
 
-                if let LinkType::Symlink(target, valid) = entry.metadata.link_type() {
+                if let LinkType::Symlink { target, valid } = entry.metadata.link_type() {
                     let link_style = if *valid {
                         Style::default()
                             .fg(THEME_T.link.fg)
