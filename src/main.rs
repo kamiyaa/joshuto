@@ -131,15 +131,9 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
     match &args.output_file {
         Some(output_path) => match context.quit {
             QuitAction::OutputCurrentDirectory => {
-                let curr_path = std::env::current_dir()?;
+                let curr_path = context.tab_context_ref().curr_tab_ref().cwd();
                 let mut file = File::create(output_path)?;
-                file.write_all(
-                    curr_path
-                        .into_os_string()
-                        .as_os_str()
-                        .to_string_lossy()
-                        .as_bytes(),
-                )?;
+                file.write_all(curr_path.as_os_str().to_string_lossy().as_bytes())?;
                 file.write_all("\n".as_bytes())?;
             }
             QuitAction::OutputSelectedFiles => {
