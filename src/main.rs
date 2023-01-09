@@ -64,10 +64,6 @@ lazy_static! {
             }
         }
 
-        // adds the default config files to the config hierarchy if running through cargo
-        if cfg!(debug_assertions) {
-            config_dirs.push(PathBuf::from("./config"));
-        }
         config_dirs
     };
     static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
