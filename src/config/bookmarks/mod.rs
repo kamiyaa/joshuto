@@ -6,9 +6,10 @@ use std::collections::HashMap;
 
 use termion::event::Event;
 
-use crate::config::{parse_to_config_file, TomlConfigFile};
-use crate::error::JoshutoErrorKind;
+use crate::config::TomlConfigFile;
 use crate::util::keyparse;
+
+use super::parse_config_or_default;
 
 pub type Bookmarks = HashMap<Event, String>;
 
@@ -29,16 +30,6 @@ impl From<BookmarksRaw> for Bookmarks {
 
 impl TomlConfigFile for Bookmarks {
     fn get_config(file_name: &str) -> Self {
-        match parse_to_config_file::<BookmarksRaw, Bookmarks>(file_name) {
-            Ok(s) => s,
-            Err(e) => {
-                if let JoshutoErrorKind::Io(std::io::ErrorKind::NotFound) = e.kind() {
-                    Self::default()
-                } else {
-                    eprintln!("Failed to parse app config: {}", e);
-                    Self::default()
-                }
-            }
-        }
+        parse_config_or_default::<BookmarksRaw, Bookmarks>(file_name)
     }
 }

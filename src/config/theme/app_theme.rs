@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use super::DEFAULT_CONFIG_FILE_PATH;
 use super::{AppStyle, AppStyleRaw};
-use crate::config::{parse_to_config_file, TomlConfigFile};
+use crate::config::{parse_config_or_default, TomlConfigFile};
 use crate::error::JoshutoResult;
 
 #[derive(Clone, Debug, Deserialize, Default)]
@@ -83,13 +83,7 @@ impl AppTheme {
 
 impl TomlConfigFile for AppTheme {
     fn get_config(file_name: &str) -> Self {
-        match parse_to_config_file::<AppThemeRaw, AppTheme>(file_name) {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("Failed to parse theme config: {}", e);
-                Self::default()
-            }
-        }
+        parse_config_or_default::<AppThemeRaw, AppTheme>(file_name)
     }
 }
 

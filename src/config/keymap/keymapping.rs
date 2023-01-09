@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use termion::event::Event;
 
-use crate::config::{parse_to_config_file, TomlConfigFile};
+use crate::config::{parse_config_or_default, TomlConfigFile};
 use crate::error::JoshutoResult;
 use crate::key_command::{AppCommand, Command, CommandKeybind};
 use crate::traits::ToString;
@@ -110,13 +110,7 @@ impl From<AppKeyMappingRaw> for AppKeyMapping {
 
 impl TomlConfigFile for AppKeyMapping {
     fn get_config(file_name: &str) -> Self {
-        match parse_to_config_file::<AppKeyMappingRaw, AppKeyMapping>(file_name) {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("Failed to parse keymap config: {}", e);
-                Self::default()
-            }
-        }
+        parse_config_or_default::<AppKeyMappingRaw, AppKeyMapping>(file_name)
     }
 }
 

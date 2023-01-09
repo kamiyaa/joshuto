@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use super::{parse_to_config_file, TomlConfigFile};
+use super::{parse_config_or_default, TomlConfigFile};
 
 #[derive(Debug, Deserialize)]
 pub struct JoshutoPreviewEntry {
@@ -35,6 +35,6 @@ pub struct JoshutoPreview {
 
 impl TomlConfigFile for JoshutoPreview {
     fn get_config(file_name: &str) -> Self {
-        parse_to_config_file::<JoshutoPreviewRaw, JoshutoPreview>(file_name).unwrap_or_default()
+        parse_config_or_default::<JoshutoPreviewRaw, JoshutoPreview>(file_name)
     }
 }

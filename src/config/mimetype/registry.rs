@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 
-use crate::config::{parse_to_config_file, TomlConfigFile};
+use crate::config::{parse_config_or_default, TomlConfigFile};
 
 use super::{
     ExtensionAppList, ExtensionAppListRaw, MimetypeAppList, MimetypeAppListRaw, ProgramEntry,
@@ -84,12 +84,6 @@ impl From<AppProgramRegistryRaw> for AppProgramRegistry {
 
 impl TomlConfigFile for AppProgramRegistry {
     fn get_config(file_name: &str) -> Self {
-        match parse_to_config_file::<AppProgramRegistryRaw, AppProgramRegistry>(file_name) {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("Failed to parse mimetype config: {}", e);
-                Self::default()
-            }
-        }
+        parse_config_or_default::<AppProgramRegistryRaw, AppProgramRegistry>(file_name)
     }
 }

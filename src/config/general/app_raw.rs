@@ -3,7 +3,7 @@ use std::convert::From;
 use serde_derive::Deserialize;
 
 use crate::config::option::{DisplayOption, PreviewOption, TabOption};
-use crate::config::{parse_to_config_file, AppConfig, TomlConfigFile};
+use crate::config::{parse_config_or_default, AppConfig, TomlConfigFile};
 
 use super::display_raw::DisplayOptionRaw;
 use super::preview_raw::PreviewOptionRaw;
@@ -52,12 +52,6 @@ impl From<AppConfigRaw> for AppConfig {
 
 impl TomlConfigFile for AppConfig {
     fn get_config(file_name: &str) -> Self {
-        match parse_to_config_file::<AppConfigRaw, AppConfig>(file_name) {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("Failed to parse app config: {}", e);
-                Self::default()
-            }
-        }
+        parse_config_or_default::<AppConfigRaw, AppConfig>(file_name)
     }
 }
