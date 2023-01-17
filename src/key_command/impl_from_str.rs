@@ -243,14 +243,24 @@ impl std::str::FromStr for Command {
             }
             Ok(Self::PasteFiles { options })
         } else if command == CMD_DELETE_FILES {
-            match arg {
-                "--foreground=true" => Ok(Self::DeleteFiles { background: true }),
-                "--foreground=false" => Ok(Self::DeleteFiles { background: false }),
-                _ => Err(JoshutoError::new(
-                    JoshutoErrorKind::UnrecognizedArgument,
-                    format!("{}: unknown option '{}'", command, arg),
-                )),
+            let (mut permanently, mut background) = (false, true);
+            for arg in arg.split_whitespace() {
+                match arg {
+                    "--foreground=true" => background = true,
+                    "--foreground=false" => background = false,
+                    "--permanently" => permanently = true,
+                    _ => {
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::UnrecognizedArgument,
+                            format!("{}: unknown option '{}'", command, arg),
+                        ))
+                    }
+                }
             }
+            Ok(Self::DeleteFiles {
+                background,
+                permanently,
+            })
         } else if command == CMD_RENAME_FILE {
             match arg {
                 "" => Err(JoshutoError::new(

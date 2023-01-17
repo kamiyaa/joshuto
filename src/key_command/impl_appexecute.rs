@@ -47,12 +47,10 @@ impl AppExecute for Command {
             Self::SymlinkFiles { relative: false } => file_ops::symlink_absolute(context),
             Self::PasteFiles { options } => file_ops::paste(context, *options),
 
-            Self::DeleteFiles { background: false } => {
-                delete_files::delete_selected_files(context, backend)
-            }
-            Self::DeleteFiles { background: true } => {
-                delete_files::delete_selected_files_background(context, backend)
-            }
+            Self::DeleteFiles {
+                background,
+                permanently,
+            } => delete_files::delete_selected_files(context, backend, *background, *permanently),
 
             Self::CursorMoveUp { offset } => cursor_move::up(context, *offset),
             Self::CursorMoveDown { offset } => cursor_move::down(context, *offset),

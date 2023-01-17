@@ -37,6 +37,7 @@ pub enum Command {
 
     DeleteFiles {
         background: bool,
+        permanently: bool,
     },
 
     CursorMoveUp {

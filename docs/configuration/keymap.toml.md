@@ -217,6 +217,7 @@ function joshuto() {
  - `paste_files`: move/copy files stored from a previous `cut_files` or `copy_files` command
  - `delete_files`: delete selected files (or current file if none were selected).
     - `--foreground=true`: will delete files in the foreground
+    - `--permanently`: force permanent deletion regardless of `use_trash` value.
     - will ***permanently*** delete files if `use_trash` is `false` in
     [joshuto.toml](https://github.com/kamiyaa/joshuto)/wiki/Configuration#joshutotoml)
     - if `use_trash` is `true`, this might cause issues with deleting files

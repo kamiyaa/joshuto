@@ -24,8 +24,21 @@ impl std::fmt::Display for Command {
                 write!(f, "{} --relative={}", self.command(), relative)
             }
             Self::PasteFiles { options } => write!(f, "{}  {}", self.command(), options),
-            Self::DeleteFiles { background: false } => {
-                write!(f, "{} --foreground=true", self.command(),)
+            Self::DeleteFiles {
+                background,
+                permanently,
+            } => {
+                write!(
+                    f,
+                    "{}{}{}",
+                    self.command(),
+                    if !background {
+                        " --foreground=true"
+                    } else {
+                        ""
+                    },
+                    if *permanently { " --permanently" } else { "" }
+                )
             }
 
             Self::RenameFile { new_name } => write!(f, "{} {:?}", self.command(), new_name),
