@@ -14,6 +14,7 @@ fn delete_files(
     context: &mut AppContext,
     backend: &mut AppBackend,
     background: bool,
+    permanently: bool,
 ) -> std::io::Result<()> {
     let paths = context
         .tab_context_ref()
@@ -53,7 +54,7 @@ fn delete_files(
                 let options = FileOperationOptions {
                     overwrite: false,
                     skip_exist: false,
-                    permanently: !context.config_ref().use_trash,
+                    permanently: !context.config_ref().use_trash || permanently,
                 };
 
                 let dest = path::PathBuf::new();
@@ -71,49 +72,21 @@ fn delete_files(
     }
 }
 
-fn _delete_selected_files(
+pub fn delete_selected_files(
     context: &mut AppContext,
     backend: &mut AppBackend,
-) -> std::io::Result<()> {
-    delete_files(context, backend, false)?;
-
-    let curr_tab = context.tab_context_ref().curr_tab_ref();
-    let options = context.config_ref().display_options_ref().clone();
-    let curr_path = curr_tab.cwd().to_path_buf();
-    for (_, tab) in context.tab_context_mut().iter_mut() {
-        let tab_options = tab.option_ref().clone();
-        tab.history_mut()
-            .reload(&curr_path, &options, &tab_options)?;
-    }
-    Ok(())
-}
-
-pub fn delete_selected_files(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
-    _delete_selected_files(context, backend)?;
-    Ok(())
-}
-
-fn _delete_selected_files_background(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
-) -> std::io::Result<()> {
-    delete_files(context, backend, true)?;
-
-    let curr_tab = context.tab_context_ref().curr_tab_ref();
-    let options = context.config_ref().display_options_ref().clone();
-    let curr_path = curr_tab.cwd().to_path_buf();
-    for (_, tab) in context.tab_context_mut().iter_mut() {
-        let tab_options = tab.option_ref().clone();
-        tab.history_mut()
-            .reload(&curr_path, &options, &tab_options)?;
-    }
-    Ok(())
-}
-
-pub fn delete_selected_files_background(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
+    background: bool,
+    permanently: bool,
 ) -> JoshutoResult {
-    _delete_selected_files(context, backend)?;
+    delete_files(context, backend, background, permanently)?;
+
+    let curr_tab = context.tab_context_ref().curr_tab_ref();
+    let options = context.config_ref().display_options_ref().clone();
+    let curr_path = curr_tab.cwd().to_path_buf();
+    for (_, tab) in context.tab_context_mut().iter_mut() {
+        let tab_options = tab.option_ref().clone();
+        tab.history_mut()
+            .reload(&curr_path, &options, &tab_options)?;
+    }
     Ok(())
 }
