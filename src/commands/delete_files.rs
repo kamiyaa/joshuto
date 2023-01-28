@@ -29,6 +29,13 @@ fn delete_files(
         ));
     }
 
+    {
+        let history = context.tab_context_mut().curr_tab_mut().history_mut();
+        for path in paths.iter().filter(|p| p.is_dir()) {
+            history.remove(path);
+        }
+    }
+
     let ch = {
         let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
         let mut prompt = TuiPrompt::new(&prompt_str);
