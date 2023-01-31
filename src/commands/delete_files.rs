@@ -30,13 +30,6 @@ fn delete_files(
         ));
     }
 
-    {
-        let history = context.tab_context_mut().curr_tab_mut().history_mut();
-        for path in paths.iter().filter(|p| p.is_dir()) {
-            history.remove(path);
-        }
-    }
-
     let ch = {
         let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
         let mut prompt = TuiPrompt::new(&prompt_str);
@@ -65,12 +58,17 @@ fn delete_files(
                 };
 
                 let dest = path::PathBuf::new();
-                let worker_thread = IoWorkerThread::new(file_op, paths, dest, options);
+                let worker_thread = IoWorkerThread::new(file_op, paths.clone(), dest, options);
                 if background {
                     context.worker_context_mut().push_worker(worker_thread);
                 } else {
                     let (wtx, _) = mpsc::channel();
                     worker_thread.start(wtx)?;
+                }
+
+                let history = context.tab_context_mut().curr_tab_mut().history_mut();
+                for path in paths.iter().filter(|p| p.is_dir()) {
+                    history.remove(path);
                 }
             }
             Ok(())
