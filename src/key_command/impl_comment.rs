@@ -114,8 +114,8 @@ impl CommandComment for Command {
 
             Self::Filter { .. } => "Filter directory list",
 
-            Self::TabSwitch { .. } => "Swith to the next tab",
-            Self::TabSwitchIndex { .. } => "Swith to a given tab",
+            Self::TabSwitch { .. } => "Switch to the next tab",
+            Self::TabSwitchIndex { .. } => "Switch to a given tab",
             Self::Help => "Open this help page",
 
             Self::SearchFzf => "Search via fzf",
