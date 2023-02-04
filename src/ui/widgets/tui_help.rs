@@ -119,6 +119,7 @@ pub fn get_raw_keymap_table<'a>(
     search_query: &'a str,
     sort_by: usize,
 ) -> Vec<[String; 3]> {
+    let search_query_lowercase = &String::from(search_query).to_lowercase();
     let mut rows = Vec::new();
     for (event, bind) in keymap.iter() {
         let key = key_event_to_string(event);
@@ -129,14 +130,14 @@ pub fn get_raw_keymap_table<'a>(
                 for _ in 0..sub_rows.len() {
                     let mut sub_row = sub_rows.pop().unwrap();
                     sub_row[0] = key.clone() + &sub_row[0];
-                    if sub_row[0].contains(search_query) || sub_row[1].contains(search_query) {
+                    if sub_row[0].contains(search_query) || sub_row[1].contains(search_query) || sub_row[2].to_lowercase().contains(search_query_lowercase) {
                         rows.push(sub_row)
                     }
                 }
                 continue;
             }
         };
-        if key.contains(search_query) || command.contains(search_query) {
+        if key.contains(search_query) || command.contains(search_query) || comment.to_lowercase().contains(search_query_lowercase){
             rows.push([key, command, comment.to_string()]);
         }
     }
