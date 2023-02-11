@@ -1,4 +1,3 @@
-use std::collections::VecDeque;
 use std::fs;
 use std::io;
 use std::path;
@@ -8,6 +7,7 @@ use std::sync::mpsc;
 use std::os::unix;
 
 use crate::io::{FileOperation, FileOperationOptions, FileOperationProgress};
+use crate::util::fs::query_number_of_items;
 use crate::util::name_resolution::rename_filename_conflict;
 
 #[derive(Clone, Debug)]
@@ -55,7 +55,14 @@ impl IoWorkerThread {
         tx: mpsc::Sender<FileOperationProgress>,
     ) -> io::Result<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
-        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+        let mut progress = FileOperationProgress::new(
+            self.kind(),
+            self.paths[0].to_path_buf(),
+            0,
+            total_files,
+            0,
+            total_bytes,
+        );
         for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_copy(
@@ -74,7 +81,14 @@ impl IoWorkerThread {
         tx: mpsc::Sender<FileOperationProgress>,
     ) -> io::Result<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
-        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+        let mut progress = FileOperationProgress::new(
+            self.kind(),
+            self.paths[0].to_path_buf(),
+            0,
+            total_files,
+            0,
+            total_bytes,
+        );
         for path in self.paths.iter() {
             let _ = tx.send(progress.clone());
             recursive_cut(
@@ -94,7 +108,14 @@ impl IoWorkerThread {
     ) -> io::Result<FileOperationProgress> {
         let total_files = self.paths.len();
         let total_bytes = total_files as u64;
-        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+        let mut progress = FileOperationProgress::new(
+            self.kind(),
+            self.paths[0].to_path_buf(),
+            0,
+            total_files,
+            0,
+            total_bytes,
+        );
 
         #[cfg(unix)]
         for src in self.paths.iter() {
@@ -119,7 +140,14 @@ impl IoWorkerThread {
     ) -> io::Result<FileOperationProgress> {
         let total_files = self.paths.len();
         let total_bytes = total_files as u64;
-        let mut progress = FileOperationProgress::new(self.kind(), 0, total_files, 0, total_bytes);
+        let mut progress = FileOperationProgress::new(
+            self.kind(),
+            self.paths[0].to_path_buf(),
+            0,
+            total_files,
+            0,
+            total_bytes,
+        );
 
         #[cfg(unix)]
         for src in self.paths.iter() {
@@ -166,6 +194,7 @@ impl IoWorkerThread {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
         let progress = FileOperationProgress::new(
             self.kind(),
+            self.paths[0].to_path_buf(),
             total_files,
             total_files,
             total_bytes,
@@ -178,37 +207,6 @@ impl IoWorkerThread {
         }
         Ok(progress)
     }
-}
-
-fn query_number_of_items(paths: &[path::PathBuf]) -> io::Result<(usize, u64)> {
-    let mut total_bytes = 0;
-    let mut total_files = 0;
-
-    let mut dirs: VecDeque<path::PathBuf> = VecDeque::new();
-    for path in paths.iter() {
-        let metadata = path.symlink_metadata()?;
-        if metadata.is_dir() {
-            dirs.push_back(path.clone());
-        } else {
-            let metadata = path.symlink_metadata()?;
-            total_bytes += metadata.len();
-            total_files += 1;
-        }
-    }
-
-    while let Some(dir) = dirs.pop_front() {
-        for entry in fs::read_dir(dir)? {
-            let path = entry?.path();
-            if path.is_dir() {
-                dirs.push_back(path);
-            } else {
-                let metadata = path.symlink_metadata()?;
-                total_bytes += metadata.len();
-                total_files += 1;
-            }
-        }
-    }
-    Ok((total_files, total_bytes))
 }
 
 pub fn recursive_copy(
@@ -225,6 +223,9 @@ pub fn recursive_copy(
     if !options.overwrite {
         rename_filename_conflict(&mut dest_buf);
     }
+
+    progress.set_current_file(src.to_path_buf());
+
     let file_type = fs::symlink_metadata(src)?.file_type();
     if file_type.is_dir() {
         match fs::create_dir(dest_buf.as_path()) {
@@ -279,6 +280,8 @@ pub fn recursive_cut(
     }
     let metadata = fs::symlink_metadata(src)?;
     let file_type = metadata.file_type();
+
+    progress.set_current_file(src.to_path_buf());
 
     match fs::rename(src, dest_buf.as_path()) {
         Ok(_) => {

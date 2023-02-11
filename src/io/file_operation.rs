@@ -1,3 +1,5 @@
+use std::path;
+
 #[derive(Clone, Copy, Debug)]
 pub enum FileOperation {
     Cut,
@@ -59,6 +61,7 @@ impl std::fmt::Display for FileOperationOptions {
 #[derive(Clone, Debug)]
 pub struct FileOperationProgress {
     _kind: FileOperation,
+    _current_file: path::PathBuf,
     _files_processed: usize,
     _total_files: usize,
     _bytes_processed: u64,
@@ -68,6 +71,7 @@ pub struct FileOperationProgress {
 impl FileOperationProgress {
     pub fn new(
         _kind: FileOperation,
+        _current_file: path::PathBuf,
         _files_processed: usize,
         _total_files: usize,
         _bytes_processed: u64,
@@ -75,6 +79,7 @@ impl FileOperationProgress {
     ) -> Self {
         Self {
             _kind,
+            _current_file,
             _files_processed,
             _total_files,
             _bytes_processed,
@@ -84,6 +89,14 @@ impl FileOperationProgress {
 
     pub fn kind(&self) -> FileOperation {
         self._kind
+    }
+
+    pub fn current_file(&self) -> &path::Path {
+        self._current_file.as_path()
+    }
+
+    pub fn set_current_file(&mut self, current_file: path::PathBuf) {
+        self._current_file = current_file;
     }
 
     pub fn files_processed(&self) -> usize {
