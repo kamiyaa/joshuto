@@ -2,8 +2,9 @@
 
 keymap = [
 	{ keys = [ "escape" ],		command = "escape" },
-	{ keys = [ "T" ],		command = "new_tab" },
 	{ keys = [ "ctrl+t" ],		command = "new_tab" },
+	{ keys = [ "alt+t" ],		command = "new_tab --cursor" },
+	{ keys = [ "T" ],		command = "new_tab --current" },
 	{ keys = [ "W" ],		command = "close_tab" },
 	{ keys = [ "ctrl+w" ],		command = "close_tab" },
 	{ keys = [ "q" ],		command = "close_tab" },

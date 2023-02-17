@@ -1,7 +1,7 @@
 use std::path;
 
 use crate::commands::quit::QuitAction;
-use crate::config::option::{LineMode, LineNumberStyle, SelectOption, SortType};
+use crate::config::option::{LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::FileOperationOptions;
 use crate::util::unix;
@@ -39,7 +39,6 @@ impl std::str::FromStr for Command {
 
         simple_command_conversion_case!(command, CMD_TOGGLE_VISUAL, Self::ToggleVisualMode);
 
-        simple_command_conversion_case!(command, CMD_NEW_TAB, Self::NewTab);
         simple_command_conversion_case!(command, CMD_CLOSE_TAB, Self::CloseTab);
 
         simple_command_conversion_case!(command, CMD_HELP, Self::Help);
@@ -101,6 +100,10 @@ impl std::str::FromStr for Command {
                 "--output-selected-files" => Ok(Self::Quit(QuitAction::OutputSelectedFiles)),
                 _ => Ok(Self::Quit(QuitAction::Noop)),
             }
+        } else if command == CMD_NEW_TAB {
+            Ok(Self::NewTab {
+                mode: NewTabMode::from_str(arg),
+            })
         } else if command == CMD_CHANGE_DIRECTORY {
             match arg {
                 "" => match HOME_DIR.as_ref() {

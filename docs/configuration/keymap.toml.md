@@ -194,8 +194,13 @@ function joshuto() {
 
 
 ## Tabs
- - `new_tab`: opens a new tab
-    - new tab opens in home directory
+ - `new_tab [--current][--cursor][dir]`: opens a new tab
+    - `new_tab`, without any argument, opens a new tab with the default directory.
+
+      (Note: the default directory for new tabs is specified in `joshuto.toml` in the `tab` section.)
+    - `new_tab some-dir` opens new tab with directory `some-dir`
+    - `new_tab --current` opens new tab with the same directory as the current tab
+    - `new_tab --cursor` opens new tab with the directory which is currently marked by the cursor
  - `close_tab`: close current tab
  - `tab_switch`: switch to next/previous tab by `x`
     - where `x` is an integer
