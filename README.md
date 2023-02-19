@@ -69,6 +69,8 @@ sudo port install joshuto
 ```
 ~ $ joshuto
 ```
+See [docs#quit](/docs/configuration/keymap.toml.md#quit-quit-joshuto) for exiting into current directory
+and other usages
 
 ## Configuration
 
