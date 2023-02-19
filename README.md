@@ -92,7 +92,7 @@ Check out [docs](/docs) for details and [config](/config) for examples
 ## Contributing
 See [docs](/docs)
 
-## Features/Bugs
+## Bugs/Feature Request
 
 Please create an issue :)
 
