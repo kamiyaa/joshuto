@@ -69,6 +69,8 @@ sudo port install joshuto
 ```
 ~ $ joshuto
 ```
+See [docs#quit](/docs/configuration/keymap.toml.md#quit-quit-joshuto) for exiting into current directory
+and other usages
 
 ## Configuration
 
@@ -92,19 +94,29 @@ Check out [docs](/docs) for details and [config](/config) for examples
 ## Contributing
 See [docs](/docs)
 
-## Features/Bugs
+## Bugs/Feature Request
 
 Please create an issue :)
 
+## Features
+- Tabs
+- Devicons
+- Fuzzy search via [fzf](https://github.com/junegunn/fzf)
+- Ctrl/Shift/Alt support
+- Bulk rename
+- File previews
+  - See [Image previews](/docs/image_previews.md) for more details
+- Exit to current directory
+- Asynch File IO (cut/copy/paste)
+- Custom colors/theme
+- Line numbers
+  - Jump to number
+- File chooser
+- Trash support
+
 ## TODOs
 
-- [x] Migrate to [tui-rs](https://github.com/fdehau/tui-rs)
-- [x] Tab support
-- [x] Ctrl/Shift/Alt support
-- [x] Asynch File IO (cut/copy/paste)
-- [ ] Built-in command line (in progress)
+- [x] Built-in command line
+  - Mostly working
   - Currently implementation is kind of janky
-- [ ] File previews (in progress)
-  - Waiting for tui-rs to support parsing ANSI color codes
-- [ ] Tab autocomplete (in progress)
-- [x] Bulk rename
+  - [ ] Tab autocomplete (in progress)
