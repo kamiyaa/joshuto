@@ -72,10 +72,14 @@ f12
 
 ### `quit`: quit joshuto
 - **will not quit** if there are pending IO work (paste jobs)
-- `quit`: (exit code 0)
-- `quit --force`: does ***NOT*** wait for pending IO work (exit code 100)
-- `quit --output-current-directory`: if `--output-file` argument is set, output the current directory to it (exit code 101)
-- `quit --output-selected-files`: if `--output-file` argument is set, output the selected files to it (exit code 102)
+- `quit`
+  - exit code 0
+- `quit --force`: does ***NOT*** wait for pending IO work
+  - exit code 100
+- `quit --output-current-directory`: if `--output-file` argument is set, output the current directory to it
+  - exit code 101
+- `quit --output-selected-files`: if `--output-file` argument is set, output the selected files to it
+  - exit code 102
 
 The following is a bash snippet on how to integrate with `quit`
 ```bash
