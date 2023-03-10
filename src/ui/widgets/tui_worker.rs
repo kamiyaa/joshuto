@@ -19,6 +19,9 @@ impl<'a> TuiWorker<'a> {
 
 impl<'a> Widget for TuiWorker<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        if area.height < 7 {
+            return;
+        }
         match self.context.worker_ref() {
             Some(io_obs) => {
                 if let Some(progress) = io_obs.progress.as_ref() {
@@ -27,19 +30,19 @@ impl<'a> Widget for TuiWorker<'a> {
                         ..area
                     };
                     TuiCurrentWorker::new(io_obs, progress).render(current_area, buf);
-
-                    // draw queued up work
-                    let style = Style::default()
-                        .fg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD);
-                    buf.set_stringn(0, 5, "Queue:", area.width as usize, style);
-
-                    let queue_area = Rect {
-                        y: area.y + 7,
-                        ..area
-                    };
-                    TuiWorkerQueue::new(self.context).render(queue_area, buf);
                 }
+
+                // draw queued up work
+                let style = Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD);
+                buf.set_stringn(0, 6, "Queue:", area.width as usize, style);
+
+                let queue_area = Rect {
+                    y: area.y + 7,
+                    ..area
+                };
+                TuiWorkerQueue::new(self.context).render(queue_area, buf);
             }
             _ => {
                 let style = Style::default();
@@ -76,22 +79,30 @@ impl<'a> Widget for TuiCurrentWorker<'a> {
         let total_size = format::file_size_to_string(self.progress.total_bytes());
 
         let msg = format!(
-            "{} ({}/{}) ({}/{})\n",
+            "{} ({}/{}) ({}/{}) {:?}",
             op_str,
             self.progress.files_processed() + 1,
             self.progress.total_files(),
             processed_size,
             total_size,
+            self.observer.dest_path(),
         );
         buf.set_stringn(left, top, msg, right as usize, Style::default());
 
-        buf.set_stringn(
-            left,
-            top + 1,
-            format!("{:?}\n", self.observer.dest_path()),
-            right as usize,
-            Style::default(),
-        );
+        if let Some(file_name) = self
+            .progress
+            .current_file()
+            .file_name()
+            .map(|s| s.to_string_lossy())
+        {
+            buf.set_stringn(
+                left,
+                top + 1,
+                format!("{}", file_name),
+                right as usize,
+                Style::default(),
+            );
+        }
 
         // draw a progress bar
         let progress_bar_width = (self.progress.files_processed() as f32

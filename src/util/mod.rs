@@ -2,6 +2,7 @@
 pub mod devicons;
 
 pub mod format;
+pub mod fs;
 pub mod keyparse;
 pub mod mimetype;
 pub mod name_resolution;
