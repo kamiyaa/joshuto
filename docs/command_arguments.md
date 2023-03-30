@@ -11,8 +11,8 @@ Joshuto supports the following options from the command line:
 
  - `-h` `--help`: shows help menu
 
- - `--change-directory`: sets the default quit behavior to change directory
-   instead of noop
+ - `--change-directory`: sets the quit behavior to change directory instead of
+   noop when closing the last tab
 
  - `--output-file <output-file>`: tells joshuto to output data to `<output-file>`.
    - This is usually used so programs can know how to behave after joshuto exits.

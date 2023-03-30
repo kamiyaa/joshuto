@@ -24,18 +24,7 @@ impl QuitAction {
     }
 }
 
-pub fn quit_with_action(context: &mut AppContext, quit_action: Option<QuitAction>) -> JoshutoResult {
-    let quit_action = match quit_action {
-        Some(quit_action) => quit_action,
-        None => {
-            if context.args.change_directory {
-                QuitAction::OutputCurrentDirectory
-            }
-            else {
-                QuitAction::Noop
-            }
-        }
-    };
+pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> JoshutoResult {
     if quit_action == QuitAction::Force {
         context.quit = quit_action;
         return Ok(());

@@ -95,11 +95,10 @@ impl std::str::FromStr for Command {
 
         if command == CMD_QUIT {
             match arg {
-                "--force" => Ok(Self::Quit(Some(QuitAction::Force))),
-                "--noop" => Ok(Self::Quit(Some(QuitAction::Noop))),
-                "--output-current-directory" => Ok(Self::Quit(Some(QuitAction::OutputCurrentDirectory))),
-                "--output-selected-files" => Ok(Self::Quit(Some(QuitAction::OutputSelectedFiles))),
-                _ => Ok(Self::Quit(None)),
+                "--force" => Ok(Self::Quit(QuitAction::Force)),
+                "--output-current-directory" => Ok(Self::Quit(QuitAction::OutputCurrentDirectory)),
+                "--output-selected-files" => Ok(Self::Quit(QuitAction::OutputSelectedFiles)),
+                _ => Ok(Self::Quit(QuitAction::Noop)),
             }
         } else if command == CMD_NEW_TAB {
             Ok(Self::NewTab {
