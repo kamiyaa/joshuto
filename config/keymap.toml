@@ -8,6 +8,7 @@ keymap = [
 	{ keys = [ "W" ],		command = "close_tab" },
 	{ keys = [ "ctrl+w" ],		command = "close_tab" },
 	{ keys = [ "q" ],		command = "close_tab" },
+	{ keys = [ "ctrl+c" ],		command = "quit" },
 	{ keys = [ "Q" ],		command = "quit --output-current-directory" },
 
 	{ keys = [ "R" ],		command = "reload_dirlist" },
