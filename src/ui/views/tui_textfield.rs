@@ -215,6 +215,10 @@ impl<'a> TuiTextField<'a> {
                                 let _ = terminal.hide_cursor();
                                 return None;
                             }
+                            Key::Ctrl('c') => {
+                                let _ = terminal.hide_cursor();
+                                return None;
+                            }
                             Key::Char('\t') => autocomplete(
                                 &mut line_buffer,
                                 &mut completion_tracker,
