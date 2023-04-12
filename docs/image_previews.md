@@ -265,7 +265,7 @@ case "$mimetype" in
 esac
 ```
 
-`~/.config/joshuto/on_preview_removed.sh`:
+`~/.config/joshuto/on_preview_removed`:
 ```shell
 #!/usr/bin/env bash
 
