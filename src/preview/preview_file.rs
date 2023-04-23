@@ -73,8 +73,6 @@ impl Background {
                     return;
                 }
 
-                let image_cache = 0;
-
                 let script = script.clone();
                 let event_tx = context.clone_event_tx();
                 context
@@ -96,8 +94,6 @@ impl Background {
                         .arg(preview_x_coord.to_string())
                         .arg("--y-coord")
                         .arg(preview_y_coord.to_string())
-                        .arg("--image-cache")
-                        .arg(image_cache.to_string())
                         .output();
                     match res {
                         Ok(output) => {
