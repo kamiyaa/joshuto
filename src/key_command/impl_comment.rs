@@ -93,7 +93,7 @@ impl CommandComment for Command {
             Self::SelectFiles { .. } => "Select file",
             Self::SetMode => "Set file permissions",
             Self::SubProcess { spawn: false, .. } => "Run a shell command",
-            Self::SubProcess { spawn: true, .. } => "Run commmand in background",
+            Self::SubProcess { spawn: true, .. } => "Run command in background",
             Self::ShowTasks => "Show running background tasks",
 
             Self::ToggleHiddenFiles => "Toggle hidden files displaying",
@@ -105,7 +105,7 @@ impl CommandComment for Command {
 
             Self::Sort(sort_type) => match sort_type {
                 SortType::Lexical => "Sort lexically",
-                SortType::Mtime => "Sort by modifiaction time",
+                SortType::Mtime => "Sort by modification time",
                 SortType::Natural => "Sort naturally",
                 SortType::Size => "Sort by size",
                 SortType::Ext => "Sort by extension",
