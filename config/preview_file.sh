@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-set -o noclobber -o noglob -o nounset -o pipefail
-IFS=$'\n'
-
 ## This script is a template script for creating textual file previews in Joshuto.
 ##
 ## Copy this script to your Joshuto configuration directory and refer to this
@@ -12,8 +9,8 @@ IFS=$'\n'
 ## ```
 ## Joshuto will call this script for each file when first hovered by the cursor.
 ## If this script returns with an exit code 0, the stdout of this script will be 
-## the file's preview text in Joshuto's right panel. The preview text will be cached
-## by Joshuto and only renewed on reload.
+## the file's preview text in Joshuto's right panel.
+## The preview text will be cached by Joshuto and only renewed on reload.
 ## ANSI color codes are supported if Joshuto is build with the `syntax_highlight`
 ## feature.
 ##
@@ -31,11 +28,18 @@ IFS=$'\n'
 ## Image previews are independent from this script.
 ##
 
+IFS=$'\n'
+
+# Security measures:
+# * noclobber prevents you from overwriting a file with `>`
+# * noglob prevents expansion of wild cards
+# * nounset causes bash to fail if an undeclared variable is used (e.g. typos)
+# * pipefail causes a pipeline to fail also if a command other than the last one fails
+set -o noclobber -o noglob -o nounset -o pipefail
+
 FILE_PATH=""
 PREVIEW_WIDTH=10
 PREVIEW_HEIGHT=10
-PREVIEW_X_COORD=0
-PREVIEW_Y_COORD=0
 
 while [ "$#" -gt 0 ]; do
 	case "$1" in
@@ -50,14 +54,6 @@ while [ "$#" -gt 0 ]; do
 		"--preview-height")
 			shift
 			PREVIEW_HEIGHT="$1"
-			;;
-		"--x-coord")
-			shift
-			PREVIEW_X_COORD="$1"
-			;;
-		"--y-coord")
-			shift
-			PREVIEW_Y_COORD="$1"
 			;;
 	esac
 	shift
