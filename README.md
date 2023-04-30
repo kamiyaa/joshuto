@@ -34,7 +34,7 @@ Also see [Cargo.toml](Cargo.toml)
 #### For single user with cargo
 
 ```
-~$ cargo install --git https://github.com/danielronalds/joshuto.git --force
+~$ cargo install --git https://github.com/kamiyaa/joshuto.git --force
 ```
 
 #### System wide
