@@ -31,6 +31,11 @@ Also see [Cargo.toml](Cargo.toml)
 ```
 ~$ cargo install --path=. --force
 ```
+#### For single user with cargo
+
+```
+~$ cargo install --git https://github.com/kamiyaa/joshuto.git --force
+```
 
 #### System wide
 
