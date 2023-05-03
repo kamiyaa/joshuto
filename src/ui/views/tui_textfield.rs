@@ -228,7 +228,7 @@ impl<'a> TuiTextField<'a> {
                                 true,
                             ),
 
-                            // Current `completion_tracker` should be droped
+                            // Current `completion_tracker` should be dropped
                             // only if we moved to another word
                             Key::Ctrl('a') => {
                                 moved_to_another_word(&mut line_buffer, |line_buffer| {
