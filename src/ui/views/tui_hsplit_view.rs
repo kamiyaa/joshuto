@@ -159,7 +159,8 @@ fn calculate_layout(area: Rect, constraints: &[Constraint; 2]) -> Vec<Rect> {
     let mut layout_rect = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(constraints.as_ref())
-        .split(area);
+        .split(area)
+        .to_vec();
 
     layout_rect[0] = Rect {
         width: layout_rect[0].width - 1,

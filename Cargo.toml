@@ -10,7 +10,7 @@ edition = "2021"
 keywords = ["tui-rs", "ranger", "file manager", "termion"]
 
 [dependencies]
-ansi-to-tui = { version = "^2", optional = true }
+ansi-to-tui = { version = "^3", optional = true }
 alphanumeric-sort = "^1"
 chrono = "^0"
 colors-transform = "^0"
@@ -33,7 +33,7 @@ structopt = "^0"
 termion = "^1"
 toml = "^0"
 trash = { version = "^2", optional = true }
-tui = { version = "^0", default-features = false, features = ["termion"] }
+tui = { version = "0.20", default-features = false, features = ["termion"], package = "ratatui" }
 unicode-segmentation = "^1"
 unicode-width = "^0"
 users = "^0"
