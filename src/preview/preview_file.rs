@@ -66,14 +66,10 @@ impl Background {
                 let layout_rect = layout[2];
                 let preview_width = layout_rect.width;
                 let preview_height = layout_rect.height;
-                let preview_x_coord = layout_rect.x;
-                let preview_y_coord = layout_rect.y;
 
                 if preview_width == 0 || preview_height == 0 {
                     return;
                 }
-
-                let image_cache = 0;
 
                 let script = script.clone();
                 let event_tx = context.clone_event_tx();
@@ -92,12 +88,6 @@ impl Background {
                         .arg(preview_width.to_string())
                         .arg("--preview-height")
                         .arg(preview_height.to_string())
-                        .arg("--x-coord")
-                        .arg(preview_x_coord.to_string())
-                        .arg("--y-coord")
-                        .arg(preview_y_coord.to_string())
-                        .arg("--image-cache")
-                        .arg(image_cache.to_string())
                         .output();
                     match res {
                         Ok(output) => {
