@@ -64,6 +64,13 @@ sudo dnf install joshuto
 [yay/paru] -S joshuto-git
 ```
 
+##### Gentoo ([gentoo-zh](https://github.com/microcai/gentoo-zh/tree/master/app-misc/joshuto))
+
+```
+sudo eselect repository enable gentoo-zh
+sudo emerge -av app-misc/joshuto
+```
+
 ##### MacOS ([MacPorts](https://ports.macports.org/port/joshuto/details/))
 
 ```
