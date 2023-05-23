@@ -1,11 +1,9 @@
 name: MacOS build
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   check:
     name: Rust MacOS ${{ matrix.rust }}

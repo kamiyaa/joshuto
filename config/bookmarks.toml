@@ -1,6 +1,6 @@
 bookmark = [
-	{ key = "r",	path = "/" },
-	{ key = "e",	path = "/etc" },
+  { key = "r", path = "/" },
+  { key = "e", path = "/etc" },
 
-	{ key = "h",	path = "~/" },
+  { key = "h", path = "~/" },
 ]

@@ -1,19 +1,23 @@
 # mimetype.toml
+
 This file tells joshuto what programs to use when opening files.
 
 There are currently 2 ways to configure opening files:
- - via extension (1st priority)
- - via mimetype (2nd priority)
-   - must have `file` command available
-   - joshuto will use `file --mime-type -Lb` to determine the file's mimetype
+
+- via extension (1st priority)
+- via mimetype (2nd priority)
+  - must have `file` command available
+  - joshuto will use `file --mime-type -Lb` to determine the file's mimetype
 
 ## Class and inherit
+
 To alleviate the lack of variables and programmability in TOML,
 there is a section for users to specify "classes" called `[class]`.
 Here, users can specify a list of commands to open a file and inherit these
 for a specific file format.
 
 ## Example
+
 ```toml
 [class]
 image_default	= [
@@ -51,21 +55,24 @@ inherit = "video_default"
 ```
 
 each extension has the following fields:
- - `inherit`: string indicating the class to inherit from, if any
- - `app_list`: list of commands
+
+- `inherit`: string indicating the class to inherit from, if any
+- `app_list`: list of commands
 
 each command has the following fields:
- - `command`: the command to run
- - `args`: (optional) list of arguments for the command
- - `fork`: tells joshuto to run the program in foreground or background
-   - foreground will pause joshuto
- - `silent`: tells joshuto to discard all output of the program
-   - useful when the program outputs debug messages into the terminal,
-   potentially ruining joshuto's UI
- - `confirm_exit`: requires the user's input before going back to joshuto
-   - useful when you want to read the output of the command
+
+- `command`: the command to run
+- `args`: (optional) list of arguments for the command
+- `fork`: tells joshuto to run the program in foreground or background
+  - foreground will pause joshuto
+- `silent`: tells joshuto to discard all output of the program
+  - useful when the program outputs debug messages into the terminal,
+    potentially ruining joshuto's UI
+- `confirm_exit`: requires the user's input before going back to joshuto
+  - useful when you want to read the output of the command
 
 ## Explanation of the configuration above
+
 For files with `.png` extension, joshuto opens them with `qimgv`.
 Joshuto suppresses all terminal output from `qimgv` to prevent UI disturbance.
 Joshuto forks `qimgv` so we can continue using joshuto will viewing the image.
