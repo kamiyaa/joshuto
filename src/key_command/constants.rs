@@ -76,6 +76,7 @@ cmd_constants![
     (CMD_TOUCH_FILE, "touch"),
     (CMD_HELP, "help"),
     (CMD_SEARCH_FZF, "search_fzf"),
+    (CMD_SEARCH_FZF_REC, "search_fzf_rec"),
     (CMD_SUBDIR_FZF, "subdir_fzf"),
     (CMD_ZOXIDE, "z"),
     (CMD_ZOXIDE_INTERACTIVE, "zi"),

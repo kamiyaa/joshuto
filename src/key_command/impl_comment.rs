@@ -119,6 +119,7 @@ impl CommandComment for Command {
             Self::Help => "Open this help page",
 
             Self::SearchFzf => "Search via fzf",
+            Self::SearchFzfRec => "Search recursively in the current folder via fzf",
             Self::SubdirFzf => "Switch to a child directory via fzf",
             Self::Zoxide(_) => "Zoxide",
             Self::ZoxideInteractive => "Zoxide interactive",

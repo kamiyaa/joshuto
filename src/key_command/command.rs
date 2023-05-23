@@ -145,6 +145,7 @@ pub enum Command {
     Help,
 
     SearchFzf,
+    SearchFzfRec,
     SubdirFzf,
     Zoxide(String),
     ZoxideInteractive,

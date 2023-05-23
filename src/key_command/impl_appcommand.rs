@@ -88,6 +88,7 @@ impl AppCommand for Command {
             Self::TouchFile { .. } => CMD_TOUCH_FILE,
 
             Self::SearchFzf => CMD_SEARCH_FZF,
+            Self::SearchFzfRec => CMD_SEARCH_FZF_REC,
             Self::SubdirFzf => CMD_SUBDIR_FZF,
             Self::Zoxide(_) => CMD_ZOXIDE,
             Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,

@@ -135,7 +135,8 @@ impl AppExecute for Command {
             Self::TabSwitchIndex { index } => tab_ops::tab_switch_index(context, *index),
             Self::Help => show_help::help_loop(context, backend, keymap_t),
 
-            Self::SearchFzf => search_fzf::search_fzf(context, backend),
+            Self::SearchFzf => search_fzf::search_fzf(context, backend, false),
+            Self::SearchFzfRec => search_fzf::search_fzf(context, backend, true),
             Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),
             Self::Zoxide(arg) => zoxide::zoxide_query(context, arg),
             Self::ZoxideInteractive => zoxide::zoxide_query_interactive(context, backend),
