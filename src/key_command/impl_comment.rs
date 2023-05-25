@@ -125,6 +125,9 @@ impl CommandComment for Command {
 
             Self::BookmarkAdd => "Add a bookmark",
             Self::BookmarkChangeDirectory => "Navigate to a bookmark",
+
+            Self::FzfBookmarkAdd { .. } => "Add a fzf bookmark",
+            Self::FzfBookmarkCd => "Navigate to a fzf bookmark",
         }
     }
 }

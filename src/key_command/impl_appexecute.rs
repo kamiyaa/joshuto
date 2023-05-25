@@ -142,6 +142,11 @@ impl AppExecute for Command {
 
             Self::BookmarkAdd => bookmark::add_bookmark(context, backend),
             Self::BookmarkChangeDirectory => bookmark::change_directory_bookmark(context, backend),
+
+            Self::FzfBookmarkAdd { bookmark_name } => {
+                fzf_bookmarks::fzf_add_bookmark(context, backend, bookmark_name)
+            }
+            Self::FzfBookmarkCd => fzf_bookmarks::fzf_cd_bookmark(context, backend),
         }
     }
 }

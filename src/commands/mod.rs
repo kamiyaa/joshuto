@@ -8,6 +8,7 @@ pub mod escape;
 pub mod file_ops;
 pub mod filter;
 pub mod flat;
+pub mod fzf_bookmarks;
 pub mod line_nums;
 pub mod linemode;
 pub mod new_directory;

@@ -151,4 +151,9 @@ pub enum Command {
 
     BookmarkAdd,
     BookmarkChangeDirectory,
+
+    FzfBookmarkAdd {
+        bookmark_name: String,
+    },
+    FzfBookmarkCd,
 }

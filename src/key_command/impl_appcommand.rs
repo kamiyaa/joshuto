@@ -94,6 +94,9 @@ impl AppCommand for Command {
 
             Self::BookmarkAdd => CMD_BOOKMARK_ADD,
             Self::BookmarkChangeDirectory => CMD_BOOKMARK_CHANGE_DIRECTORY,
+
+            Self::FzfBookmarkAdd { .. } => CMD_FZF_ADD_BOOKMARK,
+            Self::FzfBookmarkCd => CMD_FZF_CD_BOOKMARK,
         }
     }
 }

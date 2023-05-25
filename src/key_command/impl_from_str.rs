@@ -93,6 +93,8 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_ZOXIDE, Self::Zoxide(arg.to_string()));
         simple_command_conversion_case!(command, CMD_ZOXIDE_INTERACTIVE, Self::ZoxideInteractive);
 
+        simple_command_conversion_case!(command, CMD_FZF_CD_BOOKMARK, Self::FzfBookmarkCd);
+
         if command == CMD_QUIT {
             match arg {
                 "--force" => Ok(Self::Quit(QuitAction::Force)),
@@ -401,6 +403,10 @@ impl std::str::FromStr for Command {
         } else if command == CMD_FILTER {
             Ok(Self::Filter {
                 pattern: arg.to_string(),
+            })
+        } else if command == CMD_FZF_ADD_BOOKMARK {
+            Ok(Self::FzfBookmarkAdd {
+                bookmark_name: arg.to_string(),
             })
         } else {
             Err(JoshutoError::new(

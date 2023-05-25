@@ -85,6 +85,8 @@ cmd_constants![
     (CMD_FILTER, "filter"),
     (CMD_BOOKMARK_ADD, "add_bookmark"),
     (CMD_BOOKMARK_CHANGE_DIRECTORY, "cd_bookmark"),
+    (CMD_FZF_ADD_BOOKMARK, "fzf_add_mark"),
+    (CMD_FZF_CD_BOOKMARK, "fzf_cd_mark"),
 ];
 
 pub fn complete_command(partial_command: &str) -> Vec<Pair> {
