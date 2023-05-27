@@ -3,7 +3,9 @@
 This file is used to theme joshuto
 
 ## Style
+
 Each style has the following fields:
+
 ```toml
 # background color
 bg = "light_blue"
@@ -15,7 +17,9 @@ invert = false
 ```
 
 ## Color
+
 Joshuto supports 16 colors as well as hex colors via `rgb(r,g,b)`
+
 ```
 black
 red
@@ -41,6 +45,7 @@ _
 joshuto supports theming via system file types as well as extensions
 
 System file types include:
+
 ```toml
 # for selected files
 [selection]
@@ -78,6 +83,7 @@ bold = true
 ```
 
 Via extensions
+
 ```toml
 [ext]
 [ext.jpg]

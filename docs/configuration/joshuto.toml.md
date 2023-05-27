@@ -1,7 +1,9 @@
 # joshuto.toml
+
 This file is for general configurations.
 
 All options available and their default values:
+
 ```toml
 # This is for configuring how many items to reach before 'scrolling' the view
 scroll_offset = 6
