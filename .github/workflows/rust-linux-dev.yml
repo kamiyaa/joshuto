@@ -1,11 +1,9 @@
 name: Linux build dev
-
 on:
   push:
     branches: [dev]
   pull_request:
     branches: [dev]
-
 jobs:
   check:
     name: Rust Linux ${{ matrix.rust }}

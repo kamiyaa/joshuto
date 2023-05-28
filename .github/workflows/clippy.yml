@@ -1,11 +1,9 @@
 name: Clippy - Catch common mistakes and improve your Rust code
-
 on:
   push:
     branches: [dev, main]
   pull_request:
     branches: [dev, main]
-
 jobs:
   check:
     name: Clippy - Catch common mistakes and improve your Rust code

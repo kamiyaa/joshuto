@@ -1,4 +1,5 @@
 # Image Thumbnails in File Previews
+
 Joshuto does not support image previews directly.
 One reason is to keep Joshuto independent of specific display protocols and terminal emulators.
 
@@ -6,13 +7,15 @@ However, Joshuto offers two preview-related hooks which allow to easily implemen
 image preview with some simple scripts.
 This page explains the integration with [Überzug](https://github.com/seebye/ueberzug),
 a Python tool to display images as overlays on a terminal emulator, and integration with [Kitty's Icat](https://sw.kovidgoyal.net/kitty/kittens/icat/).
-This exemplary solution shows previews for JPEG and PNG files. 
+This exemplary solution shows previews for JPEG and PNG files.
 It has not been tested with MacOS and tmux.
 
 # Image Previews with Überzug
+
 Überzug must be [installed](https://github.com/seebye/ueberzug#installation) for the solution explained here.
 
 ## Joshuto Wrapper
+
 First, we need a wrapper script for Joshuto.
 Joshuto is not started directly anymore but through that wrapper script.
 Place this script in a directory which is in your `$PATH`.
@@ -64,7 +67,7 @@ if [ -n "$DISPLAY" ] && command -v ueberzug > /dev/null; then
     export -f get_preview_meta_file
     export -f show_image
     export -f remove_image
- 
+
     trap stop_ueberzug EXIT QUIT INT TERM
     start_ueberzug
     echo "ueberzug started"
@@ -84,10 +87,11 @@ The script also provides some functions
 and variables which can be used in sub-processes.
 
 ## Configuring Hook Scripts
+
 When started with the wrapper script, Joshuto's sub-processes can show and remove a
 preview image with Überzug now. Joshuto offers two hooks which will be used for that.
 
-In your `~/.config/joshuto/joshuto.toml`, configure a script for each of these hooks: 
+In your `~/.config/joshuto/joshuto.toml`, configure a script for each of these hooks:
 
 ```toml
 [preview]
@@ -113,11 +117,13 @@ Keep in mind that the result of the `preview` script you use for textual preview
 is cached by Joshuto and not called every time a file is focused, but the “shown” hook is.
 
 ## The Hook Scripts
+
 Now we need to create the two hook scripts which have been configured before.
 
 Create these two scripts and make them _executable_!
 
 `~/.config/joshuto/on_preview_shown`:
+
 ```bash
 #!/usr/bin/env bash
 
@@ -145,6 +151,7 @@ esac
 ```
 
 `~/.config/joshuto/on_preview_removed`:
+
 ```bash
 #!/usr/bin/env bash
 test -z "$joshuto_wrap_id" && exit 1;
@@ -167,6 +174,7 @@ That's it. Previewing JPEG and PNG files should work now when the wrapper
 script is started.
 
 # Combining Text Preview and Thumbnails
+
 It's possible to combine a textual preview and an image preview.
 The wrapper script shown above exports one more function,
 `get_preview_meta_file`,
@@ -182,7 +190,7 @@ Let's say we have this handling for JPEG and PNG files in the **`preview`** scri
 
 ```bash
 case "$mimetype" in
-    
+
     ...
 
     image/png | image/jpeg)
@@ -196,12 +204,14 @@ case "$mimetype" in
         exit 4
         ;;
 ```
+
 Here, we fetch some data we want as text (dimensions of the image and some tags) and just print it out for
 Joshuto to show.
 Additionally, we calculate the height of our output and write it to a temporary file, specific for the
 current `$path`, which has been provided by the wrapper script via the `get_preview_meta_file` function.
 
 Then we adapt the “preview shown” hook script as follows:
+
 ```bash
 ...
 
@@ -217,6 +227,7 @@ case "$mimetype" in
 
 esac
 ```
+
 Here, we again get the path of our temporary file and use that offset information to
 display the image preview just below the textual output.
 
@@ -224,12 +235,15 @@ Joshuto will have cached the textual output but all the temporary files will rem
 Joshuto (and the wrapper script) are exited, so they will remain available for the hook scripts.
 
 # Image Previews with Kitty's Icat
+
 The Kitty terminal must be [installed](https://sw.kovidgoyal.net/kitty/binary/#) for the solution explained here.
 
 ## Hook Scripts
+
 To preview images in Kitty, you need to create these two scripts and make them executable.
 
 `~/.config/joshuto/on_preview_shown`:
+
 ```shell
 #!/usr/bin/env bash
 
@@ -266,6 +280,7 @@ esac
 ```
 
 `~/.config/joshuto/on_preview_removed.sh`:
+
 ```shell
 #!/usr/bin/env bash
 
@@ -291,10 +306,12 @@ handle_mime() {
 }
 ```
 
-## Kitty Demo: 
+## Kitty Demo:
+
 ![Demo](https://user-images.githubusercontent.com/57725322/150659504-203c7175-4bee-4e46-b5c5-16cc16a51a12.png)
 
 # Further Options
+
 By extending the scripts, image previews can also be provided for other formats, including
 videos, SVGs and whatever else. The wrapper script can be extended to provide a 2nd temporary
 file to cache a thumbnail for those file types which cannot be displayed by Überzug directly.
