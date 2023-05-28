@@ -154,7 +154,7 @@ function joshuto() {
 - `linemode mtime`: show the entry’s modified time (aka. “_mtime_”) <sup>✻</sup>
 - `linemode sizemtime`: show the entry’s size and modified time <sup>✻</sup>
 
-<sup>✻: file- or directory-name is shown on left, the respective meta-data is shown on the right, preceeded by a symlink indicator</sup>
+<sup>✻: file- or directory-name is shown on left, the respective meta-data is shown on the right, preceded by a symlink indicator</sup>
 
 ### `show_workers`: show the pending IO operations and the current progress
 
