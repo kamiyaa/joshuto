@@ -287,6 +287,10 @@ When disabling, the current “visual mode selection” is turned into normal se
 ### `add_bookmark`: adds a bookmark to the `bookmarks.toml` file
 ### `cd_bookmark`: prompts a menu of bookmarks and navigates to selected bookmark
 
+### `fzf_add_mark <name>`: create a fzf bookmark entry in file `#HOME/.fzf-marks`, with the format `<name> : <current directory path>`.
+
+### `fzf_cd_mark`: open a fzf window to let user select an entry in `#HOME/.fzf-marks`, and cd to the selected directory.
+
 ## Integration
 ### `bulk_rename`: rename all selected files
 - this will create a file inside `$TMP_DIR` (or `/tmp` if `$TMP_DIR` is not set) and
