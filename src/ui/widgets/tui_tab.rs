@@ -3,7 +3,7 @@ use std::ffi::OsStr;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::text::{Span, Spans};
+use tui::text::{Span, Line};
 use tui::widgets::{Paragraph, Widget, Wrap};
 
 use crate::context::TabContext;
@@ -53,7 +53,7 @@ impl<'a> Widget for TuiTabBar<'a> {
             }
         }
 
-        Paragraph::new(Spans::from(spans_vec))
+        Paragraph::new(Line::from(spans_vec))
             .wrap(Wrap { trim: true })
             .render(area, buf);
     }
