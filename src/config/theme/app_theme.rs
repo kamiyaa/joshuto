@@ -9,6 +9,8 @@ use crate::error::JoshutoResult;
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct AppThemeRaw {
     #[serde(default)]
+    pub tabs: TabThemeRaw,
+    #[serde(default)]
     pub regular: AppStyleRaw,
     #[serde(default)]
     pub selection: AppStyleRaw,
@@ -28,8 +30,25 @@ pub struct AppThemeRaw {
     pub ext: HashMap<String, AppStyleRaw>,
 }
 
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct TabThemeRaw {
+    #[serde(default)]
+    pub inactive: AppStyleRaw,
+    #[serde(default)]
+    pub active: AppStyleRaw,
+}
+
+impl From<TabThemeRaw> for TabTheme {
+    fn from(crude: TabThemeRaw) -> Self {
+        let inactive = crude.inactive.to_style_theme();
+        let active = crude.active.to_style_theme();
+        Self { inactive, active }
+    }
+}
+
 impl From<AppThemeRaw> for AppTheme {
     fn from(crude: AppThemeRaw) -> Self {
+        let tabs = crude.tabs;
         let selection = crude.selection.to_style_theme();
         let visual_mode_selection = crude.visual_mode_selection.to_style_theme();
         let executable = crude.executable.to_style_theme();
@@ -57,12 +76,14 @@ impl From<AppThemeRaw> for AppTheme {
             link_invalid,
             socket,
             ext,
+            tabs: TabTheme::from(tabs),
         }
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct AppTheme {
+    pub tabs: TabTheme,
     pub regular: AppStyle,
     pub selection: AppStyle,
     pub visual_mode_selection: AppStyle,
@@ -93,4 +114,10 @@ impl std::default::Default for AppTheme {
         // If it fails then there is a (syntax) error in the default config file
         Self::default_res().unwrap()
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct TabTheme {
+    pub inactive: AppStyle,
+    pub active: AppStyle,
 }
