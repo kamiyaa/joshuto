@@ -3,7 +3,7 @@ use std::ffi::OsStr;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::text::{Span, Line};
+use tui::text::{Line, Span};
 use tui::widgets::{Paragraph, Widget, Wrap};
 
 use crate::context::TabContext;

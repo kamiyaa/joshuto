@@ -1,7 +1,7 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
-use tui::text::{Span, Line};
+use tui::text::{Line, Span};
 use tui::widgets::{Paragraph, Widget};
 
 use crate::config::option::TabDisplayOption;
