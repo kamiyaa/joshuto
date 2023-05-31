@@ -12,6 +12,7 @@ Joshuto can currently be configured using the following files:
 - [keymap.toml](/docs/configuration/keymap.toml.md): keymapping configurations
 - [mimetype.toml](/docs/configuration/mimetype.toml.md): mimetype configurations
 - [theme.toml](/docs/configuration/theme.toml.md): theming configurations
+- [icons.toml](/docs/configuration/icons.toml.md): icons customization
 
 **Please copy these configs and use it as a base, then modify them accordingly.**
 
