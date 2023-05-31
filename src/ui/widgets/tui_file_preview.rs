@@ -41,7 +41,7 @@ impl<'a> TuiFilePreview<'a> {
                     .skip(self.preview.index)
                     .zip(area.y..area.y + area.height)
                 {
-                    buf.set_spans(area.x, y, line, area.width);
+                    buf.set_line(area.x, y, line, area.width);
                 }
             }
             Err(e) => {

@@ -33,7 +33,7 @@ structopt = "^0"
 termion = "^1"
 toml = "^0"
 trash = { version = "^2", optional = true }
-tui = { version = "0.20", default-features = false, features = [
+tui = { version = "0.21", default-features = false, features = [
   "termion",
 ], package = "ratatui" }
 unicode-segmentation = "^1"

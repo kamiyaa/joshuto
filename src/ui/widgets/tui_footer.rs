@@ -1,7 +1,7 @@
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
-use tui::text::{Span, Spans};
+use tui::text::{Line, Span};
 use tui::widgets::{Paragraph, Widget};
 
 use crate::config::option::TabDisplayOption;
@@ -118,7 +118,7 @@ impl<'a> Widget for TuiFooter<'a> {
                     text.push(Span::styled(target, link_style));
                 }
 
-                Paragraph::new(Spans::from(text)).render(area, buf);
+                Paragraph::new(Line::from(text)).render(area, buf);
             }
             _ => {}
         }

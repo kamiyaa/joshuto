@@ -4,7 +4,7 @@ use std::path::Path;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
-use tui::text::{Span, Spans};
+use tui::text::{Line, Span};
 use tui::widgets::{Paragraph, Widget};
 
 use unicode_width::UnicodeWidthStr;
@@ -71,7 +71,7 @@ impl<'a> Widget for TuiTopBar<'a> {
         };
 
         let text = match ellipses {
-            Some(s) => Spans::from(vec![
+            Some(s) => Line::from(vec![
                 Span::styled(USERNAME.as_str(), username_style),
                 Span::styled("@", username_style),
                 Span::styled(HOSTNAME.as_str(), username_style),
@@ -79,7 +79,7 @@ impl<'a> Widget for TuiTopBar<'a> {
                 s,
                 Span::styled(curr_path_str, path_style),
             ]),
-            None => Spans::from(vec![
+            None => Line::from(vec![
                 Span::styled(USERNAME.as_str(), username_style),
                 Span::styled("@", username_style),
                 Span::styled(HOSTNAME.as_str(), username_style),
