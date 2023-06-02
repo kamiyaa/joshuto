@@ -121,7 +121,7 @@ function joshuto() {
 
 - `%s` is substituted by a list of all selected files or by the file under the cursor, if none is selected
 - When running the external program, the directory shown in Joshuto is set as “working directory”,
-  the file names substituded for `%s` are given without path.
+  the file names substituted for `%s` are given without path.
 - Example: `:shell touch file.txt` will create a file called `file.txt`
 - Example for `keymap.toml`: To open all selected files with `nvim`, one can add a keybinding like this:
   ```toml
