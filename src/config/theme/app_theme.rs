@@ -15,6 +15,8 @@ pub struct AppThemeRaw {
     #[serde(default)]
     pub visual_mode_selection: AppStyleRaw,
     #[serde(default)]
+    pub cut_selection: AppStyleRaw,
+    #[serde(default)]
     pub directory: AppStyleRaw,
     #[serde(default)]
     pub executable: AppStyleRaw,
@@ -32,6 +34,7 @@ impl From<AppThemeRaw> for AppTheme {
     fn from(crude: AppThemeRaw) -> Self {
         let selection = crude.selection.to_style_theme();
         let visual_mode_selection = crude.visual_mode_selection.to_style_theme();
+        let cut_selection = crude.cut_selection.to_style_theme();
         let executable = crude.executable.to_style_theme();
         let regular = crude.regular.to_style_theme();
         let directory = crude.directory.to_style_theme();
@@ -50,6 +53,7 @@ impl From<AppThemeRaw> for AppTheme {
         Self {
             selection,
             visual_mode_selection,
+            cut_selection,
             executable,
             regular,
             directory,
@@ -66,6 +70,7 @@ pub struct AppTheme {
     pub regular: AppStyle,
     pub selection: AppStyle,
     pub visual_mode_selection: AppStyle,
+    pub cut_selection: AppStyle,
     pub directory: AppStyle,
     pub executable: AppStyle,
     pub link: AppStyle,

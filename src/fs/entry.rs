@@ -16,6 +16,8 @@ pub struct JoshutoDirEntry {
     permanent_selected: bool,
     /// Temporarily selected by the visual mode range
     visual_mode_selected: bool,
+    /// Selected to be _cut_
+    cut_selected: bool,
     _marked: bool,
 }
 
@@ -59,6 +61,7 @@ impl JoshutoDirEntry {
             metadata,
             permanent_selected: false,
             visual_mode_selected: false,
+            cut_selected: false,
             _marked: false,
         })
     }
@@ -91,12 +94,20 @@ impl JoshutoDirEntry {
         self.visual_mode_selected
     }
 
+    pub fn is_cut_selected(&self) -> bool {
+        self.cut_selected
+    }
+
     pub fn set_permanent_selected(&mut self, selected: bool) {
         self.permanent_selected = selected;
     }
 
     pub fn set_visual_mode_selected(&mut self, visual_mode_selected: bool) {
         self.visual_mode_selected = visual_mode_selected;
+    }
+
+    pub fn set_cut_selected(&mut self, cut_selected: bool) {
+        self.cut_selected = cut_selected;
     }
 
     pub fn get_ext(&self) -> &str {

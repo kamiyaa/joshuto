@@ -20,6 +20,11 @@ pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
             .fg(THEME_T.selection.fg)
             .bg(THEME_T.selection.bg)
             .add_modifier(THEME_T.selection.modifier)
+    } else if entry.is_cut_selected() {
+        Style::default()
+            .fg(THEME_T.cut_selection.fg)
+            .bg(THEME_T.cut_selection.bg)
+            .add_modifier(THEME_T.selection.modifier)
     } else {
         match linktype {
             LinkType::Symlink { valid: true, .. } => Style::default()

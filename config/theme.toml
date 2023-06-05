@@ -6,6 +6,10 @@ bold = true
 fg = "light_red"
 bold = true
 
+[cut_selection]
+fg = "dark_gray"
+bold = true
+
 [selection.prefix]
 prefix = "  "
 size = 2
