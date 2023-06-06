@@ -14,6 +14,7 @@ mod traits;
 mod ui;
 mod util;
 
+use config::icons::Icons;
 use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::prelude::*;
@@ -39,6 +40,7 @@ const KEYMAP_FILE: &str = "keymap.toml";
 const THEME_FILE: &str = "theme.toml";
 const PREVIEW_FILE: &str = "preview.toml";
 const BOOKMARKS_FILE: &str = "bookmarks.toml";
+const ICONS_FILE: &str = "icons.toml";
 
 lazy_static! {
     // dynamically builds the config hierarchy
@@ -70,6 +72,7 @@ lazy_static! {
     static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config(MIMETYPE_FILE);
     static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config(PREVIEW_FILE);
     static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config(BOOKMARKS_FILE));
+    static ref ICONS_T: Icons = Icons::get_config(ICONS_FILE);
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
     static ref USERNAME: String = whoami::username();
@@ -111,6 +114,7 @@ fn run_main(args: Args) -> Result<i32, JoshutoError> {
     lazy_static::initialize(&MIMETYPE_T);
     lazy_static::initialize(&PREVIEW_T);
     lazy_static::initialize(&BOOKMARKS_T);
+    lazy_static::initialize(&ICONS_T);
 
     lazy_static::initialize(&HOME_DIR);
     lazy_static::initialize(&USERNAME);

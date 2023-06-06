@@ -4,7 +4,7 @@ use crate::config::option::DisplayOption;
 use crate::fs::{FileType, JoshutoMetadata};
 
 #[cfg(feature = "devicons")]
-use crate::util::devicons::*;
+use crate::ICONS_T;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
@@ -139,21 +139,28 @@ impl std::cmp::Ord for JoshutoDirEntry {
     }
 }
 
+#[cfg(feature = "devicons")]
 fn create_icon_label(name: &str, metadata: &JoshutoMetadata) -> String {
     let label = {
-        let icon =
-            match metadata.file_type() {
-                FileType::Directory => DIR_NODE_EXACT_MATCHES
-                    .get(name)
-                    .cloned()
-                    .unwrap_or(DEFAULT_DIR),
-                _ => FILE_NODE_EXACT_MATCHES.get(name).cloned().unwrap_or(
-                    match name.rsplit_once('.') {
-                        Some((_, ext)) => FILE_NODE_EXTENSIONS.get(ext).unwrap_or(&DEFAULT_FILE),
-                        None => DEFAULT_FILE,
-                    },
-                ),
-            };
+        let icon = match metadata.file_type() {
+            FileType::Directory => ICONS_T
+                .directory_exact
+                .get(name)
+                .cloned()
+                .unwrap_or(ICONS_T.default_dir.clone()),
+            _ => ICONS_T
+                .file_exact
+                .get(name)
+                .cloned()
+                .unwrap_or(match name.rsplit_once('.') {
+                    Some((_, ext)) => ICONS_T
+                        .ext
+                        .get(ext)
+                        .unwrap_or(&ICONS_T.default_file)
+                        .to_string(),
+                    None => ICONS_T.default_file.clone(),
+                }),
+        };
         format!("{} {}", icon, name)
     };
     label
