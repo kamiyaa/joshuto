@@ -73,9 +73,10 @@ sudo dnf install joshuto
 sudo eselect repository enable gentoo-zh
 sudo emerge -av app-misc/joshuto
 ```
+
 ##### NixOS
 
-Here's an example of using it in a nixos configuration
+> Here's an example of using it in a nixos configuration
 
 ```nix
 {
@@ -104,6 +105,12 @@ Here's an example of using it in a nixos configuration
       };
     };
 }
+```
+
+> Temporary run, not installed on the system
+
+```sh
+nix run github:kamiyaa/joshuto
 ```
 
 ##### MacOS ([MacPorts](https://ports.macports.org/port/joshuto/details/))
