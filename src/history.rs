@@ -164,6 +164,20 @@ pub fn create_dirlist_with_history(
         if entry.metadata.is_dir() {
             if let Some(lst) = history.get(entry.file_path()) {
                 entry.metadata.update_directory_size(lst.len());
+                let len: u64 = lst
+                    .contents
+                    .iter()
+                    .map(|e| {
+                        if let Some(l) = history.get(e.file_path()) {
+                            l.size()
+                        } else {
+                            0
+                        }
+                    })
+                    .sum();
+                entry
+                    .metadata
+                    .update_len(if len > lst.size() { len } else { lst.size() });
             }
         }
     }
@@ -231,7 +245,9 @@ pub fn create_dirlist_with_history(
         }
     };
 
-    let metadata = JoshutoMetadata::from(path)?;
+    let mut metadata = JoshutoMetadata::from(path)?;
+    let len: u64 = contents.iter().map(|e| e.metadata.len()).sum();
+    metadata.update_len(len);
     let dirlist = JoshutoDirList::new(
         path.to_path_buf(),
         contents,

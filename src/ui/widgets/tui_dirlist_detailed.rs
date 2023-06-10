@@ -5,7 +5,7 @@ use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::Widget;
 
-use crate::config::option::{DisplayOption, LineMode, LineNumberStyle, TabDisplayOption};
+use crate::config::option::{DisplayOption, LineMode, LineNumberStyle, SizeMode, TabDisplayOption};
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::string::UnicodeTruncate;
@@ -108,7 +108,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     entry,
                     style,
                     (x + 1, y + i as u16),
-                    self.tab_display_options.linemode,
+                    self.tab_display_options,
                     drawing_width - 1,
                     &prefix,
                 );
@@ -116,13 +116,16 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
     }
 }
 
-fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
+fn get_entry_size_string(entry: &JoshutoDirEntry, mode: &SizeMode) -> String {
     match entry.metadata.file_type() {
-        FileType::Directory => entry
-            .metadata
-            .directory_size()
-            .map(|n| n.to_string())
-            .unwrap_or_else(|| "".to_string()),
+        FileType::Directory => match mode {
+            SizeMode::Count => entry
+                .metadata
+                .directory_size()
+                .map(|n| n.to_string())
+                .unwrap_or_else(|| "".to_string()),
+            SizeMode::ContentSize => format::file_size_to_string(entry.metadata.len()),
+        },
         FileType::File => format::file_size_to_string(entry.metadata.len()),
     }
 }
@@ -132,7 +135,7 @@ fn print_entry(
     entry: &JoshutoDirEntry,
     style: Style,
     (x, y): (u16, u16),
-    linemode: LineMode,
+    tab_opts: &TabDisplayOption,
     drawing_width: usize,
     prefix: &str,
 ) {
@@ -144,12 +147,12 @@ fn print_entry(
     let right_label_original = format!(
         " {}{} ",
         symlink_string,
-        match linemode {
-            LineMode::Size => get_entry_size_string(entry),
+        match tab_opts.linemode {
+            LineMode::Size => get_entry_size_string(entry, &tab_opts.size_mode),
             LineMode::MTime => format::mtime_to_string(entry.metadata.modified()),
             LineMode::SizeMTime => format!(
                 "{} {}",
-                get_entry_size_string(entry),
+                get_entry_size_string(entry, &tab_opts.size_mode),
                 format::mtime_to_string(entry.metadata.modified())
             ),
         }

@@ -4,7 +4,7 @@ use serde_derive::Deserialize;
 use tui::layout::Constraint;
 
 use crate::config::option::{
-    DisplayMode, DisplayOption, LineMode, LineNumberStyle, TabDisplayOption,
+    DisplayMode, DisplayOption, LineMode, LineNumberStyle, SizeMode, TabDisplayOption,
 };
 
 use super::sort_raw::SortOptionRaw;
@@ -59,6 +59,9 @@ pub struct DisplayOptionRaw {
 
     #[serde(default)]
     pub line_number_style: String,
+
+    #[serde(default)]
+    pub size_mode: String,
 }
 
 impl std::default::Default for DisplayOptionRaw {
@@ -75,6 +78,7 @@ impl std::default::Default for DisplayOptionRaw {
             sort_options: SortOptionRaw::default(),
             tilde_in_titlebar: true,
             line_number_style: "none".to_string(),
+            size_mode: "count".to_string(),
         }
     }
 }
@@ -126,6 +130,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
                 sort_options: raw.sort_options.into(),
                 // todo: make default line mode configurable
                 linemode: LineMode::Size,
+                size_mode: SizeMode::from_str(&raw.size_mode),
                 ..Default::default()
             },
         }

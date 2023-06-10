@@ -27,8 +27,10 @@ impl JoshutoDirList {
         index: Option<usize>,
         viewport_index: usize,
         visual_mode_anchor_index: Option<usize>,
-        metadata: JoshutoMetadata,
+        mut metadata: JoshutoMetadata,
     ) -> Self {
+        let len: u64 = contents.iter().map(|e| e.metadata.len()).sum();
+        metadata.update_len(len);
         Self {
             path,
             contents,
@@ -51,7 +53,18 @@ impl JoshutoDirList {
         contents.sort_by(|f1, f2| tab_options.sort_options_ref().compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
-        let metadata = JoshutoMetadata::from(&path)?;
+        let mut metadata = JoshutoMetadata::from(&path)?;
+        let len: u64 = contents
+            .iter()
+            .map(|e| {
+                if !e.metadata.is_dir() {
+                    e.metadata.len()
+                } else {
+                    0
+                }
+            })
+            .sum();
+        metadata.update_len(len);
 
         Ok(Self {
             path,
@@ -181,6 +194,11 @@ impl JoshutoDirList {
 
     pub fn len(&self) -> usize {
         self.contents.len()
+    }
+
+    /// get size of directory in bytes
+    pub fn size(&self) -> u64 {
+        self.metadata.len()
     }
 
     pub fn is_empty(&self) -> bool {

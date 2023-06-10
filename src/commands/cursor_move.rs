@@ -36,6 +36,32 @@ pub fn lazy_load_directory_size(context: &mut AppContext) {
             curr_entry.metadata.update_directory_size(s);
         }
     }
+
+    if let Some(curr_entry) = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .and_then(|l| l.curr_entry_ref())
+    {
+        let old_len = curr_entry.metadata.len();
+        let history = context.tab_context_ref().curr_tab_ref().history_ref();
+        match history
+            .get(curr_entry.file_path())
+            .map(|d| d.contents.iter().map(|e| e.metadata.len()).sum())
+        {
+            Some(len) if old_len != len => {
+                if let Some(curr_entry) = context
+                    .tab_context_mut()
+                    .curr_tab_mut()
+                    .curr_list_mut()
+                    .and_then(|l| l.curr_entry_mut())
+                {
+                    curr_entry.metadata.update_len(len);
+                }
+            }
+            _ => (),
+        }
+    }
 }
 
 pub fn cursor_move(context: &mut AppContext, new_index: usize) {
