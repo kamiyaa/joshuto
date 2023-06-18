@@ -46,6 +46,7 @@ impl<'a> Widget for TuiTopBar<'a> {
                         _ => {}
                     }
                 }
+                short_path.truncate(short_path.len() - 2);
                 ellipses = Some(Span::styled(short_path, path_style));
                 curr_path_str = s.to_string_lossy().into_owned();
             }
