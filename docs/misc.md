@@ -69,3 +69,34 @@ Unlike ranger, it’s currently not possible to scroll the children-panel or a p
 with the mouse wheel.
 
 Unlike ranger, Joshuto allows to set the cursor in the children-panel with a right click.
+
+## Using joshuto with [qutebrowser](https://qutebrowser.org/)
+
+In order to use joshuto as the file picker in qutebrowser, you need to first add a quit
+keybind that outputs the selected files. You can do this in `keymap.toml` like so:
+
+
+```toml
+[default_view]
+
+keymap = [
+	{ keys = ["o"], command = "quit --output-selected-files" },
+	# other keybinds...
+]
+```
+
+Next, you need to edit qutebrowser's `config.py` to open joshuto in your terminal of choice,
+then output the resulting directory, file, or files to a file named `{}`. Here's an example
+with [kitty](https://sw.kovidgoyal.net/kitty/index.html):
+
+```python
+# Use joshuto as the file selector
+c.fileselect.handler = 'external'
+c.fileselect.folder.command = ['kitty', '-e', 'joshuto', '--output-file', '{}']
+c.fileselect.multiple_files.command = ['kitty', '-e', 'joshuto', '--output-file', '{}']
+c.fileselect.single_file.command = ['kitty', '-e', 'joshuto', '--output-file', '{}']
+```
+
+Now when the file picker opens in qutebrowser, you should see joshuto in your terminal emulator
+of choice. Use the visual selector (default `V`) if you need to select multiple files and press
+the key you defined earlier to send the file or files you highlighted back to qutebrowser.
