@@ -45,6 +45,8 @@ keymap = [
   { keys = ["page_down"], command = "cursor_move_page_down" },
   { keys = ["ctrl+u"], command = "cursor_move_page_up 0.5" },
   { keys = ["ctrl+d"], command = "cursor_move_page_down 0.5" },
+  { keys = ["ctrl+b"], command = "cursor_move_page_up" },
+  { keys = ["ctrl+f"], command = "cursor_move_page_down" },
 
   # vim-like keybindings
   { keys = ["j"], command = "cursor_move_down" },
