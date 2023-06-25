@@ -21,8 +21,8 @@ type Screen = MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>;
 impl New for Screen {
     fn new() -> std::io::Result<Self> {
         let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = MouseTerminal::from(stdout.into_alternate_screen());
-        return Ok(alt_screen);
+        let alt_screen = MouseTerminal::from(stdout.into_alternate_screen().unwrap());
+        Ok(alt_screen)
     }
 }
 #[cfg(not(feature = "mouse"))]
