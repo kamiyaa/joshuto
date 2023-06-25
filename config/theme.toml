@@ -1,7 +1,24 @@
+##########################################
+## Tabs
+##########################################
+
+# Inactive tabs
+[tabs.inactive]
+
+# Active tabs
+[tabs.active]
+invert=true
+
+##########################################
+## File List - Selections
+##########################################
+
+# Selected files (standard selection)
 [selection]
 fg = "light_yellow"
 bold = true
 
+# Files selected in current visual mode
 [visual_mode_selection]
 fg = "light_red"
 bold = true
@@ -10,28 +27,49 @@ bold = true
 prefix = "  "
 size = 2
 
-[executable]
-fg = "light_green"
-bold = true
+##########################################
+## File List - System File Types
+##########################################
 
+# Basic style, used for regular files (and also device files and FIFOs)
 [regular]
 fg = "white"
 
+# For directories
 [directory]
 fg = "light_blue"
 bold = true
 
+# For symbolic links
 [link]
 fg = "cyan"
 bold = true
 
+# For socket files
+[socket]
+fg = "light_magenta"
+bold = true
+
+##########################################
+## File List - Exceptional Files
+##########################################
+
+# Files marked as executable
+[executable]
+fg = "light_green"
+bold = true
+
+# Invalid symbolic links (pointing to non-existing target)
 [link_invalid]
 fg = "red"
 bold = true
 
-[socket]
-fg = "light_magenta"
-bold = true
+##########################################
+## File list - Override style by extension
+##########################################
+# This sections allows to override the basic 
+# style with a specific style for the file's
+# extension.
 
 [ext]
 
