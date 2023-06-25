@@ -2,6 +2,7 @@ use std::io::{self, stdout, Write};
 
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
+use termion::screen::IntoAlternateScreen;
 use tui::backend::TermionBackend;
 use tui::widgets::Widget;
 
@@ -20,7 +21,7 @@ type Screen = MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>;
 impl New for Screen {
     fn new() -> std::io::Result<Self> {
         let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = MouseTerminal::from(AlternateScreen::from(stdout));
+        let alt_screen = MouseTerminal::from(stdout.into_alternate_screen());
         return Ok(alt_screen);
     }
 }
@@ -30,7 +31,7 @@ type Screen = AlternateScreen<RawTerminal<std::io::Stdout>>;
 impl New for Screen {
     fn new() -> io::Result<Self> {
         let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = AlternateScreen::from(stdout);
+        let alt_screen = stdout.into_alternate_screen().unwrap();
         Ok(alt_screen)
     }
 }

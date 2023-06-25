@@ -30,7 +30,7 @@ shell-words = "^1"
 shellexpand = "^2"
 signal-hook = "^0"
 structopt = "^0"
-termion = "^1"
+termion = "^2"
 toml = "^0"
 trash = { version = "^2", optional = true }
 tui = { version = "0.21", default-features = false, features = [

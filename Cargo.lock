@@ -477,7 +477,7 @@ dependencies = [
  "shellexpand",
  "signal-hook",
  "structopt",
- "termion 1.5.6",
+ "termion",
  "toml",
  "trash",
  "unicode-segmentation",
@@ -824,7 +824,7 @@ checksum = "ce841e0486e7c2412c3740168ede33adeba8e154a15107b879d8162d77c7174e"
 dependencies = [
  "bitflags",
  "cassowary",
- "termion 2.0.1",
+ "termion",
  "unicode-segmentation",
  "unicode-width",
 ]
@@ -1056,18 +1056,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "termion"
-version = "1.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "077185e2eac69c3f8379a4298e1e07cd36beb962290d4a51199acf0fdc10607e"
-dependencies = [
- "libc",
- "numtoa",
- "redox_syscall",
- "redox_termios",
 ]
 
 [[package]]
