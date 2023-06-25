@@ -10,7 +10,7 @@ use tui::widgets::Widget;
 use termion::input::MouseTerminal;
 
 trait New {
-    fn new() -> std::io::Result<Self>
+    fn new() -> io::Result<Self>
     where
         Self: Sized;
 }
@@ -19,20 +19,20 @@ trait New {
 type Screen = MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>;
 #[cfg(feature = "mouse")]
 impl New for Screen {
-    fn new() -> std::io::Result<Self> {
-        let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = MouseTerminal::from(stdout.into_alternate_screen().unwrap());
-        Ok(alt_screen)
+    // Returns alternate screen
+    fn new() -> io::Result<Self> {
+        let stdout = io::stdout().into_raw_mode()?;
+        Ok(MouseTerminal::from(stdout.into_alternate_screen().unwrap()))
     }
 }
 #[cfg(not(feature = "mouse"))]
 type Screen = AlternateScreen<RawTerminal<std::io::Stdout>>;
 #[cfg(not(feature = "mouse"))]
 impl New for Screen {
+    // Returns alternate screen
     fn new() -> io::Result<Self> {
         let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = stdout.into_alternate_screen().unwrap();
-        Ok(alt_screen)
+        Ok(stdout.into_alternate_screen().unwrap())
     }
 }
 
