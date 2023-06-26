@@ -62,7 +62,9 @@ line_number_style = "none"
 # - lexical  (10.txt comes before 2.txt)
 # - natural  (2.txt comes before 10.txt)
 # - mtime
-method = "natural"
+# - size
+# - ext
+sort_method = "natural"
 
 # case sensitive sorting
 case_sensitive = false
