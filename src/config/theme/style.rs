@@ -2,7 +2,7 @@ use colors_transform::{Color, Rgb};
 
 use serde_derive::Deserialize;
 
-use tui::style;
+use tui::style::{self, Style};
 
 const fn default_color() -> style::Color {
     style::Color::Reset
@@ -117,6 +117,10 @@ impl AppStyle {
         self.modifier.insert(modifier);
         self
     }
+
+    pub fn as_style(&self) -> Style {
+        Style::from(self)
+    }
 }
 
 impl std::default::Default for AppStyle {
@@ -126,5 +130,14 @@ impl std::default::Default for AppStyle {
             bg: default_color(),
             modifier: style::Modifier::empty(),
         }
+    }
+}
+
+impl From<&AppStyle> for Style {
+    fn from(style: &AppStyle) -> Self {
+        Self::default()
+            .fg(style.fg)
+            .bg(style.bg)
+            .add_modifier(style.modifier)
     }
 }

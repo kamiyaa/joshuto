@@ -31,7 +31,7 @@ reverse = false
 
 [preview]
 max_preview_size = 2097152                           # 2MB
-preview_script = "~/.config/joshuto/preview_file.sh"
+preview_script = "~/.config/joshuto/preview_file.sh" # make sure it's marked as executable
 
 [tab]
 # inherit, home, root

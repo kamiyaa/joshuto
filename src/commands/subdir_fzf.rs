@@ -1,5 +1,3 @@
-use std::io;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
@@ -10,32 +8,10 @@ use crate::ui::AppBackend;
 use super::change_directory::change_directory;
 
 pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
-    let fzf_default_command = std::env::var("FZF_DEFAULT_COMMAND")?;
-
     backend.terminal_drop();
 
-    let fzf_default_command_output = {
-        let mut fzf_results = Command::new("bash")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn()?;
+    let fzf = Command::new("fzf").stdout(Stdio::piped()).spawn()?;
 
-        if let Some(fzf_stdin) = fzf_results.stdin.as_mut() {
-            let mut writer = io::BufWriter::new(fzf_stdin);
-            writer.write_all(fzf_default_command.as_bytes())?;
-        }
-        fzf_results.wait_with_output()?
-    };
-
-    let mut fzf = Command::new("fzf")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()?;
-
-    if let Some(fzf_stdin) = fzf.stdin.as_mut() {
-        let mut writer = io::BufWriter::new(fzf_stdin);
-        writer.write_all(&fzf_default_command_output.stdout)?;
-    }
     let fzf_output = fzf.wait_with_output();
 
     match fzf_output {

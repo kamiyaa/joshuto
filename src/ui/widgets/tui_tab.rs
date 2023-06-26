@@ -2,11 +2,11 @@ use std::ffi::OsStr;
 
 use tui::buffer::Buffer;
 use tui::layout::Rect;
-use tui::style::{Color, Modifier, Style};
 use tui::text::{Line, Span};
 use tui::widgets::{Paragraph, Widget, Wrap};
 
 use crate::context::TabContext;
+use crate::THEME_T;
 
 pub struct TuiTabBar<'a> {
     context: &'a TabContext,
@@ -20,10 +20,8 @@ impl<'a> TuiTabBar<'a> {
 
 impl<'a> Widget for TuiTabBar<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let regular_style = Style::default().fg(Color::White);
-        let selected_style = Style::default()
-            .fg(Color::White)
-            .add_modifier(Modifier::REVERSED);
+        let regular_style = THEME_T.tabs.inactive.as_style();
+        let selected_style = THEME_T.tabs.active.as_style();
 
         let index = self.context.index;
         let tab_order = self.context.tab_order.as_slice();
