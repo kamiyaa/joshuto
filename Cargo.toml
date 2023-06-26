@@ -23,6 +23,7 @@ notify = "^6"
 open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
 rand = "^0"
+# rustline latest is v12
 rustyline = "^9"
 serde = "^1"
 serde_derive = "^1"
@@ -32,7 +33,7 @@ signal-hook = "^0"
 structopt = "^0"
 termion = "^2"
 toml = "^0"
-trash = { version = "^2", optional = true }
+trash = { version = "^3", optional = true }
 tui = { version = "0.21", default-features = false, features = [
   "termion",
 ], package = "ratatui" }
