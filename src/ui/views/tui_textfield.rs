@@ -313,16 +313,18 @@ fn autocomplete(
     if let Some(ref mut ct) = completion_tracker {
         ct.index = if reversed {
             ct.index.checked_sub(1).unwrap_or(ct.candidates.len() - 1)
-        } else if ct.index + 1 < ct.candidates.len() {
-            ct.index + 1
         } else {
-            ct.index
+            (ct.index + 1) % ct.candidates.len()
         };
 
         let candidate = &ct.candidates[ct.index];
-        completer.update(line_buffer, ct.pos, candidate.display());
+        completer.update(line_buffer, ct.pos, candidate.replacement());
     } else if let Some((pos, mut candidates)) = get_candidates(completer, line_buffer) {
         if !candidates.is_empty() {
+            if candidates.len() == 1 && candidates[0].replacement().ends_with('/') {
+                completer.update(line_buffer, pos, &candidates[0].replacement());
+                return false;
+            }
             candidates.sort_by(|x, y| {
                 x.display()
                     .partial_cmp(y.display())
@@ -330,7 +332,7 @@ fn autocomplete(
             });
 
             let first_idx = if reversed { candidates.len() - 1 } else { 0 };
-            let first = candidates[first_idx].display().to_string();
+            let first = candidates[first_idx].replacement().to_string();
 
             let mut ct =
                 CompletionTracker::new(pos, candidates, String::from(line_buffer.as_str()));
