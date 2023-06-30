@@ -23,8 +23,8 @@ tilde_in_titlebar = true
 line_number_style = "none"
 
 [display.sort]
-# lexical, mtime, natural
-method = "natural"
+# lexical, mtime, natural, size, ext
+sort_method = "natural"
 case_sensitive = false
 directories_first = true
 reverse = false
