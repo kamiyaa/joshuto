@@ -16,6 +16,21 @@ there is a section for users to specify "classes" called `[class]`.
 Here, users can specify a list of commands to open a file and inherit these
 for a specific file format.
 
+## Silent and Fork
+
+The `silent` option will redirect any stdout and stderr output to `/dev/null`.
+This is ideal for launching GUI applications because many output debug messages to
+the terminal, disrupting Joshuto's interface.
+
+The `fork` option will launch the application in a new thread, allowing users to
+continue using Joshuto.
+
+As a rule of thumb:
+- TUI applications should almost always run without `silent` or `fork`
+- GUI applications should almost always run with the `silent` flag enabled
+  - If the user wishes to continue using joshuto while the
+  GUI application is running, enable the `fork` flag
+
 ## Example
 
 ```toml
