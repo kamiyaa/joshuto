@@ -248,7 +248,6 @@ impl std::str::FromStr for Command {
         } else if command == CMD_DELETE_FILES {
             let (mut permanently, mut background) = (false, false);
             for arg in arg.split_whitespace() {
-                eprintln!("arg: {:?}", arg);
                 match arg {
                     "--background=true" => background = true,
                     "--background=false" => background = false,
