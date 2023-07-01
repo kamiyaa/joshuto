@@ -2,6 +2,7 @@ use std::io::{self, stdout, Write};
 
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
+use termion::screen::IntoAlternateScreen;
 use tui::backend::TermionBackend;
 use tui::widgets::Widget;
 
@@ -9,7 +10,7 @@ use tui::widgets::Widget;
 use termion::input::MouseTerminal;
 
 trait New {
-    fn new() -> std::io::Result<Self>
+    fn new() -> io::Result<Self>
     where
         Self: Sized;
 }
@@ -18,20 +19,20 @@ trait New {
 type Screen = MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>;
 #[cfg(feature = "mouse")]
 impl New for Screen {
-    fn new() -> std::io::Result<Self> {
-        let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = MouseTerminal::from(AlternateScreen::from(stdout));
-        return Ok(alt_screen);
+    // Returns alternate screen
+    fn new() -> io::Result<Self> {
+        let stdout = io::stdout().into_raw_mode()?;
+        Ok(MouseTerminal::from(stdout.into_alternate_screen().unwrap()))
     }
 }
 #[cfg(not(feature = "mouse"))]
 type Screen = AlternateScreen<RawTerminal<std::io::Stdout>>;
 #[cfg(not(feature = "mouse"))]
 impl New for Screen {
+    // Returns alternate screen
     fn new() -> io::Result<Self> {
         let stdout = std::io::stdout().into_raw_mode()?;
-        let alt_screen = AlternateScreen::from(stdout);
-        Ok(alt_screen)
+        Ok(stdout.into_alternate_screen().unwrap())
     }
 }
 

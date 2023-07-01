@@ -19,20 +19,23 @@ filetime = "^0"
 globset = "^0"
 lazy_static = "^1"
 libc = "^0"
-notify = "5.0.0-pre.15"
-open = "^2"
+notify = "^6"
+open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
 rand = "^0"
+# rustline latest is v12 migrate
 rustyline = "^9"
 serde = "^1"
 serde_derive = "^1"
 shell-words = "^1"
+# shellexpand latest is v3 migrate
+# shellexpand = { version = "^3", features = ["full"]}
 shellexpand = "^2"
 signal-hook = "^0"
 structopt = "^0"
-termion = "^1"
+termion = "^2"
 toml = "^0"
-trash = { version = "^2", optional = true }
+trash = { version = "^3", optional = true }
 tui = { version = "0.21", default-features = false, features = [
   "termion",
 ], package = "ratatui" }
@@ -53,4 +56,4 @@ file_mimetype = []
 mouse = []
 recycle_bin = ["trash"]
 syntax_highlight = ["ansi-to-tui"]
-default = ["devicons", "recycle_bin", "syntax_highlight"]
+default = ["devicons", "mouse", "recycle_bin", "syntax_highlight"]
