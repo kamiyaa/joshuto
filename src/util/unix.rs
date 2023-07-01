@@ -57,7 +57,16 @@ pub fn mode_to_string(mode: u32) -> String {
 }
 
 pub fn expand_shell_string(s: &str) -> path::PathBuf {
-    let tilde_cow = shellexpand::tilde_with_context(s, dirs_next::home_dir);
+    let dir = dirs_next::home_dir();
+    let os_str = dir.map(|s| s.as_os_str().to_owned());
+    let context_func = || {
+        let cow_str = match os_str.as_ref() {
+            Some(s) => Some(s.to_string_lossy()),
+            None => None,
+        };
+        cow_str
+    };
+    let tilde_cow = shellexpand::tilde_with_context(s, context_func);
     let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
     tilde_path
 }

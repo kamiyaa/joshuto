@@ -28,9 +28,7 @@ rustyline = "^9"
 serde = "^1"
 serde_derive = "^1"
 shell-words = "^1"
-# shellexpand latest is v3 migrate
-# shellexpand = { version = "^3", features = ["full"]}
-shellexpand = "^2"
+shellexpand = { version = "^3", features = ["full"]}
 signal-hook = "^0"
 structopt = "^0"
 termion = "^2"
