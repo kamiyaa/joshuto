@@ -293,6 +293,7 @@ pub fn get_constraints(context: &AppContext) -> &[Constraint; 3] {
                     Some(PreviewFileState::Success { data }) if data.status.code() != Some(1) => {
                         &display_options.default_layout
                     }
+                    Some(PreviewFileState::Loading) => &display_options.default_layout,
                     _ => &display_options.no_preview_layout,
                 },
             },
