@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::ui::views::TuiTextField;
+use crate::ui::views::{DummyListener, TuiTextField};
 use crate::ui::AppBackend;
 use crate::util::unix;
 
@@ -51,13 +51,14 @@ pub fn set_mode(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoRe
         Some(entry) => {
             let mode = entry.metadata.permissions_ref().mode();
             let mode_string = unix::mode_to_string(mode);
+            let mut listener = DummyListener {};
 
             context.flush_event();
             TuiTextField::default()
                 .prompt(":")
                 .prefix(PREFIX)
                 .suffix(&mode_string.as_str()[1..])
-                .get_input(backend, context)
+                .get_input(backend, context, &mut listener)
         }
         None => None,
     };

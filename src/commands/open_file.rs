@@ -5,6 +5,7 @@ use crate::commands::{quit, reload};
 use crate::config::ProgramEntry;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::ui::views::DummyListener;
 use crate::ui::views::TuiTextField;
 use crate::ui::AppBackend;
 use crate::util::mimetype::get_mimetype;
@@ -99,11 +100,12 @@ where
             .map(|(i, e)| format!("  {} | {}", i, e))
             .collect();
 
+        let mut listener = DummyListener {};
         TuiTextField::default()
             .prompt(":")
             .prefix(PROMPT)
             .menu_items(menu_options.iter().map(|s| s.as_str()))
-            .get_input(backend, context)
+            .get_input(backend, context, &mut listener)
     };
     match user_input.as_ref() {
         Some(user_input) if user_input.starts_with(PROMPT) => {

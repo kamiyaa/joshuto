@@ -32,10 +32,19 @@ impl<'a> Widget for TuiTopBar<'a> {
         let mut ellipses = None;
         let mut curr_path_str = self.path.to_string_lossy().into_owned();
 
-        if curr_path_str.width() > area.width as usize {
+        let num_tabs = self.context.tab_context_ref().len();
+        let tab_width = num_tabs * 8;
+        let name_width = USERNAME.as_str().len() + HOSTNAME.as_str().len() + 2;
+
+        if tab_width + name_width > area.width as usize {
+            curr_path_str = "".to_owned();
+        } else if curr_path_str.width() > area.width as usize - tab_width - name_width {
             if let Some(s) = self.path.file_name() {
                 let mut short_path = String::new();
-                for component in self.path.components() {
+                let mut components: Vec<Component> = self.path.components().collect();
+                components.pop();
+
+                for component in components {
                     match component {
                         Component::RootDir => short_path.push('/'),
                         Component::Normal(s) => {

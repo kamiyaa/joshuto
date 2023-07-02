@@ -1,13 +1,13 @@
-use rustyline::history;
+use rustyline::history::{History, MemHistory};
 
 pub struct CommandLineContext {
-    history: history::History,
+    history: MemHistory,
 }
 
 impl std::default::Default for CommandLineContext {
     fn default() -> Self {
         Self {
-            history: history::History::new(),
+            history: MemHistory::new(),
         }
     }
 }
@@ -17,10 +17,10 @@ impl CommandLineContext {
         Self::default()
     }
 
-    pub fn history_ref(&self) -> &history::History {
+    pub fn history_ref(&self) -> &dyn History {
         &self.history
     }
-    pub fn history_mut(&mut self) -> &mut history::History {
+    pub fn history_mut(&mut self) -> &mut dyn History {
         &mut self.history
     }
 }

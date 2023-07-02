@@ -1,10 +1,9 @@
 use std::str::FromStr;
 
 use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
-use rustyline::{
-    line_buffer::{self, LineBuffer},
-    At, Word,
-};
+use rustyline::history::{History, SearchDirection};
+use rustyline::line_buffer::{self, ChangeListener, DeleteListener, Direction, LineBuffer};
+use rustyline::{At, Changeset, Word};
 
 use termion::event::{Event, Key};
 use tui::layout::Rect;
@@ -18,6 +17,22 @@ use crate::key_command::{complete_command, Command, InteractiveExecute};
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::AppBackend;
+
+// Might need to be implemented in the future
+#[derive(Clone, Debug)]
+pub struct DummyListener {}
+
+impl DeleteListener for DummyListener {
+    fn delete(&mut self, idx: usize, string: &str, dir: Direction) {}
+}
+
+impl ChangeListener for DummyListener {
+    fn insert_char(&mut self, idx: usize, c: char) {}
+
+    fn insert_str(&mut self, idx: usize, string: &str) {}
+
+    fn replace(&mut self, idx: usize, old: &str, new: &str) {}
+}
 
 struct CompletionTracker {
     pub index: usize,
@@ -78,6 +93,7 @@ impl<'a> TuiTextField<'a> {
         &mut self,
         backend: &mut AppBackend,
         context: &mut AppContext,
+        listener: &mut DummyListener,
     ) -> Option<String> {
         let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
         let completer = FilenameCompleter::new();
@@ -86,8 +102,8 @@ impl<'a> TuiTextField<'a> {
 
         let char_idx = self._prefix.chars().map(|c| c.len_utf8()).sum();
 
-        line_buffer.insert_str(0, self._prefix);
-        line_buffer.insert_str(line_buffer.len(), self._suffix);
+        line_buffer.insert_str(0, self._prefix, listener);
+        line_buffer.insert_str(line_buffer.len(), self._suffix, listener);
         line_buffer.set_pos(char_idx);
 
         let terminal = backend.terminal_mut();
@@ -169,26 +185,26 @@ impl<'a> TuiTextField<'a> {
                     AppEvent::Termion(Event::Key(key)) => {
                         let dirty = match key {
                             Key::Backspace => {
-                                let res = line_buffer.backspace(1);
+                                let res = line_buffer.backspace(1, listener);
 
                                 if let Ok(command) = Command::from_str(line_buffer.as_str()) {
                                     command.interactive_execute(context)
                                 }
                                 res
                             }
-                            Key::Delete => line_buffer.delete(1).is_some(),
+                            Key::Delete => line_buffer.delete(1, listener).is_some(),
                             Key::Home => line_buffer.move_home(),
                             Key::End => line_buffer.move_end(),
                             Key::Up => {
                                 curr_history_index = curr_history_index.saturating_sub(1);
                                 line_buffer.move_home();
-                                line_buffer.kill_line();
-                                if let Some(s) = context
+                                line_buffer.kill_line(listener);
+                                if let Ok(Some(s)) = context
                                     .commandline_context_ref()
                                     .history_ref()
-                                    .get(curr_history_index)
+                                    .get(curr_history_index, SearchDirection::Forward)
                                 {
-                                    line_buffer.insert_str(0, s);
+                                    line_buffer.insert_str(0, &s.entry, listener);
                                 }
                                 true
                             }
@@ -201,13 +217,13 @@ impl<'a> TuiTextField<'a> {
                                     curr_history_index
                                 };
                                 line_buffer.move_home();
-                                line_buffer.kill_line();
-                                if let Some(s) = context
+                                line_buffer.kill_line(listener);
+                                if let Ok(Some(s)) = context
                                     .commandline_context_ref()
                                     .history_ref()
-                                    .get(curr_history_index)
+                                    .get(curr_history_index, SearchDirection::Reverse)
                                 {
-                                    line_buffer.insert_str(0, s);
+                                    line_buffer.insert_str(0, &s.entry, listener);
                                 }
                                 true
                             }
@@ -215,17 +231,17 @@ impl<'a> TuiTextField<'a> {
                                 let _ = terminal.hide_cursor();
                                 return None;
                             }
-                            Key::Char('\t') => autocomplete(
+                            Key::Char('\t') => autocomplete_forward(
                                 &mut line_buffer,
                                 &mut completion_tracker,
                                 &completer,
-                                false,
+                                listener,
                             ),
-                            Key::BackTab => autocomplete(
+                            Key::BackTab => autocomplete_backwards(
                                 &mut line_buffer,
                                 &mut completion_tracker,
                                 &completer,
-                                true,
+                                listener,
                             ),
 
                             // Current `completion_tracker` should be dropped
@@ -261,14 +277,14 @@ impl<'a> TuiTextField<'a> {
                                 })
                             }
 
-                            Key::Ctrl('w') => line_buffer.delete_prev_word(Word::Vi, 1),
-                            Key::Ctrl('u') => line_buffer.discard_line(),
-                            Key::Ctrl('d') => line_buffer.delete(1).is_some(),
+                            Key::Ctrl('w') => line_buffer.delete_prev_word(Word::Vi, 1, listener),
+                            Key::Ctrl('u') => line_buffer.discard_line(listener),
+                            Key::Ctrl('d') => line_buffer.delete(1, listener).is_some(),
                             Key::Char('\n') => {
                                 break;
                             }
                             Key::Char(c) => {
-                                let dirty = line_buffer.insert(c, 1).is_some();
+                                let dirty = line_buffer.insert(c, 1, listener).is_some();
 
                                 if let Ok(command) = Command::from_str(line_buffer.as_str()) {
                                     command.interactive_execute(context)
@@ -300,27 +316,31 @@ impl<'a> TuiTextField<'a> {
     }
 }
 
-fn autocomplete(
+fn autocomplete_forward(
     line_buffer: &mut LineBuffer,
     completion_tracker: &mut Option<CompletionTracker>,
     completer: &FilenameCompleter,
-    reversed: bool,
+    listener: &mut DummyListener,
 ) -> bool {
     // If we are in the middle of a word, move to the end of it,
     // so we don't split it with autocompletion.
     move_to_the_end(line_buffer);
 
     if let Some(ref mut ct) = completion_tracker {
-        ct.index = if reversed {
-            ct.index.checked_sub(1).unwrap_or(ct.candidates.len() - 1)
-        } else if ct.index + 1 < ct.candidates.len() {
-            ct.index + 1
-        } else {
-            ct.index
-        };
+        if ct.index + 1 >= ct.candidates.len() {
+            return false;
+        }
+        ct.index = ct.index + 1;
 
         let candidate = &ct.candidates[ct.index];
-        completer.update(line_buffer, ct.pos, candidate.display());
+
+        let pos = ct.pos;
+        let first = candidate.display();
+
+        line_buffer.set_pos(pos);
+        line_buffer.kill_buffer(listener);
+        line_buffer.insert_str(pos, &first, listener);
+        line_buffer.move_end();
     } else if let Some((pos, mut candidates)) = get_candidates(completer, line_buffer) {
         if !candidates.is_empty() {
             candidates.sort_by(|x, y| {
@@ -329,7 +349,47 @@ fn autocomplete(
                     .unwrap_or(std::cmp::Ordering::Less)
             });
 
-            let first_idx = if reversed { candidates.len() - 1 } else { 0 };
+            let first = candidates[0].display().to_string();
+            let mut ct =
+                CompletionTracker::new(pos, candidates, String::from(line_buffer.as_str()));
+            ct.index = 0;
+
+            *completion_tracker = Some(ct);
+
+            line_buffer.set_pos(pos);
+            line_buffer.kill_buffer(listener);
+            line_buffer.insert_str(pos, &first, listener);
+            line_buffer.move_end();
+        }
+    }
+
+    false
+}
+
+fn autocomplete_backwards(
+    line_buffer: &mut LineBuffer,
+    completion_tracker: &mut Option<CompletionTracker>,
+    completer: &FilenameCompleter,
+    listener: &mut DummyListener,
+) -> bool {
+    // If we are in the middle of a word, move to the end of it,
+    // so we don't split it with autocompletion.
+    move_to_the_end(line_buffer);
+
+    if let Some(ref mut ct) = completion_tracker {
+        ct.index = ct.index.checked_sub(1).unwrap_or(ct.candidates.len() - 1);
+
+        let candidate = &ct.candidates[ct.index];
+        line_buffer.update(candidate.display(), ct.pos, listener);
+    } else if let Some((pos, mut candidates)) = get_candidates(completer, line_buffer) {
+        if !candidates.is_empty() {
+            candidates.sort_by(|x, y| {
+                x.display()
+                    .partial_cmp(y.display())
+                    .unwrap_or(std::cmp::Ordering::Less)
+            });
+
+            let first_idx = candidates.len() - 1;
             let first = candidates[first_idx].display().to_string();
 
             let mut ct =
@@ -337,7 +397,7 @@ fn autocomplete(
             ct.index = first_idx;
 
             *completion_tracker = Some(ct);
-            completer.update(line_buffer, pos, &first);
+            line_buffer.update(&first, pos, listener);
         }
     }
 
