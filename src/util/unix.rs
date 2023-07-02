@@ -60,10 +60,7 @@ pub fn expand_shell_string(s: &str) -> path::PathBuf {
     let dir = dirs_next::home_dir();
     let os_str = dir.map(|s| s.as_os_str().to_owned());
     let context_func = || {
-        let cow_str = match os_str.as_ref() {
-            Some(s) => Some(s.to_string_lossy()),
-            None => None,
-        };
+        let cow_str = os_str.as_ref().map(|s| s.to_string_lossy());
         cow_str
     };
     let tilde_cow = shellexpand::tilde_with_context(s, context_func);

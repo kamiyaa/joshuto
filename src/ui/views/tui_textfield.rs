@@ -1,9 +1,9 @@
 use std::str::FromStr;
 
-use rustyline::completion::{Candidate, Completer, FilenameCompleter, Pair};
-use rustyline::history::{History, SearchDirection};
+use rustyline::completion::{Candidate, FilenameCompleter, Pair};
+use rustyline::history::SearchDirection;
 use rustyline::line_buffer::{self, ChangeListener, DeleteListener, Direction, LineBuffer};
-use rustyline::{At, Changeset, Word};
+use rustyline::{At, Word};
 
 use termion::event::{Event, Key};
 use tui::layout::Rect;
@@ -330,8 +330,7 @@ fn autocomplete_forward(
         if ct.index + 1 >= ct.candidates.len() {
             return false;
         }
-        ct.index = ct.index + 1;
-
+        ct.index += 1;
         let candidate = &ct.candidates[ct.index];
 
         let pos = ct.pos;
@@ -339,7 +338,7 @@ fn autocomplete_forward(
 
         line_buffer.set_pos(pos);
         line_buffer.kill_buffer(listener);
-        line_buffer.insert_str(pos, &first, listener);
+        line_buffer.insert_str(pos, first, listener);
         line_buffer.move_end();
     } else if let Some((pos, mut candidates)) = get_candidates(completer, line_buffer) {
         if !candidates.is_empty() {
@@ -349,17 +348,18 @@ fn autocomplete_forward(
                     .unwrap_or(std::cmp::Ordering::Less)
             });
 
-            let first = candidates[0].display().to_string();
             let mut ct =
                 CompletionTracker::new(pos, candidates, String::from(line_buffer.as_str()));
             ct.index = 0;
-
-            *completion_tracker = Some(ct);
+            let candidate = &ct.candidates[0];
+            let first = candidate.display();
 
             line_buffer.set_pos(pos);
             line_buffer.kill_buffer(listener);
-            line_buffer.insert_str(pos, &first, listener);
+            line_buffer.insert_str(pos, first, listener);
             line_buffer.move_end();
+
+            *completion_tracker = Some(ct);
         }
     }
 
