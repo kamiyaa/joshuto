@@ -1,13 +1,13 @@
 [package]
 name = "joshuto"
-version = "0.9.4"
+version = "0.9.5"
 authors = ["Jiayi Zhao <jeff.no.zhao@gmail.com>"]
 description = "Terminal file manager inspired by ranger"
 homepage = "https://github.com/kamiyaa/joshuto"
 repository = "https://github.com/kamiyaa/joshuto"
 license = "LGPL-3.0"
 edition = "2021"
-keywords = ["tui-rs", "ranger", "file manager", "termion"]
+keywords = ["tui-rs", "ranger", "file_manager", "termion"]
 
 [dependencies]
 ansi-to-tui = { version = "^3", optional = true }
@@ -53,4 +53,4 @@ file_mimetype = []
 mouse = []
 recycle_bin = ["trash"]
 syntax_highlight = ["ansi-to-tui"]
-default = ["devicons", "recycle_bin", "syntax_highlight"]
+default = ["devicons", "mouse", "recycle_bin", "syntax_highlight"]
