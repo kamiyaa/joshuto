@@ -119,6 +119,12 @@ nix run github:kamiyaa/joshuto
 sudo port install joshuto
 ```
 
+##### MacOS/Linux [Homebrew](https://brew.sh/)
+
+```
+brew install joshuto
+```
+
 ## Usage
 
 ```
