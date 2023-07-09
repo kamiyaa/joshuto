@@ -119,11 +119,51 @@ nix run github:kamiyaa/joshuto
 sudo port install joshuto
 ```
 
+##### MacOS/Linux [Homebrew](https://brew.sh/)
+
+```
+brew install joshuto
+```
+
 ## Usage
 
 ```
 ~ $ joshuto
 ```
+
+#### Navigation
+- Move up: `arrow_up` or `k`
+- Move down: `arrow_down` or `j`
+- Move to parent directory: `arrow_left` or `h`
+- Open file or directory: `arrow_right` or `l`
+- Go to the top: `home` or `g g`
+- Go to the bottom: `end` or `G`
+- Page up: `page_up` or `ctrl+u`
+- Page down: `page_down` or `ctrl+d`
+
+#### Tab Management
+- Open a new tab: `ctrl+t`
+- Open a new tab with current directory: `T`
+- Close the current tab: `W` or `ctrl+w`
+- Switch to next tab: `\t`
+- Switch to previous tab: `backtab`
+
+#### File Operations
+- Rename file: `a` to append or `A` to prepend
+- Delete file: `delete` or `d d`
+- Cut file: `d d`
+- Copy file: `y y`
+- Paste file: `p p`
+- Paste file with overwrite: `p o`
+- Symlink files: `p l` for absolute path, `p L` for relative path
+
+#### Miscellaneous
+- Toggle hidden files: `z h`
+- Reload directory list: `R`
+- Change directory: `c d`
+- Show tasks: `w`
+- Set mode: `=`
+- Enter command mode: `:`
 
 See [docs#quit](/docs/configuration/keymap.toml.md#quit-quit-joshuto) for exiting into current directory
 and other usages
