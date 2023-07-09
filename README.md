@@ -159,8 +159,6 @@ sudo port install joshuto
 - Set mode: `=`
 - Enter command mode: `:`
 
-
-
 See [docs#quit](/docs/configuration/keymap.toml.md#quit-quit-joshuto) for exiting into current directory
 and other usages
 
