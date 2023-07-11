@@ -64,6 +64,8 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
         // check if the file was modified since it was created
         let last_modified = fs::metadata(&file_path)?.modified()?;
         if last_modified <= initial_modified {
+            // remember to remove file
+            std::fs::remove_file(&file_path)?;
             return Ok(());
         }
     }
