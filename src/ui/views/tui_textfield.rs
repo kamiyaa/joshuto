@@ -23,15 +23,15 @@ use crate::ui::AppBackend;
 pub struct DummyListener {}
 
 impl DeleteListener for DummyListener {
-    fn delete(&mut self, idx: usize, string: &str, dir: Direction) {}
+    fn delete(&mut self, _idx: usize, _string: &str, _dir: Direction) {}
 }
 
 impl ChangeListener for DummyListener {
-    fn insert_char(&mut self, idx: usize, c: char) {}
+    fn insert_char(&mut self, _idx: usize, _c: char) {}
 
-    fn insert_str(&mut self, idx: usize, string: &str) {}
+    fn insert_str(&mut self, _idx: usize, _string: &str) {}
 
-    fn replace(&mut self, idx: usize, old: &str, new: &str) {}
+    fn replace(&mut self, _idx: usize, _old: &str, _new: &str) {}
 }
 
 struct CompletionTracker {

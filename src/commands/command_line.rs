@@ -24,7 +24,7 @@ pub fn read_and_execute(
 
     if let Some(s) = user_input {
         let trimmed = s.trim_start();
-        context.commandline_context_mut().history_mut().add(trimmed);
+        let _ = context.commandline_context_mut().history_mut().add(trimmed);
         let command = Command::from_str(trimmed)?;
         command.execute(context, backend, keymap_t)
     } else {
