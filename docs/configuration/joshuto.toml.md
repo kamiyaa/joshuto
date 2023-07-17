@@ -74,4 +74,9 @@ directories_first = true
 
 # sort in reverse
 reverse = false
+
+# Optional list of command aliases (empty by default)
+[cmd_aliases]
+# q = "quit"
+# ...
 ```
