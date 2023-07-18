@@ -31,7 +31,7 @@ case "$mimetype" in
         tags=$(tmsu_tag_list)
         echo "$dimension"
         echo "$tags"
-        meta_file="$(get_preview_meta_file $path)"
+        meta_file=$(get_preview_meta_file "$path")
         let y_offset=`printf "${tags}" | sed -n '=' | wc -l`+2
         echo "y-offset $y_offset" > "$meta_file"
         exit 4
@@ -52,7 +52,7 @@ After we have the y-offset available, we adapt the “preview shown” hook scri
 
 case "$mimetype" in
     image/png | image/jpeg)
-        meta_file="$(get_preview_meta_file $path)"
+        meta_file=$(get_preview_meta_file "$path")
         y_offset=`cat "$meta_file" | grep "y-offset" | awk '{print $2}'`
         y=$(( $y + $y_offset ))
         show_image "$path" $x $y $width $height
