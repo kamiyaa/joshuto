@@ -56,7 +56,7 @@ impl AppContext {
         let event_tx = events.event_tx.clone();
 
         let mut commandline_context = CommandLineContext::new();
-        commandline_context.history_mut().set_max_len(20);
+        let _ = commandline_context.history_mut().set_max_len(20);
 
         let event_tx_for_fs_notification = event_tx.clone();
         let watcher = notify::recommended_watcher(move |res| {

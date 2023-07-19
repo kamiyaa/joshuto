@@ -24,7 +24,7 @@ pub fn read_and_execute(
 
     if let Some(s) = user_input {
         let mut trimmed = s.trim_start();
-        context.commandline_context_mut().history_mut().add(trimmed);
+        let _ = context.commandline_context_mut().history_mut().add(trimmed);
 
         if let Some(alias) = context.config_ref().cmd_aliases.get(trimmed) {
             trimmed = alias;
