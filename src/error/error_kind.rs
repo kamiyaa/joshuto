@@ -13,6 +13,8 @@ pub enum JoshutoErrorKind {
     ParseError,
     ClipboardError,
     TomlDeError(toml::de::Error),
+
+    #[cfg(feature = "recycle_bin")]
     TrashError,
 
     Glob,

@@ -200,11 +200,17 @@ impl IoWorkerThread {
             total_bytes,
             total_bytes,
         );
+        #[cfg(feature = "recycle_bin")]
         if self.options.permanently {
             remove_files(&self.paths)?;
         } else {
             trash_files(&self.paths)?;
         }
+        #[cfg(not(feature = "recycle_bin"))]
+        {
+            remove_files(&self.paths)?;
+        }
+
         Ok(progress)
     }
 }
@@ -323,7 +329,8 @@ pub fn recursive_cut(
     }
 }
 
-fn trash_error_to_io_error(err: trash::Error) -> std::io::Error {
+#[cfg(feature = "recycle_bin")]
+fn trash_error_to_io_error(err: ::Error) -> std::io::Error {
     match err {
         trash::Error::Unknown { description } => {
             std::io::Error::new(std::io::ErrorKind::Other, description)
@@ -351,6 +358,7 @@ where
     Ok(())
 }
 
+#[cfg(feature = "recycle_bin")]
 fn trash_files<P>(paths: &[P]) -> std::io::Result<()>
 where
     P: AsRef<path::Path>,
