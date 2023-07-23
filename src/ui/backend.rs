@@ -1,10 +1,10 @@
 use std::io::{self, stdout, Write};
 
+use ratatui::backend::TermionBackend;
+use ratatui::widgets::Widget;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 use termion::screen::IntoAlternateScreen;
-use tui::backend::TermionBackend;
-use tui::widgets::Widget;
 
 #[cfg(feature = "mouse")]
 use termion::input::MouseTerminal;
@@ -37,7 +37,7 @@ impl New for Screen {
 }
 
 // pub type TuiBackend = TermionBackend<Screen>;
-pub type TuiTerminal = tui::Terminal<TermionBackend<Screen>>;
+pub type TuiTerminal = ratatui::Terminal<TermionBackend<Screen>>;
 
 pub struct AppBackend {
     pub terminal: Option<TuiTerminal>,
@@ -50,7 +50,7 @@ impl AppBackend {
         write!(alt_screen, "{}", termion::clear::All)?;
 
         let backend = TermionBackend::new(alt_screen);
-        let mut terminal = tui::Terminal::new(backend)?;
+        let mut terminal = ratatui::Terminal::new(backend)?;
         terminal.hide_cursor()?;
         Ok(Self {
             terminal: Some(terminal),

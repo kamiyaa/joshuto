@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use tui::layout::Constraint;
+use ratatui::layout::Constraint;
 
 use crate::config::option::LineMode;
 use crate::config::option::SortOption;

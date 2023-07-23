@@ -1,7 +1,7 @@
-use tui::buffer::Buffer;
-use tui::layout::{Direction, Layout, Rect};
-use tui::style::{Color, Style};
-use tui::widgets::{Paragraph, Text, Widget};
+use ratatui::buffer::Buffer;
+use ratatui::layout::{Direction, Layout, Rect};
+use ratatui::style::{Color, Style};
+use ratatui::widgets::{Paragraph, Text, Widget};
 
 use super::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
 use crate::context::AppContext;

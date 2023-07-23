@@ -1,7 +1,7 @@
 use std::convert::From;
 
+use ratatui::layout::Constraint;
 use serde_derive::Deserialize;
-use tui::layout::Constraint;
 
 use crate::config::option::{
     DisplayMode, DisplayOption, LineMode, LineNumberStyle, TabDisplayOption,

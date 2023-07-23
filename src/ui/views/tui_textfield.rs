@@ -5,9 +5,9 @@ use rustyline::history::SearchDirection;
 use rustyline::line_buffer::{self, ChangeListener, DeleteListener, Direction, LineBuffer};
 use rustyline::{At, Word};
 
+use ratatui::layout::Rect;
+use ratatui::widgets::Clear;
 use termion::event::{Event, Key};
-use tui::layout::Rect;
-use tui::widgets::Clear;
 use unicode_width::UnicodeWidthStr;
 
 use crate::context::AppContext;

@@ -2,9 +2,9 @@ use std::fs::File;
 use std::io::Write;
 use std::path;
 
+use ratatui::layout::Rect;
+use ratatui::widgets::Clear;
 use termion::event::Event;
-use tui::layout::Rect;
-use tui::widgets::Clear;
 
 use crate::config::{search_directories, BookmarkRaw, BookmarksRaw};
 use crate::context::AppContext;

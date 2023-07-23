@@ -3,7 +3,7 @@ use std::process::{Command, Output};
 use std::thread;
 use std::time;
 
-use tui::layout::Rect;
+use ratatui::layout::Rect;
 
 use crate::context::AppContext;
 use crate::event::AppEvent;

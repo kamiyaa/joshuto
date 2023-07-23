@@ -1,6 +1,6 @@
-use tui::buffer::Buffer;
-use tui::layout::Rect;
-use tui::widgets::Widget;
+use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
+use ratatui::widgets::Widget;
 
 use crate::config::option::DisplayMode;
 use crate::context::AppContext;

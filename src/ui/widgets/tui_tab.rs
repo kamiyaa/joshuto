@@ -1,9 +1,9 @@
 use std::ffi::OsStr;
 
-use tui::buffer::Buffer;
-use tui::layout::Rect;
-use tui::text::{Line, Span};
-use tui::widgets::{Paragraph, Widget, Wrap};
+use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
+use ratatui::text::{Line, Span};
+use ratatui::widgets::{Paragraph, Widget, Wrap};
 
 use crate::context::TabContext;
 use crate::THEME_T;

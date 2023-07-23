@@ -2,7 +2,7 @@ use colors_transform::{Color, Rgb};
 
 use serde_derive::Deserialize;
 
-use tui::style::{self, Style};
+use ratatui::style::{self, Style};
 
 const fn default_color() -> style::Color {
     style::Color::Reset

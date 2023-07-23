@@ -1,8 +1,8 @@
 use std::iter::Iterator;
 
-use tui::buffer::Buffer;
-use tui::layout::Rect;
-use tui::widgets::{Clear, Widget};
+use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
+use ratatui::widgets::{Clear, Widget};
 
 use crate::config::KeyMapping;
 use crate::context::AppContext;

@@ -1,4 +1,4 @@
-use tui::style::Style;
+use ratatui::style::Style;
 
 use crate::fs::{FileType, JoshutoDirEntry, LinkType};
 use crate::util::unix;
