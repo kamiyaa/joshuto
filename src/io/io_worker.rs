@@ -330,7 +330,7 @@ pub fn recursive_cut(
 }
 
 #[cfg(feature = "recycle_bin")]
-fn trash_error_to_io_error(err: ::Error) -> std::io::Error {
+fn trash_error_to_io_error(err: trash::Error) -> std::io::Error {
     match err {
         trash::Error::Unknown { description } => {
             std::io::Error::new(std::io::ErrorKind::Other, description)
