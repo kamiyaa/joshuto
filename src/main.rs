@@ -77,6 +77,15 @@ lazy_static! {
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
     static ref USERNAME: String = whoami::username();
     static ref HOSTNAME: String = whoami::hostname();
+
+    static ref TIMEZONE_STR: String = {
+        let offset = chrono::Local::now().offset().local_minus_utc() / 3600;
+        if offset.is_positive() {
+            format!(" UTC+{} ", offset.abs())
+        } else {
+            format!(" UTC-{} ", offset.abs())
+        }
+    };
 }
 
 #[derive(Clone, Debug, StructOpt)]
