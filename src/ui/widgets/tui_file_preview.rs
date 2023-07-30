@@ -1,7 +1,7 @@
-use tui::buffer::Buffer;
-use tui::layout::Rect;
-use tui::text::Span;
-use tui::widgets::Widget;
+use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
+use ratatui::text::Span;
+use ratatui::widgets::Widget;
 
 use crate::preview::preview_file::FilePreview;
 

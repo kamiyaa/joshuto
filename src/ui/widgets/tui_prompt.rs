@@ -1,8 +1,8 @@
+use ratatui::layout::Rect;
+use ratatui::style::{Color, Style};
+use ratatui::text::Span;
+use ratatui::widgets::{Clear, Paragraph, Wrap};
 use termion::event::{Event, Key};
-use tui::layout::Rect;
-use tui::style::{Color, Style};
-use tui::text::Span;
-use tui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::context::AppContext;
 use crate::event::process_event;

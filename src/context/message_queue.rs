@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use tui::style::{Color, Style};
+use ratatui::style::{Color, Style};
 
 pub struct Message {
     pub content: String,

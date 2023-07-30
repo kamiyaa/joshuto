@@ -2,9 +2,9 @@ use std::io;
 use std::path;
 
 use notify;
+use ratatui::layout::{Constraint, Direction, Layout};
 use signal_hook::consts::signal;
 use termion::event::{Event, Key, MouseButton, MouseEvent};
-use tui::layout::{Constraint, Direction, Layout};
 use uuid::Uuid;
 
 use crate::commands::{cursor_move, parent_cursor_move, reload};

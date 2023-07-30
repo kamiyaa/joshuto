@@ -1,8 +1,8 @@
-use tui::buffer::Buffer;
-use tui::layout::Rect;
-use tui::style::{Color, Style};
-use tui::text::{Line, Span};
-use tui::widgets::{Paragraph, Widget};
+use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
+use ratatui::style::{Color, Style};
+use ratatui::text::{Line, Span};
+use ratatui::widgets::{Paragraph, Widget};
 
 use crate::config::option::TabDisplayOption;
 use crate::fs::{JoshutoDirList, LinkType};

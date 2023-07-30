@@ -1,9 +1,9 @@
-use tui::buffer::Buffer;
-use tui::layout::{Constraint, Direction, Layout, Rect};
-use tui::style::{Color, Style};
-use tui::symbols::line::{HORIZONTAL_DOWN, HORIZONTAL_UP};
-use tui::text::Span;
-use tui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
+use ratatui::buffer::Buffer;
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::style::{Color, Style};
+use ratatui::symbols::line::{HORIZONTAL_DOWN, HORIZONTAL_UP};
+use ratatui::text::Span;
+use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::context::AppContext;
 use crate::preview::preview_dir::PreviewDirState;

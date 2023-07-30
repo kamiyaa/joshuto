@@ -13,8 +13,8 @@ use crate::ui::views::TuiView;
 
 use uuid::Uuid;
 
+use ratatui::layout::Rect;
 use termion::event::Event;
-use tui::layout::Rect;
 
 pub fn run_loop(
     backend: &mut ui::AppBackend,

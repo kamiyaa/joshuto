@@ -2,10 +2,10 @@ use lazy_static::lazy_static;
 
 use termion::event::{Event, Key};
 
-use tui::buffer::Buffer;
-use tui::layout::{Constraint, Rect};
-use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Cell, Row, Table, Widget};
+use ratatui::buffer::Buffer;
+use ratatui::layout::{Constraint, Rect};
+use ratatui::style::{Color, Modifier, Style};
+use ratatui::widgets::{Cell, Row, Table, Widget};
 
 use crate::config::KeyMapping;
 use crate::key_command::traits::CommandComment;
