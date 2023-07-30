@@ -73,9 +73,10 @@ fn _open_with_xdg(
         open::that_in_background(path);
     } else {
         backend.terminal_drop();
-        let result = open::that(path);
+        let handle = open::that_in_background(path);
+        let result = handle.join();
         backend.terminal_restore()?;
-        result?;
+        result.unwrap()?;
     }
     Ok(())
 }
