@@ -208,7 +208,7 @@ Please create an issue :)
 - Ctrl/Shift/Alt support
 - Bulk rename
 - File previews
-  - See [Image previews](/docs/image_previews.md) for more details
+  - See [Image previews](/docs/image_previews) for more details
 - Exit to current directory
 - Asynch File IO (cut/copy/paste)
 - Custom colors/theme
