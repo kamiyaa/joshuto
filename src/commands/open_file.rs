@@ -56,8 +56,9 @@ where
         context.worker_context_mut().push_child(child_id, handle);
     } else {
         backend.terminal_drop();
-        execute_and_wait(option, files)?;
+        let res = execute_and_wait(option, files);
         backend.terminal_restore()?;
+        res?;
     }
     Ok(())
 }
