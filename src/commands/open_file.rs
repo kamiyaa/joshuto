@@ -76,7 +76,9 @@ fn _open_with_xdg(
         let handle = open::that_in_background(path);
         let result = handle.join();
         backend.terminal_restore()?;
-        result.unwrap()?;
+        if let Ok(result) = result {
+            result?;
+        }
     }
     Ok(())
 }
