@@ -8,7 +8,7 @@ use crate::config::option::TabDisplayOption;
 use crate::fs::{JoshutoDirList, LinkType};
 use crate::util::format;
 use crate::util::unix;
-use crate::THEME_T;
+use crate::{THEME_T, TIMEZONE_STR};
 
 pub struct TuiFooter<'a> {
     dirlist: &'a JoshutoDirList,
@@ -73,7 +73,7 @@ impl<'a> Widget for TuiFooter<'a> {
                     Span::raw(format!("{}/{}", i + 1, self.dirlist.len())),
                     Span::raw("  "),
                     Span::raw(mtime_str),
-                    Span::raw(" UTC "),
+                    Span::raw(TIMEZONE_STR.as_str()),
                     Span::raw(size_str),
                     Span::raw("  "),
                     Span::styled(
