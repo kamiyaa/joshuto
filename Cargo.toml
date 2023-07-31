@@ -38,6 +38,7 @@ unicode-width = "^0"
 whoami = "^1"
 xdg = "^2"
 walkdir = "^2"
+bitflags = { version = "^2", features = ["serde"] }
 
 [dependencies.nix]
 version = "^0"
