@@ -67,3 +67,21 @@ pub fn expand_shell_string(s: &str) -> path::PathBuf {
     let tilde_path = path::PathBuf::from(tilde_cow.as_ref());
     tilde_path
 }
+
+pub fn uid_to_string(uid: u32) -> Option<String> {
+    use nix::unistd::{Uid, User};
+
+    match User::from_uid(Uid::from(uid)) {
+        Ok(Some(user)) => Some(user.name),
+        _ => None,
+    }
+}
+
+pub fn gid_to_string(gid: u32) -> Option<String> {
+    use nix::unistd::{Gid, Group};
+
+    match Group::from_gid(Gid::from(gid)) {
+        Ok(Some(group)) => Some(group.name),
+        _ => None,
+    }
+}
