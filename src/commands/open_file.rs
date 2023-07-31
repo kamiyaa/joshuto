@@ -56,8 +56,9 @@ where
         context.worker_context_mut().push_child(child_id, handle);
     } else {
         backend.terminal_drop();
-        execute_and_wait(option, files)?;
+        let res = execute_and_wait(option, files);
         backend.terminal_restore()?;
+        res?;
     }
     Ok(())
 }
@@ -73,9 +74,12 @@ fn _open_with_xdg(
         open::that_in_background(path);
     } else {
         backend.terminal_drop();
-        let result = open::that(path);
+        let handle = open::that_in_background(path);
+        let result = handle.join();
         backend.terminal_restore()?;
-        result?;
+        if let Ok(result) = result {
+            result?;
+        }
     }
     Ok(())
 }

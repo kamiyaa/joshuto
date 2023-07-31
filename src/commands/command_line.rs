@@ -23,8 +23,13 @@ pub fn read_and_execute(
         .get_input(backend, context, &mut listener);
 
     if let Some(s) = user_input {
-        let trimmed = s.trim_start();
+        let mut trimmed = s.trim_start();
         let _ = context.commandline_context_mut().history_mut().add(trimmed);
+
+        if let Some(alias) = context.config_ref().cmd_aliases.get(trimmed) {
+            trimmed = alias;
+        }
+
         let command = Command::from_str(trimmed)?;
         command.execute(context, backend, keymap_t)
     } else {

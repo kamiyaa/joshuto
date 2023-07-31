@@ -55,13 +55,13 @@ pub fn sub_process(
 ) -> JoshutoResult {
     backend.terminal_drop();
     let res = execute_sub_process(context, words, spawn);
-    reload::soft_reload_curr_tab(context)?;
+    backend.terminal_restore()?;
+    let _ = reload::soft_reload_curr_tab(context);
     context.message_queue_mut().push_info(format!(
         "{}: {}",
         if spawn { "Spawned" } else { "Finished" },
         words.join(" ")
     ));
-    backend.terminal_restore()?;
     res?;
     Ok(())
 }
