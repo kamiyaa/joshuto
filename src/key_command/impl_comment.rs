@@ -13,7 +13,7 @@ impl CommandComment for Command {
                 LineMode::user => "Show files with user",
                 LineMode::group => "Show files with group",
                 LineMode::perm => "Show files with permission",
-                _ => "Show files with multi-attribution"
+                _ => "Show files with multi-attribution",
             },
             Self::Escape => "Escape from visual mode (cancel)",
             Self::BulkRename => "Bulk rename",
