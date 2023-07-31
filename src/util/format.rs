@@ -1,7 +1,7 @@
 use std::time;
 
 pub fn file_size_to_string(file_size: u64) -> String {
-    const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "E"];
+    const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "P"];
     const CONV_RATE: f64 = 1024.0;
     let mut file_size: f64 = file_size as f64;
 
