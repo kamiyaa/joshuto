@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::convert::From;
 
 use serde_derive::Deserialize;
@@ -28,6 +29,8 @@ pub struct AppConfigRaw {
     pub xdg_open_fork: bool,
     #[serde(default = "default_true")]
     pub watch_files: bool,
+    #[serde(default)]
+    pub cmd_aliases: HashMap<String, String>,
     #[serde(default, rename = "display")]
     pub display_options: DisplayOptionRaw,
     #[serde(default, rename = "preview")]
@@ -43,6 +46,7 @@ impl From<AppConfigRaw> for AppConfig {
             xdg_open: raw.xdg_open,
             xdg_open_fork: raw.xdg_open_fork,
             watch_files: raw.watch_files,
+            cmd_aliases: raw.cmd_aliases,
             _display_options: DisplayOption::from(raw.display_options),
             _preview_options: PreviewOption::from(raw.preview_options),
             _tab_options: TabOption::from(raw.tab_options),
