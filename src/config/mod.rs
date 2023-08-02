@@ -1,6 +1,5 @@
 pub mod bookmarks;
 pub mod general;
-#[cfg(feature = "devicons")]
 pub mod icons;
 pub mod keymap;
 pub mod mimetype;

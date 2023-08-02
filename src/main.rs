@@ -14,7 +14,6 @@ mod traits;
 mod ui;
 mod util;
 
-use config::icons::Icons;
 use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::prelude::*;
@@ -24,9 +23,10 @@ use std::sync::Mutex;
 use structopt::StructOpt;
 
 use crate::commands::quit::QuitAction;
+
 use crate::config::{
-    AppConfig, AppKeyMapping, AppProgramRegistry, AppTheme, Bookmarks, JoshutoPreview,
-    TomlConfigFile,
+    icons::Icons, AppConfig, AppKeyMapping, AppProgramRegistry, AppTheme, Bookmarks,
+    JoshutoPreview, TomlConfigFile,
 };
 use crate::context::AppContext;
 use crate::error::JoshutoError;
