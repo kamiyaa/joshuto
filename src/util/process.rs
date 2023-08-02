@@ -23,6 +23,8 @@ where
         command.stderr(process::Stdio::null());
     }
 
+    let pwd = std::env::current_dir()?;
+    command.env("PWD", pwd);
     command.args(entry.get_args());
     command.args(paths);
 
@@ -51,6 +53,8 @@ where
         command.stderr(process::Stdio::null());
     }
 
+    let pwd = std::env::current_dir()?;
+    command.env("PWD", pwd);
     command.args(entry.get_args());
     command.args(paths);
 
