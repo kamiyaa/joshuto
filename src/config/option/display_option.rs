@@ -46,6 +46,7 @@ pub struct TabDisplayOption {
     pub dirlist_options: HashMap<PathBuf, DirListDisplayOptions>,
     pub sort_options: SortOption,
     pub linemode: LineMode,
+    pub size_mode: SizeMode,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -55,6 +56,13 @@ pub enum LineNumberStyle {
     Absolute,
 }
 
+#[derive(Clone, Debug, Default)]
+pub enum SizeMode {
+    #[default]
+    Count,
+    ContentSize,
+}
+
 impl LineNumberStyle {
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
@@ -62,6 +70,15 @@ impl LineNumberStyle {
             "relative" => Some(Self::Relative),
             "none" => Some(Self::None),
             _ => None,
+        }
+    }
+}
+
+impl SizeMode {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "size" => SizeMode::ContentSize,
+            _ => SizeMode::Count,
         }
     }
 }

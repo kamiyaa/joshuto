@@ -37,6 +37,9 @@ impl JoshutoDirEntry {
         let mut metadata = JoshutoMetadata::from(&path)?;
 
         if options.automatically_count_files() && metadata.file_type().is_dir() {
+            if let Ok(len) = get_directory_len(path.as_path()) {
+                metadata.update_len(len);
+            }
             if let Ok(size) = get_directory_size(path.as_path()) {
                 metadata.update_directory_size(size);
             }
@@ -168,4 +171,21 @@ fn create_icon_label(name: &str, metadata: &JoshutoMetadata) -> String {
 
 fn get_directory_size(path: &path::Path) -> io::Result<usize> {
     fs::read_dir(path).map(|s| s.count())
+}
+
+fn get_directory_len(path: &path::Path) -> io::Result<u64> {
+    fs::read_dir(path).map(|s| {
+        s.map(|e| {
+            if let Ok(entry) = e {
+                if let Ok(meta) = entry.metadata() {
+                    meta.len()
+                } else {
+                    0
+                }
+            } else {
+                0
+            }
+        })
+        .sum()
+    })
 }

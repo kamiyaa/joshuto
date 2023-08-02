@@ -56,6 +56,11 @@ tilde_in_titlebar = true
 # - relative
 line_number_style = "none"
 
+# Options include:
+# - count (use number of items in directory)
+# - size (use the total size of items in a directory)
+size_mode = "count"
+
 # Configurations related to file sorting
 [display.sort]
 # Options include

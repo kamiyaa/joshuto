@@ -46,7 +46,11 @@ impl JoshutoMetadata {
         let symlink_metadata = fs::symlink_metadata(path)?;
         let metadata = fs::metadata(path);
         let (_len, _modified, _permissions) = match metadata.as_ref() {
-            Ok(m) => (m.len(), m.modified()?, m.permissions()),
+            Ok(m) => (
+                if m.is_dir() { 0 } else { m.len() },
+                m.modified()?,
+                m.permissions(),
+            ),
             Err(_) => (
                 symlink_metadata.len(),
                 symlink_metadata.modified()?,
@@ -102,6 +106,10 @@ impl JoshutoMetadata {
 
     pub fn len(&self) -> u64 {
         self._len
+    }
+
+    pub fn update_len(&mut self, len: u64) {
+        self._len = len;
     }
 
     pub fn directory_size(&self) -> Option<usize> {
