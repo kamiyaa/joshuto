@@ -12,10 +12,15 @@ pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn change_directory(context: &mut AppContext, path: &path::Path) -> JoshutoResult {
+pub fn change_directory(context: &mut AppContext, mut path: &path::Path) -> JoshutoResult {
     let new_cwd = if path.is_absolute() {
         path.to_path_buf()
     } else {
+        while let Ok(p) = path.strip_prefix("../") {
+            parent_directory(context)?;
+            path = p;
+        }
+
         let mut new_cwd = std::env::current_dir()?;
         new_cwd.push(path);
         new_cwd
