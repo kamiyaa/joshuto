@@ -1,7 +1,9 @@
 use std::path;
 
 use crate::commands::quit::QuitAction;
-use crate::config::option::{LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType};
+use crate::config::option::{
+    LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType, TabBarDisplayMode,
+};
 use crate::io::FileOperationOptions;
 
 #[derive(Clone, Debug)]
@@ -132,6 +134,7 @@ pub enum Command {
         pattern: String,
     },
 
+    SetTabBarDisplayMode(TabBarDisplayMode),
     NewTab {
         mode: NewTabMode,
     },

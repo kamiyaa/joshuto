@@ -128,9 +128,11 @@ impl AppExecute for Command {
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
+            Self::SetTabBarDisplayMode(mode) => {
+                tab_bar_mode::set_tab_bar_display_mode(context, mode)
+            }
             Self::TabSwitch { offset } => {
-                tab_ops::tab_switch(context, *offset)?;
-                Ok(())
+                tab_ops::tab_switch(context, *offset).map_err(|e| e.into())
             }
             Self::TabSwitchIndex { index } => tab_ops::tab_switch_index(context, *index),
             Self::Help => show_help::help_loop(context, backend, keymap_t),
