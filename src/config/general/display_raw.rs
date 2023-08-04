@@ -59,6 +59,9 @@ pub struct DisplayOptionRaw {
 
     #[serde(default)]
     pub line_number_style: String,
+
+    #[serde(default)]
+    pub linemode: LineMode,
 }
 
 impl std::default::Default for DisplayOptionRaw {
@@ -75,6 +78,7 @@ impl std::default::Default for DisplayOptionRaw {
             sort_options: SortOptionRaw::default(),
             tilde_in_titlebar: true,
             line_number_style: "none".to_string(),
+            linemode: LineMode::default(),
         }
     }
 }
@@ -125,7 +129,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
             default_tab_display_option: TabDisplayOption {
                 sort_options: raw.sort_options.into(),
                 // todo: make default line mode configurable
-                linemode: LineMode::Size,
+                linemode: raw.linemode,
                 ..Default::default()
             },
         }

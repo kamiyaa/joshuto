@@ -80,6 +80,9 @@ name = "bitflags"
 version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bstr"
@@ -471,6 +474,7 @@ version = "0.9.5"
 dependencies = [
  "alphanumeric-sort",
  "ansi-to-tui",
+ "bitflags 2.3.3",
  "chrono",
  "colors-transform",
  "dirs-next",
@@ -478,6 +482,7 @@ dependencies = [
  "globset",
  "lazy_static",
  "libc",
+ "nix",
  "notify",
  "open",
  "phf",
@@ -495,7 +500,6 @@ dependencies = [
  "trash",
  "unicode-segmentation",
  "unicode-width",
- "users",
  "uuid",
  "walkdir",
  "whoami",
@@ -1262,16 +1266,6 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
-]
-
-[[package]]
-name = "users"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24cc0f6d6f267b73e5a2cadf007ba8f9bc39c6a6f9666f8cf25ea809a153b032"
-dependencies = [
- "libc",
- "log",
 ]
 
 [[package]]

@@ -27,7 +27,7 @@ rustyline = "^12"
 serde = "^1"
 serde_derive = "^1"
 shell-words = "^1"
-shellexpand = { version = "^3", features = ["full"]}
+shellexpand = { version = "^3", features = ["full"] }
 signal-hook = "^0"
 structopt = "^0"
 termion = "^2"
@@ -35,10 +35,15 @@ toml = "^0"
 trash = { version = "^3", optional = true }
 unicode-segmentation = "^1"
 unicode-width = "^0"
-users = "^0"
 whoami = "^1"
 xdg = "^2"
 walkdir = "^2"
+bitflags = { version = "^2", features = ["serde"] }
+
+[dependencies.nix]
+version = "^0"
+default_features = false
+features = ["user"]
 
 [dependencies.ratatui]
 version = "^0"

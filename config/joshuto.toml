@@ -22,6 +22,11 @@ tilde_in_titlebar = true
 # none, absolute, relative
 line_number_style = "none"
 
+# size, mtime, user, gourp, perm. can be combined with |. 
+# `none` to disable, `all` to enable all
+# all and none can't be combined with other options
+linemode = "size"
+
 [display.sort]
 # lexical, mtime, natural, size, ext
 sort_method = "natural"

@@ -7,9 +7,9 @@ use ratatui::widgets::Widget;
 
 use crate::config::option::{DisplayOption, LineMode, LineNumberStyle, TabDisplayOption};
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
-use crate::util::format;
 use crate::util::string::UnicodeTruncate;
 use crate::util::style;
+use crate::util::{format, unix};
 use unicode_width::UnicodeWidthStr;
 
 const MIN_LEFT_LABEL_WIDTH: i32 = 15;
@@ -144,15 +144,18 @@ fn print_entry(
     let right_label_original = format!(
         " {}{} ",
         symlink_string,
-        match linemode {
-            LineMode::Size => get_entry_size_string(entry),
-            LineMode::MTime => format::mtime_to_string(entry.metadata.modified()),
-            LineMode::SizeMTime => format!(
-                "{} {}",
-                get_entry_size_string(entry),
-                format::mtime_to_string(entry.metadata.modified())
-            ),
-        }
+        linemode
+            .iter_names()
+            .map(|f| match f.0 {
+                "size" => get_entry_size_string(entry),
+                "mtime" => format::mtime_to_string(entry.metadata.modified()),
+                "user" => unix::uid_to_string(entry.metadata.uid).unwrap_or("unknown".into()),
+                "group" => unix::gid_to_string(entry.metadata.gid).unwrap_or("unknown".into()),
+                "perm" => unix::mode_to_string(entry.metadata.mode),
+                _ => unreachable!(),
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
     );
 
     // draw prefix first

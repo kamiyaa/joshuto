@@ -56,6 +56,16 @@ tilde_in_titlebar = true
 # - relative
 line_number_style = "none"
 
+# Options include
+# - size
+# - mtime
+# - user
+# - group
+# - perm
+# - none (can't be combined with other options)
+# - all (can't be combined with other options)
+linemode = "size"
+
 # Configurations related to file sorting
 [display.sort]
 # Options include
