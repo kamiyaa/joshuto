@@ -12,7 +12,7 @@ use crate::context::{
 use crate::event::{AppEvent, Events};
 use crate::ui::views;
 use crate::ui::PreviewArea;
-use crate::util::search::SearchPattern;
+use crate::util::search::SearchContext;
 use crate::Args;
 use notify::{RecursiveMode, Watcher};
 use std::path;
@@ -30,7 +30,7 @@ pub struct AppContext {
     // context related to local file state
     local_state: Option<LocalStateContext>,
     // context related to searching
-    search_context: Option<SearchPattern>,
+    search_context: Option<SearchContext>,
     // message queue for displaying messages
     message_queue: MessageQueue,
     // context related to io workers
@@ -246,11 +246,11 @@ impl AppContext {
         self.local_state.take()
     }
 
-    pub fn get_search_context(&self) -> Option<&SearchPattern> {
+    pub fn get_search_context(&self) -> Option<&SearchContext> {
         self.search_context.as_ref()
     }
-    pub fn set_search_context(&mut self, pattern: SearchPattern) {
-        self.search_context = Some(pattern);
+    pub fn set_search_context(&mut self, context: SearchContext) {
+        self.search_context = Some(context);
     }
 
     pub fn preview_context_ref(&self) -> &PreviewContext {

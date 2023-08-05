@@ -109,6 +109,9 @@ impl AppExecute for Command {
             Self::SelectFiles { pattern, options } => {
                 select::select_files(context, pattern.as_str(), options)
             }
+            Self::SetCaseSensitivity { case_sensitivity } => {
+                case_sensitivity::set_case_sensitivity(context, *case_sensitivity)
+            }
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShowTasks => show_tasks::show_tasks(context, backend, keymap_t),
             Self::Sort(t) => sort::set_sort(context, *t),

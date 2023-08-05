@@ -1,7 +1,9 @@
 use std::path;
 
 use crate::commands::quit::QuitAction;
-use crate::config::option::{LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType};
+use crate::config::option::{
+    CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
+};
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::FileOperationOptions;
 use crate::util::unix;
@@ -320,6 +322,14 @@ impl std::str::FromStr for Command {
                         options,
                     })
                 }
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SET_CASE_SENSITIVITY {
+            match CaseSensitivity::from_str(arg) {
+                Ok(case_sensitivity) => Ok(Self::SetCaseSensitivity { case_sensitivity }),
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", arg, e),

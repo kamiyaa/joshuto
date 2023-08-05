@@ -1,6 +1,6 @@
-use globset::Glob;
+use globset::GlobBuilder;
 
-use crate::config::option::SelectOption;
+use crate::config::option::{CaseSensitivity, SelectOption};
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 
@@ -54,7 +54,29 @@ fn select_with_pattern(
     pattern: &str,
     options: &SelectOption,
 ) -> JoshutoResult {
-    let glob = Glob::new(pattern)?.compile_matcher();
+    let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
+    let pattern_lower = pattern.to_lowercase();
+
+    let (pattern, actual_case_sensitivity) = match case_sensitivity {
+        CaseSensitivity::Insensitive => (pattern_lower.as_str(), CaseSensitivity::Insensitive),
+        CaseSensitivity::Sensitive => (pattern, CaseSensitivity::Sensitive),
+        // Determine the actual case sensitivity by whether an uppercase letter occurs.
+        CaseSensitivity::Smart => {
+            if pattern_lower == pattern {
+                (pattern_lower.as_str(), CaseSensitivity::Insensitive)
+            } else {
+                (pattern, CaseSensitivity::Sensitive)
+            }
+        }
+    };
+
+    let glob = GlobBuilder::new(pattern)
+        .case_insensitive(matches!(
+            actual_case_sensitivity,
+            CaseSensitivity::Insensitive
+        ))
+        .build()?
+        .compile_matcher();
 
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         let mut found = 0;

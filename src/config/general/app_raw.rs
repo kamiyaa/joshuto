@@ -3,11 +3,12 @@ use std::convert::From;
 
 use serde_derive::Deserialize;
 
-use crate::config::option::{DisplayOption, PreviewOption, TabOption};
+use crate::config::option::{DisplayOption, PreviewOption, SearchOption, TabOption};
 use crate::config::{parse_config_or_default, AppConfig, TomlConfigFile};
 
 use super::display_raw::DisplayOptionRaw;
 use super::preview_raw::PreviewOptionRaw;
+use super::search_raw::SearchOptionRaw;
 use super::tab_raw::TabOptionRaw;
 
 const fn default_true() -> bool {
@@ -35,6 +36,8 @@ pub struct AppConfigRaw {
     pub display_options: DisplayOptionRaw,
     #[serde(default, rename = "preview")]
     pub preview_options: PreviewOptionRaw,
+    #[serde(default, rename = "search")]
+    pub search_options: SearchOptionRaw,
     #[serde(default, rename = "tab")]
     pub tab_options: TabOptionRaw,
 }
@@ -49,6 +52,7 @@ impl From<AppConfigRaw> for AppConfig {
             cmd_aliases: raw.cmd_aliases,
             _display_options: DisplayOption::from(raw.display_options),
             _preview_options: PreviewOption::from(raw.preview_options),
+            _search_options: SearchOption::from(raw.search_options),
             _tab_options: TabOption::from(raw.tab_options),
         }
     }
