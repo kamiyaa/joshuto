@@ -28,8 +28,6 @@ impl From<SearchOptionRaw> for SearchOption {
         let case_sensitivity = CaseSensitivity::from_str(raw.case_sensitivity.as_str())
             .unwrap_or(CaseSensitivity::Insensitive);
 
-        Self {
-            _case_sensitivity: case_sensitivity,
-        }
+        Self { case_sensitivity }
     }
 }

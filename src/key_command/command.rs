@@ -1,7 +1,9 @@
 use std::path;
 
 use crate::commands::quit::QuitAction;
-use crate::config::option::{LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType};
+use crate::config::option::{
+    CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
+};
 use crate::io::FileOperationOptions;
 
 #[derive(Clone, Debug)]
@@ -107,6 +109,9 @@ pub enum Command {
     SelectFiles {
         pattern: String,
         options: SelectOption,
+    },
+    SetCaseSensitivity {
+        case_sensitivity: CaseSensitivity,
     },
     SetMode,
     SubProcess {
