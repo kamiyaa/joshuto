@@ -1,4 +1,5 @@
 use std::convert::From;
+use std::str::FromStr;
 
 use serde_derive::Deserialize;
 
@@ -23,12 +24,9 @@ impl std::default::Default for SearchOptionRaw {
 }
 
 impl From<SearchOptionRaw> for SearchOption {
-    fn from(raww: SearchOptionRaw) -> Self {
-        let case_sensitivity = match raww.case_sensitivity.as_str() {
-            "sensitive" => CaseSensitivity::Sensitive,
-            "smart" => CaseSensitivity::Smart,
-            _ => CaseSensitivity::Insensitive,
-        };
+    fn from(raw: SearchOptionRaw) -> Self {
+        let case_sensitivity = CaseSensitivity::from_str(raw.case_sensitivity.as_str())
+            .unwrap_or(CaseSensitivity::Insensitive);
 
         Self {
             _case_sensitivity: case_sensitivity,
