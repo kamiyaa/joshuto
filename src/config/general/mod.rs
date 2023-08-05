@@ -3,6 +3,7 @@ pub mod app;
 mod app_raw;
 mod display_raw;
 mod preview_raw;
+mod search_raw;
 mod sort_raw;
 mod tab_raw;
 
