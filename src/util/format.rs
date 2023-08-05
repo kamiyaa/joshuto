@@ -37,15 +37,15 @@ pub fn format_tab_bar_title_string(
     if let Some(number) = number {
         if title.len() > max_len {
             format!(
-                "{}: {} ..",
+                "{}: {}…",
                 number + 1,
-                title.chars().take(max_len - 3).collect::<String>()
+                title.chars().take(max_len - 1).collect::<String>()
             )
         } else {
             format!("{}: {}", number + 1, title)
         }
     } else if title.len() > max_len {
-        format!("{} ..", title.chars().take(max_len - 3).collect::<String>())
+        format!("{}…", title.chars().take(max_len - 1).collect::<String>())
     } else {
         title.to_string()
     }
