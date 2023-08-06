@@ -309,9 +309,7 @@ function joshuto() {
 
 ### `search`: search the current directory via a string
 
-- case insensitive
-
-### `search_glob`: search the current directory via shell globbing
+### `search_glob`: search the current directory via shell globbing (exact match)
 
 - `:search_glob *.png`
 
@@ -337,7 +335,7 @@ keymap = [ //..
 ]
 ```
 
-### `filter`:Case insensitively filter the current directory list.
+### `filter`: filter the current directory list.
 
 - `:filter ca`: filter the current directory and show only items with `ca` in the name
 
