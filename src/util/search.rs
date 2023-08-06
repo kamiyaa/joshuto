@@ -1,7 +1,12 @@
 use globset::GlobMatcher;
 
+use crate::config::option::CaseSensitivity;
+
 #[derive(Clone, Debug)]
-pub enum SearchPattern {
+pub enum SearchContext {
     Glob(GlobMatcher),
-    String(String),
+    String {
+        pattern: String,
+        actual_case_sensitivity: CaseSensitivity,
+    },
 }
