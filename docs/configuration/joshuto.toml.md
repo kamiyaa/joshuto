@@ -85,7 +85,7 @@ directories_first = true
 # sort in reverse
 reverse = false
 
-# Configuratioons related to searching and selecting files
+# Configurations related to searching and selecting files
 [search]
 # Different case sensitivities for searching and selecting files
 # - insensitive
@@ -93,6 +93,8 @@ reverse = false
 # - smart: when the pattern contains at least one uppercase letter, joshuto can search
 #   files case-sensitively, otherwise it will ignore the difference between lowercase
 #   and uppercase
+# Note that to apply changes after changing configurations at runtime, re-executing
+# the search command is required.
 case_sensitivity = "insensitive"
 
 # Optional list of command aliases (empty by default)
