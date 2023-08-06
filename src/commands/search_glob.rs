@@ -1,6 +1,5 @@
-use globset::{GlobBuilder, GlobMatcher};
+use globset::GlobMatcher;
 
-use crate::config::option::CaseSensitivity;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
@@ -37,33 +36,19 @@ pub fn search_glob_rev(curr_tab: &JoshutoTab, glob: &GlobMatcher) -> Option<usiz
 
 pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult {
     let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
-    let pattern_lower = pattern.to_lowercase();
+    let search_context = SearchContext::new_glob(pattern, case_sensitivity)?;
 
-    let (pattern, actual_case_sensitivity) = match case_sensitivity {
-        CaseSensitivity::Insensitive => (pattern_lower.as_str(), CaseSensitivity::Insensitive),
-        CaseSensitivity::Sensitive => (pattern, CaseSensitivity::Sensitive),
-        // Determine the actual case sensitivity by whether an uppercase letter occurs.
-        CaseSensitivity::Smart => {
-            if pattern_lower == pattern {
-                (pattern_lower.as_str(), CaseSensitivity::Insensitive)
-            } else {
-                (pattern, CaseSensitivity::Sensitive)
-            }
-        }
+    let glob = match &search_context {
+        SearchContext::Glob(glob) => glob,
+        _ => unreachable!(),
     };
 
-    let glob = GlobBuilder::new(pattern)
-        .case_insensitive(matches!(
-            actual_case_sensitivity,
-            CaseSensitivity::Insensitive
-        ))
-        .build()?
-        .compile_matcher();
+    let index = search_glob_fwd(context.tab_context_ref().curr_tab_ref(), glob);
 
-    let index = search_glob_fwd(context.tab_context_ref().curr_tab_ref(), &glob);
     if let Some(index) = index {
         cursor_move::cursor_move(context, index);
     }
-    context.set_search_context(SearchContext::Glob(glob));
+
+    context.set_search_context(search_context);
     Ok(())
 }

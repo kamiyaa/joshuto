@@ -77,31 +77,25 @@ pub fn search_string(context: &mut AppContext, pattern: &str, incremental: bool)
     let curr_tab = context.tab_context_ref().curr_tab_ref();
 
     let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
-    let pattern_lower = pattern.to_lowercase();
+    let search_context = SearchContext::new_string(pattern, case_sensitivity);
 
-    let (pattern, actual_case_sensitivity) = match case_sensitivity {
-        CaseSensitivity::Insensitive => (pattern_lower, CaseSensitivity::Insensitive),
-        CaseSensitivity::Sensitive => (pattern.to_string(), CaseSensitivity::Sensitive),
-        // Determine the actual case sensitivity by whether an uppercase letter occurs.
-        CaseSensitivity::Smart => {
-            if pattern_lower == pattern {
-                (pattern_lower, CaseSensitivity::Insensitive)
-            } else {
-                (pattern.to_string(), CaseSensitivity::Sensitive)
-            }
-        }
+    let (pattern, actual_case_sensitivity) = match &search_context {
+        SearchContext::String {
+            pattern,
+            actual_case_sensitivity,
+        } => (pattern, *actual_case_sensitivity),
+        _ => unreachable!(),
     };
 
     let index = if incremental {
-        search_string_start(curr_tab, pattern.as_str(), actual_case_sensitivity)
+        search_string_start(curr_tab, pattern, actual_case_sensitivity)
     } else {
-        search_string_fwd(curr_tab, pattern.as_str(), actual_case_sensitivity)
+        search_string_fwd(curr_tab, pattern, actual_case_sensitivity)
     };
+
     if let Some(index) = index {
         cursor_move::cursor_move(context, index);
     }
-    context.set_search_context(SearchContext::String {
-        pattern,
-        actual_case_sensitivity,
-    });
+
+    context.set_search_context(search_context);
 }
