@@ -101,6 +101,26 @@ pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
+pub fn copy_filepaths(context: &mut AppContext) -> JoshutoResult {
+    let selected = context
+        .tab_context_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|c| c.get_selected_paths());
+    if let Some(selected) = selected {
+        let files = selected.into_iter().fold(String::new(), |mut acc, x| {
+            if let Some(s) = x.to_str() {
+                acc.push_str(s);
+                acc.push('\n')
+            }
+            acc
+        });
+        copy_string_to_buffer(files)?;
+    }
+
+    Ok(())
+}
+
 pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult {
     let opt_entry = context
         .tab_context_ref()

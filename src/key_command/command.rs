@@ -26,7 +26,9 @@ pub enum Command {
     CopyFiles,
     CopyFileName,
     CopyFileNameWithoutExtension,
-    CopyFilePath,
+    CopyFilePath {
+        all_selected: bool,
+    },
     CopyDirPath,
     SymlinkFiles {
         relative: bool,

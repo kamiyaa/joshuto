@@ -40,7 +40,8 @@ impl CommandComment for Command {
             Self::CopyFiles => "Copy selected files",
             Self::CopyFileName => "Copy filename",
             Self::CopyFileNameWithoutExtension => "Copy filename without extension",
-            Self::CopyFilePath => "Copy path to file",
+            Self::CopyFilePath { all_selected: true } => "Copy all selected paths to file",
+            Self::CopyFilePath { .. } => "Copy path to file",
             Self::CopyDirPath => "Copy directory name",
             Self::SymlinkFiles { .. } => "Symlink selected files",
 
