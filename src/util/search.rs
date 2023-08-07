@@ -1,18 +1,22 @@
+use std::fmt::{Display, Formatter, Result as FmtResult};
+
 use globset::{GlobBuilder, GlobMatcher};
 
 use crate::config::option::CaseSensitivity;
 use crate::error::JoshutoResult;
 
-#[derive(Clone, Debug)]
-pub enum SearchContext {
+#[derive(Clone, Debug, Default)]
+pub enum MatchContext {
     Glob(GlobMatcher),
     String {
         pattern: String,
         actual_case_sensitivity: CaseSensitivity,
     },
+    #[default]
+    None,
 }
 
-impl SearchContext {
+impl MatchContext {
     pub fn new_glob(pattern: &str, case_sensitivity: CaseSensitivity) -> JoshutoResult<Self> {
         let pattern_lower = pattern.to_lowercase();
 
@@ -58,6 +62,47 @@ impl SearchContext {
         Self::String {
             pattern,
             actual_case_sensitivity,
+        }
+    }
+
+    pub fn is_match(&self, main: &str) -> bool {
+        match self {
+            Self::Glob(glob_matcher) => Self::is_match_glob(main, glob_matcher),
+            Self::String {
+                pattern,
+                actual_case_sensitivity,
+            } => Self::is_match_string(main, pattern, *actual_case_sensitivity),
+            Self::None => true,
+        }
+    }
+
+    fn is_match_glob(main: &str, glob_matcher: &GlobMatcher) -> bool {
+        glob_matcher.is_match(main)
+    }
+
+    fn is_match_string(
+        main: &str,
+        pattern: &str,
+        actual_case_sensitivity: CaseSensitivity,
+    ) -> bool {
+        match actual_case_sensitivity {
+            CaseSensitivity::Insensitive => main.to_lowercase().contains(pattern),
+            CaseSensitivity::Sensitive => main.contains(pattern),
+            CaseSensitivity::Smart => unreachable!(),
+        }
+    }
+
+    pub fn is_none(&self) -> bool {
+        matches!(self, Self::None)
+    }
+}
+
+impl Display for MatchContext {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
+            Self::Glob(glob_matcher) => write!(f, "{}", glob_matcher.glob().glob()),
+            Self::String { pattern, .. } => write!(f, "{pattern}"),
+            Self::None => Ok(()),
         }
     }
 }

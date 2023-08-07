@@ -4,7 +4,7 @@ use ratatui::layout::Constraint;
 
 use crate::config::option::LineMode;
 use crate::config::option::SortOption;
-use crate::util::filter::FilterContext;
+use crate::util::search::MatchContext;
 
 #[derive(Clone, Copy, Debug)]
 pub enum DisplayMode {
@@ -37,7 +37,7 @@ pub struct DisplayOption {
 /// Display options valid pre JoshutoDirList in a JoshutoTab
 #[derive(Clone, Debug, Default)]
 pub struct DirListDisplayOptions {
-    filter_context: FilterContext,
+    filter_context: MatchContext,
     depth: u8,
 }
 
@@ -68,11 +68,11 @@ impl LineNumberStyle {
 }
 
 impl DirListDisplayOptions {
-    pub fn set_filter_context(&mut self, filter_context: FilterContext) {
-        self.filter_context = filter_context.to_owned();
+    pub fn set_filter_context(&mut self, filter_context: MatchContext) {
+        self.filter_context = filter_context;
     }
 
-    pub fn filter_context_ref(&self) -> &FilterContext {
+    pub fn filter_context_ref(&self) -> &MatchContext {
         &self.filter_context
     }
 
@@ -215,7 +215,7 @@ fn filter(
         None => return false,
     };
 
-    if !dirlist_opts.filter_context_ref().filter(file_name) {
+    if !dirlist_opts.filter_context_ref().is_match(file_name) {
         return false;
     }
 

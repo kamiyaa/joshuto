@@ -1,12 +1,12 @@
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
-use crate::util::filter::FilterContext;
+use crate::util::search::MatchContext;
 
 use super::reload;
 
 pub fn filter(context: &mut AppContext, pattern: &str) -> JoshutoResult {
     let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
-    let filter_context = FilterContext::new_string(pattern, case_sensitivity);
+    let filter_context = MatchContext::new_string(pattern, case_sensitivity);
 
     let curr_tab = context.tab_context_mut().curr_tab_mut();
     let path = curr_tab.cwd().to_path_buf();
