@@ -1,7 +1,6 @@
-use crate::context::AppContext;
+use crate::context::{AppContext, MatchContext};
 use crate::error::JoshutoResult;
 use crate::tab::JoshutoTab;
-use crate::util::search::MatchContext;
 
 use super::cursor_move;
 

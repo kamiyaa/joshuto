@@ -4,7 +4,7 @@ use ratatui::layout::Constraint;
 
 use crate::config::option::LineMode;
 use crate::config::option::SortOption;
-use crate::util::search::MatchContext;
+use crate::context::MatchContext;
 
 #[derive(Clone, Copy, Debug)]
 pub enum DisplayMode {

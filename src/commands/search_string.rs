@@ -1,5 +1,4 @@
-use crate::context::AppContext;
-use crate::util::search::MatchContext;
+use crate::context::{AppContext, MatchContext};
 
 use super::cursor_move;
 use super::search;

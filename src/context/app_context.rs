@@ -6,13 +6,12 @@ use std::thread;
 use crate::commands::quit::QuitAction;
 use crate::config;
 use crate::context::{
-    CommandLineContext, LocalStateContext, MessageQueue, PreviewContext, TabContext, UiContext,
-    WorkerContext,
+    CommandLineContext, LocalStateContext, MatchContext, MessageQueue, PreviewContext, TabContext,
+    UiContext, WorkerContext,
 };
 use crate::event::{AppEvent, Events};
 use crate::ui::views;
 use crate::ui::PreviewArea;
-use crate::util::search::MatchContext;
 use crate::Args;
 use notify::{RecursiveMode, Watcher};
 use std::path;
