@@ -87,7 +87,7 @@ reverse = false
 
 # Configurations related to searching and selecting files
 [search]
-# Different case sensitivities for searching and selecting files
+# Different case sensitivities for operations using substring matching
 # - insensitive
 # - sensitive
 # - smart: when the pattern contains at least one uppercase letter, joshuto can search
@@ -95,7 +95,11 @@ reverse = false
 #   and uppercase
 # Note that to apply changes after changing configurations at runtime, re-executing
 # the search command is required.
-case_sensitivity = "insensitive"
+string_case_sensitivity = "insensitive"
+# For glob matching
+glob_case_sensitivity = "sensitive"
+# For matching with fzf
+fzf_case_sensitivity = "insensitive"
 
 # Optional list of command aliases (empty by default)
 [cmd_aliases]

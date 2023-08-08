@@ -7,6 +7,6 @@ pub fn set_case_sensitivity(
     case_sensitivity: CaseSensitivity,
 ) -> JoshutoResult {
     let options = context.config_mut().search_options_mut();
-    options.case_sensitivity = case_sensitivity;
+    options.string_case_sensitivity = case_sensitivity;
     Ok(())
 }

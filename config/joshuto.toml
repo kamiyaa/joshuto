@@ -40,7 +40,11 @@ preview_script = "~/.config/joshuto/preview_file.sh" # make sure it's marked as 
 
 [search]
 # insensitive, sensitive, smart
-case_sensitivity = "insensitive"
+string_case_sensitivity = "insensitive"
+# see above
+glob_case_sensitivity = "sensitive"
+# see above
+fzf_case_sensitivity = "insensitive"
 
 [tab]
 # inherit, home, root

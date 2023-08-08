@@ -4,7 +4,11 @@ use super::cursor_move;
 use super::search;
 
 pub fn search_string(context: &mut AppContext, pattern: &str, incremental: bool) {
-    let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .string_case_sensitivity;
+
     let search_context = MatchContext::new_string(pattern, case_sensitivity);
 
     let curr_tab = context.tab_context_ref().curr_tab_ref();

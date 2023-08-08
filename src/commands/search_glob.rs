@@ -5,7 +5,11 @@ use super::cursor_move;
 use super::search;
 
 pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult {
-    let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .glob_case_sensitivity;
+
     let search_context = MatchContext::new_glob(pattern, case_sensitivity)?;
 
     let curr_tab = &context.tab_context_ref().curr_tab_ref();

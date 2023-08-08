@@ -35,7 +35,10 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
     let mut cmd = Command::new("fzf");
     cmd.stdin(Stdio::piped()).stdout(Stdio::piped());
 
-    let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .fzf_case_sensitivity;
 
     match case_sensitivity {
         CaseSensitivity::Insensitive => {

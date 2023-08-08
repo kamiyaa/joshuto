@@ -5,7 +5,9 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 /// Search and selection options globally valid for Joshuto (for all tabs)
 #[derive(Clone, Debug)]
 pub struct SearchOption {
-    pub case_sensitivity: CaseSensitivity,
+    pub string_case_sensitivity: CaseSensitivity,
+    pub glob_case_sensitivity: CaseSensitivity,
+    pub fzf_case_sensitivity: CaseSensitivity,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -18,7 +20,9 @@ pub enum CaseSensitivity {
 impl std::default::Default for SearchOption {
     fn default() -> Self {
         Self {
-            case_sensitivity: CaseSensitivity::Insensitive,
+            string_case_sensitivity: CaseSensitivity::Insensitive,
+            glob_case_sensitivity: CaseSensitivity::Sensitive,
+            fzf_case_sensitivity: CaseSensitivity::Insensitive,
         }
     }
 }

@@ -52,7 +52,11 @@ fn select_with_pattern(
     pattern: &str,
     options: &SelectOption,
 ) -> JoshutoResult {
-    let case_sensitivity = context.config_ref().search_options_ref().case_sensitivity;
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .glob_case_sensitivity;
+
     let select_context = MatchContext::new_glob(pattern, case_sensitivity)?;
 
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
