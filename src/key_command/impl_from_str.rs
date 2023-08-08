@@ -1,5 +1,6 @@
 use std::path;
 
+use crate::commands::case_sensitivity::SetType;
 use crate::commands::quit::QuitAction;
 use crate::config::option::{
     CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
@@ -328,8 +329,31 @@ impl std::str::FromStr for Command {
                 )),
             }
         } else if command == CMD_SET_CASE_SENSITIVITY {
-            match CaseSensitivity::from_str(arg) {
-                Ok(case_sensitivity) => Ok(Self::SetCaseSensitivity { case_sensitivity }),
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    let mut set_type = SetType::String;
+                    let mut value = "";
+
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--type=string" => set_type = SetType::String,
+                            "--type=glob" => set_type = SetType::Glob,
+                            "--type=fzf" => set_type = SetType::Fzf,
+                            s => value = s,
+                        }
+                    }
+
+                    match CaseSensitivity::from_str(value) {
+                        Ok(case_sensitivity) => Ok(Self::SetCaseSensitivity {
+                            case_sensitivity,
+                            set_type,
+                        }),
+                        Err(e) => Err(JoshutoError::new(
+                            JoshutoErrorKind::InvalidParameters,
+                            format!("{}: {}", arg, e),
+                        )),
+                    }
+                }
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,
                     format!("{}: {}", arg, e),

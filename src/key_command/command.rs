@@ -1,5 +1,6 @@
 use std::path;
 
+use crate::commands::case_sensitivity::SetType;
 use crate::commands::quit::QuitAction;
 use crate::config::option::{
     CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
@@ -112,6 +113,7 @@ pub enum Command {
     },
     SetCaseSensitivity {
         case_sensitivity: CaseSensitivity,
+        set_type: SetType,
     },
     SetMode,
     SubProcess {
