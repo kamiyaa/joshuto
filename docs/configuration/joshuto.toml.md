@@ -95,6 +95,7 @@ reverse = false
 #   and uppercase
 # Note that to apply changes after changing configurations at runtime, re-executing
 # the search command is required.
+# For substring matching
 string_case_sensitivity = "insensitive"
 # For glob matching
 glob_case_sensitivity = "sensitive"
