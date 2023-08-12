@@ -86,15 +86,26 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResul
     Ok(())
 }
 
-pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult {
-    let entry_file_path = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-        .and_then(|c| c.curr_entry_ref())
-        .and_then(|entry| entry.file_path().to_str())
-        .map(|s| s.to_string());
-
+pub fn copy_filepath(context: &mut AppContext, all: bool) -> JoshutoResult {
+    let selected = context.tab_context_ref().curr_tab_ref().curr_list_ref();
+    let entry_file_path = {
+        if all {
+            selected.map(|c| c.get_selected_paths()).and_then(|sel| {
+                sel.into_iter().try_fold(String::new(), |mut acc, x| {
+                    if let Some(s) = x.to_str() {
+                        acc.push_str(s);
+                        acc.push('\n');
+                    }
+                    Some(acc)
+                })
+            })
+        } else {
+            selected
+                .and_then(|c| c.curr_entry_ref())
+                .and_then(|entry| entry.file_path().to_str())
+                .map(|s| s.to_string())
+        }
+    };
     if let Some(file_path) = entry_file_path {
         copy_string_to_buffer(file_path)?;
     }

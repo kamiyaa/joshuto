@@ -70,6 +70,7 @@ keymap = [
   { keys = ["y", "n"], command = "copy_filename" },
   { keys = ["y", "."], command = "copy_filename_without_extension" },
   { keys = ["y", "p"], command = "copy_filepath" },
+  { keys = ["y", "a"], command = "copy_filepath --all-selected=true" },
   { keys = ["y", "d"], command = "copy_dirpath" },
 
   { keys = ["p", "l"], command = "symlink_files --relative=false" },
