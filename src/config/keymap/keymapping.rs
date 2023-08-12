@@ -141,7 +141,7 @@ fn insert_keycommand(
             Entry::Occupied(_) => return Err(KeymapError::Conflict),
             Entry::Vacant(entry) => entry.insert(CommandKeybind::SimpleKeybind {
                 command: keycommand,
-                description: description,
+                description,
             }),
         };
         return Ok(());
