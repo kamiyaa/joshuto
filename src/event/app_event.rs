@@ -12,6 +12,7 @@ use termion::input::TermRead;
 
 use uuid::Uuid;
 
+use crate::error::JoshutoResult;
 use crate::fs::JoshutoDirList;
 use crate::io::FileOperationProgress;
 use crate::preview::preview_file::FilePreview;
@@ -24,7 +25,7 @@ pub enum AppEvent {
     // background IO worker events
     IoWorkerCreate,
     FileOperationProgress(FileOperationProgress),
-    IoWorkerResult(io::Result<FileOperationProgress>),
+    IoWorkerResult(JoshutoResult<FileOperationProgress>),
 
     // forked process events
     ChildProcessComplete(u32),

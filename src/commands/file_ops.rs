@@ -1,5 +1,5 @@
 use std::io;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use crate::context::{AppContext, LocalStateContext};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
@@ -129,27 +129,27 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult {
     let clipboards = [
         (
             "wl-copy",
-            format!("printf '%s' '{}' | {} 2> /dev/null", string, "wl-copy"),
+            format!("printf '%s' '{}' | {}", string, "wl-copy"),
         ),
-        (
-            "xsel",
-            format!("printf '%s' '{}' | {} -ib 2> /dev/null", string, "xsel"),
-        ),
-        (
-            "pbcopy",
-            format!("printf '%s' '{}' | {} 2> /dev/null", string, "pbcopy"),
-        ),
+        ("xsel", format!("printf '%s' '{}' | {} -ib", string, "xsel")),
+        ("pbcopy", format!("printf '%s' '{}' | {}", string, "pbcopy")),
         (
             "xclip",
             format!(
-                "printf '%s' '{}' | {} -selection clipboard 2> /dev/null",
+                "printf '%s' '{}' | {} -selection clipboard",
                 string, "xclip"
             ),
         ),
     ];
 
-    for (_, command) in clipboards.iter() {
-        match Command::new("sh").args(["-c", command.as_str()]).status() {
+    for (_, cmd) in clipboards.iter() {
+        let status = Command::new("sh")
+            .args(["-c", cmd.as_str()])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+
+        match status {
             Ok(s) if s.success() => return Ok(()),
             _ => {}
         }
