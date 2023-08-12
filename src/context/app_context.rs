@@ -71,7 +71,7 @@ impl AppContext {
             quit: QuitAction::DoNot,
             events,
             args,
-            tab_context: TabContext::new(),
+            tab_context: TabContext::new(config.tab_options_ref().display),
             local_state: None,
             search_context: None,
             message_queue: MessageQueue::new(),
