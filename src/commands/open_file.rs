@@ -18,12 +18,15 @@ use crate::MIMETYPE_T;
 fn _get_options<'a>(path: &path::Path) -> Vec<&'a ProgramEntry> {
     let mut options: Vec<&ProgramEntry> = Vec::new();
 
-    if let Some(file_ext) = path.extension().and_then(|ext| ext.to_str()) {
-        if let Some(entries) = MIMETYPE_T.app_list_for_ext(file_ext) {
-            options.extend(entries);
-            return options;
-        }
+    if let Some(entries) = path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .and_then(|file_ext| MIMETYPE_T.app_list_for_ext(file_ext))
+    {
+        options.extend(entries);
+        return options;
     }
+
     if let Ok(file_mimetype) = get_mimetype(path) {
         if let Some(entry) = MIMETYPE_T.app_list_for_mimetype(file_mimetype.get_type()) {
             match entry.subtypes().get(file_mimetype.get_subtype()) {
