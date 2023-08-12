@@ -18,19 +18,20 @@ enum KeymapError {
     Conflict,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 struct CommandKeymap {
     pub command: String,
+    pub description: Option<String>,
     pub keys: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 struct AppModeKeyMapping {
     #[serde(default)]
     pub keymap: Vec<CommandKeymap>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 struct AppKeyMappingRaw {
     pub default_view: AppModeKeyMapping,
     pub task_view: AppModeKeyMapping,
@@ -80,7 +81,8 @@ fn vec_to_map(vec: &[CommandKeymap]) -> HashMap<Event, CommandKeybind> {
                 }
 
                 let command_str = command.command();
-                let result = insert_keycommand(&mut hashmap, command, &events);
+                let command_description = m.description.to_owned();
+                let result = insert_keycommand(&mut hashmap, command, command_description, &events);
                 match result {
                     Ok(_) => {}
                     Err(e) => match e {
@@ -125,6 +127,7 @@ impl std::default::Default for AppKeyMapping {
 fn insert_keycommand(
     keymap: &mut KeyMapping,
     keycommand: Command,
+    description: Option<String>,
     events: &[Event],
 ) -> Result<(), KeymapError> {
     let num_events = events.len();
@@ -136,7 +139,10 @@ fn insert_keycommand(
     if num_events == 1 {
         match keymap.entry(event) {
             Entry::Occupied(_) => return Err(KeymapError::Conflict),
-            Entry::Vacant(entry) => entry.insert(CommandKeybind::SimpleKeybind(keycommand)),
+            Entry::Vacant(entry) => entry.insert(CommandKeybind::SimpleKeybind {
+                command: keycommand,
+                description: description,
+            }),
         };
         return Ok(());
     }
@@ -144,13 +150,13 @@ fn insert_keycommand(
     match keymap.entry(event) {
         Entry::Occupied(mut entry) => match entry.get_mut() {
             CommandKeybind::CompositeKeybind(ref mut m) => {
-                insert_keycommand(m, keycommand, &events[1..])
+                insert_keycommand(m, keycommand, description, &events[1..])
             }
             _ => Err(KeymapError::Conflict),
         },
         Entry::Vacant(entry) => {
             let mut new_map = KeyMapping::new();
-            let result = insert_keycommand(&mut new_map, keycommand, &events[1..]);
+            let result = insert_keycommand(&mut new_map, keycommand, description, &events[1..]);
             if result.is_ok() {
                 let composite_command = CommandKeybind::CompositeKeybind(new_map);
                 entry.insert(composite_command);

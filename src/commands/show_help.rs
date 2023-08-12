@@ -48,7 +48,7 @@ pub fn help_loop(
                         Event::Key(Key::Char('3')) => sort_by = 2,
                         Event::Key(Key::Char('/')) => search_query.push('/'),
                         event => {
-                            if let Some(CommandKeybind::SimpleKeybind(command)) =
+                            if let Some(CommandKeybind::SimpleKeybind { command, .. }) =
                                 keymap_t.help_view.get(&event)
                             {
                                 match command {

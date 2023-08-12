@@ -40,8 +40,8 @@ pub fn poll_event_until_simple_keybind<'a>(
                     match event {
                         Event::Key(Key::Esc) => return None,
                         event => match keymap.get(&event) {
-                            Some(CommandKeybind::SimpleKeybind(s)) => {
-                                return Some(s);
+                            Some(CommandKeybind::SimpleKeybind { command, .. }) => {
+                                return Some(command);
                             }
                             Some(CommandKeybind::CompositeKeybind(m)) => {
                                 keymap = m;

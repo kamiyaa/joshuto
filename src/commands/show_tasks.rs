@@ -28,7 +28,7 @@ pub fn show_tasks(
                                 .message_queue_mut()
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
+                        Some(CommandKeybind::SimpleKeybind { command, .. }) => {
                             if let Command::ShowTasks = command {
                                 break;
                             }
