@@ -52,7 +52,7 @@ pub fn numbered_command(
                         prefix.push(c);
                     }
                     key => match keymap.default_view.get(&key) {
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
+                        Some(CommandKeybind::SimpleKeybind { command, .. }) => {
                             return command.numbered_execute(num_prefix, context, backend, keymap);
                         }
                         _ => {

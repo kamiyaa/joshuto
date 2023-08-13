@@ -83,7 +83,7 @@ pub fn run_loop(
                                 .message_queue_mut()
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
-                        Some(CommandKeybind::SimpleKeybind(command)) => {
+                        Some(CommandKeybind::SimpleKeybind { command, .. }) => {
                             if let Err(e) = command.execute(context, backend, &keymap_t) {
                                 context.message_queue_mut().push_error(e.to_string());
                             }

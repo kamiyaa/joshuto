@@ -4,6 +4,7 @@ use crate::commands::case_sensitivity::SetType;
 use crate::commands::quit::QuitAction;
 use crate::config::option::{
     CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
+    TabBarDisplayMode,
 };
 use crate::io::FileOperationOptions;
 
@@ -29,7 +30,9 @@ pub enum Command {
     CopyFiles,
     CopyFileName,
     CopyFileNameWithoutExtension,
-    CopyFilePath,
+    CopyFilePath {
+        all_selected: bool,
+    },
     CopyDirPath,
     SymlinkFiles {
         relative: bool,
@@ -139,6 +142,7 @@ pub enum Command {
         pattern: String,
     },
 
+    SetTabBarDisplayMode(TabBarDisplayMode),
     NewTab {
         mode: NewTabMode,
     },

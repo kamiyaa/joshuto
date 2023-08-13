@@ -41,7 +41,10 @@ impl AppExecute for Command {
             Self::CopyFileNameWithoutExtension => {
                 file_ops::copy_filename_without_extension(context)
             }
-            Self::CopyFilePath => file_ops::copy_filepath(context),
+            Self::CopyFilePath {
+                all_selected: false,
+            } => file_ops::copy_filepath(context, false),
+            Self::CopyFilePath { all_selected: true } => file_ops::copy_filepath(context, true),
             Self::CopyDirPath => file_ops::copy_dirpath(context),
             Self::SymlinkFiles { relative: true } => file_ops::symlink_relative(context),
             Self::SymlinkFiles { relative: false } => file_ops::symlink_absolute(context),
@@ -132,9 +135,11 @@ impl AppExecute for Command {
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
+            Self::SetTabBarDisplayMode(mode) => {
+                tab_bar_mode::set_tab_bar_display_mode(context, mode)
+            }
             Self::TabSwitch { offset } => {
-                tab_ops::tab_switch(context, *offset)?;
-                Ok(())
+                tab_ops::tab_switch(context, *offset).map_err(|e| e.into())
             }
             Self::TabSwitchIndex { index } => tab_ops::tab_switch_index(context, *index),
             Self::Help => show_help::help_loop(context, backend, keymap_t),

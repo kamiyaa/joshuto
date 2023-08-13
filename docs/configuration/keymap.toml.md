@@ -271,8 +271,12 @@ function joshuto() {
 - `--permanently`: force permanent deletion regardless of `use_trash` value.
 - will **_permanently_** delete files if `use_trash` is `false` in
   [joshuto.toml](https://github.com/kamiyaa/joshuto)/wiki/Configuration#joshutotoml)
-- if `use_trash` is `true`, this might cause issues with deleting files
-  on mounted filesystems such as on an external hard drive or tmpfs
+- if `use_trash` is `true`, `joshuto` will try to use
+  the following command-line tools to try to put the files in the trash can instead
+  of permanently deleting them
+  - `gio trash`
+  - `trash-put`: https://github.com/andreafrancia/trash-cli
+  - `trash`
 
 ### `rename`: rename the current file the cursor is on
 

@@ -14,7 +14,6 @@ pub enum JoshutoErrorKind {
     ClipboardError,
     TomlDeError(toml::de::Error),
 
-    #[cfg(feature = "recycle_bin")]
     TrashError,
 
     Glob,
@@ -23,6 +22,8 @@ pub enum JoshutoErrorKind {
 
     UnrecognizedArgument,
     UnrecognizedCommand,
+
+    UnknownError,
 }
 
 impl From<io::ErrorKind> for JoshutoErrorKind {

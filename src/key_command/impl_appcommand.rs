@@ -25,7 +25,7 @@ impl AppCommand for Command {
             Self::CopyFiles => CMD_COPY_FILES,
             Self::CopyFileName => CMD_COPY_FILENAME,
             Self::CopyFileNameWithoutExtension => CMD_COPY_FILENAME_WITHOUT_EXTENSION,
-            Self::CopyFilePath => CMD_COPY_FILEPATH,
+            Self::CopyFilePath { .. } => CMD_COPY_FILEPATH,
             Self::CopyDirPath => CMD_COPY_DIRECTORY_PATH,
             Self::SymlinkFiles { .. } => CMD_SYMLINK_FILES,
             Self::PasteFiles { .. } => CMD_PASTE_FILES,
@@ -83,6 +83,7 @@ impl AppCommand for Command {
             Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
             Self::SetLineMode(_) => CMD_SET_LINEMODE,
 
+            Self::SetTabBarDisplayMode(_) => CMD_SET_TAB_BAR_MODE,
             Self::TabSwitch { .. } => CMD_TAB_SWITCH,
             Self::TabSwitchIndex { .. } => CMD_TAB_SWITCH_INDEX,
             Self::ToggleHiddenFiles => CMD_TOGGLE_HIDDEN,

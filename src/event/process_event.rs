@@ -10,6 +10,7 @@ use uuid::Uuid;
 use crate::commands::{cursor_move, parent_cursor_move, reload};
 use crate::config::{AppKeyMapping, KeyMapping};
 use crate::context::AppContext;
+use crate::error::JoshutoResult;
 use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
@@ -39,8 +40,8 @@ pub fn poll_event_until_simple_keybind<'a>(
                     match event {
                         Event::Key(Key::Esc) => return None,
                         event => match keymap.get(&event) {
-                            Some(CommandKeybind::SimpleKeybind(s)) => {
-                                return Some(s);
+                            Some(CommandKeybind::SimpleKeybind { command, .. }) => {
+                                return Some(command);
                             }
                             Some(CommandKeybind::CompositeKeybind(m)) => {
                                 keymap = m;
@@ -90,7 +91,7 @@ pub fn process_worker_progress(context: &mut AppContext, res: FileOperationProgr
 
 pub fn process_finished_worker(
     context: &mut AppContext,
-    res: std::io::Result<FileOperationProgress>,
+    res: JoshutoResult<FileOperationProgress>,
 ) {
     let worker_context = context.worker_context_mut();
     let observer = worker_context.remove_worker().unwrap();

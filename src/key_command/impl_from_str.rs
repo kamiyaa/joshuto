@@ -4,6 +4,7 @@ use crate::commands::case_sensitivity::SetType;
 use crate::commands::quit::QuitAction;
 use crate::config::option::{
     CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
+    TabBarDisplayMode,
 };
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::FileOperationOptions;
@@ -75,7 +76,7 @@ impl std::str::FromStr for Command {
             CMD_COPY_FILENAME_WITHOUT_EXTENSION,
             Self::CopyFileNameWithoutExtension
         );
-        simple_command_conversion_case!(command, CMD_COPY_FILEPATH, Self::CopyFilePath);
+        // simple_command_conversion_case!(command, CMD_COPY_FILEPATH, Self::CopyFilePath);
         simple_command_conversion_case!(command, CMD_COPY_DIRECTORY_PATH, Self::CopyDirPath);
 
         simple_command_conversion_case!(command, CMD_OPEN_FILE, Self::OpenFile);
@@ -231,6 +232,21 @@ impl std::str::FromStr for Command {
                 }
             }
             Ok(Self::SymlinkFiles { relative })
+        } else if command == CMD_COPY_FILEPATH {
+            let mut all_selected = false;
+            for arg in arg.split_whitespace() {
+                match arg {
+                    "--all-selected=true" => all_selected = true,
+                    "" => all_selected = false,
+                    _ => {
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::UnrecognizedArgument,
+                            format!("{}: unknown option '{}'", command, arg),
+                        ));
+                    }
+                }
+            }
+            Ok(Self::CopyFilePath { all_selected })
         } else if command == CMD_PASTE_FILES {
             let mut options = FileOperationOptions::default();
             for arg in arg.split_whitespace() {
@@ -387,6 +403,10 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_SET_LINEMODE {
             Ok(Self::SetLineMode(LineMode::from_string(arg)?))
+        } else if command == CMD_SET_TAB_BAR_MODE {
+            Ok(Self::SetTabBarDisplayMode(TabBarDisplayMode::from_str(
+                arg,
+            )?))
         } else if command == CMD_TAB_SWITCH {
             match arg.parse::<i32>() {
                 Ok(s) => Ok(Self::TabSwitch { offset: s }),

@@ -32,8 +32,7 @@ impl<'a> Widget for TuiTopBar<'a> {
         let mut ellipses = None;
         let mut curr_path_str = self.path.to_string_lossy().into_owned();
 
-        let num_tabs = self.context.tab_context_ref().len();
-        let tab_width = num_tabs * 8;
+        let tab_width = self.context.tab_context_ref().tab_area_width();
         let name_width = USERNAME.as_str().len() + HOSTNAME.as_str().len() + 2;
 
         if tab_width + name_width > area.width as usize {
@@ -79,24 +78,19 @@ impl<'a> Widget for TuiTopBar<'a> {
                 .add_modifier(Modifier::BOLD)
         };
 
-        let text = match ellipses {
-            Some(s) => Line::from(vec![
-                Span::styled(USERNAME.as_str(), username_style),
-                Span::styled("@", username_style),
-                Span::styled(HOSTNAME.as_str(), username_style),
-                Span::styled(" ", username_style),
-                s,
-                Span::styled(curr_path_str, path_style),
-            ]),
-            None => Line::from(vec![
-                Span::styled(USERNAME.as_str(), username_style),
-                Span::styled("@", username_style),
-                Span::styled(HOSTNAME.as_str(), username_style),
-                Span::styled(" ", username_style),
-                Span::styled(curr_path_str, path_style),
-            ]),
-        };
+        let mut text = vec![
+            Span::styled(USERNAME.as_str(), username_style),
+            Span::styled("@", username_style),
+            Span::styled(HOSTNAME.as_str(), username_style),
+            Span::styled(" ", username_style),
+        ];
 
-        Paragraph::new(text).render(area, buf);
+        if let Some(s) = ellipses {
+            text.push(s);
+        }
+
+        text.extend([Span::styled(curr_path_str, path_style)]);
+
+        Paragraph::new(Line::from(text)).render(area, buf);
     }
 }

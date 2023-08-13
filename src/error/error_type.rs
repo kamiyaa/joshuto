@@ -56,17 +56,6 @@ impl From<std::env::VarError> for JoshutoError {
     }
 }
 
-#[cfg(feature = "recycle_bin")]
-impl From<trash::Error> for JoshutoError {
-    fn from(err: trash::Error) -> Self {
-        let cause = err.to_string();
-        Self {
-            _kind: JoshutoErrorKind::TrashError,
-            _cause: cause,
-        }
-    }
-}
-
 impl From<toml::de::Error> for JoshutoError {
     fn from(err: toml::de::Error) -> Self {
         let cause = err.to_string();

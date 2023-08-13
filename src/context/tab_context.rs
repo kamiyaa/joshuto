@@ -3,18 +3,23 @@ use std::collections::HashMap;
 
 use uuid::Uuid;
 
+use crate::config::option::{TabBarDisplayMode, TabBarDisplayOption};
 use crate::tab::JoshutoTab;
 
 #[derive(Default)]
 pub struct TabContext {
     pub index: usize,
     pub tab_order: Vec<Uuid>,
+    pub display: TabBarDisplayOption,
     tabs: HashMap<Uuid, JoshutoTab>,
 }
 
 impl TabContext {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(display: TabBarDisplayOption) -> Self {
+        Self {
+            display,
+            ..Default::default()
+        }
     }
     pub fn len(&self) -> usize {
         self.tab_order.len()
@@ -55,5 +60,33 @@ impl TabContext {
 
     pub fn iter_mut(&mut self) -> IterMut<Uuid, JoshutoTab> {
         self.tabs.iter_mut()
+    }
+
+    pub fn tab_title_width(&self) -> usize {
+        self.tabs
+            .values()
+            .map(|tab| {
+                let title_len = tab.tab_title().len();
+                (title_len > self.display.max_len)
+                    .then(|| self.display.max_len)
+                    .unwrap_or(title_len)
+            })
+            .sum()
+    }
+
+    pub fn tab_area_width(&self) -> usize {
+        let width_without_divider = match self.display.mode {
+            TabBarDisplayMode::Number => (1..=self.len()).map(|n| n.to_string().len() + 2).sum(), // each number has a horizontal padding(1 char width)
+            TabBarDisplayMode::Directory => self.tab_title_width(),
+            TabBarDisplayMode::All => {
+                // [number][: ](width = 2)[title]
+                self.tab_title_width()
+                    + (1..=self.len())
+                        .map(|n| n.to_string().len() + 2)
+                        .sum::<usize>()
+            }
+        };
+
+        width_without_divider + 3 * (self.len() - 1)
     }
 }
