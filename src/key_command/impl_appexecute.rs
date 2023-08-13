@@ -53,7 +53,14 @@ impl AppExecute for Command {
             Self::DeleteFiles {
                 background,
                 permanently,
-            } => delete_files::delete_selected_files(context, backend, *background, *permanently),
+                noconfirm,
+            } => delete_files::delete_selected_files(
+                context,
+                backend,
+                *background,
+                *permanently,
+                *noconfirm,
+            ),
 
             Self::CursorMoveUp { offset } => cursor_move::up(context, *offset),
             Self::CursorMoveDown { offset } => cursor_move::down(context, *offset),

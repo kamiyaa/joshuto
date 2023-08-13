@@ -263,12 +263,13 @@ impl std::str::FromStr for Command {
             }
             Ok(Self::PasteFiles { options })
         } else if command == CMD_DELETE_FILES {
-            let (mut permanently, mut background) = (false, false);
+            let [mut permanently, mut background, mut noconfirm] = [false; 3];
             for arg in arg.split_whitespace() {
                 match arg {
                     "--background=true" => background = true,
                     "--background=false" => background = false,
                     "--permanently" => permanently = true,
+                    "--noconfirm" => noconfirm = true,
                     _ => {
                         return Err(JoshutoError::new(
                             JoshutoErrorKind::UnrecognizedArgument,
@@ -280,6 +281,7 @@ impl std::str::FromStr for Command {
             Ok(Self::DeleteFiles {
                 background,
                 permanently,
+                noconfirm,
             })
         } else if command == CMD_RENAME_FILE {
             match arg {
