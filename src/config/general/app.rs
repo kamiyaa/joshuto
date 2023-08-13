@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use super::app_raw::AppConfigRaw;
 use super::DEFAULT_CONFIG_FILE_PATH;
 
-use crate::config::option::{DisplayOption, PreviewOption, TabOption};
+use crate::config::option::{DisplayOption, PreviewOption, SearchOption, TabOption};
 use crate::error::JoshutoResult;
 
 #[derive(Debug, Clone)]
@@ -15,6 +15,7 @@ pub struct AppConfig {
     pub cmd_aliases: HashMap<String, String>,
     pub _display_options: DisplayOption,
     pub _preview_options: PreviewOption,
+    pub _search_options: SearchOption,
     pub _tab_options: TabOption,
 }
 
@@ -36,6 +37,14 @@ impl AppConfig {
     }
     pub fn _preview_options_mut(&mut self) -> &mut PreviewOption {
         &mut self._preview_options
+    }
+
+    pub fn search_options_ref(&self) -> &SearchOption {
+        &self._search_options
+    }
+
+    pub fn search_options_mut(&mut self) -> &mut SearchOption {
+        &mut self._search_options
     }
 
     pub fn tab_options_ref(&self) -> &TabOption {

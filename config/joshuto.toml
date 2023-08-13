@@ -38,6 +38,14 @@ reverse = false
 max_preview_size = 2097152                           # 2MB
 preview_script = "~/.config/joshuto/preview_file.sh" # make sure it's marked as executable
 
+[search]
+# insensitive, sensitive, smart
+string_case_sensitivity = "insensitive"
+# see above
+glob_case_sensitivity = "sensitive"
+# see above
+fzf_case_sensitivity = "insensitive"
+
 [tab]
 # inherit, home, root
 home_page = "home"

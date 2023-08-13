@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
+use crate::config::option::CaseSensitivity;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::AppBackend;
@@ -10,7 +11,26 @@ use super::change_directory::change_directory;
 pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
     backend.terminal_drop();
 
-    let fzf = Command::new("fzf").stdout(Stdio::piped()).spawn()?;
+    let mut cmd = Command::new("fzf");
+    cmd.stdout(Stdio::piped());
+
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .fzf_case_sensitivity;
+
+    match case_sensitivity {
+        CaseSensitivity::Insensitive => {
+            cmd.arg("-i");
+        }
+        CaseSensitivity::Sensitive => {
+            cmd.arg("+i");
+        }
+        // fzf uses smart-case match by default
+        CaseSensitivity::Smart => {}
+    }
+
+    let fzf = cmd.spawn()?;
 
     let fzf_output = fzf.wait_with_output();
 

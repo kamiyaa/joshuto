@@ -313,9 +313,7 @@ function joshuto() {
 
 ### `search`: search the current directory via a string
 
-- case insensitive
-
-### `search_glob`: search the current directory via shell globbing
+### `search_glob`: search the current directory via shell globbing (exact match)
 
 - `:search_glob *.png`
 
@@ -341,18 +339,36 @@ keymap = [ //..
 ]
 ```
 
-### `filter`:Case insensitively filter the current directory list.
+### `filter`: filter the current directory list.
 
 - `:filter ca`: filter the current directory and show only items with `ca` in the name
 
-### `toggle_visual`: Enables or disables “visual mode”.
+### `toggle_visual`: enables or disables “visual mode”.
 
 When disabling, the current “visual mode selection” is turned into normal selection.
 (See also [Visual Mode](../misc.md#visual-mode).)
 
-### `escape`: Leave visual mode and withdraw the visual-mode-selection.
+### `escape`: leave visual mode and withdraw the visual-mode-selection.
 
 (See also [Visual Mode](../misc.md#visual-mode).)
+
+### `set_case_sensitivity`: set case sensitivity for different search operations.
+
+- Options
+  - `--type=string`: change configurations of operations using substring matching
+  - `--type=glob`: change configurations of operations using glob matching
+  - `--type=fzf`: change configurations of operations using fzf 
+  - when no option is added, type is set to `string` by default
+- Value
+  - `insensitive`
+  - `sensitive`
+  - `smart`
+
+An example:
+
+```
+:set_case_sensitivity --type=fzf sensitive
+```
 
 ## Bookmarks
 

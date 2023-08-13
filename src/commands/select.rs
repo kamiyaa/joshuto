@@ -1,7 +1,5 @@
-use globset::Glob;
-
 use crate::config::option::SelectOption;
-use crate::context::AppContext;
+use crate::context::{AppContext, MatchContext};
 use crate::error::JoshutoResult;
 
 use super::cursor_move;
@@ -54,13 +52,18 @@ fn select_with_pattern(
     pattern: &str,
     options: &SelectOption,
 ) -> JoshutoResult {
-    let glob = Glob::new(pattern)?.compile_matcher();
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .glob_case_sensitivity;
+
+    let select_context = MatchContext::new_glob(pattern, case_sensitivity)?;
 
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         let mut found = 0;
         curr_list
             .iter_mut()
-            .filter(|e| glob.is_match(e.file_name()))
+            .filter(|e| select_context.is_match(e.file_name()))
             .for_each(|e| {
                 found += 1;
                 if options.reverse {

@@ -1,8 +1,10 @@
 use std::path;
 
+use crate::commands::case_sensitivity::SetType;
 use crate::commands::quit::QuitAction;
 use crate::config::option::{
-    LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType, TabBarDisplayMode,
+    CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
+    TabBarDisplayMode,
 };
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::FileOperationOptions;
@@ -336,6 +338,37 @@ impl std::str::FromStr for Command {
                         pattern: pattern.to_string(),
                         options,
                     })
+                }
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SET_CASE_SENSITIVITY {
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    let mut set_type = SetType::String;
+                    let mut value = "";
+
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--type=string" => set_type = SetType::String,
+                            "--type=glob" => set_type = SetType::Glob,
+                            "--type=fzf" => set_type = SetType::Fzf,
+                            s => value = s,
+                        }
+                    }
+
+                    match CaseSensitivity::from_str(value) {
+                        Ok(case_sensitivity) => Ok(Self::SetCaseSensitivity {
+                            case_sensitivity,
+                            set_type,
+                        }),
+                        Err(e) => Err(JoshutoError::new(
+                            JoshutoErrorKind::InvalidParameters,
+                            format!("{}: {}", arg, e),
+                        )),
+                    }
                 }
                 Err(e) => Err(JoshutoError::new(
                     JoshutoErrorKind::InvalidParameters,

@@ -95,6 +95,7 @@ impl CommandComment for Command {
             Self::SearchPrev => "Previous search entry",
 
             Self::SelectFiles { .. } => "Select file",
+            Self::SetCaseSensitivity { .. } => "Set case sensitivity",
             Self::SetMode => "Set file permissions",
             Self::SubProcess { spawn: false, .. } => "Run a shell command",
             Self::SubProcess { spawn: true, .. } => "Run command in background",

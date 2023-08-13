@@ -92,8 +92,8 @@ impl<'a> Widget for TuiFooter<'a> {
                     ),
                     Span::styled(
                         match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
-                            Some(opt) if !opt.filter_string_ref().is_empty() => {
-                                format!("filter:{} ", opt.filter_string_ref())
+                            Some(opt) if !opt.filter_context_ref().is_none() => {
+                                format!("filter:{} ", opt.filter_context_ref())
                             }
                             _ => "".to_owned(),
                         },

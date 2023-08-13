@@ -3,6 +3,7 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 
 use crate::commands::cursor_move;
+use crate::config::option::CaseSensitivity;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::AppBackend;
@@ -31,11 +32,26 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
 
     backend.terminal_drop();
 
-    let mut fzf = match Command::new("fzf")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()
-    {
+    let mut cmd = Command::new("fzf");
+    cmd.stdin(Stdio::piped()).stdout(Stdio::piped());
+
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .fzf_case_sensitivity;
+
+    match case_sensitivity {
+        CaseSensitivity::Insensitive => {
+            cmd.arg("-i");
+        }
+        CaseSensitivity::Sensitive => {
+            cmd.arg("+i");
+        }
+        // fzf uses smart-case match by default
+        CaseSensitivity::Smart => {}
+    }
+
+    let mut fzf = match cmd.spawn() {
         Ok(child) => child,
         Err(e) => {
             backend.terminal_restore()?;

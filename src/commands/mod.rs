@@ -1,5 +1,6 @@
 pub mod bookmark;
 pub mod bulk_rename;
+pub mod case_sensitivity;
 pub mod change_directory;
 pub mod command_line;
 pub mod cursor_move;

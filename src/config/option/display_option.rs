@@ -4,6 +4,7 @@ use ratatui::layout::Constraint;
 
 use crate::config::option::LineMode;
 use crate::config::option::SortOption;
+use crate::context::MatchContext;
 
 #[derive(Clone, Copy, Debug)]
 pub enum DisplayMode {
@@ -36,7 +37,7 @@ pub struct DisplayOption {
 /// Display options valid pre JoshutoDirList in a JoshutoTab
 #[derive(Clone, Debug, Default)]
 pub struct DirListDisplayOptions {
-    filter_string: String,
+    filter_context: MatchContext,
     depth: u8,
 }
 
@@ -67,12 +68,12 @@ impl LineNumberStyle {
 }
 
 impl DirListDisplayOptions {
-    pub fn set_filter_string(&mut self, pattern: &str) {
-        self.filter_string = pattern.to_owned();
+    pub fn set_filter_context(&mut self, filter_context: MatchContext) {
+        self.filter_context = filter_context;
     }
 
-    pub fn filter_string_ref(&self) -> &str {
-        &self.filter_string
+    pub fn filter_context_ref(&self) -> &MatchContext {
+        &self.filter_context
     }
 
     pub fn set_depth(&mut self, depth: u8) {
@@ -192,18 +193,6 @@ impl std::default::Default for DisplayOption {
     }
 }
 
-fn has_str(entry: &walkdir::DirEntry, pat: &str) -> bool {
-    entry
-        .file_name()
-        .to_str()
-        .map(|s| {
-            s.to_ascii_lowercase()
-                .as_str()
-                .contains(pat.to_ascii_lowercase().as_str())
-        })
-        .unwrap_or(false)
-}
-
 fn is_hidden(entry: &walkdir::DirEntry) -> bool {
     entry
         .file_name()
@@ -217,13 +206,18 @@ fn filter(
     opt: &DisplayOption,
     dirlist_opts: &DirListDisplayOptions,
 ) -> bool {
-    if opt.show_hidden() && dirlist_opts.filter_string_ref().is_empty() {
-        true
-    } else if dirlist_opts.filter_string_ref().is_empty() {
-        !is_hidden(entry)
-    } else if opt.show_hidden() || !is_hidden(entry) {
-        has_str(entry, dirlist_opts.filter_string_ref())
-    } else {
-        false
+    if !opt.show_hidden() && is_hidden(entry) {
+        return false;
     }
+
+    let file_name = match entry.file_name().to_str() {
+        Some(s) => s,
+        None => return false,
+    };
+
+    if !dirlist_opts.filter_context_ref().is_match(file_name) {
+        return false;
+    }
+
+    true
 }

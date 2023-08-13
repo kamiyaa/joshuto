@@ -65,6 +65,7 @@ impl AppCommand for Command {
             Self::SearchPrev => CMD_SEARCH_PREV,
 
             Self::SelectFiles { .. } => CMD_SELECT_FILES,
+            Self::SetCaseSensitivity { .. } => CMD_SET_CASE_SENSITIVITY,
             Self::SetMode => CMD_SET_MODE,
 
             Self::ShowTasks => CMD_SHOW_TASKS,
