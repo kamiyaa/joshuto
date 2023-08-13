@@ -27,17 +27,19 @@ impl std::fmt::Display for Command {
             Self::DeleteFiles {
                 background,
                 permanently,
+                noconfirm,
             } => {
                 write!(
                     f,
-                    "{}{}{}",
+                    "{}{}{}{}",
                     self.command(),
                     if !background {
                         " --foreground=true"
                     } else {
                         ""
                     },
-                    if *permanently { " --permanently" } else { "" }
+                    if *permanently { " --permanently" } else { "" },
+                    if *noconfirm { " --noconfirm" } else { "" },
                 )
             }
 

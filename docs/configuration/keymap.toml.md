@@ -269,6 +269,8 @@ function joshuto() {
 
 - `--foreground=true`: will delete files in the foreground
 - `--permanently`: force permanent deletion regardless of `use_trash` value.
+- `--noconfirm`: files will be deleted without asking for confirmation
+  (can be dangerous when `use_trash` is `false`)
 - will **_permanently_** delete files if `use_trash` is `false` in
   [joshuto.toml](https://github.com/kamiyaa/joshuto)/wiki/Configuration#joshutotoml)
 - if `use_trash` is `true`, `joshuto` will try to use
