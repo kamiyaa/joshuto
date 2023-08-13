@@ -32,7 +32,6 @@ signal-hook = "^0"
 structopt = "^0"
 termion = "^2"
 toml = "^0"
-trash = { version = "^3", optional = true }
 unicode-segmentation = "^1"
 unicode-width = "^0"
 whoami = "^1"
@@ -58,6 +57,5 @@ features = ["v4", "fast-rng", "macro-diagnostics"]
 devicons = ["phf"]
 file_mimetype = []
 mouse = []
-recycle_bin = ["trash"]
 syntax_highlight = ["ansi-to-tui"]
-default = ["devicons", "mouse", "recycle_bin", "syntax_highlight"]
+default = ["devicons", "mouse", "syntax_highlight"]

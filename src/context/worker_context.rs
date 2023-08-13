@@ -3,6 +3,7 @@ use std::collections::{HashMap, VecDeque};
 use std::sync::mpsc;
 use std::thread;
 
+use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::event::AppEvent;
 use crate::io::{FileOperationProgress, IoWorkerObserver, IoWorkerThread};
 
@@ -86,7 +87,10 @@ impl WorkerContext {
                         let _ = tx.send(AppEvent::IoWorkerResult(res));
                     }
                     Err(_) => {
-                        let err = std::io::Error::new(std::io::ErrorKind::Other, "Sending Error");
+                        let err = JoshutoError::new(
+                            JoshutoErrorKind::UnknownError,
+                            "Sending Error".to_string(),
+                        );
                         let _ = tx.send(AppEvent::IoWorkerResult(Err(err)));
                     }
                 }

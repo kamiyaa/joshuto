@@ -1,11 +1,15 @@
 use std::fs;
 use std::io;
 use std::path;
+use std::process::{Command, Stdio};
 use std::sync::mpsc;
 
 #[cfg(unix)]
 use std::os::unix;
 
+use crate::error::JoshutoError;
+use crate::error::JoshutoErrorKind;
+use crate::error::JoshutoResult;
 use crate::io::{FileOperation, FileOperationOptions, FileOperationProgress};
 use crate::util::fs::query_number_of_items;
 use crate::util::name_resolution::rename_filename_conflict;
@@ -40,7 +44,7 @@ impl IoWorkerThread {
     pub fn start(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> io::Result<FileOperationProgress> {
+    ) -> JoshutoResult<FileOperationProgress> {
         match self.kind() {
             FileOperation::Cut => self.paste_cut(tx),
             FileOperation::Copy => self.paste_copy(tx),
@@ -53,7 +57,7 @@ impl IoWorkerThread {
     fn paste_copy(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> io::Result<FileOperationProgress> {
+    ) -> JoshutoResult<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
         let mut progress = FileOperationProgress::new(
             self.kind(),
@@ -79,7 +83,7 @@ impl IoWorkerThread {
     fn paste_cut(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> io::Result<FileOperationProgress> {
+    ) -> JoshutoResult<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
         let mut progress = FileOperationProgress::new(
             self.kind(),
@@ -105,7 +109,7 @@ impl IoWorkerThread {
     fn paste_link_absolute(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> io::Result<FileOperationProgress> {
+    ) -> JoshutoResult<FileOperationProgress> {
         let total_files = self.paths.len();
         let total_bytes = total_files as u64;
         let mut progress = FileOperationProgress::new(
@@ -137,7 +141,7 @@ impl IoWorkerThread {
     fn paste_link_relative(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> io::Result<FileOperationProgress> {
+    ) -> JoshutoResult<FileOperationProgress> {
         let total_files = self.paths.len();
         let total_bytes = total_files as u64;
         let mut progress = FileOperationProgress::new(
@@ -190,7 +194,7 @@ impl IoWorkerThread {
     fn delete(
         &self,
         _tx: mpsc::Sender<FileOperationProgress>,
-    ) -> io::Result<FileOperationProgress> {
+    ) -> JoshutoResult<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
         let progress = FileOperationProgress::new(
             self.kind(),
@@ -200,15 +204,11 @@ impl IoWorkerThread {
             total_bytes,
             total_bytes,
         );
-        #[cfg(feature = "recycle_bin")]
+
         if self.options.permanently {
             remove_files(&self.paths)?;
         } else {
             trash_files(&self.paths)?;
-        }
-        #[cfg(not(feature = "recycle_bin"))]
-        {
-            remove_files(&self.paths)?;
         }
 
         Ok(progress)
@@ -329,19 +329,6 @@ pub fn recursive_cut(
     }
 }
 
-#[cfg(feature = "recycle_bin")]
-fn trash_error_to_io_error(err: trash::Error) -> std::io::Error {
-    match err {
-        trash::Error::Unknown { description } => {
-            std::io::Error::new(std::io::ErrorKind::Other, description)
-        }
-        trash::Error::TargetedRoot => {
-            std::io::Error::new(std::io::ErrorKind::Other, "Targeted Root")
-        }
-        _ => std::io::Error::new(std::io::ErrorKind::Other, "Unknown Error"),
-    }
-}
-
 fn remove_files<P>(paths: &[P]) -> std::io::Result<()>
 where
     P: AsRef<path::Path>,
@@ -358,15 +345,42 @@ where
     Ok(())
 }
 
-#[cfg(feature = "recycle_bin")]
-fn trash_files<P>(paths: &[P]) -> std::io::Result<()>
+fn trash_files<P>(paths: &[P]) -> JoshutoResult
 where
     P: AsRef<path::Path>,
 {
     for path in paths {
-        if let Err(e) = trash::delete(path) {
-            return Err(trash_error_to_io_error(e));
-        }
+        trash_file(path)?;
     }
     Ok(())
+}
+
+fn trash_file<P>(file_path: P) -> JoshutoResult
+where
+    P: AsRef<path::Path>,
+{
+    let file_path_str = file_path.as_ref().as_os_str().to_string_lossy();
+
+    let clipboards = [
+        ("gio trash", format!("gio trash '{}'", file_path_str)),
+        ("trash-put", format!("trash-put '{}'", file_path_str)),
+        ("trash", format!("trash '{}'", file_path_str)),
+    ];
+
+    for (_, cmd) in clipboards.iter() {
+        let status = Command::new("sh")
+            .args(["-c", cmd.as_str()])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+
+        match status {
+            Ok(s) if s.success() => return Ok(()),
+            _ => {}
+        }
+    }
+    Err(JoshutoError::new(
+        JoshutoErrorKind::TrashError,
+        "Failed to trash file".to_string(),
+    ))
 }

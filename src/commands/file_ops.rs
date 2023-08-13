@@ -1,5 +1,5 @@
 use std::io;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use crate::context::{AppContext, LocalStateContext};
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
@@ -86,15 +86,26 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResul
     Ok(())
 }
 
-pub fn copy_filepath(context: &mut AppContext) -> JoshutoResult {
-    let entry_file_path = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-        .and_then(|c| c.curr_entry_ref())
-        .and_then(|entry| entry.file_path().to_str())
-        .map(|s| s.to_string());
-
+pub fn copy_filepath(context: &mut AppContext, all: bool) -> JoshutoResult {
+    let selected = context.tab_context_ref().curr_tab_ref().curr_list_ref();
+    let entry_file_path = {
+        if all {
+            selected.map(|c| c.get_selected_paths()).and_then(|sel| {
+                sel.into_iter().try_fold(String::new(), |mut acc, x| {
+                    if let Some(s) = x.to_str() {
+                        acc.push_str(s);
+                        acc.push('\n');
+                    }
+                    Some(acc)
+                })
+            })
+        } else {
+            selected
+                .and_then(|c| c.curr_entry_ref())
+                .and_then(|entry| entry.file_path().to_str())
+                .map(|s| s.to_string())
+        }
+    };
     if let Some(file_path) = entry_file_path {
         copy_string_to_buffer(file_path)?;
     }
@@ -118,27 +129,27 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult {
     let clipboards = [
         (
             "wl-copy",
-            format!("printf '%s' '{}' | {} 2> /dev/null", string, "wl-copy"),
+            format!("printf '%s' '{}' | {}", string, "wl-copy"),
         ),
-        (
-            "xsel",
-            format!("printf '%s' '{}' | {} -ib 2> /dev/null", string, "xsel"),
-        ),
-        (
-            "pbcopy",
-            format!("printf '%s' '{}' | {} 2> /dev/null", string, "pbcopy"),
-        ),
+        ("xsel", format!("printf '%s' '{}' | {} -ib", string, "xsel")),
+        ("pbcopy", format!("printf '%s' '{}' | {}", string, "pbcopy")),
         (
             "xclip",
             format!(
-                "printf '%s' '{}' | {} -selection clipboard 2> /dev/null",
+                "printf '%s' '{}' | {} -selection clipboard",
                 string, "xclip"
             ),
         ),
     ];
 
-    for (_, command) in clipboards.iter() {
-        match Command::new("sh").args(["-c", command.as_str()]).status() {
+    for (_, cmd) in clipboards.iter() {
+        let status = Command::new("sh")
+            .args(["-c", cmd.as_str()])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+
+        match status {
             Ok(s) if s.success() => return Ok(()),
             _ => {}
         }

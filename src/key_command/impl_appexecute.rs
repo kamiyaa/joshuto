@@ -41,7 +41,10 @@ impl AppExecute for Command {
             Self::CopyFileNameWithoutExtension => {
                 file_ops::copy_filename_without_extension(context)
             }
-            Self::CopyFilePath => file_ops::copy_filepath(context),
+            Self::CopyFilePath {
+                all_selected: false,
+            } => file_ops::copy_filepath(context, false),
+            Self::CopyFilePath { all_selected: true } => file_ops::copy_filepath(context, true),
             Self::CopyDirPath => file_ops::copy_dirpath(context),
             Self::SymlinkFiles { relative: true } => file_ops::symlink_relative(context),
             Self::SymlinkFiles { relative: false } => file_ops::symlink_absolute(context),
