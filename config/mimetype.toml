@@ -53,6 +53,7 @@ heic.inherit = "image_default"
 jpeg.inherit = "image_default"
 jpe.inherit = "image_default"
 jpg.inherit = "image_default"
+jxl.inherit = "image_default"
 pgm.inherit = "image_default"
 png.inherit = "image_default"
 ppm.inherit = "image_default"
@@ -68,11 +69,19 @@ tiff.app_list = [
 ]
 
 ## audio formats
+aac.inherit = "audio_default"
+ac3.inherit = "audio_default"
+aiff.inherit = "audio_default"
+ape.inherit = "audio_default"
+dts.inherit = "audio_default"
 flac.inherit = "audio_default"
 m4a.inherit = "audio_default"
 mp3.inherit = "audio_default"
+oga.inherit = "audio_default"
 ogg.inherit = "audio_default"
+opus.inherit = "audio_default"
 wav.inherit = "audio_default"
+wv.inherit = "audio_default"
 
 ## video formats
 avi.inherit = "video_default"
