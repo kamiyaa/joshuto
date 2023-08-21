@@ -319,6 +319,10 @@ function joshuto() {
 
 - `:search_glob *.png`
 
+### `search_regex`: search the current directory via regex (exact match)
+
+- `:search_regex .+\.(jpg|png|gif)`
+
 ### `search_next`: go to next search result in the current directory
 
 ### `search_prev`: go to previous search result in the current directory
@@ -359,6 +363,7 @@ When disabling, the current “visual mode selection” is turned into normal se
 - Options
   - `--type=string`: change configurations of operations using substring matching
   - `--type=glob`: change configurations of operations using glob matching
+  - `--type=regex`: change configurations of operations using regex
   - `--type=fzf`: change configurations of operations using fzf 
   - when no option is added, type is set to `string` by default
 - Value
