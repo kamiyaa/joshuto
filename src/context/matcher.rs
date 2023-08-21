@@ -110,7 +110,10 @@ impl MatchContext {
     }
 
     fn is_match_regex(main: &str, regex: &Regex) -> bool {
-        regex.is_match(main)
+        match regex.find(main) {
+            Some(res) => res.range() == (0..main.len()),
+            None => false,
+        }
     }
 
     fn is_match_string(

@@ -46,6 +46,7 @@ impl std::fmt::Display for Command {
             Self::RenameFile { new_name } => write!(f, "{} {:?}", self.command(), new_name),
 
             Self::SearchGlob { pattern } => write!(f, "{} {}", self.command(), pattern),
+            Self::SearchRegex { pattern } => write!(f, "{} {}", self.command(), pattern),
             Self::SearchString { pattern } => write!(f, "{} {}", self.command(), pattern),
             Self::SelectFiles { pattern, options } => {
                 write!(f, "{} {} {}", self.command(), pattern, options)

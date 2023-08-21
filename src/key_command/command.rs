@@ -102,6 +102,9 @@ pub enum Command {
     SearchGlob {
         pattern: String,
     },
+    SearchRegex {
+        pattern: String,
+    },
     SearchString {
         pattern: String,
     },

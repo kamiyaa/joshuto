@@ -61,6 +61,7 @@ impl AppCommand for Command {
             Self::SearchString { .. } => CMD_SEARCH_STRING,
             Self::SearchIncremental { .. } => CMD_SEARCH_INCREMENTAL,
             Self::SearchGlob { .. } => CMD_SEARCH_GLOB,
+            Self::SearchRegex { .. } => CMD_SEARCH_REGEX,
             Self::SearchNext => CMD_SEARCH_NEXT,
             Self::SearchPrev => CMD_SEARCH_PREV,
 

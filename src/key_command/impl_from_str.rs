@@ -320,6 +320,16 @@ impl std::str::FromStr for Command {
                     pattern: arg.to_string(),
                 }),
             }
+        } else if command == CMD_SEARCH_REGEX {
+            match arg {
+                "" => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: Expected 1, got 0", command),
+                )),
+                arg => Ok(Self::SearchRegex {
+                    pattern: arg.to_string(),
+                }),
+            }
         } else if command == CMD_SELECT_FILES {
             let mut options = SelectOption::default();
             let mut pattern = "";
@@ -356,6 +366,7 @@ impl std::str::FromStr for Command {
                         match arg.as_str() {
                             "--type=string" => set_type = SetType::String,
                             "--type=glob" => set_type = SetType::Glob,
+                            "--type=regex" => set_type = SetType::Regex,
                             "--type=fzf" => set_type = SetType::Fzf,
                             s => value = s,
                         }
