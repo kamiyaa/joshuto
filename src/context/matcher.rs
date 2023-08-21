@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 use globset::{GlobBuilder, GlobMatcher};
+use regex::Regex;
 
 use crate::config::option::CaseSensitivity;
 use crate::error::JoshutoResult;
@@ -8,6 +9,7 @@ use crate::error::JoshutoResult;
 #[derive(Clone, Debug, Default)]
 pub enum MatchContext {
     Glob(GlobMatcher),
+    Regex(Regex),
     String {
         pattern: String,
         actual_case_sensitivity: CaseSensitivity,
@@ -68,6 +70,7 @@ impl MatchContext {
     pub fn is_match(&self, main: &str) -> bool {
         match self {
             Self::Glob(glob_matcher) => Self::is_match_glob(main, glob_matcher),
+            Self::Regex(regex) => Self::is_match_regex(main, regex),
             Self::String {
                 pattern,
                 actual_case_sensitivity,
@@ -78,6 +81,10 @@ impl MatchContext {
 
     fn is_match_glob(main: &str, glob_matcher: &GlobMatcher) -> bool {
         glob_matcher.is_match(main)
+    }
+
+    fn is_match_regex(main: &str, regex: &Regex) -> bool {
+        regex.is_match(main)
     }
 
     fn is_match_string(
@@ -101,6 +108,7 @@ impl Display for MatchContext {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self {
             Self::Glob(glob_matcher) => write!(f, "{}", glob_matcher.glob().glob()),
+            Self::Regex(regex) => write!(f, "{}", regex.as_str()),
             Self::String { pattern, .. } => write!(f, "{pattern}"),
             Self::None => Ok(()),
         }
