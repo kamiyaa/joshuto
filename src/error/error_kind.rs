@@ -18,6 +18,8 @@ pub enum JoshutoErrorKind {
 
     Glob,
 
+    Regex,
+
     InvalidParameters,
 
     UnrecognizedArgument,

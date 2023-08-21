@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 use globset::{GlobBuilder, GlobMatcher};
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 
 use crate::config::option::CaseSensitivity;
 use crate::error::JoshutoResult;
@@ -44,6 +44,32 @@ impl MatchContext {
             .compile_matcher();
 
         Ok(Self::Glob(glob))
+    }
+
+    pub fn new_regex(pattern: &str, case_sensitivity: CaseSensitivity) -> JoshutoResult<Self> {
+        let pattern_lower = pattern.to_lowercase();
+
+        let (pattern, actual_case_sensitivity) = match case_sensitivity {
+            CaseSensitivity::Insensitive => (pattern_lower.as_str(), CaseSensitivity::Insensitive),
+            CaseSensitivity::Sensitive => (pattern, CaseSensitivity::Sensitive),
+            // Determine the actual case sensitivity by whether an uppercase letter occurs.
+            CaseSensitivity::Smart => {
+                if pattern_lower == pattern {
+                    (pattern_lower.as_str(), CaseSensitivity::Insensitive)
+                } else {
+                    (pattern, CaseSensitivity::Sensitive)
+                }
+            }
+        };
+
+        let re = RegexBuilder::new(pattern)
+            .case_insensitive(matches!(
+                actual_case_sensitivity,
+                CaseSensitivity::Insensitive
+            ))
+            .build()?;
+
+        Ok(Self::Regex(re))
     }
 
     pub fn new_string(pattern: &str, case_sensitivity: CaseSensitivity) -> Self {

@@ -44,6 +44,8 @@ string_case_sensitivity = "insensitive"
 # see above
 glob_case_sensitivity = "sensitive"
 # see above
+regex_case_sensitivity = "sensitive"
+# see above
 fzf_case_sensitivity = "insensitive"
 
 [tab]
