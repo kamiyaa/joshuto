@@ -129,7 +129,7 @@ jobs:
         id: is-release
         shell: bash
         run: |
-          unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^releases/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+          unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
           echo ::set-output name=IS_RELEASE::${IS_RELEASE}
       - name: Publish archives and packages
         uses: softprops/action-gh-release@v1
