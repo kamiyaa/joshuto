@@ -25,7 +25,7 @@ impl IoWorkerObserver {
     }
 
     pub fn join(self) -> bool {
-        matches!(self.handle.join(), Ok(_))
+        self.handle.join().is_ok()
     }
     pub fn set_progress(&mut self, progress: FileOperationProgress) {
         self.progress = Some(progress);

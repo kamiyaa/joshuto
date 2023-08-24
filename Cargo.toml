@@ -8,6 +8,7 @@ repository = "https://github.com/kamiyaa/joshuto"
 license = "LGPL-3.0"
 edition = "2021"
 keywords = ["tui-rs", "ranger", "file_manager", "termion"]
+categories = ['command-line-interface', 'command-line-utilities']
 
 [dependencies]
 ansi-to-tui = { version = "^3.1.0", optional = true }

@@ -46,7 +46,6 @@ pub fn load_preview_path(
         if need_to_load {
             preview_file::Background::preview_path_with_script(context, backend, p);
         }
-    } else {
     }
 }
 
