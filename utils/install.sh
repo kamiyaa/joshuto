@@ -4,6 +4,9 @@
 # bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
 # RELEASE_VER='v0.9.5' bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
 #
+# testing from fork:
+# REPO="kennycallado/joshuto" bash <(curl -s https://raw.githubusercontent.com/kennycallado/joshuto/master/utils/install.sh)
+#
 
 set -eo pipefail
 
