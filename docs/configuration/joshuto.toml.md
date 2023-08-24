@@ -99,6 +99,8 @@ reverse = false
 string_case_sensitivity = "insensitive"
 # For glob matching
 glob_case_sensitivity = "sensitive"
+# For regex matching
+regex_case_sensitivity = "sensitive"
 # For matching with fzf
 fzf_case_sensitivity = "insensitive"
 

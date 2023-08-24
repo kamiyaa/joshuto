@@ -7,6 +7,7 @@ use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 pub struct SearchOption {
     pub string_case_sensitivity: CaseSensitivity,
     pub glob_case_sensitivity: CaseSensitivity,
+    pub regex_case_sensitivity: CaseSensitivity,
     pub fzf_case_sensitivity: CaseSensitivity,
 }
 
@@ -22,6 +23,7 @@ impl std::default::Default for SearchOption {
         Self {
             string_case_sensitivity: CaseSensitivity::Insensitive,
             glob_case_sensitivity: CaseSensitivity::Sensitive,
+            regex_case_sensitivity: CaseSensitivity::Sensitive,
             fzf_case_sensitivity: CaseSensitivity::Insensitive,
         }
     }

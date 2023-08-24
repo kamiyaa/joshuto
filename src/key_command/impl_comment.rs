@@ -91,6 +91,7 @@ impl CommandComment for Command {
             Self::SearchString { .. } => "Search",
             Self::SearchIncremental { .. } => "Search as you type",
             Self::SearchGlob { .. } => "Search with globbing",
+            Self::SearchRegex { .. } => "Search with regex",
             Self::SearchNext => "Next search entry",
             Self::SearchPrev => "Previous search entry",
 

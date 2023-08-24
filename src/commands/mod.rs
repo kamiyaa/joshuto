@@ -22,6 +22,7 @@ pub mod rename_file;
 pub mod search;
 pub mod search_fzf;
 pub mod search_glob;
+pub mod search_regex;
 pub mod search_string;
 pub mod select;
 pub mod set_mode;

@@ -58,6 +58,7 @@ cmd_constants![
     (CMD_SEARCH_STRING, "search"),
     (CMD_SEARCH_INCREMENTAL, "search_inc"),
     (CMD_SEARCH_GLOB, "search_glob"),
+    (CMD_SEARCH_REGEX, "search_regex"),
     (CMD_SEARCH_NEXT, "search_next"),
     (CMD_SEARCH_PREV, "search_prev"),
     (CMD_SELECT_FILES, "select"),

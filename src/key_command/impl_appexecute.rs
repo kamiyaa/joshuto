@@ -105,6 +105,7 @@ impl AppExecute for Command {
             }
             Self::TouchFile { file_name } => touch_file::touch_file(context, file_name),
             Self::SearchGlob { pattern } => search_glob::search_glob(context, pattern.as_str()),
+            Self::SearchRegex { pattern } => search_regex::search_regex(context, pattern.as_str()),
             Self::SearchString { pattern } => {
                 search_string::search_string(context, pattern.as_str(), false);
                 Ok(())

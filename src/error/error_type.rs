@@ -46,6 +46,16 @@ impl From<globset::Error> for JoshutoError {
     }
 }
 
+impl From<regex::Error> for JoshutoError {
+    fn from(err: regex::Error) -> Self {
+        let cause = err.to_string();
+        Self {
+            _kind: JoshutoErrorKind::Regex,
+            _cause: cause,
+        }
+    }
+}
+
 impl From<std::env::VarError> for JoshutoError {
     fn from(err: std::env::VarError) -> Self {
         let cause = err.to_string();

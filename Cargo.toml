@@ -38,6 +38,7 @@ whoami = "^1"
 xdg = "^2"
 walkdir = "^2"
 bitflags = { version = "^2", features = ["serde"] }
+regex = "1.9.3"
 
 [dependencies.nix]
 version = "^0"
