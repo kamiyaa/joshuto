@@ -228,3 +228,33 @@ fn main() {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use clap::Parser;
+
+    use crate::{Args, Commands};
+
+    #[test]
+    fn test_command_new() {
+        Args::parse_from(["program_name"]);
+    }
+
+    #[test]
+    fn test_command_version() {
+        match Args::parse_from(["program_name", "version"]).commands {
+            Some(Commands::Version) => (),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn test_command_completions() {
+        for shell in ["bash", "zsh", "fish", "elvish", "powershell"] {
+            match Args::parse_from(["program_name", "completions", shell]).commands {
+                Some(Commands::Completions { shell: _ }) => {}
+                _ => panic!(),
+            }
+        }
+    }
+}
