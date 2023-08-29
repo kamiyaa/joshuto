@@ -16,6 +16,7 @@ ansi-to-tui = { version = "^3.1.0", optional = true }
 bitflags = { version = "^2", features = ["serde"] }
 chrono = "^0"
 clap = { version = "^4", features = ["derive"] }
+clap_complete = "^4"
 colors-transform = "^0"
 dirs-next = "^2"
 filetime = "^0"

@@ -14,7 +14,7 @@ mod traits;
 mod ui;
 mod util;
 
-use clap::Parser;
+use clap::{CommandFactory, Parser, Subcommand};
 use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::prelude::*;
@@ -91,6 +91,9 @@ lazy_static! {
 #[derive(Clone, Debug, Parser)]
 #[command(author, about)]
 pub struct Args {
+    #[command(subcommand)]
+    commands: Option<Commands>,
+
     #[arg(short = 'v', long = "version")]
     version: bool,
 
@@ -107,7 +110,20 @@ pub struct Args {
     rest: Vec<PathBuf>,
 }
 
+#[derive(Clone, Debug, Subcommand)]
+pub enum Commands {
+    #[command(about = "Show shell completions")]
+    Completions { shell: clap_complete::Shell },
+}
+
 fn run_main(args: Args) -> Result<i32, JoshutoError> {
+    if let Some(Commands::Completions { shell }) = args.commands {
+        let mut app = Args::command();
+        let bin_name = app.get_name().to_string();
+        clap_complete::generate(shell, &mut app, bin_name, &mut std::io::stdout());
+        return Ok(0);
+    }
+
     if args.version {
         let version = env!("CARGO_PKG_VERSION");
         println!("{}-{}", PROGRAM_NAME, version);
