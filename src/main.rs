@@ -14,13 +14,13 @@ mod traits;
 mod ui;
 mod util;
 
+use clap::Parser;
 use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
 use std::sync::Mutex;
-use structopt::StructOpt;
 
 use crate::commands::quit::QuitAction;
 
@@ -88,18 +88,23 @@ lazy_static! {
     };
 }
 
-#[derive(Clone, Debug, StructOpt)]
+#[derive(Clone, Debug, Parser)]
+#[command(author, about)]
 pub struct Args {
-    #[structopt(short = "v", long = "version")]
+    #[arg(short = 'v', long = "version")]
     version: bool,
-    #[structopt(long = "change-directory")]
+
+    #[arg(long = "change-directory")]
     change_directory: bool,
-    #[structopt(long = "file-chooser")]
+
+    #[arg(long = "file-chooser")]
     file_chooser: bool,
-    #[structopt(long = "output-file", parse(from_os_str))]
+
+    #[arg(long = "output-file")]
     output_file: Option<PathBuf>,
-    #[structopt(name = "ARGUMENTS")]
-    rest: Vec<String>,
+
+    #[arg(name = "ARGUMENTS")]
+    rest: Vec<PathBuf>,
 }
 
 fn run_main(args: Args) -> Result<i32, JoshutoError> {
@@ -108,10 +113,10 @@ fn run_main(args: Args) -> Result<i32, JoshutoError> {
         println!("{}-{}", PROGRAM_NAME, version);
         return Ok(0);
     }
-    if !args.rest.is_empty() {
-        let p = PathBuf::from(args.rest[0].as_str());
-        if let Err(e) = std::env::set_current_dir(p.as_path()) {
-            eprintln!("{}", e);
+
+    if let Some(path) = args.rest.first() {
+        if let Err(err) = std::env::set_current_dir(path) {
+            eprintln!("{err}");
             process::exit(1);
         }
     }
@@ -185,7 +190,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
 }
 
 fn main() {
-    let args = Args::from_args();
+    let args = Args::parse();
 
     match run_main(args) {
         Ok(exit_code) => process::exit(exit_code),
