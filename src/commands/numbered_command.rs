@@ -52,8 +52,11 @@ pub fn numbered_command(
                         prefix.push(c);
                     }
                     key => match keymap.default_view.get(&key) {
-                        Some(CommandKeybind::SimpleKeybind { command, .. }) => {
-                            return command.numbered_execute(num_prefix, context, backend, keymap);
+                        Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
+                            for command in commands {
+                                let _ =
+                                    command.numbered_execute(num_prefix, context, backend, keymap);
+                            }
                         }
                         _ => {
                             return Err(JoshutoError::new(

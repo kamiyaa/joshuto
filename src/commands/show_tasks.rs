@@ -15,7 +15,9 @@ pub fn show_tasks(
 ) -> JoshutoResult {
     context.flush_event();
 
-    loop {
+    let mut exit = false;
+
+    while !exit {
         backend.render(TuiWorkerView::new(context));
 
         if let Ok(event) = context.poll_event() {
@@ -28,17 +30,23 @@ pub fn show_tasks(
                                 .message_queue_mut()
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
-                        Some(CommandKeybind::SimpleKeybind { command, .. }) => {
-                            if let Command::ShowTasks = command {
-                                break;
+                        Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
+                            for command in commands {
+                                if let Command::ShowTasks = command {
+                                    exit = true;
+                                }
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let cmd =
+                            let commands =
                                 process_event::poll_event_until_simple_keybind(backend, context, m);
 
-                            if let Some(Command::ShowTasks) = cmd {
-                                break;
+                            if let Some(commands) = commands {
+                                for command in commands {
+                                    if let Command::ShowTasks = command {
+                                        exit = true;
+                                    }
+                                }
                             }
                         }
                     }

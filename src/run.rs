@@ -10,6 +10,7 @@ use crate::traits::ToString;
 use crate::ui;
 use crate::ui::views;
 use crate::ui::views::TuiView;
+use crate::ui::AppBackend;
 
 use uuid::Uuid;
 
@@ -61,57 +62,74 @@ pub fn run_loop(
             Err(_) => return Ok(()), // TODO
         };
 
-        // handle the event
-        match event {
-            AppEvent::Termion(Event::Mouse(event)) => {
-                process_event::process_mouse(event, context, backend, &keymap_t);
-                preview_default::load_preview(context, backend);
-            }
-            AppEvent::Termion(key) => {
-                if context.message_queue_ref().current_message().is_some() {
-                    context.message_queue_mut().pop_front();
-                }
-                match key {
-                    // in the event where mouse input is not supported
-                    // but we still want to register scroll
-                    Event::Unsupported(s) => {
-                        process_event::process_unsupported(context, backend, &keymap_t, s);
-                    }
-                    key => match keymap_t.default_view.get(&key) {
-                        None => {
-                            context
-                                .message_queue_mut()
-                                .push_info(format!("Unmapped input: {}", key.to_string()));
-                        }
-                        Some(CommandKeybind::SimpleKeybind { command, .. }) => {
-                            if let Err(e) = command.execute(context, backend, &keymap_t) {
-                                context.message_queue_mut().push_error(e.to_string());
-                            }
-                        }
-                        Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let cmd =
-                                process_event::poll_event_until_simple_keybind(backend, context, m);
-
-                            if let Some(command) = cmd {
-                                if let Err(e) = command.execute(context, backend, &keymap_t) {
-                                    context.message_queue_mut().push_error(e.to_string());
-                                }
-                            }
-                        }
-                    },
-                }
-                preview_default::load_preview(context, backend);
-                context.flush_event();
-            }
-            event => process_event::process_noninteractive(event, context),
-        }
-
         // update the file system supervisor that watches for changes in the FS
         if context.config_ref().watch_files {
             context.update_watcher();
         }
+
+        // process user input
+        process_input(context, backend, &keymap_t, event);
     } // end of main loop
     Ok(())
+}
+
+#[inline]
+fn process_input(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    keymap_t: &AppKeyMapping,
+    event: AppEvent,
+) {
+    // handle the event
+    match event {
+        AppEvent::Termion(Event::Mouse(event)) => {
+            process_event::process_mouse(event, context, backend, keymap_t);
+            preview_default::load_preview(context, backend);
+        }
+        AppEvent::Termion(key) => {
+            if context.message_queue_ref().current_message().is_some() {
+                context.message_queue_mut().pop_front();
+            }
+            match key {
+                // in the event where mouse input is not supported
+                // but we still want to register scroll
+                Event::Unsupported(s) => {
+                    process_event::process_unsupported(context, backend, keymap_t, s);
+                }
+                key => match keymap_t.default_view.get(&key) {
+                    None => {
+                        context
+                            .message_queue_mut()
+                            .push_info(format!("Unmapped input: {}", key.to_string()));
+                    }
+                    Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
+                        for command in commands {
+                            if let Err(e) = command.execute(context, backend, keymap_t) {
+                                context.message_queue_mut().push_error(e.to_string());
+                                break;
+                            }
+                        }
+                    }
+                    Some(CommandKeybind::CompositeKeybind(m)) => {
+                        let commands =
+                            process_event::poll_event_until_simple_keybind(backend, context, m);
+
+                        if let Some(commands) = commands {
+                            for command in commands {
+                                if let Err(e) = command.execute(context, backend, keymap_t) {
+                                    context.message_queue_mut().push_error(e.to_string());
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                },
+            }
+            preview_default::load_preview(context, backend);
+            context.flush_event();
+        }
+        event => process_event::process_noninteractive(event, context),
+    }
 }
 
 fn calculate_ui_context(context: &mut AppContext, area: Rect) {

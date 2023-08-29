@@ -4,7 +4,7 @@ use crate::key_command::Command;
 #[derive(Debug)]
 pub enum CommandKeybind {
     SimpleKeybind {
-        command: Command,
+        commands: Vec<Command>,
         description: Option<String>,
     },
     CompositeKeybind(KeyMapping),
@@ -14,13 +14,18 @@ impl std::fmt::Display for CommandKeybind {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             CommandKeybind::SimpleKeybind {
-                command: _,
+                commands: _,
                 description: Some(desc),
             } => write!(f, "{}", desc),
             CommandKeybind::SimpleKeybind {
-                command: cmd,
+                commands,
                 description: None,
-            } => write!(f, "{}", cmd),
+            } => {
+                for cmd in commands {
+                    write!(f, "{}, ", cmd)?;
+                }
+                Ok(())
+            }
             CommandKeybind::CompositeKeybind(_) => write!(f, "..."),
         }
     }

@@ -125,13 +125,13 @@ pub fn get_raw_keymap_table<'a>(
         let key = key_event_to_string(event);
         let (command, comment) = match bind {
             CommandKeybind::SimpleKeybind {
-                command,
-                description: None,
-            } => (format!("{}", command), command.comment()),
-            CommandKeybind::SimpleKeybind {
-                command,
+                commands,
                 description: Some(desc),
-            } => (format!("{}", command), desc.as_str()),
+            } => (format!("{}", commands[0]), desc.as_str()),
+            CommandKeybind::SimpleKeybind {
+                commands,
+                description: None,
+            } => (format!("{}", commands[0]), commands[0].comment()),
             CommandKeybind::CompositeKeybind(sub_keymap) => {
                 let mut sub_rows = get_raw_keymap_table(sub_keymap, "", sort_by);
                 for _ in 0..sub_rows.len() {

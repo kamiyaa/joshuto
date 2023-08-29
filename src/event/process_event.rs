@@ -26,7 +26,7 @@ pub fn poll_event_until_simple_keybind<'a>(
     backend: &mut ui::AppBackend,
     context: &mut AppContext,
     keymap: &'a KeyMapping,
-) -> Option<&'a Command> {
+) -> Option<&'a Vec<Command>> {
     let mut keymap = keymap;
 
     context.flush_event();
@@ -40,8 +40,8 @@ pub fn poll_event_until_simple_keybind<'a>(
                     match event {
                         Event::Key(Key::Esc) => return None,
                         event => match keymap.get(&event) {
-                            Some(CommandKeybind::SimpleKeybind { command, .. }) => {
-                                return Some(command);
+                            Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
+                                return Some(commands);
                             }
                             Some(CommandKeybind::CompositeKeybind(m)) => {
                                 keymap = m;
