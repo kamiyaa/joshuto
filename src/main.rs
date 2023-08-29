@@ -114,20 +114,26 @@ pub struct Args {
 pub enum Commands {
     #[command(about = "Show shell completions")]
     Completions { shell: clap_complete::Shell },
+
+    #[command(about = "Show version")]
+    Version,
 }
 
 fn run_main(args: Args) -> Result<i32, JoshutoError> {
-    if let Some(Commands::Completions { shell }) = args.commands {
-        let mut app = Args::command();
-        let bin_name = app.get_name().to_string();
-        clap_complete::generate(shell, &mut app, bin_name, &mut std::io::stdout());
-        return Ok(0);
+    if let Some(command) = args.commands {
+        match command {
+            Commands::Completions { shell } => {
+                let mut app = Args::command();
+                let bin_name = app.get_name().to_string();
+                clap_complete::generate(shell, &mut app, bin_name, &mut std::io::stdout());
+                return Ok(0);
+            }
+            Commands::Version => return print_version(),
+        }
     }
 
     if args.version {
-        let version = env!("CARGO_PKG_VERSION");
-        println!("{}-{}", PROGRAM_NAME, version);
-        return Ok(0);
+        return print_version();
     }
 
     if let Some(path) = args.rest.first() {
@@ -203,6 +209,12 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
         },
     }
     Ok(())
+}
+
+fn print_version() -> Result<i32, JoshutoError> {
+    let version = env!("CARGO_PKG_VERSION");
+    writeln!(&mut std::io::stdout(), "{PROGRAM_NAME}-{version}")?;
+    Ok(0)
 }
 
 fn main() {
