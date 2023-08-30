@@ -14,13 +14,13 @@ mod traits;
 mod ui;
 mod util;
 
+use clap::{CommandFactory, Parser, Subcommand};
 use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
 use std::sync::Mutex;
-use structopt::StructOpt;
 
 use crate::commands::quit::QuitAction;
 
@@ -88,30 +88,57 @@ lazy_static! {
     };
 }
 
-#[derive(Clone, Debug, StructOpt)]
+#[derive(Clone, Debug, Parser)]
+#[command(author, about)]
 pub struct Args {
-    #[structopt(short = "v", long = "version")]
+    #[command(subcommand)]
+    commands: Option<Commands>,
+
+    #[arg(short = 'v', long = "version")]
     version: bool,
-    #[structopt(long = "change-directory")]
+
+    #[arg(long = "change-directory")]
     change_directory: bool,
-    #[structopt(long = "file-chooser")]
+
+    #[arg(long = "file-chooser")]
     file_chooser: bool,
-    #[structopt(long = "output-file", parse(from_os_str))]
+
+    #[arg(long = "output-file")]
     output_file: Option<PathBuf>,
-    #[structopt(name = "ARGUMENTS")]
-    rest: Vec<String>,
+
+    #[arg(name = "ARGUMENTS")]
+    rest: Vec<PathBuf>,
+}
+
+#[derive(Clone, Debug, Subcommand)]
+pub enum Commands {
+    #[command(about = "Show shell completions")]
+    Completions { shell: clap_complete::Shell },
+
+    #[command(about = "Show version")]
+    Version,
 }
 
 fn run_main(args: Args) -> Result<i32, JoshutoError> {
-    if args.version {
-        let version = env!("CARGO_PKG_VERSION");
-        println!("{}-{}", PROGRAM_NAME, version);
-        return Ok(0);
+    if let Some(command) = args.commands {
+        match command {
+            Commands::Completions { shell } => {
+                let mut app = Args::command();
+                let bin_name = app.get_name().to_string();
+                clap_complete::generate(shell, &mut app, bin_name, &mut std::io::stdout());
+                return Ok(0);
+            }
+            Commands::Version => return print_version(),
+        }
     }
-    if !args.rest.is_empty() {
-        let p = PathBuf::from(args.rest[0].as_str());
-        if let Err(e) = std::env::set_current_dir(p.as_path()) {
-            eprintln!("{}", e);
+
+    if args.version {
+        return print_version();
+    }
+
+    if let Some(path) = args.rest.first() {
+        if let Err(err) = std::env::set_current_dir(path) {
+            eprintln!("{err}");
             process::exit(1);
         }
     }
@@ -184,14 +211,50 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
     Ok(())
 }
 
+fn print_version() -> Result<i32, JoshutoError> {
+    let version = env!("CARGO_PKG_VERSION");
+    writeln!(&mut std::io::stdout(), "{PROGRAM_NAME}-{version}")?;
+    Ok(0)
+}
+
 fn main() {
-    let args = Args::from_args();
+    let args = Args::parse();
 
     match run_main(args) {
         Ok(exit_code) => process::exit(exit_code),
         Err(e) => {
             eprintln!("{}", e);
             process::exit(1);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use clap::Parser;
+
+    use crate::{Args, Commands};
+
+    #[test]
+    fn test_command_new() {
+        Args::parse_from(["program_name"]);
+    }
+
+    #[test]
+    fn test_command_version() {
+        match Args::parse_from(["program_name", "version"]).commands {
+            Some(Commands::Version) => (),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn test_command_completions() {
+        for shell in ["bash", "zsh", "fish", "elvish", "powershell"] {
+            match Args::parse_from(["program_name", "completions", shell]).commands {
+                Some(Commands::Completions { shell: _ }) => {}
+                _ => panic!(),
+            }
         }
     }
 }

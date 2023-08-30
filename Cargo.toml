@@ -11,9 +11,12 @@ keywords = ["tui-rs", "ranger", "file_manager", "termion"]
 categories = ['command-line-interface', 'command-line-utilities']
 
 [dependencies]
-ansi-to-tui = { version = "^3.1.0", optional = true }
 alphanumeric-sort = "^1"
+ansi-to-tui = { version = "^3.1.0", optional = true }
+bitflags = { version = "^2", features = ["serde"] }
 chrono = "^0"
+clap = { version = "^4", features = ["derive"] }
+clap_complete = "^4"
 colors-transform = "^0"
 dirs-next = "^2"
 filetime = "^0"
@@ -24,22 +27,20 @@ notify = "^6"
 open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
 rand = "^0"
+regex = "1.9.3"
 rustyline = "^12"
 serde = "^1"
 serde_derive = "^1"
 shell-words = "^1"
 shellexpand = { version = "^3", features = ["full"] }
 signal-hook = "^0"
-structopt = "^0"
 termion = "^2"
 toml = "^0"
 unicode-segmentation = "^1"
 unicode-width = "^0"
+walkdir = "^2"
 whoami = "^1"
 xdg = "^2"
-walkdir = "^2"
-bitflags = { version = "^2", features = ["serde"] }
-regex = "1.9.3"
 
 [dependencies.nix]
 version = "^0"
