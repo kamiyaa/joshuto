@@ -289,6 +289,10 @@ function joshuto() {
 - cursor will be set right before the extension of the file
   (end of file name if no extension)
 
+### `rename_append_ext`: opens the command prompt with the rename command and the current file name filled in.
+
+- cursor will be set to the end of the file name
+
 ### `rename_prepend`: opens the command prompt with the rename command and the current file name filled in.
 
 - cursor will be set to the beginning of the file name
