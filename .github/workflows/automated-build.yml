@@ -20,7 +20,7 @@ jobs:
           # - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
           # - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
           # - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
-          - {os: macos-latest, target: aarch64-apple-darwin}
+          # - {os: macos-latest, target: aarch64-apple-darwin}
           - {os: macos-13, target: x86_64-apple-darwin}
     steps:
       - name: Checkout source code
@@ -181,8 +181,13 @@ jobs:
           PKG_STAGING=${{ steps.package.outputs.PKG_STAGING }}
           SUM_NAME=${{ steps.package.outputs.PKG_NAME }}.sha256sum
           SUM_PATH=${PKG_STAGING}/${SUM_NAME}
+          OS="$(uname -s)"
 
-          sha256sum ${PKG_PATH} > ${SUM_PATH}
+          if [ "$OS" == "Linux" ]; then 
+            sha256sum ${PKG_PATH} > ${SUM_PATH}
+          elif [ "$OS" == "Darwin" ]; then
+            shasum -a 256 ${PKG_PATH} > ${SUM_PATH}
+          fi
 
           echo ::set-output name=SUM_NAME::${SUM_NAME}
           echo ::set-output name=SUM_PATH::${SUM_PATH}
