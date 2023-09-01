@@ -37,8 +37,10 @@ if [[ -z "$ARCHIVE_NAME" ]]; then
   echo "RELEASE_VER is not set"
   exit 1
 fi
+
 declare -r ARCHIVE_URL="https://github.com/$REPO/releases/download/$RELEASE_VER/$ARCHIVE_NAME.tar.gz"
-# declare -r CHECKSUM_URL="$ARCHIVE_URL.sha256sum" # verification: disabled for now
+declare -r CHECKSUM_URL="$ARCHIVE_URL.sha256sum"
+echo $ARCHIVE_URL
 
 declare -r DOWNLOAD_DIR="$(mktemp -d)"
 declare -r RELEASE_SHA="$(curl -Ls "$CHECKSUM_URL" | awk '{print $1}')"
