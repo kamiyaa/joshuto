@@ -181,6 +181,7 @@ jobs:
 
           sha256sum ${PKG_PATH} > ${SUM_PATH}
 
+          echo ::set-output name=SUM_NAME::${SUM_NAME}
           echo ::set-output name=SUM_PATH::${SUM_PATH}
 
       - name: "Artifact upload: tarball"
@@ -192,7 +193,7 @@ jobs:
       - name: "Artifact upload: checksum"
         uses: actions/upload-artifact@master
         with:
-          name: ${{ steps.checksum.outputs.SUM_PATH }}
+          name: ${{ steps.checksum.outputs.SUM_NAME }}
           path: ${{ steps.checksum.outputs.SUM_PATH }}
 
       - name: Check for release
