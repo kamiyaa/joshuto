@@ -12,7 +12,7 @@
 # RUN cargo build --target x86_64-apple-darwis --release
 
 # FROM busybox:latest
-FROM debian:latest
+FROM ubuntu:latest
 
 ARG TARGET
 
