@@ -21,6 +21,7 @@ jobs:
           - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
           - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
           - {os: macos-13, target: x86_64-apple-darwin}
+          - {os: macos-latest, target: aarch64-apple-darwin}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -60,6 +61,7 @@ jobs:
           use-cross: ${{ matrix.job.use-cross }}
           command: build
           args: --locked --release --target=${{ matrix.job.target }}
+
 # DOCKER IMG
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -77,12 +79,13 @@ jobs:
         with:
           # file: utils/Dockerfile
           # push: ${{ github.event_name != 'pull_request' }}
-          args: TARGET={{ matrix.job.target }}
+          build-args: TARGET={{ matrix.job.target }}
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 # DOCKER IMG
+
       - name: Strip debug information from executable
         id: strip
         shell: bash
