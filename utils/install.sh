@@ -55,7 +55,7 @@ function main() {
 
 function download_archive() {
   echo "Downloading joshuto's binary from $RELEASE_VER release.."
-  if ! curl --progress-bar --fail -L "$ARCHIVE_URL" -o "$DOWNLOAD_DIR/$ARCHIVE_NAME.tar.gz"; then
+  if ! curl --progress-bar --fail -L "$ARCHIVE_URL" -o "$DOWNLOAD_DIR/$ARCHIVE_NAME"; then
     echo "Download failed.  Check that the release/filename are correct."
     exit 1
   fi
