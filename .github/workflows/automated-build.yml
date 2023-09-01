@@ -72,13 +72,12 @@ jobs:
         with:
           # images: kamiyaa/joshuto
           images: kennycallado/joshuto
-      - name: bla
-        run: tree -nh ./
       - name: Docker build and push
         uses: docker/build-push-action@v4
         with:
           # file: utils/Dockerfile
           # push: ${{ github.event_name != 'pull_request' }}
+          args: TARGET={{ matrix.job.target }}
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}

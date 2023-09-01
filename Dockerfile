@@ -11,10 +11,14 @@
 # RUN cargo build --target x86_64-unknown-linux-musl --release
 # RUN cargo build --target x86_64-apple-darwis --release
 
-FROM busybox:latest
+# FROM busybox:latest
+FROM debian:latest
+
+ARG TARGET
 
 # COPY --from=builder /usr/src/joshuto/target/x86_64-unknown-linux-musl/release/joshuto /usr/local/bin/joshuto
-COPY ./target/release/joshuto /usr/local/bin/joshuto
+# COPY ./target/release/joshuto /usr/local/bin/joshuto
+COPY ./target/${TARGET}/release/joshuto /usr/local/bin/joshuto
 COPY ./config/ /root/.config/joshuto/
 
 WORKDIR /root
