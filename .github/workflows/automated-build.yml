@@ -15,13 +15,13 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          # - {os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf, use-cross: true}
-          # - {os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true}
-          # - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
-          - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu, use-cross: true}
-          # - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
-          # - {os: macos-13, target: x86_64-apple-darwin}
-          # - {os: macos-latest, target: aarch64-apple-darwin}
+          - {os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf, use-cross: true}
+          - {os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true}
+          - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
+          - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
+          - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
+          - {os: macos-latest, target: aarch64-apple-darwin}
+          - {os: macos-13, target: x86_64-apple-darwin}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -78,14 +78,13 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           file: utils/base.Dockerfile
-          # push: ${{ github.event_name != 'pull_request' }}
           build-args: TARGET=${{ matrix.job.target }}
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       # - name: Docker build slim-image and push
-      #   if: TODO:
+      #   if: TODO: utils/slim.Dockerfile (scratch image with binary)
       #   uses: docker/build-push-action@v4
       #   with:
       #     file: utils/slim.Dockerfile
@@ -96,7 +95,7 @@ jobs:
       #     tags: ${{ steps.meta.outputs.tags }}
       #     labels: ${{ steps.meta.outputs.labels }}
       # - name: Docker build full-image and push
-      #   if: TODO:
+      #   if: TODO: utils/full.Dockerfile (ubuntu image with all dependencies for preview.sh)
       #   uses: docker/build-push-action@v4
       #   with:
       #     file: utils/full.Dockerfile
