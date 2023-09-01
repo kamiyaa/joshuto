@@ -25,7 +25,8 @@ if [ "$OS" == "Linux" ]; then
   # TODO: add support for musl
   ARCHIVE_NAME="joshuto-$RELEASE_VER-$ARCH-unknown-linux-gnu"
 elif [ "$OS" == "Darwin" ]; then
-  ARCHIVE_NAME="joshuto-$RELEASE_VER-$ARCH-apple-darwin"
+  # ARCHIVE_NAME="joshuto-$RELEASE_VER-$ARCH-apple-darwin"
+  ARCHIVE_NAME="joshuto-v0.9.5-x86_64-apple-darwin"
 else
   echo "$OS platform is not supported currently"
   exit 1
