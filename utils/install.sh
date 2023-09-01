@@ -14,7 +14,8 @@ set -eo pipefail
 declare -r HARDCODED_VERSION="v0.9.5"
 
 declare -r REPO="${REPO:-"kamiyaa/joshuto"}"
-declare -r OS="$(uname -s)"
+# declare -r OS="$(uname -s)"
+declare -r OS="Darwin"
 declare -r ARCH="$(uname -m)"
 declare -r INSTALL_PREFIX="${INSTALL_PREFIX:-"$HOME/.local/bin"}"
 declare -r RELEASE_VER="${RELEASE_VER:-"$HARDCODED_VERSION"}"
