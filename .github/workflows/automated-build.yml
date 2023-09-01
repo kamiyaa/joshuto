@@ -150,9 +150,7 @@ jobs:
           PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
           PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
           PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-          echo ::set-output name=PKG_NAME::${PKG_NAME}
           PKG_STAGING="${{ env.CI_INTERMEDIATES_DIR }}/package"
-          echo ::set-output name=PKG_STAGING::${PKG_STAGING}
           ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
           mkdir -p "${ARCHIVE_DIR}"
 
@@ -169,7 +167,8 @@ jobs:
 
           # Let subsequent steps know where to find the compressed package
           echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
-
+          echo ::set-output name=PKG_NAME::${PKG_NAME}
+          echo ::set-output name=PKG_STAGING::${PKG_STAGING}
       - name: "Generate checksum"
         id: checksum
         shell: bash
@@ -205,6 +204,6 @@ jobs:
         with:
           files: |
             ${{ steps.package.outputs.PKG_PATH }}
-            ${{ steps.checksum.outputs.PKG_PATH }}
+            ${{ steps.checksum.outputs.SUM_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
