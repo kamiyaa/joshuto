@@ -15,11 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - {os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf, use-cross: true}
-          - {os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true}
-          - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
-          - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
-          - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
+          # - {os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf, use-cross: true}
+          # - {os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true}
+          # - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
+          # - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
+          # - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
           - {os: macos-latest, target: aarch64-apple-darwin}
           - {os: macos-13, target: x86_64-apple-darwin}
     steps:
@@ -64,17 +64,20 @@ jobs:
 
 # DOCKER IMG
       - name: Login to Docker Hub
+        if: runner.os != 'macos'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Docker metadata
+        if: runner.os != 'macos'
         id: meta
         uses: docker/metadata-action@v4
         with:
           # images: kamiyaa/joshuto
           images: kennycallado/joshuto
       - name: Docker build base-image and push
+        if: runner.os != 'macos'
         uses: docker/build-push-action@v4
         with:
           file: utils/base.Dockerfile
@@ -84,6 +87,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       # - name: Docker build slim-image and push
+      #   if: runner.os != 'macos'
       #   if: TODO: utils/slim.Dockerfile (scratch image with binary)
       #   uses: docker/build-push-action@v4
       #   with:
@@ -95,6 +99,7 @@ jobs:
       #     tags: ${{ steps.meta.outputs.tags }}
       #     labels: ${{ steps.meta.outputs.labels }}
       # - name: Docker build full-image and push
+      #   if: runner.os != 'macos'
       #   if: TODO: utils/full.Dockerfile (ubuntu image with all dependencies for preview.sh)
       #   uses: docker/build-push-action@v4
       #   with:
