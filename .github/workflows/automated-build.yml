@@ -73,7 +73,7 @@ jobs:
           # images: kamiyaa/joshuto
           images: kennycallado/joshuto
       - name: bla
-        run: tree -nh ./frontend-next
+        run: tree -nh ./
       - name: Docker build and push
         uses: docker/build-push-action@v4
         with:
