@@ -87,10 +87,10 @@ function install_joshuto() {
     exit 1
   fi
 
-  cp -r "$DOWNLOAD_DIR/$ARCHIVE_NAME/." "$INSTALL_PREFIX/bin"
+  cp -r "$DOWNLOAD_DIR/$ARCHIVE_NAME/." "$INSTALL_PREFIX"
   echo "Installation complete!"
   echo "======================"
-  echo "Now you can run $INSTALL_PREFIX/bin/joshuto"
+  echo "Now you can run $INSTALL_PREFIX/joshuto"
 }
 
 main "$@"
