@@ -49,7 +49,7 @@ echo $RELEASE_SHA
 
 function main() {
   download_archive
-  # verify_archive # verification: disabled for now
+  verify_archive
   install_joshuto
 }
 
@@ -83,7 +83,7 @@ function install_joshuto() {
   echo "Installing joshuto..."
 
   pushd "$DOWNLOAD_DIR"
-  tar -xzf "$DOWNLOAD_DIR/$ARCHIVE_NAME.tar.gz"
+  tar -xzf "$DOWNLOAD_DIR/$ARCHIVE_NAME"
   popd
 
   if [ ! -d "$DOWNLOAD_DIR/$ARCHIVE_NAME" ]; then
