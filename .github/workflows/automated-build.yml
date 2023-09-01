@@ -15,12 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          # - {os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf, use-cross: true}
-          # - {os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true}
-          # - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
-          # - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
-          # - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
-          # - {os: macos-latest, target: aarch64-apple-darwin}
+          - {os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf, use-cross: true}
+          - {os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true}
+          - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
+          - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
+          - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
+          - {os: macos-latest, target: aarch64-apple-darwin}
           - {os: macos-13, target: x86_64-apple-darwin}
     steps:
       - name: Checkout source code
@@ -74,8 +74,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          # images: kamiyaa/joshuto
-          images: kennycallado/joshuto
+          images: ${{ github.repository }}
       - name: Docker build base-image and push
         if: runner.os != 'macos'
         uses: docker/build-push-action@v4
