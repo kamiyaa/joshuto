@@ -174,28 +174,25 @@ jobs:
         id: checksum
         shell: bash
         run: |
-          SUM_NAME=${{ steps.package.outputs.PKG_NAME }}
           PKG_PATH=${{ steps.package.outputs.PKG_PATH }}
           PKG_STAGING=${{ steps.package.outputs.PKG_STAGING }}
-          SUM_PATH=${PKG_STAGING}/${SUM_NAME}.sha256sum
+          SUM_NAME=${{ steps.package.outputs.PKG_NAME }}.sha256sum
+          SUM_PATH=${PKG_STAGING}/${SUM_NAME}
 
           sha256sum ${PKG_PATH} > ${SUM_PATH}
 
           echo ::set-output name=SUM_NAME::${SUM_NAME}
           echo ::set-output name=SUM_PATH::${SUM_PATH}
-
       - name: "Artifact upload: tarball"
         uses: actions/upload-artifact@master
         with:
           name: ${{ steps.package.outputs.PKG_NAME }}
           path: ${{ steps.package.outputs.PKG_PATH }}
-
       - name: "Artifact upload: checksum"
         uses: actions/upload-artifact@master
         with:
           name: ${{ steps.checksum.outputs.SUM_NAME }}
           path: ${{ steps.checksum.outputs.SUM_PATH }}
-
       - name: Check for release
         id: is-release
         shell: bash
