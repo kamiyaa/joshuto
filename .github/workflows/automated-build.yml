@@ -74,16 +74,38 @@ jobs:
         with:
           # images: kamiyaa/joshuto
           images: kennycallado/joshuto
-      - name: Docker build and push
+      - name: Docker build base-image and push
         uses: docker/build-push-action@v4
         with:
-          # file: utils/Dockerfile
+          file: utils/base.Dockerfile
           # push: ${{ github.event_name != 'pull_request' }}
           build-args: TARGET=${{ matrix.job.target }}
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      # - name: Docker build slim-image and push
+      #   if: TODO:
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     file: utils/slim.Dockerfile
+      #     # push: ${{ github.event_name != 'pull_request' }}
+      #     build-args: TARGET=${{ matrix.job.target }}
+      #     context: .
+      #     push: true
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      # - name: Docker build full-image and push
+      #   if: TODO:
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     file: utils/full.Dockerfile
+      #     # push: ${{ github.event_name != 'pull_request' }}
+      #     build-args: TARGET=${{ matrix.job.target }}
+      #     context: .
+      #     push: true
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
 # DOCKER IMG
 
       - name: Strip debug information from executable
@@ -130,6 +152,7 @@ jobs:
           PKG_NAME=${PKG_BASENAME}${PKG_suffix}
           echo ::set-output name=PKG_NAME::${PKG_NAME}
           PKG_STAGING="${{ env.CI_INTERMEDIATES_DIR }}/package"
+          echo ::set-output name=PKG_STAGING::${PKG_STAGING}
           ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
           mkdir -p "${ARCHIVE_DIR}"
 
@@ -146,11 +169,32 @@ jobs:
 
           # Let subsequent steps know where to find the compressed package
           echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
+
+      - name: "Generate checksum"
+        id: checksum
+        shell: bash
+        run: |
+          SUM_NAME=${{ steps.package.outputs.PKG_NAME }}
+          PKG_PATH=${{ steps.package.outputs.PKG_PATH }}
+          PKG_STAGING=${{ steps.package.outputs.PKG_STAGING }}
+          SUM_PATH=${PKG_STAGING}/${SUM_NAME}.sha256sum
+
+          sha256sum ${PKG_PATH} > ${SUM_PATH}
+
+          echo ::set-output name=SUM_PATH::${SUM_PATH}
+
       - name: "Artifact upload: tarball"
         uses: actions/upload-artifact@master
         with:
           name: ${{ steps.package.outputs.PKG_NAME }}
           path: ${{ steps.package.outputs.PKG_PATH }}
+
+      - name: "Artifact upload: checksum"
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ steps.checksum.outputs.SUM_PATH }}
+          path: ${{ steps.checksum.outputs.SUM_PATH }}
+
       - name: Check for release
         id: is-release
         shell: bash
@@ -163,5 +207,6 @@ jobs:
         with:
           files: |
             ${{ steps.package.outputs.PKG_PATH }}
+            ${{ steps.checksum.outputs.PKG_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
