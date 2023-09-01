@@ -72,12 +72,14 @@ jobs:
         with:
           # images: kamiyaa/joshuto
           images: kennycallado/joshuto
+      - name: bla
+        run: tree -nh ./frontend-next
       - name: Docker build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
           # file: utils/Dockerfile
           # push: ${{ github.event_name != 'pull_request' }}
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
