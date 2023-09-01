@@ -38,6 +38,38 @@ Also see [Cargo.toml](Cargo.toml)
 ~$ cargo install --git https://github.com/kamiyaa/joshuto.git --force
 ```
 
+#### From pre-compiled binary
+
+##### Latest release
+
+Installs the latest version using the default installation path (_$HOME/.local/bin/_).
+
+``` bash
+~$ bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
+##### Custom Installation path
+
+Allows you to install Joshuto to a custom directory by setting the INSTALL_PREFIX variable.
+
+``` bash
+~$ INSTALL_PREFIX="$HOME/bin" bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
+##### System wide
+
+``` bash
+~# INSTALL_PREFIX="/usr/local/bin" bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
+##### Specific release
+
+Installs a specific release version of Joshuto by the desired version number.
+
+``` bash
+~$ RELEASE_VER='v0.9.4' bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
 #### System wide
 
 ```
