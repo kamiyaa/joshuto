@@ -81,7 +81,7 @@ pub fn rename_file_append_base(
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
     if let Some(file_name) = _get_current_file_name(context) {
-        let (prefix, suffix): (String, String) = match file_name.find('.') {
+        let (prefix, suffix): (String, String) = match file_name.rfind('.') {
             Some(ext) => (
                 format!("rename {}", &file_name[0..ext]),
                 file_name[ext..].to_string(),
