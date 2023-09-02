@@ -83,6 +83,11 @@ impl std::str::FromStr for Command {
 
         simple_command_conversion_case!(command, CMD_RELOAD_DIRECTORY_LIST, Self::ReloadDirList);
         simple_command_conversion_case!(command, CMD_RENAME_FILE_APPEND, Self::RenameFileAppend);
+        simple_command_conversion_case!(
+            command,
+            CMD_RENAME_FILE_APPEND_BASE,
+            Self::RenameFileAppendBase
+        );
         simple_command_conversion_case!(command, CMD_RENAME_FILE_PREPEND, Self::RenameFilePrepend);
         simple_command_conversion_case!(command, CMD_RENAME_FILE_KEEP_EXT, Self::RenameFileKeepExt);
         simple_command_conversion_case!(command, CMD_SEARCH_NEXT, Self::SearchNext);

@@ -85,6 +85,7 @@ impl CommandComment for Command {
             Self::RenameFile { .. } => "Rename file",
             Self::TouchFile { .. } => "Touch file",
             Self::RenameFileAppend => "Rename a file",
+            Self::RenameFileAppendBase => "Rename a file",
             Self::RenameFilePrepend => "Rename a file",
             Self::RenameFileKeepExt => "Rename a file",
 

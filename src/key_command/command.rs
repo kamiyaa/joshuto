@@ -93,6 +93,7 @@ pub enum Command {
         new_name: path::PathBuf,
     },
     RenameFileAppend,
+    RenameFileAppendBase,
     RenameFilePrepend,
     RenameFileKeepExt,
     TouchFile {

@@ -55,6 +55,7 @@ impl AppCommand for Command {
             Self::ReloadDirList => CMD_RELOAD_DIRECTORY_LIST,
             Self::RenameFile { .. } => CMD_RENAME_FILE,
             Self::RenameFileAppend => CMD_RENAME_FILE_APPEND,
+            Self::RenameFileAppendBase => CMD_RENAME_FILE_APPEND_BASE,
             Self::RenameFilePrepend => CMD_RENAME_FILE_PREPEND,
             Self::RenameFileKeepExt => CMD_RENAME_FILE_KEEP_EXT,
 

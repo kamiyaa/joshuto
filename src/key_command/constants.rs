@@ -53,6 +53,7 @@ cmd_constants![
     (CMD_RELOAD_DIRECTORY_LIST, "reload_dirlist"),
     (CMD_RENAME_FILE, "rename"),
     (CMD_RENAME_FILE_APPEND, "rename_append"),
+    (CMD_RENAME_FILE_APPEND_BASE, "rename_append_base"),
     (CMD_RENAME_FILE_PREPEND, "rename_prepend"),
     (CMD_RENAME_FILE_KEEP_EXT, "rename_keep_ext"),
     (CMD_SEARCH_STRING, "search"),

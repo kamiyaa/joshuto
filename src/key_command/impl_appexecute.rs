@@ -99,6 +99,9 @@ impl AppExecute for Command {
             Self::ReloadDirList => reload::reload_dirlist(context),
             Self::RenameFile { new_name } => rename_file::rename_file(context, new_name.as_path()),
             Self::RenameFileAppend => rename_file::rename_file_append(context, backend, keymap_t),
+            Self::RenameFileAppendBase => {
+                rename_file::rename_file_append_base(context, backend, keymap_t)
+            }
             Self::RenameFilePrepend => rename_file::rename_file_prepend(context, backend, keymap_t),
             Self::RenameFileKeepExt => {
                 rename_file::rename_file_keep_ext(context, backend, keymap_t)

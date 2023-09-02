@@ -69,6 +69,18 @@ pub fn rename_file_append(
     keymap_t: &AppKeyMapping,
 ) -> JoshutoResult {
     if let Some(file_name) = _get_current_file_name(context) {
+        let (prefix, suffix) = (format!("rename {}", file_name), "".to_string());
+        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
+    }
+    Ok(())
+}
+
+pub fn rename_file_append_base(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    keymap_t: &AppKeyMapping,
+) -> JoshutoResult {
+    if let Some(file_name) = _get_current_file_name(context) {
         let (prefix, suffix): (String, String) = match file_name.rfind('.') {
             Some(ext) => (
                 format!("rename {}", &file_name[0..ext]),
