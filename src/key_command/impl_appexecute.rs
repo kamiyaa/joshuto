@@ -117,8 +117,8 @@ impl AppExecute for Command {
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
 
-            Self::SelectFiles { pattern, options } => {
-                select::select_files(context, pattern.as_str(), options)
+            Self::SelectString { pattern, options } => {
+                select_string::select_string(context, pattern, options)
             }
             Self::SetCaseSensitivity {
                 case_sensitivity,

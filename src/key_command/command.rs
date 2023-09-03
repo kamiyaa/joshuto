@@ -114,10 +114,11 @@ pub enum Command {
     SearchNext,
     SearchPrev,
 
-    SelectFiles {
+    SelectString {
         pattern: String,
         options: SelectOption,
     },
+
     SetCaseSensitivity {
         case_sensitivity: CaseSensitivity,
         set_type: SetType,

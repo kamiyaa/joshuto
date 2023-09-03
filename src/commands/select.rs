@@ -6,10 +6,10 @@ use super::cursor_move;
 
 pub fn select_files(
     context: &mut AppContext,
-    pattern: &str,
+    pattern: &MatchContext,
     options: &SelectOption,
 ) -> JoshutoResult {
-    if pattern.is_empty() {
+    if pattern.is_none() {
         select_without_pattern(context, options)
     } else {
         select_with_pattern(context, pattern, options)
@@ -49,21 +49,14 @@ fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> J
 
 fn select_with_pattern(
     context: &mut AppContext,
-    pattern: &str,
+    pattern: &MatchContext,
     options: &SelectOption,
 ) -> JoshutoResult {
-    let case_sensitivity = context
-        .config_ref()
-        .search_options_ref()
-        .glob_case_sensitivity;
-
-    let select_context = MatchContext::new_glob(pattern, case_sensitivity)?;
-
     if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
         let mut found = 0;
         curr_list
             .iter_mut()
-            .filter(|e| select_context.is_match(e.file_name()))
+            .filter(|e| pattern.is_match(e.file_name()))
             .for_each(|e| {
                 found += 1;
                 if options.reverse {

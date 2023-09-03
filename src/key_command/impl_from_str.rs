@@ -330,7 +330,7 @@ impl std::str::FromStr for Command {
                     pattern: arg.to_string(),
                 }),
             }
-        } else if command == CMD_SELECT_FILES {
+        } else if command == CMD_SELECT_STRING {
             let mut options = SelectOption::default();
             let mut pattern = "";
             match shell_words::split(arg) {
@@ -346,7 +346,7 @@ impl std::str::FromStr for Command {
                             s => pattern = s,
                         }
                     }
-                    Ok(Self::SelectFiles {
+                    Ok(Self::SelectString {
                         pattern: pattern.to_string(),
                         options,
                     })

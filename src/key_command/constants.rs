@@ -61,7 +61,7 @@ cmd_constants![
     (CMD_SEARCH_REGEX, "search_regex"),
     (CMD_SEARCH_NEXT, "search_next"),
     (CMD_SEARCH_PREV, "search_prev"),
-    (CMD_SELECT_FILES, "select"),
+    (CMD_SELECT_STRING, "select"),
     (CMD_SET_CASE_SENSITIVITY, "set_case_sensitivity"),
     (CMD_SET_MODE, "set_mode"),
     (CMD_SORT, "sort"),
