@@ -34,7 +34,7 @@ pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> Jo
     if worker_context.is_busy() || !worker_context.is_empty() {
         Err(JoshutoError::new(
             JoshutoErrorKind::Io(io::ErrorKind::Other),
-            String::from("operations running in background, use force_quit to quit"),
+            String::from("operations running in background, use `quit --force` to quit"),
         ))
     } else {
         context.quit = quit_action;
