@@ -65,6 +65,8 @@ impl AppCommand for Command {
             Self::SearchNext => CMD_SEARCH_NEXT,
             Self::SearchPrev => CMD_SEARCH_PREV,
 
+            Self::SelectGlob { .. } => CMD_SELECT_GLOB,
+            Self::SelectRegex { .. } => CMD_SELECT_REGEX,
             Self::SelectString { .. } => CMD_SELECT_STRING,
 
             Self::SetCaseSensitivity { .. } => CMD_SET_CASE_SENSITIVITY,

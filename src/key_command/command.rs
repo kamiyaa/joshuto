@@ -114,6 +114,14 @@ pub enum Command {
     SearchNext,
     SearchPrev,
 
+    SelectGlob {
+        pattern: String,
+        options: SelectOption,
+    },
+    SelectRegex {
+        pattern: String,
+        options: SelectOption,
+    },
     SelectString {
         pattern: String,
         options: SelectOption,

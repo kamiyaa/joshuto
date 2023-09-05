@@ -117,6 +117,12 @@ impl AppExecute for Command {
             Self::SearchNext => search::search_next(context),
             Self::SearchPrev => search::search_prev(context),
 
+            Self::SelectGlob { pattern, options } => {
+                select_glob::select_glob(context, pattern, options)
+            }
+            Self::SelectRegex { pattern, options } => {
+                select_regex::select_regex(context, pattern, options)
+            }
             Self::SelectString { pattern, options } => {
                 select_string::select_string(context, pattern, options)
             }

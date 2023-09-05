@@ -95,7 +95,10 @@ impl CommandComment for Command {
             Self::SearchNext => "Next search entry",
             Self::SearchPrev => "Previous search entry",
 
+            Self::SelectGlob { .. } => "Select files with globbing",
+            Self::SelectRegex { .. } => "Select files with regex",
             Self::SelectString { .. } => "Select files",
+
             Self::SetCaseSensitivity { .. } => "Set case sensitivity",
             Self::SetMode => "Set file permissions",
             Self::SubProcess { spawn: false, .. } => "Run a shell command",

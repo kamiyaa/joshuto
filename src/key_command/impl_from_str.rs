@@ -330,6 +330,70 @@ impl std::str::FromStr for Command {
                     pattern: arg.to_string(),
                 }),
             }
+        } else if command == CMD_SELECT_GLOB {
+            let mut options = SelectOption::default();
+            let mut pattern = "";
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            s => pattern = s,
+                        }
+                    }
+                    if pattern.is_empty() {
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::InvalidParameters,
+                            format!("{}: Expected 1, got 0", command),
+                        ));
+                    }
+                    Ok(Self::SelectGlob {
+                        pattern: pattern.to_string(),
+                        options,
+                    })
+                }
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SELECT_REGEX {
+            let mut options = SelectOption::default();
+            let mut pattern = "";
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            s => pattern = s,
+                        }
+                    }
+                    if pattern.is_empty() {
+                        return Err(JoshutoError::new(
+                            JoshutoErrorKind::InvalidParameters,
+                            format!("{}: Expected 1, got 0", command),
+                        ));
+                    }
+                    Ok(Self::SelectRegex {
+                        pattern: pattern.to_string(),
+                        options,
+                    })
+                }
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
         } else if command == CMD_SELECT_STRING {
             let mut options = SelectOption::default();
             let mut pattern = "";
