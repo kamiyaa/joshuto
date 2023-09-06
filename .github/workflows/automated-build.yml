@@ -1,3 +1,4 @@
+
 name: Automated build
 env:
   CI_INTERMEDIATES_DIR: "_ci-intermediates"
@@ -17,9 +18,11 @@ jobs:
         job:
           - {os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf, use-cross: true}
           - {os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true}
+          - {os: ubuntu-20.04, target: aarch64-unknown-linux-musl, use-cross: true}
           - {os: ubuntu-20.04, target: aarch64-unknown-linux-gnu, use-cross: true}
-          - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
           - {os: ubuntu-20.04, target: x86_64-unknown-linux-musl, use-cross: true}
+          - {os: ubuntu-20.04, target: x86_64-unknown-linux-gnu}
+          - {os: macos-latest, target: aarch64-apple-darwin}
           - {os: macos-13, target: x86_64-apple-darwin}
     steps:
       - name: Checkout source code
@@ -60,8 +63,8 @@ jobs:
           use-cross: ${{ matrix.job.use-cross }}
           command: build
           args: --locked --release --target=${{ matrix.job.target }}
-      - name: Strip debug information from executable
-        id: strip
+      - name: Create tarball
+        id: package
         shell: bash
         run: |
           # Figure out suffix of binary
@@ -70,45 +73,16 @@ jobs:
             *-pc-windows-*) EXE_suffix=".exe" ;;
           esac;
 
-          # Figure out what strip tool to use if any
-          STRIP="strip"
-          case ${{ matrix.job.target }} in
-            arm-unknown-linux-*) STRIP="arm-linux-gnueabihf-strip" ;;
-            aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;;
-            *-pc-windows-msvc) STRIP="" ;;
-          esac;
-
-          # Setup paths
-          BIN_DIR="${{ env.CI_INTERMEDIATES_DIR }}/stripped-release-bin/"
-          mkdir -p "${BIN_DIR}"
           BIN_NAME="${{ env.PROJECT_NAME }}${EXE_suffix}"
-          BIN_PATH="${BIN_DIR}/${BIN_NAME}"
-
-          # Copy the release build binary to the result location
-          cp "target/${{ matrix.job.target }}/release/${BIN_NAME}" "${BIN_DIR}"
-
-          # Also strip if possible
-          if [ -n "${STRIP}" ]; then
-            "${STRIP}" "${BIN_PATH}"
-          fi
-
-          # Let subsequent steps know where to find the (stripped) bin
-          echo ::set-output name=BIN_PATH::${BIN_PATH}
-          echo ::set-output name=BIN_NAME::${BIN_NAME}
-      - name: Create tarball
-        id: package
-        shell: bash
-        run: |
           PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
           PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
           PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-          echo ::set-output name=PKG_NAME::${PKG_NAME}
           PKG_STAGING="${{ env.CI_INTERMEDIATES_DIR }}/package"
           ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
           mkdir -p "${ARCHIVE_DIR}"
 
           # Binary
-          cp "${{ steps.strip.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
+          cp "target/${{ matrix.job.target }}/release/${BIN_NAME}" "$ARCHIVE_DIR"
 
           # base compressed package
           pushd "${PKG_STAGING}/" >/dev/null
@@ -119,23 +93,47 @@ jobs:
           popd >/dev/null
 
           # Let subsequent steps know where to find the compressed package
-          echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
+          echo "PKG_PATH=${PKG_STAGING}/${PKG_NAME}" >> $GITHUB_ENV
+          echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_ENV
+          echo "PKG_STAGING=${PKG_STAGING}" >> $GITHUB_ENV
+      - name: "Generate checksum"
+        id: checksum
+        shell: bash
+        run: |
+          SUM_NAME=${{ env.PKG_NAME }}.sha256sum
+          SUM_PATH=${PKG_STAGING}/${SUM_NAME}
+          OS="$(uname -s)"
+
+          if [ "$OS" == "Linux" ]; then 
+            sha256sum ${PKG_PATH} > ${SUM_PATH}
+          elif [ "$OS" == "Darwin" ]; then
+            shasum -a 256 ${PKG_PATH} > ${SUM_PATH}
+          fi
+
+          echo "SUM_NAME=${SUM_NAME}" >> $GITHUB_ENV
+          echo "SUM_PATH=${SUM_PATH}" >> $GITHUB_ENV
       - name: "Artifact upload: tarball"
         uses: actions/upload-artifact@master
         with:
-          name: ${{ steps.package.outputs.PKG_NAME }}
-          path: ${{ steps.package.outputs.PKG_PATH }}
+          name: ${{ env.PKG_NAME }}
+          path: ${{ env.PKG_PATH }}
+      - name: "Artifact upload: checksum"
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ env.SUM_NAME }}
+          path: ${{ env.SUM_PATH }}
       - name: Check for release
         id: is-release
         shell: bash
         run: |
           unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
-          echo ::set-output name=IS_RELEASE::${IS_RELEASE}
+          echo "IS_RELEASE=${IS_RELEASE}" >> $GITHUB_ENV
       - name: Publish archives and packages
         uses: softprops/action-gh-release@v1
-        if: steps.is-release.outputs.IS_RELEASE
+        if: env.IS_RELEASE
         with:
           files: |
-            ${{ steps.package.outputs.PKG_PATH }}
+            ${{ env.PKG_PATH }}
+            ${{ env.SUM_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
