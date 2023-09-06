@@ -76,7 +76,6 @@ function download_archive() {
 # Some releases don't have checksum file
 function checksum_file() {
   local _return=$1
-  local myresult
 
   if [ -z "$RELEASE_SHA" ]; then
     printf "\n"
@@ -86,16 +85,13 @@ function checksum_file() {
 
     echo "Would you like to continue? [y/N]"
     read -r answer
-    if [ "$answer" != "${answer#[Yy]}" ]; then
-      myresult=$DOWNLOADED_SHA
-    else
-      echo
+    if [ "$answer" == "${answer#[Yy]}" ]; then
       echo "Installation aborted."
       exit 1
     fi
   fi
 
-  eval $_return="'$myresult'"
+  eval $_return="'$DOWNLOADED_SHA'"
 }
 
 function verify_archive() {
