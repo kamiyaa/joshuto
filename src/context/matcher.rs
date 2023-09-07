@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 use globset::{GlobBuilder, GlobMatcher};
 use regex::{Regex, RegexBuilder};
 
-use crate::config::option::CaseSensitivity;
+use crate::config::clean::app::search::CaseSensitivity;
 use crate::error::JoshutoResult;
 
 #[derive(Clone, Debug, Default)]

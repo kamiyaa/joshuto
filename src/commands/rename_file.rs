@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::config::AppKeyMapping;
+use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::create_dirlist_with_history;

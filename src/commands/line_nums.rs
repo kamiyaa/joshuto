@@ -1,4 +1,4 @@
-use crate::config::option::LineNumberStyle;
+use crate::config::clean::app::display::line_number::LineNumberStyle;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 

@@ -2,7 +2,7 @@ use std::io;
 use std::path;
 
 use crate::commands::{quit, reload};
-use crate::config::ProgramEntry;
+use crate::config::clean::mimetype::ProgramEntry;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::views::DummyListener;

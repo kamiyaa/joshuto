@@ -1,7 +1,7 @@
 use termion::event::{Event, Key};
 
 use crate::commands::cursor_move;
-use crate::config::AppKeyMapping;
+use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::event::process_event;

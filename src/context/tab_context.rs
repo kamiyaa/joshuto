@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use uuid::Uuid;
 
-use crate::config::option::{TabBarDisplayMode, TabBarDisplayOption};
+use crate::config::clean::app::tab::{TabBarDisplayMode, TabBarDisplayOption};
 use crate::tab::JoshutoTab;
 
 #[derive(Default)]

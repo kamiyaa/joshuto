@@ -1,5 +1,5 @@
 use crate::commands::quit::QuitAction;
-use crate::config::AppKeyMapping;
+use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
 use crate::event::process_event;
 use crate::event::AppEvent;

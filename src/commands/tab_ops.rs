@@ -2,7 +2,7 @@ use std::path;
 
 use uuid::Uuid;
 
-use crate::config::option::NewTabMode;
+use crate::config::clean::app::display::new_tab::NewTabMode;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::history::DirectoryHistory;

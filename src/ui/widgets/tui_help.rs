@@ -7,7 +7,7 @@ use ratatui::layout::{Constraint, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Cell, Row, Table, Widget};
 
-use crate::config::KeyMapping;
+use crate::config::clean::keymap::KeyMapping;
 use crate::key_command::traits::CommandComment;
 use crate::key_command::CommandKeybind;
 

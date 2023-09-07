@@ -1,4 +1,4 @@
-use crate::config::option::CaseSensitivity;
+use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 

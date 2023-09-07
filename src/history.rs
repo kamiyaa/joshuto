@@ -4,8 +4,9 @@ use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-use crate::config::option::DirListDisplayOptions;
-use crate::config::option::{DisplayOption, TabDisplayOption};
+use crate::config::clean::app::display::dirlist::DirListDisplayOptions;
+use crate::config::clean::app::display::tab::TabDisplayOption;
+use crate::config::clean::app::display::DisplayOption;
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
 

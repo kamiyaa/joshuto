@@ -3,7 +3,7 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 
 use crate::commands::cursor_move;
-use crate::config::option::CaseSensitivity;
+use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
 use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
 use crate::ui::AppBackend;

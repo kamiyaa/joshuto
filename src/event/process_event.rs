@@ -8,7 +8,8 @@ use termion::event::{Event, Key, MouseButton, MouseEvent};
 use uuid::Uuid;
 
 use crate::commands::{cursor_move, parent_cursor_move, reload};
-use crate::config::{AppKeyMapping, KeyMapping};
+use crate::config::clean::keymap::AppKeyMapping;
+use crate::config::clean::keymap::KeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::event::AppEvent;

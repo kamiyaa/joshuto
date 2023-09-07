@@ -14,20 +14,26 @@ mod traits;
 mod ui;
 mod util;
 
-use clap::{CommandFactory, Parser, Subcommand};
-use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
 use std::sync::Mutex;
 
+use clap::{CommandFactory, Parser, Subcommand};
+use config::clean::app::AppConfig;
+use config::clean::icon::Icons;
+use config::clean::keymap::AppKeyMapping;
+use config::clean::preview::FileEntryPreview;
+use lazy_static::lazy_static;
+
+use config::clean::bookmarks::Bookmarks;
+use config::clean::mimetype::AppProgramRegistry;
+use config::clean::theme::AppTheme;
+use config::TomlConfigFile;
+
 use crate::commands::quit::QuitAction;
 
-use crate::config::{
-    icons::Icons, AppConfig, AppKeyMapping, AppProgramRegistry, AppTheme, Bookmarks,
-    JoshutoPreview, TomlConfigFile,
-};
 use crate::context::AppContext;
 use crate::error::JoshutoError;
 
@@ -70,7 +76,7 @@ lazy_static! {
     };
     static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
     static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config(MIMETYPE_FILE);
-    static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config(PREVIEW_FILE);
+    static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config(PREVIEW_FILE);
     static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config(BOOKMARKS_FILE));
     static ref ICONS_T: Icons = Icons::get_config(ICONS_FILE);
 

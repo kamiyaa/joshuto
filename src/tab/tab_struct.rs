@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path;
 
-use crate::config::option::{DisplayOption, TabDisplayOption};
+use crate::config::clean::app::display::tab::TabDisplayOption;
+use crate::config::clean::app::display::DisplayOption;
 use crate::context::UiContext;
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};

@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::config::option::CaseSensitivity;
+use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::AppBackend;

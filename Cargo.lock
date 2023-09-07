@@ -549,7 +549,6 @@ dependencies = [
  "regex",
  "rustyline",
  "serde",
- "serde_derive",
  "shell-words",
  "shellexpand",
  "signal-hook",

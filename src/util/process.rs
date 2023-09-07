@@ -3,7 +3,7 @@ use std::process;
 use std::sync::mpsc;
 use std::thread;
 
-use crate::config::ProgramEntry;
+use crate::config::clean::mimetype::ProgramEntry;
 use crate::event::AppEvent;
 
 pub fn fork_execute<I, S>(

@@ -1,8 +1,7 @@
-use crate::commands::*;
-use crate::config::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::ui::AppBackend;
+use crate::{commands::*, config::clean::keymap::AppKeyMapping};
 
 use super::{AppExecute, Command};
 

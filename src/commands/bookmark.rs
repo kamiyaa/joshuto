@@ -6,7 +6,8 @@ use ratatui::layout::Rect;
 use ratatui::widgets::Clear;
 use termion::event::Event;
 
-use crate::config::{search_directories, BookmarkRaw, BookmarksRaw};
+use crate::config::raw::bookmarks::{BookmarkRaw, BookmarksRaw};
+use crate::config::search_directories;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::event::{process_event, AppEvent};

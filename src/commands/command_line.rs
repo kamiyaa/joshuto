@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::config::AppKeyMapping;
+use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::key_command::{AppExecute, Command};

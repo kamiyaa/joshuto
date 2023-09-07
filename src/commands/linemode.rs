@@ -1,5 +1,5 @@
 use super::reload;
-use crate::config::option::LineMode;
+use crate::config::clean::app::display::line_mode::LineMode;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;

@@ -1,7 +1,9 @@
 use std::{fs, io, path};
 
-use crate::config::option::DisplayOption;
-use crate::fs::{FileType, JoshutoMetadata};
+use crate::{
+    config::clean::app::display::DisplayOption,
+    fs::{FileType, JoshutoMetadata},
+};
 
 #[cfg(feature = "devicons")]
 use crate::ICONS_T;

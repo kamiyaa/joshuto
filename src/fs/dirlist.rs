@@ -1,7 +1,8 @@
 use std::slice::{Iter, IterMut};
 use std::{io, path};
 
-use crate::config::option::{DisplayOption, TabDisplayOption};
+use crate::config::clean::app::display::tab::TabDisplayOption;
+use crate::config::clean::app::display::DisplayOption;
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::history::read_directory;

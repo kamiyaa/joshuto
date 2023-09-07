@@ -1,5 +1,10 @@
-use crate::config::option::{LineMode, SortType, TabBarDisplayMode};
-use crate::io::FileOperationOptions;
+use crate::{
+    config::clean::app::{
+        display::{line_mode::LineMode, sort_type::SortType},
+        tab::TabBarDisplayMode,
+    },
+    io::FileOperationOptions,
+};
 
 use super::{Command, CommandComment};
 

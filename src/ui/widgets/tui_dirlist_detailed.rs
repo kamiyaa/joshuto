@@ -5,7 +5,10 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::config::option::{DisplayOption, LineMode, LineNumberStyle, TabDisplayOption};
+use crate::config::clean::app::display::line_mode::LineMode;
+use crate::config::clean::app::display::line_number::LineNumberStyle;
+use crate::config::clean::app::display::tab::TabDisplayOption;
+use crate::config::clean::app::display::DisplayOption;
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::string::UnicodeTruncate;
 use crate::util::style;

@@ -1,9 +1,11 @@
-use crate::{config::option::TabBarDisplayMode, context::AppContext, error::JoshutoError};
+use crate::config::clean::app::tab::TabBarDisplayMode;
+use crate::context::AppContext;
+use crate::error::JoshutoResult;
 
 pub fn set_tab_bar_display_mode(
     context: &mut AppContext,
     mode: &TabBarDisplayMode,
-) -> Result<(), JoshutoError> {
+) -> JoshutoResult<()> {
     context.tab_context_mut().display.mode = *mode;
     Ok(())
 }

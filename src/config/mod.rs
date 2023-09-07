@@ -1,18 +1,5 @@
-pub mod bookmarks;
-pub mod general;
-pub mod icons;
-pub mod keymap;
-pub mod mimetype;
-pub mod option;
-pub mod preview;
-pub mod theme;
-
-pub use self::bookmarks::*;
-pub use self::general::*;
-pub use self::keymap::*;
-pub use self::mimetype::*;
-pub use self::preview::*;
-pub use self::theme::*;
+pub mod clean;
+pub mod raw;
 
 use serde::de::DeserializeOwned;
 use std::fs;

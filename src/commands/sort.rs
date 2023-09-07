@@ -1,4 +1,4 @@
-use crate::config::option::SortType;
+use crate::config::clean::app::display::sort_type::SortType;
 use crate::context::AppContext;
 use crate::error::JoshutoResult;
 use crate::history::DirectoryHistory;

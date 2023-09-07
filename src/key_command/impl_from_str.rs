@@ -2,10 +2,13 @@ use std::path;
 
 use crate::commands::case_sensitivity::SetType;
 use crate::commands::quit::QuitAction;
-use crate::config::option::{
-    CaseSensitivity, LineMode, LineNumberStyle, NewTabMode, SelectOption, SortType,
-    TabBarDisplayMode,
-};
+use crate::commands::select::SelectOption;
+use crate::config::clean::app::display::line_mode::LineMode;
+use crate::config::clean::app::display::line_number::LineNumberStyle;
+use crate::config::clean::app::display::new_tab::NewTabMode;
+use crate::config::clean::app::display::sort_type::SortType;
+use crate::config::clean::app::search::CaseSensitivity;
+use crate::config::clean::app::tab::TabBarDisplayMode;
 use crate::error::{JoshutoError, JoshutoErrorKind};
 use crate::io::FileOperationOptions;
 use crate::util::unix;
