@@ -5,7 +5,7 @@ use serde::de::DeserializeOwned;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::CONFIG_HIERARCHY;
 
 pub trait TomlConfigFile {
@@ -30,7 +30,7 @@ pub fn search_config_directories(file_name: &str) -> Option<PathBuf> {
     search_directories(file_name, &CONFIG_HIERARCHY)
 }
 
-fn parse_file_to_config<T, S>(file_path: &Path) -> JoshutoResult<S>
+fn parse_file_to_config<T, S>(file_path: &Path) -> AppResult<S>
 where
     T: DeserializeOwned,
     S: From<T>,

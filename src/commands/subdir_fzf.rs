@@ -3,12 +3,12 @@ use std::process::{Command, Stdio};
 
 use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
 
 use super::change_directory::change_directory;
 
-pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     backend.terminal_drop();
 
     let mut cmd = Command::new("fzf");
@@ -49,7 +49,7 @@ pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
     Ok(())
 }
 
-pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult {
+pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> AppResult {
     if path.is_dir() {
         change_directory(context, path)?;
     } else if let Some(parent) = path.parent() {

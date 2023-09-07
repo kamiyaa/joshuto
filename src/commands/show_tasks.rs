@@ -1,6 +1,6 @@
 use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::event::process_event;
 use crate::event::AppEvent;
 use crate::key_command::{Command, CommandKeybind};
@@ -12,7 +12,7 @@ pub fn show_tasks(
     context: &mut AppContext,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult {
+) -> AppResult {
     context.flush_event();
 
     let mut exit = false;

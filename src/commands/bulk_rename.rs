@@ -7,7 +7,7 @@ use std::process;
 use rand::Rng;
 
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::ui::AppBackend;
 use crate::util::process::wait_for_enter;
 
@@ -18,7 +18,7 @@ const ENV_EDITOR: &str = "EDITOR";
 const FILE_PREFIX: &str = "joshuto-";
 const RAND_STR_LEN: usize = 10;
 
-pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
+pub fn _bulk_rename(context: &mut AppContext) -> AppResult {
     let tmp_directory = env::var(ENV_TMP_DIR).unwrap_or_else(|_| "/tmp".to_string());
 
     let editor = std::env::var(ENV_EDITOR)?;
@@ -87,8 +87,8 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
         std::fs::remove_file(&file_path)?;
     }
     if paths_renamed.len() < entries.len() {
-        return Err(JoshutoError::new(
-            JoshutoErrorKind::Io(io::ErrorKind::InvalidInput),
+        return Err(AppError::new(
+            AppErrorKind::Io(io::ErrorKind::InvalidInput),
             "Insufficient inputs".to_string(),
         ));
     }
@@ -124,7 +124,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
-pub fn bulk_rename(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+pub fn bulk_rename(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     context.remove_external_preview();
     backend.terminal_drop();
     let res = _bulk_rename(context);

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::config::raw::theme::AppThemeRaw;
 use crate::config::{parse_config_or_default, TomlConfigFile};
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 
 use super::style::AppStyle;
 use super::tab::TabTheme;
@@ -23,7 +23,7 @@ pub struct AppTheme {
 }
 
 impl AppTheme {
-    pub fn default_res() -> JoshutoResult<Self> {
+    pub fn default_res() -> AppResult<Self> {
         let raw: AppThemeRaw = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
         Ok(Self::from(raw))
     }

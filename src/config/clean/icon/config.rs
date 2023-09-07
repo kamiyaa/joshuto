@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     config::{parse_config_or_default, raw::icon::IconsRaw, TomlConfigFile},
-    error::JoshutoResult,
+    error::AppResult,
 };
 
 use super::DEFAULT_CONFIG_FILE_PATH;
@@ -17,7 +17,7 @@ pub struct Icons {
 }
 
 impl Icons {
-    pub fn default_icons() -> JoshutoResult<Self> {
+    pub fn default_icons() -> AppResult<Self> {
         let icons: IconsRaw = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
         Ok(Self::from(icons))
     }

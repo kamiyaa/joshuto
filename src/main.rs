@@ -35,7 +35,7 @@ use config::TomlConfigFile;
 use crate::commands::quit::QuitAction;
 
 use crate::context::AppContext;
-use crate::error::JoshutoError;
+use crate::error::AppError;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_HOME: &str = "JOSHUTO_CONFIG_HOME";
@@ -125,7 +125,7 @@ pub enum Commands {
     Version,
 }
 
-fn run_main(args: Args) -> Result<i32, JoshutoError> {
+fn run_main(args: Args) -> Result<i32, AppError> {
     if let Some(command) = args.commands {
         match command {
             Commands::Completions { shell } => {
@@ -171,7 +171,7 @@ fn run_main(args: Args) -> Result<i32, JoshutoError> {
     Ok(context.quit.exit_code())
 }
 
-fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
+fn run_quit(args: &Args, context: &AppContext) -> Result<(), AppError> {
     match &args.output_file {
         Some(output_path) => match context.quit {
             QuitAction::OutputCurrentDirectory => {
@@ -217,7 +217,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
     Ok(())
 }
 
-fn print_version() -> Result<i32, JoshutoError> {
+fn print_version() -> Result<i32, AppError> {
     let version = env!("CARGO_PKG_VERSION");
     writeln!(&mut std::io::stdout(), "{PROGRAM_NAME}-{version}")?;
     Ok(0)

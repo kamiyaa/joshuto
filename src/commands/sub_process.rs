@@ -1,5 +1,5 @@
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
 use std::process::{Command, Stdio};
 
@@ -52,7 +52,7 @@ pub fn sub_process(
     backend: &mut AppBackend,
     words: &[String],
     spawn: bool,
-) -> JoshutoResult {
+) -> AppResult {
     backend.terminal_drop();
     let res = execute_sub_process(context, words, spawn);
     backend.terminal_restore()?;

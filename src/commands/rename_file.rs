@@ -2,7 +2,7 @@ use std::path;
 
 use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::history::create_dirlist_with_history;
 use crate::ui::AppBackend;
 
@@ -41,7 +41,7 @@ pub fn _rename_file(
     Ok(())
 }
 
-pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> JoshutoResult {
+pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> AppResult {
     let path: Option<path::PathBuf> = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -67,7 +67,7 @@ pub fn rename_file_append(
     context: &mut AppContext,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult {
+) -> AppResult {
     if let Some(file_name) = _get_current_file_name(context) {
         let (prefix, suffix) = (format!("rename {}", file_name), "".to_string());
         command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
@@ -79,7 +79,7 @@ pub fn rename_file_append_base(
     context: &mut AppContext,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult {
+) -> AppResult {
     if let Some(file_name) = _get_current_file_name(context) {
         let (prefix, suffix): (String, String) = match file_name.rfind('.') {
             Some(ext) => (
@@ -97,7 +97,7 @@ pub fn rename_file_prepend(
     context: &mut AppContext,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult {
+) -> AppResult {
     if let Some(file_name) = _get_current_file_name(context) {
         let (prefix, suffix) = ("rename ".to_string(), file_name);
         command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
@@ -109,7 +109,7 @@ pub fn rename_file_keep_ext(
     context: &mut AppContext,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult {
+) -> AppResult {
     if let Some(file_name) = _get_current_file_name(context) {
         let (prefix, suffix): (String, String) = match file_name.rfind('.') {
             Some(ext) => ("rename ".to_string(), file_name[ext..].to_string()),

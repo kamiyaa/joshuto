@@ -1,6 +1,6 @@
 use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 
 #[derive(Clone, Copy, Debug)]
 pub enum SetType {
@@ -14,7 +14,7 @@ pub fn set_case_sensitivity(
     context: &mut AppContext,
     case_sensitivity: CaseSensitivity,
     set_type: SetType,
-) -> JoshutoResult {
+) -> AppResult {
     let options = context.config_mut().search_options_mut();
 
     match set_type {

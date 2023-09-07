@@ -1,7 +1,7 @@
 mod error_kind;
 mod error_type;
 
-pub use self::error_kind::JoshutoErrorKind;
-pub use self::error_type::JoshutoError;
+pub use self::error_kind::AppErrorKind;
+pub use self::error_type::AppError;
 
-pub type JoshutoResult<T = ()> = Result<T, JoshutoError>;
+pub type AppResult<T = ()> = Result<T, AppError>;

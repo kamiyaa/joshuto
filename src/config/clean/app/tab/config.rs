@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{
     config::raw::app::display::tab::TabOptionRaw,
-    error::{JoshutoError, JoshutoErrorKind},
+    error::{AppError, AppErrorKind},
     tab::TabHomePage,
 };
 
@@ -73,15 +73,15 @@ pub enum TabBarDisplayMode {
 }
 
 impl FromStr for TabBarDisplayMode {
-    type Err = JoshutoError;
+    type Err = AppError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "num" => Ok(Self::Number),
             "dir" => Ok(Self::Directory),
             "all" => Ok(Self::All),
-            s => Err(JoshutoError::new(
-                JoshutoErrorKind::UnrecognizedArgument,
+            s => Err(AppError::new(
+                AppErrorKind::UnrecognizedArgument,
                 format!("tab_bar_mode: `{}` unknown argument.", s),
             )),
         }

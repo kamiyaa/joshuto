@@ -1,10 +1,10 @@
 use crate::context::{AppContext, MatchContext};
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 
 use super::cursor_move;
 use super::search;
 
-pub fn search_glob(context: &mut AppContext, pattern: &str) -> JoshutoResult {
+pub fn search_glob(context: &mut AppContext, pattern: &str) -> AppResult {
     let case_sensitivity = context
         .config_ref()
         .search_options_ref()

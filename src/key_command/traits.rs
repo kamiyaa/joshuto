@@ -1,6 +1,6 @@
 use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
 
 pub trait AppExecute {
@@ -9,7 +9,7 @@ pub trait AppExecute {
         context: &mut AppContext,
         backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult;
+    ) -> AppResult;
 }
 
 pub trait NumberedExecute {
@@ -19,7 +19,7 @@ pub trait NumberedExecute {
         context: &mut AppContext,
         backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult;
+    ) -> AppResult;
 }
 
 pub trait InteractiveExecute {

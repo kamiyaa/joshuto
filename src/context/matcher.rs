@@ -4,7 +4,7 @@ use globset::{GlobBuilder, GlobMatcher};
 use regex::{Regex, RegexBuilder};
 
 use crate::config::clean::app::search::CaseSensitivity;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 
 #[derive(Clone, Debug, Default)]
 pub enum MatchContext {
@@ -19,7 +19,7 @@ pub enum MatchContext {
 }
 
 impl MatchContext {
-    pub fn new_glob(pattern: &str, case_sensitivity: CaseSensitivity) -> JoshutoResult<Self> {
+    pub fn new_glob(pattern: &str, case_sensitivity: CaseSensitivity) -> AppResult<Self> {
         let pattern_lower = pattern.to_lowercase();
 
         let (pattern, actual_case_sensitivity) = match case_sensitivity {
@@ -46,7 +46,7 @@ impl MatchContext {
         Ok(Self::Glob(glob))
     }
 
-    pub fn new_regex(pattern: &str, case_sensitivity: CaseSensitivity) -> JoshutoResult<Self> {
+    pub fn new_regex(pattern: &str, case_sensitivity: CaseSensitivity) -> AppResult<Self> {
         let pattern_lower = pattern.to_lowercase();
 
         let (pattern, actual_case_sensitivity) = match case_sensitivity {

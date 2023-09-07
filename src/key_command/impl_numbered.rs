@@ -1,7 +1,7 @@
 use crate::commands::*;
 use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::ui::AppBackend;
 
 use super::{Command, NumberedExecute};
@@ -17,12 +17,12 @@ impl NumberedExecute for Command {
         context: &mut AppContext,
         backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult {
+    ) -> AppResult {
         match self {
             Self::CursorMoveUp { .. } => cursor_move::up(context, number_prefix),
             Self::CursorMoveDown { .. } => cursor_move::down(context, number_prefix),
-            _ => Err(JoshutoError::new(
-                JoshutoErrorKind::UnrecognizedCommand,
+            _ => Err(AppError::new(
+                AppErrorKind::UnrecognizedCommand,
                 "Command cannot be prefixed by a number".to_string(),
             )),
         }

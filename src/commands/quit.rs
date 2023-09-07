@@ -1,7 +1,7 @@
 use std::io;
 
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::{AppError, AppErrorKind, AppResult};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuitAction {
@@ -24,7 +24,7 @@ impl QuitAction {
     }
 }
 
-pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> JoshutoResult {
+pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> AppResult {
     if quit_action == QuitAction::Force {
         context.quit = quit_action;
         return Ok(());
@@ -32,8 +32,8 @@ pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> Jo
 
     let worker_context = context.worker_context_ref();
     if worker_context.is_busy() || !worker_context.is_empty() {
-        Err(JoshutoError::new(
-            JoshutoErrorKind::Io(io::ErrorKind::Other),
+        Err(AppError::new(
+            AppErrorKind::Io(io::ErrorKind::Other),
             String::from("operations running in background, use `quit --force` to quit"),
         ))
     } else {

@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::{AppError, AppErrorKind, AppResult};
 
 bitflags::bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
@@ -21,7 +21,7 @@ impl Default for LineMode {
 }
 
 impl LineMode {
-    pub fn from_string(name: &str) -> JoshutoResult<LineMode> {
+    pub fn from_string(name: &str) -> AppResult<LineMode> {
         match name {
             "all" => Ok(LineMode::all()),
             "none" => Ok(LineMode::empty()),
@@ -38,8 +38,8 @@ impl LineMode {
                         "group" => linemode |= LineMode::group,
                         "perm" => linemode |= LineMode::perm,
                         flag => {
-                            return Err(JoshutoError::new(
-                                JoshutoErrorKind::InvalidParameters,
+                            return Err(AppError::new(
+                                AppErrorKind::InvalidParameters,
                                 format!("Linemode '{}' unknown.", flag),
                             ))
                         }

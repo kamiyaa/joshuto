@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     config::{parse_config_or_default, raw::app::AppConfigRaw, TomlConfigFile},
-    error::JoshutoResult,
+    error::AppResult,
 };
 
 use super::{
@@ -24,7 +24,7 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
-    pub fn default_res() -> JoshutoResult<Self> {
+    pub fn default_res() -> AppResult<Self> {
         let raw: AppConfigRaw = toml::from_str(DEFAULT_CONFIG_FILE_PATH)?;
         Ok(Self::from(raw))
     }

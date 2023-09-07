@@ -1,5 +1,5 @@
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
 use crate::{commands::*, config::clean::keymap::AppKeyMapping};
 
@@ -11,7 +11,7 @@ impl AppExecute for Command {
         context: &mut AppContext,
         backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult {
+    ) -> AppResult {
         match self {
             Self::Escape => escape::escape(context),
             Self::ToggleVisualMode => uimodes::toggle_visual_mode(context),

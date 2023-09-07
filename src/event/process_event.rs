@@ -11,7 +11,7 @@ use crate::commands::{cursor_move, parent_cursor_move, reload};
 use crate::config::clean::keymap::AppKeyMapping;
 use crate::config::clean::keymap::KeyMapping;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::event::AppEvent;
 use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
@@ -90,10 +90,7 @@ pub fn process_worker_progress(context: &mut AppContext, res: FileOperationProgr
     worker_context.update_msg();
 }
 
-pub fn process_finished_worker(
-    context: &mut AppContext,
-    res: JoshutoResult<FileOperationProgress>,
-) {
+pub fn process_finished_worker(context: &mut AppContext, res: AppResult<FileOperationProgress>) {
     let worker_context = context.worker_context_mut();
     let observer = worker_context.remove_worker().unwrap();
     let options = context.config_ref().display_options_ref().clone();

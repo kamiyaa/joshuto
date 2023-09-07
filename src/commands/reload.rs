@@ -1,5 +1,5 @@
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::history::create_dirlist_with_history;
 
 use uuid::Uuid;
@@ -91,7 +91,7 @@ pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn reload_dirlist(context: &mut AppContext) -> JoshutoResult {
+pub fn reload_dirlist(context: &mut AppContext) -> AppResult {
     reload(context, &context.tab_context_ref().curr_tab_id())?;
     Ok(())
 }
