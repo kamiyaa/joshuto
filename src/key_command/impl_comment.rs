@@ -121,6 +121,8 @@ impl CommandComment for Command {
             },
             Self::SortReverse => "Reverse sort order",
 
+            Self::FilterGlob { .. } => "Filter directory list with globbing",
+            Self::FilterRegex { .. } => "Filter directory list with regex",
             Self::FilterString { .. } => "Filter directory list",
 
             Self::SetTabBarDisplayMode(mode) => match mode {

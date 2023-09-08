@@ -145,6 +145,8 @@ impl AppExecute for Command {
                 numbered_command::numbered_command(context, backend, keymap_t, *initial)
             }
 
+            Self::FilterGlob { pattern } => filter_glob::filter_glob(context, pattern.as_str()),
+            Self::FilterRegex { pattern } => filter_regex::filter_regex(context, pattern.as_str()),
             Self::FilterString { pattern } => {
                 filter_string::filter_string(context, pattern.as_str())
             }

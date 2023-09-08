@@ -88,6 +88,8 @@ cmd_constants![
     (CMD_NUMBERED_COMMAND, "numbered_command"),
     (CMD_FLAT, "flat"),
     (CMD_ESCAPE, "escape"),
+    (CMD_FILTER_GLOB, "filter_glob"),
+    (CMD_FILTER_REGEX, "filter_regex"),
     (CMD_FILTER_STRING, "filter"),
     (CMD_BOOKMARK_ADD, "add_bookmark"),
     (CMD_BOOKMARK_CHANGE_DIRECTORY, "cd_bookmark"),

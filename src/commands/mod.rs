@@ -8,6 +8,8 @@ pub mod delete_files;
 pub mod escape;
 pub mod file_ops;
 pub mod filter;
+pub mod filter_glob;
+pub mod filter_regex;
 pub mod filter_string;
 pub mod flat;
 pub mod fzf;

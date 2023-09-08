@@ -151,6 +151,12 @@ pub enum Command {
     Sort(SortType),
     SortReverse,
 
+    FilterGlob {
+        pattern: String,
+    },
+    FilterRegex {
+        pattern: String,
+    },
     FilterString {
         pattern: String,
     },
