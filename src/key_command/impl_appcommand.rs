@@ -95,6 +95,7 @@ impl AppCommand for Command {
 
             Self::SearchFzf => CMD_SEARCH_FZF,
             Self::SubdirFzf => CMD_SUBDIR_FZF,
+            Self::SelectFzf { .. } => CMD_SELECT_FZF,
             Self::Zoxide(_) => CMD_ZOXIDE,
             Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,
 

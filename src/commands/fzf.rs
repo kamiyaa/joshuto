@@ -28,6 +28,28 @@ pub fn fzf(
     fzf_impl(backend, items, args)
 }
 
+pub fn fzf_multi(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    items: Vec<String>,
+) -> JoshutoResult<String> {
+    let mut args = Vec::new();
+
+    let case_sensitivity = context
+        .config_ref()
+        .search_options_ref()
+        .fzf_case_sensitivity;
+
+    match case_sensitivity {
+        CaseSensitivity::Insensitive => args.push("-i".to_owned()),
+        CaseSensitivity::Sensitive => args.push("+i".to_owned()),
+        CaseSensitivity::Smart => {}
+    }
+
+    args.push("-m".to_owned());
+    fzf_impl(backend, items, args)
+}
+
 fn fzf_impl(
     backend: &mut AppBackend,
     items: Vec<String>,

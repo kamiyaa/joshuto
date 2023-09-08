@@ -26,6 +26,7 @@ pub mod search_glob;
 pub mod search_regex;
 pub mod search_string;
 pub mod select;
+pub mod select_fzf;
 pub mod select_glob;
 pub mod select_regex;
 pub mod select_string;

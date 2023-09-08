@@ -160,6 +160,7 @@ impl AppExecute for Command {
 
             Self::SearchFzf => search_fzf::search_fzf(context, backend),
             Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),
+            Self::SelectFzf { options } => select_fzf::select_fzf(context, backend, options),
             Self::Zoxide(arg) => zoxide::zoxide_query(context, arg),
             Self::ZoxideInteractive => zoxide::zoxide_query_interactive(context, backend),
 

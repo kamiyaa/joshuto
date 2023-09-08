@@ -420,6 +420,28 @@ impl std::str::FromStr for Command {
                     format!("{}: {}", arg, e),
                 )),
             }
+        } else if command == CMD_SELECT_FZF {
+            let mut options = SelectOption::default();
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            _ => {}
+                        }
+                    }
+                    Ok(Self::SelectFzf { options })
+                }
+                Err(e) => Err(JoshutoError::new(
+                    JoshutoErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
         } else if command == CMD_SET_CASE_SENSITIVITY {
             match shell_words::split(arg) {
                 Ok(args) => {

@@ -138,6 +138,7 @@ impl CommandComment for Command {
 
             Self::SearchFzf => "Search via fzf",
             Self::SubdirFzf => "Switch to a child directory via fzf",
+            Self::SelectFzf { .. } => "Select via fzf",
             Self::Zoxide(_) => "Zoxide",
             Self::ZoxideInteractive => "Zoxide interactive",
 

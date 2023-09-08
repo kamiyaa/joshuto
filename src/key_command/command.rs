@@ -170,6 +170,9 @@ pub enum Command {
 
     SearchFzf,
     SubdirFzf,
+    SelectFzf {
+        options: SelectOption,
+    },
     Zoxide(String),
     ZoxideInteractive,
 

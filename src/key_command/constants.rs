@@ -82,6 +82,7 @@ cmd_constants![
     (CMD_HELP, "help"),
     (CMD_SEARCH_FZF, "search_fzf"),
     (CMD_SUBDIR_FZF, "subdir_fzf"),
+    (CMD_SELECT_FZF, "select_fzf"),
     (CMD_ZOXIDE, "z"),
     (CMD_ZOXIDE_INTERACTIVE, "zi"),
     (CMD_NUMBERED_COMMAND, "numbered_command"),
