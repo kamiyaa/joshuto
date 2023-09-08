@@ -14,6 +14,11 @@ pub fn select_string(
         .search_options_ref()
         .string_case_sensitivity;
 
-    let select_context = MatchContext::new_string(pattern, case_sensitivity);
+    let select_context = if !pattern.is_empty() {
+        MatchContext::new_string(pattern, case_sensitivity)
+    } else {
+        MatchContext::None
+    };
+
     select::select_files(context, &select_context, options)
 }
