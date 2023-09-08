@@ -3,14 +3,7 @@ use crate::error::JoshutoResult;
 
 use super::reload;
 
-pub fn filter(context: &mut AppContext, pattern: &str) -> JoshutoResult {
-    let case_sensitivity = context
-        .config_ref()
-        .search_options_ref()
-        .string_case_sensitivity;
-
-    let filter_context = MatchContext::new_string(pattern, case_sensitivity);
-
+pub fn filter(context: &mut AppContext, filter_context: MatchContext) -> JoshutoResult {
     let curr_tab = context.tab_context_mut().curr_tab_mut();
     let path = curr_tab.cwd().to_path_buf();
 

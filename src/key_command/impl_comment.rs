@@ -121,7 +121,7 @@ impl CommandComment for Command {
             },
             Self::SortReverse => "Reverse sort order",
 
-            Self::Filter { .. } => "Filter directory list",
+            Self::FilterString { .. } => "Filter directory list",
 
             Self::SetTabBarDisplayMode(mode) => match mode {
                 TabBarDisplayMode::Number => "TabBar only display with number ( 1 | 2 | 3 )",

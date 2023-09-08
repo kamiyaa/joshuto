@@ -80,7 +80,7 @@ impl AppCommand for Command {
             Self::Sort(_) => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,
 
-            Self::Filter { .. } => CMD_FILTER,
+            Self::FilterString { .. } => CMD_FILTER_STRING,
 
             Self::SubProcess { spawn: false, .. } => CMD_SUBPROCESS_FOREGROUND,
             Self::SubProcess { spawn: true, .. } => CMD_SUBPROCESS_BACKGROUND,

@@ -550,8 +550,8 @@ impl std::str::FromStr for Command {
                     format!("{}: no starting character given", command),
                 )),
             }
-        } else if command == CMD_FILTER {
-            Ok(Self::Filter {
+        } else if command == CMD_FILTER_STRING {
+            Ok(Self::FilterString {
                 pattern: arg.to_string(),
             })
         } else {

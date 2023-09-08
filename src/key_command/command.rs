@@ -151,7 +151,7 @@ pub enum Command {
     Sort(SortType),
     SortReverse,
 
-    Filter {
+    FilterString {
         pattern: String,
     },
 
