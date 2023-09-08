@@ -1,24 +1,11 @@
-pub mod bookmarks;
-pub mod general;
-pub mod icons;
-pub mod keymap;
-pub mod mimetype;
-pub mod option;
-pub mod preview;
-pub mod theme;
-
-pub use self::bookmarks::*;
-pub use self::general::*;
-pub use self::keymap::*;
-pub use self::mimetype::*;
-pub use self::preview::*;
-pub use self::theme::*;
+pub mod clean;
+pub mod raw;
 
 use serde::de::DeserializeOwned;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::CONFIG_HIERARCHY;
 
 pub trait TomlConfigFile {
@@ -43,7 +30,7 @@ pub fn search_config_directories(file_name: &str) -> Option<PathBuf> {
     search_directories(file_name, &CONFIG_HIERARCHY)
 }
 
-fn parse_file_to_config<T, S>(file_path: &Path) -> JoshutoResult<S>
+fn parse_file_to_config<T, S>(file_path: &Path) -> AppResult<S>
 where
     T: DeserializeOwned,
     S: From<T>,

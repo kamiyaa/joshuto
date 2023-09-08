@@ -4,7 +4,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Clear, Widget};
 
-use crate::config::KeyMapping;
+use crate::config::clean::keymap::KeyMapping;
 use crate::context::AppContext;
 use crate::traits::ToString;
 use crate::ui::views::TuiView;

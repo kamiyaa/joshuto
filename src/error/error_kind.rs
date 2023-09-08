@@ -2,7 +2,7 @@ use std::convert::From;
 use std::io;
 
 #[derive(Clone, Debug)]
-pub enum JoshutoErrorKind {
+pub enum AppErrorKind {
     // io related
     Io(io::ErrorKind),
 
@@ -28,25 +28,25 @@ pub enum JoshutoErrorKind {
     UnknownError,
 }
 
-impl From<io::ErrorKind> for JoshutoErrorKind {
+impl From<io::ErrorKind> for AppErrorKind {
     fn from(err: io::ErrorKind) -> Self {
         Self::Io(err)
     }
 }
 
-impl From<&globset::ErrorKind> for JoshutoErrorKind {
+impl From<&globset::ErrorKind> for AppErrorKind {
     fn from(_: &globset::ErrorKind) -> Self {
         Self::Glob
     }
 }
 
-impl From<std::env::VarError> for JoshutoErrorKind {
+impl From<std::env::VarError> for AppErrorKind {
     fn from(_: std::env::VarError) -> Self {
         Self::EnvVarNotPresent
     }
 }
 
-impl From<toml::de::Error> for JoshutoErrorKind {
+impl From<toml::de::Error> for AppErrorKind {
     fn from(err: toml::de::Error) -> Self {
         Self::TomlDeError(err)
     }

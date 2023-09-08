@@ -1,8 +1,7 @@
-use crate::commands::*;
-use crate::config::AppKeyMapping;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
+use crate::{commands::*, config::clean::keymap::AppKeyMapping};
 
 use super::{AppExecute, Command};
 
@@ -12,7 +11,7 @@ impl AppExecute for Command {
         context: &mut AppContext,
         backend: &mut AppBackend,
         keymap_t: &AppKeyMapping,
-    ) -> JoshutoResult {
+    ) -> AppResult {
         match self {
             Self::Escape => escape::escape(context),
             Self::ToggleVisualMode => uimodes::toggle_visual_mode(context),
@@ -99,6 +98,9 @@ impl AppExecute for Command {
             Self::ReloadDirList => reload::reload_dirlist(context),
             Self::RenameFile { new_name } => rename_file::rename_file(context, new_name.as_path()),
             Self::RenameFileAppend => rename_file::rename_file_append(context, backend, keymap_t),
+            Self::RenameFileAppendBase => {
+                rename_file::rename_file_append_base(context, backend, keymap_t)
+            }
             Self::RenameFilePrepend => rename_file::rename_file_prepend(context, backend, keymap_t),
             Self::RenameFileKeepExt => {
                 rename_file::rename_file_keep_ext(context, backend, keymap_t)

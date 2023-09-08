@@ -4,10 +4,10 @@ use std::process::{Command, Stdio};
 
 use crate::commands::change_directory;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
 
-pub fn zoxide_query(context: &mut AppContext, args: &str) -> JoshutoResult {
+pub fn zoxide_query(context: &mut AppContext, args: &str) -> AppResult {
     let cwd = std::env::current_dir()?;
 
     let zoxide_output = Command::new("zoxide")
@@ -37,10 +37,7 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> JoshutoResult {
     Ok(())
 }
 
-pub fn zoxide_query_interactive(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
-) -> JoshutoResult {
+pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     backend.terminal_drop();
 
     let zoxide_process = Command::new("zoxide")

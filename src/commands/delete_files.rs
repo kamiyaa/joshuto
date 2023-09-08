@@ -4,7 +4,7 @@ use std::sync::mpsc;
 use termion::event::Key;
 
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::history::DirectoryHistory;
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 use crate::ui::widgets::TuiPrompt;
@@ -40,7 +40,7 @@ fn delete_files(
     paths: Vec<path::PathBuf>,
     background: bool,
     permanently: bool,
-) -> JoshutoResult<()> {
+) -> AppResult<()> {
     let file_op = FileOperation::Delete;
     let options = FileOperationOptions {
         overwrite: false,
@@ -71,7 +71,7 @@ pub fn delete_selected_files(
     background: bool,
     permanently: bool,
     noconfirm: bool,
-) -> JoshutoResult {
+) -> AppResult {
     let paths = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -81,8 +81,8 @@ pub fn delete_selected_files(
 
     let paths_len = paths.len();
     if paths_len == 0 {
-        let err = JoshutoError::new(
-            JoshutoErrorKind::InvalidParameters,
+        let err = AppError::new(
+            AppErrorKind::InvalidParameters,
             "no files selected".to_string(),
         );
         return Err(err);

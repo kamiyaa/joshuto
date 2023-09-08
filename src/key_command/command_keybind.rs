@@ -1,5 +1,4 @@
-use crate::config::KeyMapping;
-use crate::key_command::Command;
+use crate::{config::clean::keymap::KeyMapping, key_command::Command};
 
 #[derive(Debug)]
 pub enum CommandKeybind {

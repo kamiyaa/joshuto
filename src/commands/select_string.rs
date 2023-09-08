@@ -1,14 +1,9 @@
-use crate::config::option::SelectOption;
 use crate::context::{AppContext, MatchContext};
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 
-use super::select;
+use super::select::{self, SelectOption};
 
-pub fn select_string(
-    context: &mut AppContext,
-    pattern: &str,
-    options: &SelectOption,
-) -> JoshutoResult {
+pub fn select_string(context: &mut AppContext, pattern: &str, options: &SelectOption) -> AppResult {
     let case_sensitivity = context
         .config_ref()
         .search_options_ref()

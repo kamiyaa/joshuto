@@ -2,7 +2,7 @@ use std::io;
 use std::process::{Command, Stdio};
 
 use crate::context::{AppContext, LocalStateContext};
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
 fn new_local_state(context: &mut AppContext, file_op: FileOperation) -> Option<()> {
@@ -17,27 +17,27 @@ fn new_local_state(context: &mut AppContext, file_op: FileOperation) -> Option<(
     Some(())
 }
 
-pub fn cut(context: &mut AppContext) -> JoshutoResult {
+pub fn cut(context: &mut AppContext) -> AppResult {
     new_local_state(context, FileOperation::Cut);
     Ok(())
 }
 
-pub fn copy(context: &mut AppContext) -> JoshutoResult {
+pub fn copy(context: &mut AppContext) -> AppResult {
     new_local_state(context, FileOperation::Copy);
     Ok(())
 }
 
-pub fn symlink_absolute(context: &mut AppContext) -> JoshutoResult {
+pub fn symlink_absolute(context: &mut AppContext) -> AppResult {
     new_local_state(context, FileOperation::Symlink { relative: false });
     Ok(())
 }
 
-pub fn symlink_relative(context: &mut AppContext) -> JoshutoResult {
+pub fn symlink_relative(context: &mut AppContext) -> AppResult {
     new_local_state(context, FileOperation::Symlink { relative: true });
     Ok(())
 }
 
-pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> JoshutoResult {
+pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> AppResult {
     match context.take_local_state() {
         Some(state) if !state.paths.is_empty() => {
             let dest = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
@@ -45,14 +45,14 @@ pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> Joshuto
             context.worker_context_mut().push_worker(worker_thread);
             Ok(())
         }
-        _ => Err(JoshutoError::new(
-            JoshutoErrorKind::Io(io::ErrorKind::InvalidData),
+        _ => Err(AppError::new(
+            AppErrorKind::Io(io::ErrorKind::InvalidData),
             "no files selected".to_string(),
         )),
     }
 }
 
-pub fn copy_filename(context: &mut AppContext) -> JoshutoResult {
+pub fn copy_filename(context: &mut AppContext) -> AppResult {
     let entry_file_name = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -66,7 +66,7 @@ pub fn copy_filename(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
-pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResult {
+pub fn copy_filename_without_extension(context: &mut AppContext) -> AppResult {
     let entry_file_name = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -86,7 +86,7 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> JoshutoResul
     Ok(())
 }
 
-pub fn copy_filepath(context: &mut AppContext, all: bool) -> JoshutoResult {
+pub fn copy_filepath(context: &mut AppContext, all: bool) -> AppResult {
     let selected = context.tab_context_ref().curr_tab_ref().curr_list_ref();
     let entry_file_path = {
         if all {
@@ -112,7 +112,7 @@ pub fn copy_filepath(context: &mut AppContext, all: bool) -> JoshutoResult {
     Ok(())
 }
 
-pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult {
+pub fn copy_dirpath(context: &mut AppContext) -> AppResult {
     let opt_entry = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -125,7 +125,7 @@ pub fn copy_dirpath(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
-fn copy_string_to_buffer(string: String) -> JoshutoResult {
+fn copy_string_to_buffer(string: String) -> AppResult {
     let clipboards = [
         (
             "wl-copy",
@@ -154,8 +154,8 @@ fn copy_string_to_buffer(string: String) -> JoshutoResult {
             _ => {}
         }
     }
-    Err(JoshutoError::new(
-        JoshutoErrorKind::ClipboardError,
+    Err(AppError::new(
+        AppErrorKind::ClipboardError,
         "Failed to copy to clipboard".to_string(),
     ))
 }

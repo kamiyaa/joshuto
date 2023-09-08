@@ -6,9 +6,10 @@ use ratatui::layout::Rect;
 use ratatui::widgets::Clear;
 use termion::event::Event;
 
-use crate::config::{search_directories, BookmarkRaw, BookmarksRaw};
+use crate::config::raw::bookmarks::{BookmarkRaw, BookmarksRaw};
+use crate::config::search_directories;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::event::{process_event, AppEvent};
 use crate::traits::ToString;
 use crate::ui::views::TuiView;
@@ -29,7 +30,7 @@ fn find_bookmark_file() -> Option<path::PathBuf> {
     None
 }
 
-pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     let cwd = std::env::current_dir()?;
 
     let bookmark_path = match search_directories(BOOKMARKS_FILE, &CONFIG_HIERARCHY) {
@@ -67,10 +68,7 @@ pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> Joshu
     Ok(())
 }
 
-pub fn change_directory_bookmark(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
-) -> JoshutoResult {
+pub fn change_directory_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     let key = poll_for_bookmark_key(context, backend);
 
     if let Some(key) = key {

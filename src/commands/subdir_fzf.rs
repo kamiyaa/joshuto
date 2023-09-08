@@ -1,19 +1,19 @@
 use std::path::{Path, PathBuf};
 
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
 
 use super::change_directory::change_directory;
 use super::fzf;
 
-pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     let fzf_output = fzf::fzf(context, backend, Vec::new())?;
     let path: PathBuf = PathBuf::from(fzf_output);
     fzf_change_dir(context, path.as_path())
 }
 
-pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> JoshutoResult {
+pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> AppResult {
     if path.is_dir() {
         change_directory(context, path)?;
     } else if let Some(parent) = path.parent() {

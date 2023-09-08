@@ -1,10 +1,10 @@
 use crate::context::{AppContext, MatchContext};
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::tab::JoshutoTab;
 
 use super::cursor_move;
 
-pub fn search_next(context: &mut AppContext) -> JoshutoResult {
+pub fn search_next(context: &mut AppContext) -> AppResult {
     if let Some(search_context) = context.get_search_context() {
         if search_context.is_none() {
             return Ok(());
@@ -45,7 +45,7 @@ pub(super) fn search_next_impl(
     None
 }
 
-pub fn search_prev(context: &mut AppContext) -> JoshutoResult {
+pub fn search_prev(context: &mut AppContext) -> AppResult {
     if let Some(search_context) = context.get_search_context() {
         if search_context.is_none() {
             return Ok(());

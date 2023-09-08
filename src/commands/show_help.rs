@@ -2,9 +2,9 @@ use std::cmp::Ordering;
 
 use termion::event::{Event, Key};
 
-use crate::config::AppKeyMapping;
+use crate::config::clean::keymap::AppKeyMapping;
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::event::process_event;
 use crate::event::AppEvent;
 use crate::key_command::{Command, CommandKeybind};
@@ -16,7 +16,7 @@ pub fn help_loop(
     context: &mut AppContext,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
-) -> JoshutoResult {
+) -> AppResult {
     context.flush_event();
 
     let mut offset = 0;

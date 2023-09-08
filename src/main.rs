@@ -14,22 +14,28 @@ mod traits;
 mod ui;
 mod util;
 
-use clap::{CommandFactory, Parser, Subcommand};
-use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process;
 use std::sync::Mutex;
 
+use clap::{CommandFactory, Parser, Subcommand};
+use config::clean::app::AppConfig;
+use config::clean::icon::Icons;
+use config::clean::keymap::AppKeyMapping;
+use config::clean::preview::FileEntryPreview;
+use lazy_static::lazy_static;
+
+use config::clean::bookmarks::Bookmarks;
+use config::clean::mimetype::AppProgramRegistry;
+use config::clean::theme::AppTheme;
+use config::TomlConfigFile;
+
 use crate::commands::quit::QuitAction;
 
-use crate::config::{
-    icons::Icons, AppConfig, AppKeyMapping, AppProgramRegistry, AppTheme, Bookmarks,
-    JoshutoPreview, TomlConfigFile,
-};
 use crate::context::AppContext;
-use crate::error::JoshutoError;
+use crate::error::AppError;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_HOME: &str = "JOSHUTO_CONFIG_HOME";
@@ -70,7 +76,7 @@ lazy_static! {
     };
     static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
     static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config(MIMETYPE_FILE);
-    static ref PREVIEW_T: JoshutoPreview = JoshutoPreview::get_config(PREVIEW_FILE);
+    static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config(PREVIEW_FILE);
     static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config(BOOKMARKS_FILE));
     static ref ICONS_T: Icons = Icons::get_config(ICONS_FILE);
 
@@ -119,7 +125,7 @@ pub enum Commands {
     Version,
 }
 
-fn run_main(args: Args) -> Result<i32, JoshutoError> {
+fn run_main(args: Args) -> Result<i32, AppError> {
     if let Some(command) = args.commands {
         match command {
             Commands::Completions { shell } => {
@@ -165,7 +171,7 @@ fn run_main(args: Args) -> Result<i32, JoshutoError> {
     Ok(context.quit.exit_code())
 }
 
-fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
+fn run_quit(args: &Args, context: &AppContext) -> Result<(), AppError> {
     match &args.output_file {
         Some(output_path) => match context.quit {
             QuitAction::OutputCurrentDirectory => {
@@ -211,7 +217,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), JoshutoError> {
     Ok(())
 }
 
-fn print_version() -> Result<i32, JoshutoError> {
+fn print_version() -> Result<i32, AppError> {
     let version = env!("CARGO_PKG_VERSION");
     writeln!(&mut std::io::stdout(), "{PROGRAM_NAME}-{version}")?;
     Ok(0)

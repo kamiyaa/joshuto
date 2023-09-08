@@ -7,9 +7,9 @@ use std::sync::mpsc;
 #[cfg(unix)]
 use std::os::unix;
 
-use crate::error::JoshutoError;
-use crate::error::JoshutoErrorKind;
-use crate::error::JoshutoResult;
+use crate::error::AppError;
+use crate::error::AppErrorKind;
+use crate::error::AppResult;
 use crate::io::{FileOperation, FileOperationOptions, FileOperationProgress};
 use crate::util::fs::query_number_of_items;
 use crate::util::name_resolution::rename_filename_conflict;
@@ -44,7 +44,7 @@ impl IoWorkerThread {
     pub fn start(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> JoshutoResult<FileOperationProgress> {
+    ) -> AppResult<FileOperationProgress> {
         match self.kind() {
             FileOperation::Cut => self.paste_cut(tx),
             FileOperation::Copy => self.paste_copy(tx),
@@ -57,7 +57,7 @@ impl IoWorkerThread {
     fn paste_copy(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> JoshutoResult<FileOperationProgress> {
+    ) -> AppResult<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
         let mut progress = FileOperationProgress::new(
             self.kind(),
@@ -83,7 +83,7 @@ impl IoWorkerThread {
     fn paste_cut(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> JoshutoResult<FileOperationProgress> {
+    ) -> AppResult<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
         let mut progress = FileOperationProgress::new(
             self.kind(),
@@ -109,7 +109,7 @@ impl IoWorkerThread {
     fn paste_link_absolute(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> JoshutoResult<FileOperationProgress> {
+    ) -> AppResult<FileOperationProgress> {
         let total_files = self.paths.len();
         let total_bytes = total_files as u64;
         let mut progress = FileOperationProgress::new(
@@ -141,7 +141,7 @@ impl IoWorkerThread {
     fn paste_link_relative(
         &self,
         tx: mpsc::Sender<FileOperationProgress>,
-    ) -> JoshutoResult<FileOperationProgress> {
+    ) -> AppResult<FileOperationProgress> {
         let total_files = self.paths.len();
         let total_bytes = total_files as u64;
         let mut progress = FileOperationProgress::new(
@@ -191,10 +191,7 @@ impl IoWorkerThread {
         Ok(progress)
     }
 
-    fn delete(
-        &self,
-        _tx: mpsc::Sender<FileOperationProgress>,
-    ) -> JoshutoResult<FileOperationProgress> {
+    fn delete(&self, _tx: mpsc::Sender<FileOperationProgress>) -> AppResult<FileOperationProgress> {
         let (total_files, total_bytes) = query_number_of_items(&self.paths)?;
         let progress = FileOperationProgress::new(
             self.kind(),
@@ -345,7 +342,7 @@ where
     Ok(())
 }
 
-fn trash_files<P>(paths: &[P]) -> JoshutoResult
+fn trash_files<P>(paths: &[P]) -> AppResult
 where
     P: AsRef<path::Path>,
 {
@@ -355,7 +352,7 @@ where
     Ok(())
 }
 
-fn trash_file<P>(file_path: P) -> JoshutoResult
+fn trash_file<P>(file_path: P) -> AppResult
 where
     P: AsRef<path::Path>,
 {
@@ -379,8 +376,8 @@ where
             _ => {}
         }
     }
-    Err(JoshutoError::new(
-        JoshutoErrorKind::TrashError,
+    Err(AppError::new(
+        AppErrorKind::TrashError,
         "Failed to trash file".to_string(),
     ))
 }

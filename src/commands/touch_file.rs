@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use filetime::FileTime;
 
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::history::create_dirlist_with_history;
 
 fn _update_actime(file: &path::Path) -> std::io::Result<()> {
@@ -18,7 +18,7 @@ fn _create_file(file: &path::Path) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn touch_file(context: &mut AppContext, arg: &str) -> JoshutoResult {
+pub fn touch_file(context: &mut AppContext, arg: &str) -> AppResult {
     let curr_tab = context.tab_context_ref().curr_tab_ref();
     match arg {
         "" => {

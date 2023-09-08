@@ -1,5 +1,10 @@
-use crate::config::option::{LineMode, SortType, TabBarDisplayMode};
-use crate::io::FileOperationOptions;
+use crate::{
+    config::clean::app::{
+        display::{line_mode::LineMode, sort_type::SortType},
+        tab::TabBarDisplayMode,
+    },
+    io::FileOperationOptions,
+};
 
 use super::{Command, CommandComment};
 
@@ -85,6 +90,7 @@ impl CommandComment for Command {
             Self::RenameFile { .. } => "Rename file",
             Self::TouchFile { .. } => "Touch file",
             Self::RenameFileAppend => "Rename a file",
+            Self::RenameFileAppendBase => "Rename a file",
             Self::RenameFilePrepend => "Rename a file",
             Self::RenameFileKeepExt => "Rename a file",
 

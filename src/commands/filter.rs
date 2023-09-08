@@ -1,9 +1,9 @@
 use crate::context::{AppContext, MatchContext};
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 
 use super::reload;
 
-pub fn filter(context: &mut AppContext, filter_context: MatchContext) -> JoshutoResult {
+pub fn filter(context: &mut AppContext, filter_context: MatchContext) -> AppResult {
     let curr_tab = context.tab_context_mut().curr_tab_mut();
     let path = curr_tab.cwd().to_path_buf();
 

@@ -3,7 +3,7 @@ use ratatui::layout::Rect;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget, Wrap};
 
-use crate::config::option::TabBarDisplayMode;
+use crate::config::clean::app::tab::TabBarDisplayMode;
 use crate::context::TabContext;
 use crate::util::format::format_tab_bar_title_string;
 use crate::THEME_T;

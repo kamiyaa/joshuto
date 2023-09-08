@@ -2,10 +2,10 @@ use std::io;
 
 use crate::commands::{cursor_move, fzf};
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoErrorKind, JoshutoResult};
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::ui::AppBackend;
 
-pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     let items = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -21,8 +21,8 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> Joshuto
         .unwrap_or_default();
 
     if items.is_empty() {
-        return Err(JoshutoError::new(
-            JoshutoErrorKind::Io(io::ErrorKind::InvalidData),
+        return Err(AppError::new(
+            AppErrorKind::Io(io::ErrorKind::InvalidData),
             "no files to select".to_string(),
         ));
     }

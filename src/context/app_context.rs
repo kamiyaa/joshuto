@@ -4,7 +4,7 @@ use std::sync::mpsc;
 use std::thread;
 
 use crate::commands::quit::QuitAction;
-use crate::config;
+use crate::config::clean::app::AppConfig;
 use crate::context::{
     CommandLineContext, LocalStateContext, MatchContext, MessageQueue, PreviewContext, TabContext,
     UiContext, WorkerContext,
@@ -23,7 +23,7 @@ pub struct AppContext {
     // args from the command line
     pub args: Args,
     // app config
-    config: config::AppConfig,
+    config: AppConfig,
     // context related to tabs
     tab_context: TabContext,
     // context related to local file state
@@ -50,7 +50,7 @@ pub struct AppContext {
 }
 
 impl AppContext {
-    pub fn new(config: config::AppConfig, args: Args) -> Self {
+    pub fn new(config: AppConfig, args: Args) -> Self {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
 
@@ -216,10 +216,10 @@ impl AppContext {
         self.events.event_tx.clone()
     }
 
-    pub fn config_ref(&self) -> &config::AppConfig {
+    pub fn config_ref(&self) -> &AppConfig {
         &self.config
     }
-    pub fn config_mut(&mut self) -> &mut config::AppConfig {
+    pub fn config_mut(&mut self) -> &mut AppConfig {
         &mut self.config
     }
 

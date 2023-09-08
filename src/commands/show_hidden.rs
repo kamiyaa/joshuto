@@ -1,5 +1,5 @@
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::history::DirectoryHistory;
 
 use super::reload;
@@ -19,7 +19,7 @@ pub fn _toggle_hidden(context: &mut AppContext) {
     }
 }
 
-pub fn toggle_hidden(context: &mut AppContext) -> JoshutoResult {
+pub fn toggle_hidden(context: &mut AppContext) -> AppResult {
     _toggle_hidden(context);
     reload::soft_reload_curr_tab(context)?;
     Ok(())

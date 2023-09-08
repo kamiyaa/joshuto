@@ -2,16 +2,16 @@ use std::io::{BufWriter, Write};
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
 
-use crate::config::option::CaseSensitivity;
+use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
-use crate::error::{JoshutoError, JoshutoResult};
+use crate::error::{AppError, AppResult};
 use crate::ui::AppBackend;
 
 pub fn fzf(
     context: &mut AppContext,
     backend: &mut AppBackend,
     items: Vec<String>,
-) -> JoshutoResult<String> {
+) -> AppResult<String> {
     let mut args = Vec::new();
 
     let case_sensitivity = context
@@ -32,7 +32,7 @@ pub fn fzf_multi(
     context: &mut AppContext,
     backend: &mut AppBackend,
     items: Vec<String>,
-) -> JoshutoResult<String> {
+) -> AppResult<String> {
     let mut args = Vec::new();
 
     let case_sensitivity = context
@@ -50,11 +50,7 @@ pub fn fzf_multi(
     fzf_impl(backend, items, args)
 }
 
-fn fzf_impl(
-    backend: &mut AppBackend,
-    items: Vec<String>,
-    args: Vec<String>,
-) -> JoshutoResult<String> {
+fn fzf_impl(backend: &mut AppBackend, items: Vec<String>, args: Vec<String>) -> AppResult<String> {
     backend.terminal_drop();
 
     let mut cmd = Command::new("fzf");
@@ -68,7 +64,7 @@ fn fzf_impl(
         Ok(child) => child,
         Err(e) => {
             backend.terminal_restore()?;
-            return Err(JoshutoError::from(e));
+            return Err(AppError::from(e));
         }
     };
 

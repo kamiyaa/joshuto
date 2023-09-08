@@ -2,7 +2,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::Widget;
 
-use crate::config::option::DisplayMode;
+use crate::config::clean::app::display::DisplayMode;
 use crate::context::AppContext;
 use crate::ui::views::{TuiFolderView, TuiHSplitView};
 

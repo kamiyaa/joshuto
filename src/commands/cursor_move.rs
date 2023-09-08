@@ -1,5 +1,5 @@
 use crate::context::AppContext;
-use crate::error::JoshutoResult;
+use crate::error::AppResult;
 use crate::ui::AppBackend;
 
 pub fn lazy_load_directory_size(context: &mut AppContext) {
@@ -54,7 +54,7 @@ pub fn cursor_move(context: &mut AppContext, new_index: usize) {
     }
 }
 
-pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult {
+pub fn up(context: &mut AppContext, u: usize) -> AppResult {
     let movement = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -67,7 +67,7 @@ pub fn up(context: &mut AppContext, u: usize) -> JoshutoResult {
     Ok(())
 }
 
-pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult {
+pub fn down(context: &mut AppContext, u: usize) -> AppResult {
     let movement = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -80,7 +80,7 @@ pub fn down(context: &mut AppContext, u: usize) -> JoshutoResult {
     Ok(())
 }
 
-pub fn home(context: &mut AppContext) -> JoshutoResult {
+pub fn home(context: &mut AppContext) -> AppResult {
     let movement = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -100,7 +100,7 @@ pub fn home(context: &mut AppContext) -> JoshutoResult {
     Ok(())
 }
 
-pub fn end(context: &mut AppContext) -> JoshutoResult {
+pub fn end(context: &mut AppContext) -> AppResult {
     let movement = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -138,11 +138,7 @@ fn get_page_size(context: &AppContext, backend: &AppBackend) -> Option<usize> {
     }
 }
 
-pub fn page_up(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
-    proportion: f64,
-) -> JoshutoResult {
+pub fn page_up(context: &mut AppContext, backend: &mut AppBackend, proportion: f64) -> AppResult {
     let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
     let page_size = page_size as usize;
 
@@ -158,11 +154,7 @@ pub fn page_up(
     Ok(())
 }
 
-pub fn page_down(
-    context: &mut AppContext,
-    backend: &mut AppBackend,
-    proportion: f64,
-) -> JoshutoResult {
+pub fn page_down(context: &mut AppContext, backend: &mut AppBackend, proportion: f64) -> AppResult {
     let page_size = get_page_size(context, backend).unwrap_or(10) as f64 * proportion;
     let page_size = page_size as usize;
 
@@ -178,7 +170,7 @@ pub fn page_down(
     Ok(())
 }
 
-pub fn page_home(context: &mut AppContext, _: &mut AppBackend) -> JoshutoResult {
+pub fn page_home(context: &mut AppContext, _: &mut AppBackend) -> AppResult {
     let new_index = context
         .tab_context_ref()
         .curr_tab_ref()
@@ -190,7 +182,7 @@ pub fn page_home(context: &mut AppContext, _: &mut AppBackend) -> JoshutoResult 
     Ok(())
 }
 
-pub fn page_middle(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+pub fn page_middle(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     let movement = get_page_size(context, backend).unwrap_or(10) / 2;
 
     let new_index = context
@@ -204,7 +196,7 @@ pub fn page_middle(context: &mut AppContext, backend: &mut AppBackend) -> Joshut
     Ok(())
 }
 
-pub fn page_end(context: &mut AppContext, backend: &mut AppBackend) -> JoshutoResult {
+pub fn page_end(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     let movement = get_page_size(context, backend).unwrap_or(10) - 1;
 
     let new_index = context
