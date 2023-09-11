@@ -1,5 +1,6 @@
 use std::path;
 use std::process::{Command, Output};
+use std::sync::Mutex;
 use std::thread;
 use std::time;
 
@@ -7,7 +8,12 @@ use ratatui::layout::Rect;
 
 use crate::context::AppContext;
 use crate::event::AppEvent;
+use crate::lazy_static;
 use crate::ui::{views, AppBackend};
+
+lazy_static! {
+    static ref GUARD: Mutex<()> = Mutex::new(());
+}
 
 pub enum PreviewFileState {
     Loading,
@@ -79,6 +85,7 @@ impl Background {
                     .insert(path.clone(), PreviewFileState::Loading);
 
                 let _ = thread::spawn(move || {
+                    let _locked = GUARD.lock().unwrap();
                     let file_full_path = path.as_path();
 
                     let res = Command::new(script)
