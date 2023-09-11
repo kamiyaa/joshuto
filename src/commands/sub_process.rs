@@ -30,6 +30,23 @@ fn execute_sub_process(
                     }
                 }
             }
+            "%p" => {
+                if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+                    let mut i = 0;
+                    curr_list
+                        .iter_selected()
+                        .map(|e| e.file_path())
+                        .for_each(|file_path| {
+                            command.arg(file_path);
+                            i += 1;
+                        });
+                    if i == 0 {
+                        if let Some(entry) = curr_list.curr_entry_ref() {
+                            command.arg(entry.file_path());
+                        }
+                    }
+                }
+            }
             s => {
                 command.arg(s);
             }
