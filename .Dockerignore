@@ -1,9 +1,11 @@
+.git
+.github
 config
 docs
 target
+utils
 Cargo.lock
-Docker*
+flake*
 LICENSE
 README.md
 screenshot.png
-

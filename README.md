@@ -48,6 +48,42 @@ Also see [Cargo.toml](Cargo.toml)
 ~# cargo install --path=. --force --root=/usr/local     # /usr also works
 ```
 
+#### From pre-compiled binary
+
+Dependencies:
+- curl
+- openssl
+
+##### Latest release
+
+Installs the latest version using the default installation path (_$HOME/.local/bin/_).
+
+``` bash
+~$ bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
+##### Custom Installation path
+
+Allows you to install Joshuto to a custom directory by setting the INSTALL_PREFIX variable.
+
+``` bash
+~$ INSTALL_PREFIX="$HOME" bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
+##### System wide
+
+``` bash
+~# INSTALL_PREFIX="/usr/local/bin" bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
+##### Specific release
+
+Installs a specific release version of Joshuto by the desired version number.
+
+``` bash
+~$ RELEASE_VER='v0.9.4' bash <(curl -s https://raw.githubusercontent.com/kamiyaa/joshuto/master/utils/install.sh)
+```
+
 #### Packaging status
 
 ##### Fedora ([COPR](https://copr.fedorainfracloud.org/coprs/atim/joshuto/))
