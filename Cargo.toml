@@ -10,6 +10,9 @@ edition = "2021"
 keywords = ["tui-rs", "ranger", "file_manager", "termion"]
 categories = ['command-line-interface', 'command-line-utilities']
 
+[profile.release]
+strip = true
+
 [dependencies]
 alphanumeric-sort = "^1"
 ansi-to-tui = { version = "^3.1.0", optional = true }
