@@ -338,8 +338,8 @@ function joshuto() {
 - `--deselect=true`: deselect rather than select the entry
 - `--all=true`: select/deselect/toggle all _visible_ files in the current view.
   (Files not visible due to a set filter are not affected.)
-- `glob`: select files based on glob (just like `search_glob`)
-  - `select *.png`
+- when a pattern is given, joshuto selects files whose names contain the pattern
+  - `select png`
 
 This example keybinding can be used for *de*selecting all files:
 
@@ -349,9 +349,33 @@ keymap = [ //..
 ]
 ```
 
+### `select_glob`: select files in the current directory via globbing (exact match)
+
+- `:select_glob --toggle=false '*.png'`
+
+This command has the same options for `select`. Notice that it's necessary to quote the pattern when spaces are contained.
+
+### `select_regex`: select files in the current directory via regex (exact match)
+
+- `:select_regex --toggle=false '.+\.(jpg|png|gif)'`
+
+This command has the same options for `select`. Notice that it's necessary to quote the pattern when spaces and `\` are contained.
+
+### `select_fzf`: select files in the current directory via fzf
+
+This command has the same options for `select`. Use tab to select or deselect files in fzf. 
+
 ### `filter`: filter the current directory list.
 
 - `:filter ca`: filter the current directory and show only items with `ca` in the name
+
+### `filter_glob`: filter the current directory list via globbing.
+
+- `:filter_glob *.png`
+
+### `filter_regex`: filter the current directory list via regex.
+
+- `:filter_regex .+\.(jpg|png|gif)`
 
 ### `toggle_visual`: enables or disables “visual mode”.
 

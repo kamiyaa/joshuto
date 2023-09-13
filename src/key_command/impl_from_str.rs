@@ -317,7 +317,7 @@ impl std::str::FromStr for Command {
                     pattern: arg.to_string(),
                 }),
             }
-        } else if command == CMD_SELECT_FILES {
+        } else if command == CMD_SELECT_GLOB {
             let mut options = SelectOption::default();
             let mut pattern = "";
             match shell_words::split(arg) {
@@ -333,10 +333,96 @@ impl std::str::FromStr for Command {
                             s => pattern = s,
                         }
                     }
-                    Ok(Self::SelectFiles {
+                    if pattern.is_empty() {
+                        return Err(AppError::new(
+                            AppErrorKind::InvalidParameters,
+                            format!("{}: Expected 1, got 0", command),
+                        ));
+                    }
+                    Ok(Self::SelectGlob {
                         pattern: pattern.to_string(),
                         options,
                     })
+                }
+                Err(e) => Err(AppError::new(
+                    AppErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SELECT_REGEX {
+            let mut options = SelectOption::default();
+            let mut pattern = "";
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            s => pattern = s,
+                        }
+                    }
+                    if pattern.is_empty() {
+                        return Err(AppError::new(
+                            AppErrorKind::InvalidParameters,
+                            format!("{}: Expected 1, got 0", command),
+                        ));
+                    }
+                    Ok(Self::SelectRegex {
+                        pattern: pattern.to_string(),
+                        options,
+                    })
+                }
+                Err(e) => Err(AppError::new(
+                    AppErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SELECT_STRING {
+            let mut options = SelectOption::default();
+            let mut pattern = "";
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            s => pattern = s,
+                        }
+                    }
+                    Ok(Self::SelectString {
+                        pattern: pattern.to_string(),
+                        options,
+                    })
+                }
+                Err(e) => Err(AppError::new(
+                    AppErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SELECT_FZF {
+            let mut options = SelectOption::default();
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            _ => {}
+                        }
+                    }
+                    Ok(Self::SelectFzf { options })
                 }
                 Err(e) => Err(AppError::new(
                     AppErrorKind::InvalidParameters,
@@ -451,8 +537,16 @@ impl std::str::FromStr for Command {
                     format!("{}: no starting character given", command),
                 )),
             }
-        } else if command == CMD_FILTER {
-            Ok(Self::Filter {
+        } else if command == CMD_FILTER_GLOB {
+            Ok(Self::FilterGlob {
+                pattern: arg.to_string(),
+            })
+        } else if command == CMD_FILTER_REGEX {
+            Ok(Self::FilterRegex {
+                pattern: arg.to_string(),
+            })
+        } else if command == CMD_FILTER_STRING {
+            Ok(Self::FilterString {
                 pattern: arg.to_string(),
             })
         } else {

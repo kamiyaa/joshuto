@@ -101,7 +101,10 @@ impl CommandComment for Command {
             Self::SearchNext => "Next search entry",
             Self::SearchPrev => "Previous search entry",
 
-            Self::SelectFiles { .. } => "Select file",
+            Self::SelectGlob { .. } => "Select files with globbing",
+            Self::SelectRegex { .. } => "Select files with regex",
+            Self::SelectString { .. } => "Select files",
+
             Self::SetCaseSensitivity { .. } => "Set case sensitivity",
             Self::SetMode => "Set file permissions",
             Self::SubProcess { spawn: false, .. } => "Run a shell command",
@@ -124,7 +127,9 @@ impl CommandComment for Command {
             },
             Self::SortReverse => "Reverse sort order",
 
-            Self::Filter { .. } => "Filter directory list",
+            Self::FilterGlob { .. } => "Filter directory list with globbing",
+            Self::FilterRegex { .. } => "Filter directory list with regex",
+            Self::FilterString { .. } => "Filter directory list",
 
             Self::SetTabBarDisplayMode(mode) => match mode {
                 TabBarDisplayMode::Number => "TabBar only display with number ( 1 | 2 | 3 )",
@@ -141,6 +146,7 @@ impl CommandComment for Command {
 
             Self::SearchFzf => "Search via fzf",
             Self::SubdirFzf => "Switch to a child directory via fzf",
+            Self::SelectFzf { .. } => "Select via fzf",
             Self::Zoxide(_) => "Zoxide",
             Self::ZoxideInteractive => "Zoxide interactive",
 

@@ -66,7 +66,10 @@ impl AppCommand for Command {
             Self::SearchNext => CMD_SEARCH_NEXT,
             Self::SearchPrev => CMD_SEARCH_PREV,
 
-            Self::SelectFiles { .. } => CMD_SELECT_FILES,
+            Self::SelectGlob { .. } => CMD_SELECT_GLOB,
+            Self::SelectRegex { .. } => CMD_SELECT_REGEX,
+            Self::SelectString { .. } => CMD_SELECT_STRING,
+
             Self::SetCaseSensitivity { .. } => CMD_SET_CASE_SENSITIVITY,
             Self::SetMode => CMD_SET_MODE,
 
@@ -78,7 +81,9 @@ impl AppCommand for Command {
             Self::Sort(_) => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,
 
-            Self::Filter { .. } => CMD_FILTER,
+            Self::FilterGlob { .. } => CMD_FILTER_GLOB,
+            Self::FilterRegex { .. } => CMD_FILTER_REGEX,
+            Self::FilterString { .. } => CMD_FILTER_STRING,
 
             Self::SubProcess { spawn: false, .. } => CMD_SUBPROCESS_FOREGROUND,
             Self::SubProcess { spawn: true, .. } => CMD_SUBPROCESS_BACKGROUND,
@@ -93,6 +98,7 @@ impl AppCommand for Command {
 
             Self::SearchFzf => CMD_SEARCH_FZF,
             Self::SubdirFzf => CMD_SUBDIR_FZF,
+            Self::SelectFzf { .. } => CMD_SELECT_FZF,
             Self::Zoxide(_) => CMD_ZOXIDE,
             Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,
 

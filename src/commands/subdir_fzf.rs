@@ -1,52 +1,16 @@
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 
-use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::ui::AppBackend;
 
 use super::change_directory::change_directory;
+use super::fzf;
 
 pub fn subdir_fzf(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
-    backend.terminal_drop();
-
-    let mut cmd = Command::new("fzf");
-    cmd.stdout(Stdio::piped());
-
-    let case_sensitivity = context
-        .config_ref()
-        .search_options_ref()
-        .fzf_case_sensitivity;
-
-    match case_sensitivity {
-        CaseSensitivity::Insensitive => {
-            cmd.arg("-i");
-        }
-        CaseSensitivity::Sensitive => {
-            cmd.arg("+i");
-        }
-        // fzf uses smart-case match by default
-        CaseSensitivity::Smart => {}
-    }
-
-    let fzf = cmd.spawn()?;
-
-    let fzf_output = fzf.wait_with_output();
-
-    match fzf_output {
-        Ok(output) if output.status.success() => {
-            if let Ok(selected) = std::str::from_utf8(&output.stdout) {
-                let path: PathBuf = PathBuf::from(selected);
-                fzf_change_dir(context, path.as_path())?;
-            }
-        }
-        _ => {}
-    }
-
-    backend.terminal_restore()?;
-
-    Ok(())
+    let fzf_output = fzf::fzf(context, backend, Vec::new())?;
+    let path: PathBuf = PathBuf::from(fzf_output);
+    fzf_change_dir(context, path.as_path())
 }
 
 pub fn fzf_change_dir(context: &mut AppContext, path: &Path) -> AppResult {
