@@ -1,6 +1,4 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
-use std::ffi::OsStr;
 use std::path;
 
 use crate::config::clean::app::display::tab::TabDisplayOption;
@@ -110,12 +108,5 @@ impl JoshutoTab {
         };
 
         self.history.get_mut(child_path.as_path())
-    }
-
-    pub fn tab_title(&self) -> Cow<'_, str> {
-        self.cwd()
-            .file_name()
-            .unwrap_or_else(|| OsStr::new("/"))
-            .to_string_lossy()
     }
 }

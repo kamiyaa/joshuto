@@ -5,9 +5,7 @@ use ratatui::text::Span;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::context::AppContext;
-use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
-
-const TAB_VIEW_WIDTH: u16 = 15;
+use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTopBar};
 
 pub struct TuiHSplitView<'a> {
     pub context: &'a AppContext,
@@ -113,20 +111,7 @@ impl<'a> Widget for TuiHSplitView<'a> {
                 width: topbar_width,
                 height: 1,
             };
-            TuiTopBar::new(self.context, curr_tab.cwd()).render(rect, buf);
-
-            // render tabs
-            if self.context.tab_context_ref().len() > 1 {
-                let topbar_width = area.width.saturating_sub(TAB_VIEW_WIDTH);
-
-                let rect = Rect {
-                    x: topbar_width,
-                    y: 0,
-                    width: TAB_VIEW_WIDTH,
-                    height: 1,
-                };
-                TuiTabBar::new(self.context.tab_context_ref()).render(rect, buf);
-            }
+            TuiTopBar::new(self.context).render(rect, buf);
         }
 
         let other_tab_index = if tab_index % 2 == 0 {
