@@ -10,10 +10,10 @@ rustPlatform.buildRustPackage rec {
   pname = "joshuto";
   inherit version;
 
-  src = ../.;
+  src = ../../.;
 
   cargoLock = {
-    lockFile = ../Cargo.lock;
+    lockFile = ../../Cargo.lock;
   };
 
   buildInputs = [
