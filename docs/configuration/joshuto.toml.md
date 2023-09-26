@@ -85,6 +85,15 @@ directories_first = true
 # sort in reverse
 reverse = false
 
+# Configurations related to preview
+[preview]
+
+# Maximum preview file size in bytes
+max_preview_size = 2097152
+
+# Executable script for previews
+preview_script = "~/.config/joshuto/preview_file.sh"
+
 # Configurations related to searching and selecting files
 [search]
 # Different case sensitivities for operations using substring matching
