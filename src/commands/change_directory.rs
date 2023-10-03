@@ -4,10 +4,11 @@ use crate::commands::reload;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::DirectoryHistory;
+use crate::util::cwd;
 
 // ChangeDirectory command
 pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
-    std::env::set_current_dir(path)?;
+    cwd::set_current_dir(path)?;
     context.tab_context_mut().curr_tab_mut().set_cwd(path);
     Ok(())
 }
@@ -51,7 +52,7 @@ pub fn parent_directory(context: &mut AppContext) -> AppResult {
         .parent()
         .map(|p| p.to_path_buf())
     {
-        std::env::set_current_dir(&parent)?;
+        cwd::set_current_dir(&parent)?;
         context
             .tab_context_mut()
             .curr_tab_mut()
@@ -65,7 +66,7 @@ pub fn parent_directory(context: &mut AppContext) -> AppResult {
 pub fn previous_directory(context: &mut AppContext) -> AppResult {
     if let Some(path) = context.tab_context_ref().curr_tab_ref().previous_dir() {
         let path = path.to_path_buf();
-        std::env::set_current_dir(&path)?;
+        cwd::set_current_dir(&path)?;
         context
             .tab_context_mut()
             .curr_tab_mut()
