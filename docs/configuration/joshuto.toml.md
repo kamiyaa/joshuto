@@ -119,14 +119,6 @@ fzf_case_sensitivity = "insensitive"
 # ...
 
 [tab]
-
-# Options include
-# - num
-# - dir
-# - all
-# also can be changed with the 'tab_bar_mode' command
-display_mode = "all"
-
 # inherit, home, root
 home_page = "home"
 ```

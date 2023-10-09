@@ -5,6 +5,23 @@ use crate::util::unix;
 
 use crate::THEME_T;
 
+/// Allows patching a ratatui style if there is `Some` style, otherwise returns a clone.
+pub trait PathStyleIfSome {
+    fn patch_optionally(&self, other: Option<Style>) -> Style;
+}
+
+/// Path a ratatui style with another optional style.
+/// If the other optional style is `None`, a clone of the original style is returned.
+impl PathStyleIfSome for Style {
+    fn patch_optionally(&self, other_option: Option<Style>) -> Style {
+        if let Some(other) = other_option {
+            self.patch(other)
+        } else {
+            *self
+        }
+    }
+}
+
 pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
     let metadata = &entry.metadata;
     let filetype = &metadata.file_type();

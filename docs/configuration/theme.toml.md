@@ -61,3 +61,5 @@ a specific style that overrides the former file-type-styles.
 Last but not least, there are styles for _selected_ files which override all the former
 styles.
 
+## Theming the Tab-Bar
+Theming of the tab-bar is described [here](tabbar/README.md).

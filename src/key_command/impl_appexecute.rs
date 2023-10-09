@@ -155,9 +155,6 @@ impl AppExecute for Command {
 
             Self::ToggleHiddenFiles => show_hidden::toggle_hidden(context),
 
-            Self::SetTabBarDisplayMode(mode) => {
-                tab_bar_mode::set_tab_bar_display_mode(context, mode)
-            }
             Self::TabSwitch { offset } => {
                 tab_ops::tab_switch(context, *offset).map_err(|e| e.into())
             }

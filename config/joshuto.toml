@@ -18,7 +18,6 @@ scroll_offset = 6
 show_borders = true
 show_hidden = false
 show_icons = true
-tilde_in_titlebar = true
 # none, absolute, relative
 line_number_style = "none"
 

@@ -8,7 +8,6 @@ use crate::config::clean::app::display::line_number::LineNumberStyle;
 use crate::config::clean::app::display::new_tab::NewTabMode;
 use crate::config::clean::app::display::sort_type::SortType;
 use crate::config::clean::app::search::CaseSensitivity;
-use crate::config::clean::app::tab::TabBarDisplayMode;
 use crate::error::{AppError, AppErrorKind};
 use crate::io::FileOperationOptions;
 use crate::util::unix;
@@ -489,10 +488,6 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_SET_LINEMODE {
             Ok(Self::SetLineMode(LineMode::from_string(arg)?))
-        } else if command == CMD_SET_TAB_BAR_MODE {
-            Ok(Self::SetTabBarDisplayMode(TabBarDisplayMode::from_str(
-                arg,
-            )?))
         } else if command == CMD_TAB_SWITCH {
             match arg.parse::<i32>() {
                 Ok(s) => Ok(Self::TabSwitch { offset: s }),

@@ -11,7 +11,7 @@ use crate::preview::preview_file::PreviewFileState;
 use crate::ui;
 use crate::ui::widgets::{
     TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiFooter, TuiMessage,
-    TuiTabBar, TuiTopBar,
+    TuiTopBar,
 };
 use crate::ui::PreviewArea;
 
@@ -106,24 +106,6 @@ impl<'a> TuiFolderView<'a> {
             x: area.x,
             y: area.bottom() - 1,
             width: area.width,
-            height: 1,
-        }
-    }
-
-    pub fn tab_area(&self, area: &Rect, tabs_width: usize) -> Rect {
-        // render tabs
-        let tabs_width = tabs_width as u16;
-        let tab_width = if tabs_width > area.width {
-            area.width
-        } else {
-            tabs_width
-        };
-        let topbar_x = area.width.saturating_sub(tab_width);
-
-        Rect {
-            x: topbar_x,
-            y: area.top(),
-            width: tab_width,
             height: 1,
         }
     }
@@ -236,11 +218,7 @@ impl<'a> Widget for TuiFolderView<'a> {
         }
 
         let topbar_area = Self::header_area(&area);
-        TuiTopBar::new(self.context, curr_tab_cwd).render(topbar_area, buf);
-
-        // render tabs
-        let tab_area = self.tab_area(&area, self.context.tab_context_ref().tab_area_width());
-        TuiTabBar::new(self.context.tab_context_ref()).render(tab_area, buf);
+        TuiTopBar::new(self.context).render(topbar_area, buf);
     }
 }
 

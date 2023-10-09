@@ -8,7 +8,6 @@ use crate::config::clean::app::display::line_number::LineNumberStyle;
 use crate::config::clean::app::display::new_tab::NewTabMode;
 use crate::config::clean::app::display::sort_type::SortType;
 use crate::config::clean::app::search::CaseSensitivity;
-use crate::config::clean::app::tab::TabBarDisplayMode;
 use crate::io::FileOperationOptions;
 
 #[derive(Clone, Debug)]
@@ -165,7 +164,6 @@ pub enum Command {
         pattern: String,
     },
 
-    SetTabBarDisplayMode(TabBarDisplayMode),
     NewTab {
         mode: NewTabMode,
     },

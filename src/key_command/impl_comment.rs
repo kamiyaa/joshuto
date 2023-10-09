@@ -1,8 +1,5 @@
 use crate::{
-    config::clean::app::{
-        display::{line_mode::LineMode, sort_type::SortType},
-        tab::TabBarDisplayMode,
-    },
+    config::clean::app::display::{line_mode::LineMode, sort_type::SortType},
     io::FileOperationOptions,
 };
 
@@ -131,15 +128,6 @@ impl CommandComment for Command {
             Self::FilterRegex { .. } => "Filter directory list with regex",
             Self::FilterString { .. } => "Filter directory list",
 
-            Self::SetTabBarDisplayMode(mode) => match mode {
-                TabBarDisplayMode::Number => "TabBar only display with number ( 1 | 2 | 3 )",
-                TabBarDisplayMode::Directory => {
-                    "TabBar only display with directory ( dir1 | dir2 | dir3 )"
-                }
-                TabBarDisplayMode::All => {
-                    "TabBar display with numbar and directory ( 1: dir1 | 2: dir2 )"
-                }
-            },
             Self::TabSwitch { .. } => "Switch to the next tab",
             Self::TabSwitchIndex { .. } => "Switch to a given tab",
             Self::Help => "Open this help page",
