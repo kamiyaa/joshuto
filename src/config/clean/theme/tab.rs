@@ -137,14 +137,11 @@ impl From<TabThemeColorRaw> for TabThemeColors {
         let prefix_a = tab_a.patch_optionally(crude.active_prefix.map(|s| s.as_style()));
         let postfix_a = prefix_a.patch_optionally(crude.active_postfix.map(|s| s.as_style()));
 
-        let tab_i = crude.inactive.map(|s| s.as_style()).unwrap_or(Style::new());
+        let tab_i = crude.inactive.map(|s| s.as_style()).unwrap_or_default();
         let prefix_i = tab_i.patch_optionally(crude.inactive_prefix.map(|s| s.as_style()));
         let postfix_i = prefix_i.patch_optionally(crude.inactive_postfix.map(|s| s.as_style()));
 
-        let divider_ii = crude
-            .divider_ii
-            .map(|s| s.as_style())
-            .unwrap_or(Style::new());
+        let divider_ii = crude.divider_ii.map(|s| s.as_style()).unwrap_or_default();
         let divider_ia = divider_ii.patch_optionally(crude.divider_ia.map(|s| s.as_style()));
         let divider_ai = divider_ia.patch_optionally(crude.divider_ai.map(|s| s.as_style()));
 
@@ -166,10 +163,7 @@ impl From<TabThemeColorRaw> for TabThemeColors {
         let scroll_back_postfix =
             scroll_back_prefix.patch_optionally(crude.scroll_back_postfix.map(|s| s.as_style()));
 
-        let padding_fill = crude
-            .padding_fill
-            .map(|s| s.as_style())
-            .unwrap_or(Style::new());
+        let padding_fill = crude.padding_fill.map(|s| s.as_style()).unwrap_or_default();
         let padding_prefix =
             padding_fill.patch_optionally(crude.padding_prefix.map(|s| s.as_style()));
         let padding_postfix =

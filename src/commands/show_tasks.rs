@@ -23,7 +23,6 @@ pub fn show_tasks(
         if let Ok(event) = context.poll_event() {
             match event {
                 AppEvent::Termion(key) => {
-                    let key = key;
                     match keymap_t.task_view.get(&key) {
                         None => {
                             context

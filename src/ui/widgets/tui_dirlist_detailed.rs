@@ -125,7 +125,7 @@ fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
             .metadata
             .directory_size()
             .map(|n| n.to_string())
-            .unwrap_or_else(|| "".to_string()),
+            .unwrap_or_default(),
         FileType::File => format::file_size_to_string(entry.metadata.len()),
     }
 }
