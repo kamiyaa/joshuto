@@ -40,11 +40,12 @@ impl TabLabel {
             let home_dir_str = home_dir.to_string_lossy().into_owned();
             full_path_str = full_path_str.replace(&home_dir_str, "~");
         }
+        eprintln!("full_path_str: {:?}", full_path_str);
         let last = Path::new(&full_path_str)
             .file_name()
-            .unwrap()
+            .unwrap_or_default()
             .to_str()
-            .unwrap()
+            .unwrap_or_default()
             .to_string();
         TabLabel {
             long: full_path_str,
