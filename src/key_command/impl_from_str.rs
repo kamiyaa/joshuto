@@ -100,6 +100,16 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_BULK_RENAME, Self::BulkRename);
 
         simple_command_conversion_case!(command, CMD_SEARCH_FZF, Self::SearchFzf);
+        simple_command_conversion_case!(
+            command,
+            CMD_CUSTOM_SEARCH,
+            Self::CustomSearch(arg.split(' ').map(|x| x.to_string()).collect())
+        );
+        simple_command_conversion_case!(
+            command,
+            CMD_CUSTOM_SEARCH_INTERACTIVE,
+            Self::CustomSearchInteractive(arg.split(' ').map(|x| x.to_string()).collect())
+        );
         simple_command_conversion_case!(command, CMD_SUBDIR_FZF, Self::SubdirFzf);
         simple_command_conversion_case!(command, CMD_ZOXIDE, Self::Zoxide(arg.to_string()));
         simple_command_conversion_case!(command, CMD_ZOXIDE_INTERACTIVE, Self::ZoxideInteractive);

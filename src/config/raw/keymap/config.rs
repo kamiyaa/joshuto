@@ -3,7 +3,12 @@ use serde::Deserialize;
 #[derive(Clone, Debug, Deserialize)]
 pub struct CommandKeymap {
     pub keys: Vec<String>,
+
+    #[serde(default)]
     pub commands: Vec<String>,
+    #[serde(default)]
+    pub command: Option<String>,
+
     pub description: Option<String>,
 }
 

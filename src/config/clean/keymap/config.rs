@@ -46,23 +46,31 @@ fn command_keymaps_vec_to_map(keymaps: &[CommandKeymap]) -> HashMap<Event, Comma
     let mut hashmap = HashMap::new();
 
     for keymap in keymaps {
-        if keymap.commands.is_empty() {
+        if keymap.commands.is_empty() && keymap.command.is_none() {
             eprintln!("Keymap `commands` cannot be empty");
             continue;
         }
-        let commands: Vec<Command> = keymap
-            .commands
-            .iter()
-            .filter_map(|cmd_str| match Command::from_str(cmd_str) {
-                Ok(s) => Some(s),
-                Err(err) => {
-                    eprintln!("Keymap error: {}", err);
-                    None
-                }
-            })
-            .collect();
+        let commands: Vec<Command> = match &keymap.command {
+            Some(command) => vec![command.clone()],
+            None => keymap.commands.clone(),
+        }
+        .iter()
+        .filter_map(|cmd_str| match Command::from_str(cmd_str) {
+            Ok(s) => Some(s),
+            Err(err) => {
+                eprintln!("Keymap error: {}", err);
+                None
+            }
+        })
+        .collect();
 
-        if commands.len() != keymap.commands.len() {
+        let expected_len = if keymap.command.is_none() {
+            keymap.commands.len()
+        } else {
+            1
+        };
+
+        if commands.len() != expected_len {
             eprintln!("Failed to parse commands: {:?}", keymap.commands);
             continue;
         }

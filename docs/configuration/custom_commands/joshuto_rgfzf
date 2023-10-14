@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rg -n -H --color=never "$@" \
+   | fzf --ansi --preview 'bat -n $(echo {} | cut -d ":" -f1) --line-range="$(echo {} | cut -d ":" -f2):"' \
+   | cut -d ":" -f1

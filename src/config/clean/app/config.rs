@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
 use crate::{
-    config::{parse_config_or_default, raw::app::AppConfigRaw, TomlConfigFile},
+    config::{
+        parse_config_or_default,
+        raw::app::{AppConfigRaw, CustomCommand},
+        TomlConfigFile,
+    },
     error::AppResult,
 };
 
@@ -16,6 +20,7 @@ pub struct AppConfig {
     pub xdg_open: bool,
     pub xdg_open_fork: bool,
     pub watch_files: bool,
+    pub custom_commands: Vec<CustomCommand>,
     pub cmd_aliases: HashMap<String, String>,
     pub _display_options: DisplayOption,
     pub _preview_options: PreviewOption,
@@ -82,6 +87,7 @@ impl From<AppConfigRaw> for AppConfig {
             _preview_options: PreviewOption::from(raw.preview_options),
             _search_options: SearchOption::from(raw.search_options),
             _tab_options: TabOption::from(raw.tab_options),
+            custom_commands: raw.custom_commands,
         }
     }
 }

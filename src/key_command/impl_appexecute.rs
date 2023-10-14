@@ -169,6 +169,13 @@ impl AppExecute for Command {
 
             Self::BookmarkAdd => bookmark::add_bookmark(context, backend),
             Self::BookmarkChangeDirectory => bookmark::change_directory_bookmark(context, backend),
+
+            Self::CustomSearch(words) => {
+                custom_search::custom_search(context, backend, words.as_slice(), false)
+            }
+            Self::CustomSearchInteractive(words) => {
+                custom_search::custom_search(context, backend, words.as_slice(), true)
+            }
         }
     }
 }
