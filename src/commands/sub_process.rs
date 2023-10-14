@@ -5,6 +5,27 @@ use std::process::{Command, Stdio};
 
 use super::reload;
 
+pub fn current_filenames(context: &AppContext) -> Vec<&str> {
+    let mut result = Vec::new();
+    if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+        let mut i = 0;
+        curr_list
+            .iter_selected()
+            .map(|e| e.file_name())
+            .for_each(|file_name| {
+                result.push(file_name);
+                i += 1;
+            });
+        if i == 0 {
+            if let Some(entry) = curr_list.curr_entry_ref() {
+                result.push(entry.file_name());
+            }
+        }
+    }
+
+    result
+}
+
 fn execute_sub_process(
     context: &mut AppContext,
     words: &[String],
@@ -14,21 +35,9 @@ fn execute_sub_process(
     for word in words.iter().skip(1) {
         match (*word).as_str() {
             "%s" => {
-                if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    let mut i = 0;
-                    curr_list
-                        .iter_selected()
-                        .map(|e| e.file_name())
-                        .for_each(|file_name| {
-                            command.arg(file_name);
-                            i += 1;
-                        });
-                    if i == 0 {
-                        if let Some(entry) = curr_list.curr_entry_ref() {
-                            command.arg(entry.file_name());
-                        }
-                    }
-                }
+                current_filenames(context).into_iter().for_each(|x| {
+                    command.arg(x);
+                });
             }
             s => {
                 command.arg(s);
