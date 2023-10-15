@@ -56,7 +56,7 @@ pub fn cursor_move(context: &mut AppContext, new_index: usize) {
     }
 }
 
-pub fn to_path(context: &mut AppContext, path: &path::PathBuf) -> AppResult {
+pub fn to_path(context: &mut AppContext, path: &path::Path) -> AppResult {
     // This error should never happen
     let err = || AppError::new(AppErrorKind::UnknownError, String::from("Unexpected error"));
     let ui_context = context.ui_context_ref().clone();

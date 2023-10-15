@@ -16,7 +16,7 @@ pub fn new_directory(context: &mut AppContext, p: &path::Path) -> AppResult {
     }
 
     if context.config_ref().focus_on_create {
-        cursor_move::to_path(context, &p.to_path_buf())?;
+        cursor_move::to_path(context, p)?;
     }
 
     Ok(())
