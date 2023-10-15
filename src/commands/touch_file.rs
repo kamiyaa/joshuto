@@ -61,8 +61,7 @@ pub fn touch_file(context: &mut AppContext, arg: &str) -> AppResult {
     }
 
     if context.config_ref().focus_on_create {
-        let new_file = path::Path::new(arg);
-        cursor_move::to_path(context, &new_file)?;
+        cursor_move::to_path(context, path::Path::new(arg))?;
     }
 
     Ok(())
