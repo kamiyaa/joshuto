@@ -30,9 +30,18 @@ function image {
 		"$1" 2>/dev/null
 }
 
+function video {
+    ffmpegthumbnailer -i "$1" -o "${TMP_FILE}" -s 0
+    image "${TMP_FILE}"
+}
+
 case "$mimetype" in
 	image/*)
 		image "${FILE_PATH}"
+		;;
+	*)
+	video/*)
+		video "${FILE_PATH}"
 		;;
 	*)
 		kitty +kitten icat \
