@@ -31,7 +31,7 @@ function image {
 }
 
 function video {
-    ffmpegthumbnailer -i "$1" -o "${TMP_FILE}" -s 0
+    ffmpegthumbnailer -i "$1" -o "${TMP_FILE}" -s 0 2>/dev/null
     image "${TMP_FILE}"
 }
 
