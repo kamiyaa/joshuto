@@ -1,5 +1,6 @@
 numbered_command = false
 
+focus_on_create = true
 use_trash = true
 watch_files = true
 xdg_open = false
