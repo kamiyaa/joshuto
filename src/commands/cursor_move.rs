@@ -1,5 +1,7 @@
+use std::path;
+
 use crate::context::AppContext;
-use crate::error::AppResult;
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::ui::AppBackend;
 
 pub fn lazy_load_directory_size(context: &mut AppContext) {
@@ -52,6 +54,21 @@ pub fn cursor_move(context: &mut AppContext, new_index: usize) {
             curr_list.set_index(Some(new_index), &ui_context, &display_options);
         }
     }
+}
+
+pub fn to_path(context: &mut AppContext, path: &path::Path) -> AppResult {
+    // This error should never happen
+    let err = || AppError::new(AppErrorKind::UnknownError, String::from("Unexpected error"));
+    let ui_context = context.ui_context_ref().clone();
+    let display_options = context.config_ref().display_options_ref().clone();
+    if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+        if let path::Component::Normal(name) = path.components().next().ok_or_else(err)? {
+            let index = curr_list.get_index_from_name(name.to_str().ok_or_else(err)?);
+            curr_list.set_index(index, &ui_context, &display_options);
+        }
+    }
+
+    Ok(())
 }
 
 pub fn up(context: &mut AppContext, u: usize) -> AppResult {

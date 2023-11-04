@@ -32,6 +32,8 @@ pub struct AppConfigRaw {
     pub xdg_open_fork: bool,
     #[serde(default = "default_true")]
     pub watch_files: bool,
+    #[serde(default = "default_true")]
+    pub focus_on_create: bool,
     #[serde(default)]
     pub cmd_aliases: HashMap<String, String>,
     #[serde(default, rename = "display")]
