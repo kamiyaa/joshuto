@@ -4,6 +4,7 @@ pub mod case_sensitivity;
 pub mod change_directory;
 pub mod command_line;
 pub mod cursor_move;
+pub mod custom_search;
 pub mod delete_files;
 pub mod escape;
 pub mod file_ops;

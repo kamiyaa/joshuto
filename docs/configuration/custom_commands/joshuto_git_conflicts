@@ -1,0 +1,20 @@
+#!/bin/bash
+
+CURRENT_PATH="$PWD"
+GIT_PATH="$(git rev-parse --show-toplevel)"
+
+cd $GIT_PATH
+GIT_PATH="$PWD"
+
+IFS=$'\n' FILES=($(git diff --name-only --diff-filter=U --relative))
+
+cnt=${#FILES[@]}
+for ((i=0;i<cnt;i++)); do
+   FILES[i]=$(realpath --relative-to "$CURRENT_PATH" "${GIT_PATH}/${FILES[i]}")
+done
+
+cd $CURRENT_PATH
+
+echo "${FILES[*]}" \
+   | fzf --ansi --preview 'bat -n $(echo {})' \
+   | cut -d ":" -f1

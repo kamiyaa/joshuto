@@ -101,6 +101,9 @@ impl AppCommand for Command {
             Self::Zoxide(_) => CMD_ZOXIDE,
             Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,
 
+            Self::CustomSearch(_) => CMD_CUSTOM_SEARCH,
+            Self::CustomSearchInteractive(_) => CMD_CUSTOM_SEARCH_INTERACTIVE,
+
             Self::BookmarkAdd => CMD_BOOKMARK_ADD,
             Self::BookmarkChangeDirectory => CMD_BOOKMARK_CHANGE_DIRECTORY,
         }

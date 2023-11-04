@@ -405,6 +405,15 @@ An example:
 :set_case_sensitivity --type=fzf sensitive
 ```
 
+### `custom_search`
+
+Define search command using [`custom_command`]()
+
+### `custom_search_interactive`
+
+Similar to `select` and `custom_search`. Allows user to execute `custom_command` and 
+then interactively operate on the results.
+
 ## Bookmarks
 
 ### `add_bookmark`: adds a bookmark to the `bookmarks.toml` file

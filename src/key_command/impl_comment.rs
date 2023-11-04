@@ -140,6 +140,10 @@ impl CommandComment for Command {
 
             Self::BookmarkAdd => "Add a bookmark",
             Self::BookmarkChangeDirectory => "Navigate to a bookmark",
+            Self::CustomSearch(_) => "Find file based on the custom command",
+            Self::CustomSearchInteractive(_) => {
+                "Interactively find file based on the custom command"
+            }
         }
     }
 }
