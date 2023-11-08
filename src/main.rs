@@ -31,6 +31,7 @@ use config::clean::bookmarks::Bookmarks;
 use config::clean::mimetype::AppProgramRegistry;
 use config::clean::theme::AppTheme;
 use config::TomlConfigFile;
+use util::cwd;
 
 use crate::commands::quit::QuitAction;
 
@@ -143,7 +144,7 @@ fn run_main(args: Args) -> Result<i32, AppError> {
     }
 
     if let Some(path) = args.rest.first() {
-        if let Err(err) = std::env::set_current_dir(path) {
+        if let Err(err) = cwd::set_current_dir(path) {
             eprintln!("{err}");
             process::exit(1);
         }

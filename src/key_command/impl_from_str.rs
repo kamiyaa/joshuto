@@ -8,7 +8,6 @@ use crate::config::clean::app::display::line_number::LineNumberStyle;
 use crate::config::clean::app::display::new_tab::NewTabMode;
 use crate::config::clean::app::display::sort_type::SortType;
 use crate::config::clean::app::search::CaseSensitivity;
-use crate::config::clean::app::tab::TabBarDisplayMode;
 use crate::error::{AppError, AppErrorKind};
 use crate::io::FileOperationOptions;
 use crate::util::unix;
@@ -101,6 +100,16 @@ impl std::str::FromStr for Command {
         simple_command_conversion_case!(command, CMD_BULK_RENAME, Self::BulkRename);
 
         simple_command_conversion_case!(command, CMD_SEARCH_FZF, Self::SearchFzf);
+        simple_command_conversion_case!(
+            command,
+            CMD_CUSTOM_SEARCH,
+            Self::CustomSearch(arg.split(' ').map(|x| x.to_string()).collect())
+        );
+        simple_command_conversion_case!(
+            command,
+            CMD_CUSTOM_SEARCH_INTERACTIVE,
+            Self::CustomSearchInteractive(arg.split(' ').map(|x| x.to_string()).collect())
+        );
         simple_command_conversion_case!(command, CMD_SUBDIR_FZF, Self::SubdirFzf);
         simple_command_conversion_case!(command, CMD_ZOXIDE, Self::Zoxide(arg.to_string()));
         simple_command_conversion_case!(command, CMD_ZOXIDE_INTERACTIVE, Self::ZoxideInteractive);
@@ -317,7 +326,7 @@ impl std::str::FromStr for Command {
                     pattern: arg.to_string(),
                 }),
             }
-        } else if command == CMD_SELECT_FILES {
+        } else if command == CMD_SELECT_GLOB {
             let mut options = SelectOption::default();
             let mut pattern = "";
             match shell_words::split(arg) {
@@ -333,10 +342,96 @@ impl std::str::FromStr for Command {
                             s => pattern = s,
                         }
                     }
-                    Ok(Self::SelectFiles {
+                    if pattern.is_empty() {
+                        return Err(AppError::new(
+                            AppErrorKind::InvalidParameters,
+                            format!("{}: Expected 1, got 0", command),
+                        ));
+                    }
+                    Ok(Self::SelectGlob {
                         pattern: pattern.to_string(),
                         options,
                     })
+                }
+                Err(e) => Err(AppError::new(
+                    AppErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SELECT_REGEX {
+            let mut options = SelectOption::default();
+            let mut pattern = "";
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            s => pattern = s,
+                        }
+                    }
+                    if pattern.is_empty() {
+                        return Err(AppError::new(
+                            AppErrorKind::InvalidParameters,
+                            format!("{}: Expected 1, got 0", command),
+                        ));
+                    }
+                    Ok(Self::SelectRegex {
+                        pattern: pattern.to_string(),
+                        options,
+                    })
+                }
+                Err(e) => Err(AppError::new(
+                    AppErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SELECT_STRING {
+            let mut options = SelectOption::default();
+            let mut pattern = "";
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            s => pattern = s,
+                        }
+                    }
+                    Ok(Self::SelectString {
+                        pattern: pattern.to_string(),
+                        options,
+                    })
+                }
+                Err(e) => Err(AppError::new(
+                    AppErrorKind::InvalidParameters,
+                    format!("{}: {}", arg, e),
+                )),
+            }
+        } else if command == CMD_SELECT_FZF {
+            let mut options = SelectOption::default();
+            match shell_words::split(arg) {
+                Ok(args) => {
+                    for arg in args.iter() {
+                        match arg.as_str() {
+                            "--toggle=true" => options.toggle = true,
+                            "--all=true" => options.all = true,
+                            "--toggle=false" => options.toggle = false,
+                            "--all=false" => options.all = false,
+                            "--deselect=true" => options.reverse = true,
+                            "--deselect=false" => options.reverse = false,
+                            _ => {}
+                        }
+                    }
+                    Ok(Self::SelectFzf { options })
                 }
                 Err(e) => Err(AppError::new(
                     AppErrorKind::InvalidParameters,
@@ -403,10 +498,6 @@ impl std::str::FromStr for Command {
             }
         } else if command == CMD_SET_LINEMODE {
             Ok(Self::SetLineMode(LineMode::from_string(arg)?))
-        } else if command == CMD_SET_TAB_BAR_MODE {
-            Ok(Self::SetTabBarDisplayMode(TabBarDisplayMode::from_str(
-                arg,
-            )?))
         } else if command == CMD_TAB_SWITCH {
             match arg.parse::<i32>() {
                 Ok(s) => Ok(Self::TabSwitch { offset: s }),
@@ -451,8 +542,16 @@ impl std::str::FromStr for Command {
                     format!("{}: no starting character given", command),
                 )),
             }
-        } else if command == CMD_FILTER {
-            Ok(Self::Filter {
+        } else if command == CMD_FILTER_GLOB {
+            Ok(Self::FilterGlob {
+                pattern: arg.to_string(),
+            })
+        } else if command == CMD_FILTER_REGEX {
+            Ok(Self::FilterRegex {
+                pattern: arg.to_string(),
+            })
+        } else if command == CMD_FILTER_STRING {
+            Ok(Self::FilterString {
                 pattern: arg.to_string(),
             })
         } else {

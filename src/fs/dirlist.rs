@@ -69,6 +69,16 @@ impl JoshutoDirList {
         self.index
     }
 
+    pub fn get_index_from_name(&self, name: &str) -> Option<usize> {
+        for (index, entry) in self.iter().enumerate() {
+            if name == entry.file_name() {
+                return Some(index);
+            }
+        }
+
+        None
+    }
+
     pub fn get_visual_mode_anchor_index(&self) -> Option<usize> {
         self.visual_mode_anchor_index
     }

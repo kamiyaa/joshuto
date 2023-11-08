@@ -1,8 +1,5 @@
 use crate::{
-    config::clean::app::{
-        display::{line_mode::LineMode, sort_type::SortType},
-        tab::TabBarDisplayMode,
-    },
+    config::clean::app::display::{line_mode::LineMode, sort_type::SortType},
     io::FileOperationOptions,
 };
 
@@ -101,7 +98,10 @@ impl CommandComment for Command {
             Self::SearchNext => "Next search entry",
             Self::SearchPrev => "Previous search entry",
 
-            Self::SelectFiles { .. } => "Select file",
+            Self::SelectGlob { .. } => "Select files with globbing",
+            Self::SelectRegex { .. } => "Select files with regex",
+            Self::SelectString { .. } => "Select files",
+
             Self::SetCaseSensitivity { .. } => "Set case sensitivity",
             Self::SetMode => "Set file permissions",
             Self::SubProcess { spawn: false, .. } => "Run a shell command",
@@ -124,28 +124,26 @@ impl CommandComment for Command {
             },
             Self::SortReverse => "Reverse sort order",
 
-            Self::Filter { .. } => "Filter directory list",
+            Self::FilterGlob { .. } => "Filter directory list with globbing",
+            Self::FilterRegex { .. } => "Filter directory list with regex",
+            Self::FilterString { .. } => "Filter directory list",
 
-            Self::SetTabBarDisplayMode(mode) => match mode {
-                TabBarDisplayMode::Number => "TabBar only display with number ( 1 | 2 | 3 )",
-                TabBarDisplayMode::Directory => {
-                    "TabBar only display with directory ( dir1 | dir2 | dir3 )"
-                }
-                TabBarDisplayMode::All => {
-                    "TabBar display with numbar and directory ( 1: dir1 | 2: dir2 )"
-                }
-            },
             Self::TabSwitch { .. } => "Switch to the next tab",
             Self::TabSwitchIndex { .. } => "Switch to a given tab",
             Self::Help => "Open this help page",
 
             Self::SearchFzf => "Search via fzf",
             Self::SubdirFzf => "Switch to a child directory via fzf",
+            Self::SelectFzf { .. } => "Select via fzf",
             Self::Zoxide(_) => "Zoxide",
             Self::ZoxideInteractive => "Zoxide interactive",
 
             Self::BookmarkAdd => "Add a bookmark",
             Self::BookmarkChangeDirectory => "Navigate to a bookmark",
+            Self::CustomSearch(_) => "Find file based on the custom command",
+            Self::CustomSearchInteractive(_) => {
+                "Interactively find file based on the custom command"
+            }
         }
     }
 }

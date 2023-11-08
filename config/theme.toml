@@ -2,12 +2,30 @@
 ## Tabs
 ##########################################
 
-# Inactive tabs
-[tabs.inactive]
+[tabs]
+[tabs.styles]
 
-# Active tabs
-[tabs.active]
-invert=true
+# Style of active tab & current directory
+[tabs.styles.active]
+bg = "light_blue"
+fg = "black"
+bold = true
+
+# Style of inactive tabs
+[tabs.styles.inactive]
+
+# Style of the left/front tab scroll tag (when tabs overflow)
+[tabs.styles.scroll_front]
+fg = "yellow"
+bold = true
+
+# Style of the right/back tab scroll tag (when tabs overflow)
+[tabs.styles.scroll_back]
+fg = "yellow"
+bold = true
+
+# There are more style options and strings to configure
+# the tab-bar theme.
 
 ##########################################
 ## File List - Selections

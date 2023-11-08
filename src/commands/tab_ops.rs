@@ -7,7 +7,7 @@ use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::history::DirectoryHistory;
 use crate::tab::{JoshutoTab, TabHomePage};
-use crate::util::unix;
+use crate::util::{cwd, unix};
 
 use crate::HOME_DIR;
 
@@ -16,7 +16,7 @@ use super::quit::{quit_with_action, QuitAction};
 fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()> {
     context.tab_context_mut().index = new_index;
     let cwd = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
-    std::env::set_current_dir(cwd.as_path())?;
+    cwd::set_current_dir(cwd.as_path())?;
 
     let entry_path = match context
         .tab_context_ref()

@@ -66,7 +66,10 @@ impl AppCommand for Command {
             Self::SearchNext => CMD_SEARCH_NEXT,
             Self::SearchPrev => CMD_SEARCH_PREV,
 
-            Self::SelectFiles { .. } => CMD_SELECT_FILES,
+            Self::SelectGlob { .. } => CMD_SELECT_GLOB,
+            Self::SelectRegex { .. } => CMD_SELECT_REGEX,
+            Self::SelectString { .. } => CMD_SELECT_STRING,
+
             Self::SetCaseSensitivity { .. } => CMD_SET_CASE_SENSITIVITY,
             Self::SetMode => CMD_SET_MODE,
 
@@ -78,14 +81,15 @@ impl AppCommand for Command {
             Self::Sort(_) => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,
 
-            Self::Filter { .. } => CMD_FILTER,
+            Self::FilterGlob { .. } => CMD_FILTER_GLOB,
+            Self::FilterRegex { .. } => CMD_FILTER_REGEX,
+            Self::FilterString { .. } => CMD_FILTER_STRING,
 
             Self::SubProcess { spawn: false, .. } => CMD_SUBPROCESS_FOREGROUND,
             Self::SubProcess { spawn: true, .. } => CMD_SUBPROCESS_BACKGROUND,
             Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
             Self::SetLineMode(_) => CMD_SET_LINEMODE,
 
-            Self::SetTabBarDisplayMode(_) => CMD_SET_TAB_BAR_MODE,
             Self::TabSwitch { .. } => CMD_TAB_SWITCH,
             Self::TabSwitchIndex { .. } => CMD_TAB_SWITCH_INDEX,
             Self::ToggleHiddenFiles => CMD_TOGGLE_HIDDEN,
@@ -93,8 +97,12 @@ impl AppCommand for Command {
 
             Self::SearchFzf => CMD_SEARCH_FZF,
             Self::SubdirFzf => CMD_SUBDIR_FZF,
+            Self::SelectFzf { .. } => CMD_SELECT_FZF,
             Self::Zoxide(_) => CMD_ZOXIDE,
             Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,
+
+            Self::CustomSearch(_) => CMD_CUSTOM_SEARCH,
+            Self::CustomSearchInteractive(_) => CMD_CUSTOM_SEARCH_INTERACTIVE,
 
             Self::BookmarkAdd => CMD_BOOKMARK_ADD,
             Self::BookmarkChangeDirectory => CMD_BOOKMARK_CHANGE_DIRECTORY,

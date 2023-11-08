@@ -48,9 +48,6 @@ impl std::fmt::Display for Command {
             Self::SearchGlob { pattern } => write!(f, "{} {}", self.command(), pattern),
             Self::SearchRegex { pattern } => write!(f, "{} {}", self.command(), pattern),
             Self::SearchString { pattern } => write!(f, "{} {}", self.command(), pattern),
-            Self::SelectFiles { pattern, options } => {
-                write!(f, "{} {} {}", self.command(), pattern, options)
-            }
             Self::SubProcess { words, .. } => write!(f, "{} {:?}", self.command(), words),
             Self::Sort(t) => write!(f, "{} {}", self.command(), t),
             Self::TabSwitch { offset } => write!(f, "{} {}", self.command(), offset),

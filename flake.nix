@@ -51,11 +51,11 @@
           };
         };
 
-        packages.default = pkgs.callPackage ./nix { };
+        packages.default = pkgs.callPackage ./utils/nix { };
         overlayAttrs = {
           inherit (config.packages) joshuto;
         };
-        packages.joshuto = pkgs.callPackage ./nix { };
+        packages.joshuto = pkgs.callPackage ./utils/nix { };
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [

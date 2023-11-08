@@ -4,6 +4,7 @@ use std::time::SystemTime;
 
 use filetime::FileTime;
 
+use crate::commands::cursor_move;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::create_dirlist_with_history;
@@ -58,5 +59,10 @@ pub fn touch_file(context: &mut AppContext, arg: &str) -> AppResult {
             create_dirlist_with_history(history, path.as_path(), &options, &tab_options)?;
         history.insert(path, new_dirlist);
     }
+
+    if context.config_ref().focus_on_create {
+        cursor_move::to_path(context, path::Path::new(arg))?;
+    }
+
     Ok(())
 }

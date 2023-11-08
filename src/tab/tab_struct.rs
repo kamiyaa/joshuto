@@ -1,6 +1,4 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
-use std::ffi::OsStr;
 use std::path;
 
 use crate::config::clean::app::display::tab::TabDisplayOption;
@@ -9,6 +7,7 @@ use crate::context::UiContext;
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};
 use crate::preview::preview_dir::PreviewDirState;
+// use crate::HOSTNAME;
 
 type HistoryMetadata = HashMap<path::PathBuf, PreviewDirState>;
 
@@ -56,6 +55,9 @@ impl JoshutoTab {
     pub fn set_cwd(&mut self, cwd: &path::Path) {
         self._previous_dir = Some(self._cwd.to_path_buf());
         self._cwd = cwd.to_path_buf();
+
+        // OSC 7: Escape sequence to set the working directory
+        // print!("\x1b]7;file://{}{}\x1b\\", HOSTNAME.as_str(), cwd.display());
     }
 
     pub fn previous_dir(&self) -> Option<&path::Path> {
@@ -110,12 +112,5 @@ impl JoshutoTab {
         };
 
         self.history.get_mut(child_path.as_path())
-    }
-
-    pub fn tab_title(&self) -> Cow<'_, str> {
-        self.cwd()
-            .file_name()
-            .unwrap_or_else(|| OsStr::new("/"))
-            .to_string_lossy()
     }
 }

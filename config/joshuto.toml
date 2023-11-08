@@ -1,10 +1,12 @@
 numbered_command = false
 
+focus_on_create = true
 use_trash = true
 watch_files = true
 xdg_open = false
 xdg_open_fork = false
 
+custom_commands = []
 
 [display]
 # default, hsplit
@@ -18,7 +20,6 @@ scroll_offset = 6
 show_borders = true
 show_hidden = false
 show_icons = true
-tilde_in_titlebar = true
 # none, absolute, relative
 line_number_style = "none"
 

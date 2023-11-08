@@ -1,5 +1,6 @@
 use std::path;
 
+use crate::commands::cursor_move;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::DirectoryHistory;
@@ -13,5 +14,10 @@ pub fn new_directory(context: &mut AppContext, p: &path::Path) -> AppResult {
         tab.history_mut()
             .reload(&curr_path, &options, &tab_options)?;
     }
+
+    if context.config_ref().focus_on_create {
+        cursor_move::to_path(context, p)?;
+    }
+
     Ok(())
 }
