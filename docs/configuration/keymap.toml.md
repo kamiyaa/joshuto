@@ -119,25 +119,31 @@ function joshuto() {
 
 ### `shell`: runs a shell command
 
-- `%s` is substituted by a list of all selected files or by the file under the cursor, if none is selected
+- `%s` and `%p` are substituted by a list of all selected files or by the file under the cursor, if none is selected
 - When running the external program, the directory shown in Joshuto is set as “working directory”,
-  the file names substituted for `%s` are given without path.
+  the file names substituted for `%s` are given without path. If you want the absolute path, use `%p`.
 - Example: `:shell touch file.txt` will create a file called `file.txt`
 - Example for `keymap.toml`: To open all selected files with `nvim`, one can add a keybinding like this:
   ```toml
   keymap = [ //..
-     { keys = [ "e", "v" ], command = "shell nvim %s" }
+     { keys = [ "e", "v" ], commands = ["shell nvim %s"] }
+  ]
+  ```
+- To set a wallpaper on sway using the absolute path of an image file:
+  ```toml
+  keymap = [ //..
+    { keys = ["m", "w"], commands = ["shell swaymsg output * bg %p fit"] }
   ]
   ```
 
 ### `spawn`: runs a shell command in the background
 
-- Supports `%s`, just like the `shell` command.
+- Supports `%s`and `%p`, just like the `shell` command.
 - Example for `keymap.toml`: To open all selected files or directories with `sxiv`,
   one can add a keybinding like this:
   ```toml
   keymap = [ //..
-     { keys = [ "i" ], command = "spawn sxiv -t %s" }
+     { keys = [ "i" ], commands = ["spawn sxiv -t %s"] }
   ]
   ```
 
