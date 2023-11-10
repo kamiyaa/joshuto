@@ -35,10 +35,15 @@ pub struct TabLabel {
 
 impl TabLabel {
     fn from_path(path: &Path) -> TabLabel {
-        let mut full_path_str = path.as_os_str().to_str().unwrap().to_string();
+        let mut full_path_str = path.as_os_str()
+            .to_str()
+            .unwrap_or_default()
+            .to_string();
         if let Some(home_dir) = HOME_DIR.as_ref() {
             let home_dir_str = home_dir.to_string_lossy().into_owned();
-            full_path_str = full_path_str.replace(&home_dir_str, "~");
+            if full_path_str.starts_with(&home_dir_str) {
+                full_path_str = full_path_str.replacen(&home_dir_str, "~", 1);
+            }
         }
         // eprintln!("full_path_str: {:?}", full_path_str);
         let last = Path::new(&full_path_str)
