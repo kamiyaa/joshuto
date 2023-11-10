@@ -35,10 +35,7 @@ pub struct TabLabel {
 
 impl TabLabel {
     fn from_path(path: &Path) -> TabLabel {
-        let mut full_path_str = path.as_os_str()
-            .to_str()
-            .unwrap_or_default()
-            .to_string();
+        let mut full_path_str = path.as_os_str().to_str().unwrap_or_default().to_string();
         if let Some(home_dir) = HOME_DIR.as_ref() {
             let home_dir_str = home_dir.to_string_lossy().into_owned();
             if full_path_str.starts_with(&home_dir_str) {
