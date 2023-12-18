@@ -359,7 +359,7 @@ where
     let file_path_str = file_path.as_ref().as_os_str().to_string_lossy();
 
     let clipboards = [
-        ("gio trash", format!("gio trash '{}'", file_path_str)),
+        ("gio trash", format!("gio trash -- '{}'", file_path_str)),
         ("trash-put", format!("trash-put '{}'", file_path_str)),
         ("trash", format!("trash '{}'", file_path_str)),
     ];

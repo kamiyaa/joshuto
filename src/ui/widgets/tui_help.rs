@@ -59,13 +59,12 @@ impl<'a> Widget for TuiHelp<'a> {
             Constraint::Length((width as f32 * 0.50) as u16),
             Constraint::Length((width as f32 * 0.38) as u16),
         ];
-        let table_widget = Table::new(keymap)
+        let table_widget = Table::new(keymap, widths)
             .header(
                 Row::new(vec!["Key", "Command", "Description"])
                     .style(*HEADER_STYLE)
                     .bottom_margin(1),
             )
-            .widths(&widths)
             .column_spacing(1);
 
         table_widget.render(keybindings_area, &mut keybindings_buffer);
