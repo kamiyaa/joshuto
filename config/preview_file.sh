@@ -41,6 +41,10 @@ IFS=$'\n'
 # * pipefail causes a pipeline to fail also if a command other than the last one fails
 set -o noclobber -o noglob -o nounset -o pipefail
 
+# Enable exiftool large file support
+shopt -s expand_aliases
+alias exiftool='exiftool -api largefilesupport=1'
+
 FILE_PATH=""
 PREVIEW_WIDTH=10
 PREVIEW_HEIGHT=10
