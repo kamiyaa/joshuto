@@ -39,7 +39,6 @@ case "$mimetype" in
 	image/*)
 		image "${FILE_PATH}"
 		;;
-	*)
 	video/*)
 		video "${FILE_PATH}"
 		;;
