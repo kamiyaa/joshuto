@@ -110,14 +110,14 @@ sudo dnf install joshuto
 ##### Arch ([archlinuxcn](https://github.com/archlinuxcn/repo/))
 
 - [stable version (x86_64)](https://github.com/archlinuxcn/repo/tree/master/archlinuxcn/joshuto)
-- [stable version (aarch64)](https://github.com/archlinuxcn/repo/tree/master/alarm/joshuto)
+- [stable version (aarch64)](https://github.com/archlinuxcn/repo/tree/master/alarmcn/joshuto)
 
 ```
 [yay/paru] -S joshuto
 ```
 
 - [latest git version (x86_64)](https://github.com/archlinuxcn/repo/tree/master/archlinuxcn/joshuto-git)
-- [latest git version (aarch64)](https://github.com/archlinuxcn/repo/tree/master/alarm/joshuto-git)
+- [latest git version (aarch64)](https://github.com/archlinuxcn/repo/tree/master/alarmcn/joshuto-git)
 
 ```
 [yay/paru] -S joshuto-git
