@@ -82,4 +82,4 @@ It follows `ranger`'s exit codes for the most part.
 
 ## Image previews
 
-See [image_previews.md](/docs/image_previews.md)
+See [image_previews](/docs/image_previews/README.md)
