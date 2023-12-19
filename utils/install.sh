@@ -50,7 +50,7 @@ readonly DOWNLOAD_DIR="$(mktemp -d)"
 readonly RELEASE_SHA="$(curl -Lfs "$CHECKSUM_URL" | awk '{print $1}')"
 
 function main() {
-  printf "$RELEASE_BODY\n\n"
+  echo -e "$RELEASE_BODY"
 
   printf '\e[1;32m%-6s\e[m' "===================="
   printf '\e[1;34m%-6s\e[m' " Release notes  "
