@@ -49,6 +49,8 @@ pub struct AppContext {
     // the last preview area (or None if now preview shown) to check if a preview hook script needs
     // to be called
     preview_area: Option<PreviewArea>,
+    // the stdout of the last `shell` command
+    pub last_stdout: Option<String>,
 }
 
 impl AppContext {
@@ -108,6 +110,7 @@ impl AppContext {
             watcher,
             watched_paths,
             preview_area: None,
+            last_stdout: None,
         }
     }
 

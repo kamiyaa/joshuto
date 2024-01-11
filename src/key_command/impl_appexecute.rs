@@ -1,3 +1,4 @@
+use crate::commands::stdout::post_process_std_out;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::ui::AppBackend;
@@ -137,9 +138,10 @@ impl AppExecute for Command {
             Self::Sort(t) => sort::set_sort(context, *t),
             Self::SetLineMode(mode) => linemode::set_linemode(context, *mode),
             Self::SortReverse => sort::toggle_reverse(context),
-            Self::SubProcess { words, spawn } => {
-                sub_process::sub_process(context, backend, words.as_slice(), *spawn)
+            Self::SubProcess { words, mode } => {
+                sub_process::sub_process(context, backend, words.as_slice(), mode.clone())
             }
+            Self::StdOutPostProcess { processor } => post_process_std_out(processor, context),
             Self::SwitchLineNums(d) => line_nums::switch_line_numbering(context, *d),
 
             Self::Flat { depth } => flat::flatten(context, *depth),

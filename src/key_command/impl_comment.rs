@@ -3,6 +3,8 @@ use crate::{
     io::FileOperationOptions,
 };
 
+use crate::commands::sub_process::SubprocessCallMode;
+
 use super::{Command, CommandComment};
 
 impl CommandComment for Command {
@@ -104,8 +106,10 @@ impl CommandComment for Command {
 
             Self::SetCaseSensitivity { .. } => "Set case sensitivity",
             Self::SetMode => "Set file permissions",
-            Self::SubProcess { spawn: false, .. } => "Run a shell command",
-            Self::SubProcess { spawn: true, .. } => "Run command in background",
+            Self::SubProcess { mode: SubprocessCallMode::Interactive, .. } => "Run a shell command (blocking) and hand over shell temporarily",
+            Self::SubProcess { mode: SubprocessCallMode::Spawn, .. } => "Spawn a shell command",
+            Self::SubProcess { mode: SubprocessCallMode::Capture, .. } => "Run a shell command (blocking), do not hand over shall but capture stdout for post-processing",
+            Self::StdOutPostProcess { .. } => "Post process stdout of last `shell` command",
             Self::ShowTasks => "Show running background tasks",
 
             Self::ToggleHiddenFiles => "Toggle hidden files displaying",

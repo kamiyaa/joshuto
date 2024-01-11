@@ -21,11 +21,14 @@ pub enum AppErrorKind {
     Regex,
 
     InvalidParameters,
+    StateError,
 
     UnrecognizedArgument,
     UnrecognizedCommand,
 
     UnknownError,
+
+    InternalError,
 }
 
 impl From<io::ErrorKind> for AppErrorKind {

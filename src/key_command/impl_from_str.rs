@@ -3,6 +3,8 @@ use std::path;
 use crate::commands::case_sensitivity::SetType;
 use crate::commands::quit::QuitAction;
 use crate::commands::select::SelectOption;
+use crate::commands::stdout::PostProcessor;
+use crate::commands::sub_process::SubprocessCallMode;
 use crate::config::clean::app::display::line_mode::LineMode;
 use crate::config::clean::app::display::line_number::LineNumberStyle;
 use crate::config::clean::app::display::new_tab::NewTabMode;
@@ -470,11 +472,22 @@ impl std::str::FromStr for Command {
                     format!("{}: {}", arg, e),
                 )),
             }
-        } else if command == CMD_SUBPROCESS_FOREGROUND || command == CMD_SUBPROCESS_BACKGROUND {
+        } else if command == CMD_SUBPROCESS_INTERACTIVE
+            || command == CMD_SUBPROCESS_SPAWN
+            || command == CMD_SUBPROCESS_CAPTURE
+        {
             match shell_words::split(arg) {
                 Ok(s) if !s.is_empty() => Ok(Self::SubProcess {
                     words: s,
-                    spawn: command == "spawn",
+                    mode: match command {
+                        CMD_SUBPROCESS_CAPTURE => SubprocessCallMode::Capture,
+                        CMD_SUBPROCESS_SPAWN => SubprocessCallMode::Spawn,
+                        CMD_SUBPROCESS_INTERACTIVE => SubprocessCallMode::Interactive,
+                        c => Err(AppError::new(
+                                AppErrorKind::InternalError,
+                                format!("Joshuto internal error: command {} unexpected in sub-process handling", c),
+                            ))?
+                    }
                 }),
                 Ok(_) => Err(AppError::new(
                     AppErrorKind::InvalidParameters,
@@ -484,6 +497,15 @@ impl std::str::FromStr for Command {
                     AppErrorKind::InvalidParameters,
                     format!("{}: {}", arg, e),
                 )),
+            }
+        } else if command == CMD_STDOUT_POST_PROCESS {
+            if let Some(processor) = PostProcessor::from_str(arg) {
+                Ok(Self::StdOutPostProcess { processor })
+            } else {
+                Err(AppError::new(
+                    AppErrorKind::InvalidParameters,
+                    format!("{} is not a valid argument for stdout post-processing", arg),
+                ))
             }
         } else if command == CMD_SORT {
             match arg {

@@ -39,6 +39,7 @@ pub mod show_help;
 pub mod show_hidden;
 pub mod show_tasks;
 pub mod sort;
+pub mod stdout;
 pub mod sub_process;
 pub mod subdir_fzf;
 pub mod tab_ops;
