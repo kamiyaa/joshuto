@@ -33,6 +33,7 @@ rand = "^0"
 regex = "1.9.3"
 rustyline = "^12"
 serde = { version = "^1", features = ["derive"] }
+shadow-rs = "0.26"
 shell-words = "^1"
 shellexpand = { version = "^3", features = ["full"] }
 signal-hook = "^0"
@@ -57,6 +58,9 @@ features = ["termion"]
 [dependencies.uuid]
 version = "^1"
 features = ["v4", "fast-rng", "macro-diagnostics"]
+
+[build-dependencies]
+shadow-rs = "0.26"
 
 [features]
 devicons = ["phf"]

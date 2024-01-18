@@ -9,6 +9,7 @@ mod io;
 mod key_command;
 mod preview;
 mod run;
+mod shadow;
 mod tab;
 mod traits;
 mod ui;
@@ -219,8 +220,11 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), AppError> {
 }
 
 fn print_version() -> Result<i32, AppError> {
-    let version = env!("CARGO_PKG_VERSION");
-    writeln!(&mut std::io::stdout(), "{PROGRAM_NAME}-{version}")?;
+    writeln!(
+        &mut std::io::stdout(),
+        "{PROGRAM_NAME}-{}",
+        shadow::CLAP_LONG_VERSION
+    )?;
     Ok(0)
 }
 
