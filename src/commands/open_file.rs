@@ -168,7 +168,7 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
                 (entry.file_path(), vec![entry.file_name()])
             } else {
                 (
-                    paths.get(0).unwrap().file_path(),
+                    paths.first().unwrap().file_path(),
                     paths.iter().map(|e| e.file_name()).collect(),
                 )
             };
