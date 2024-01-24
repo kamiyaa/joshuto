@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::config::raw::theme::AppThemeRaw;
-use crate::config::{parse_config_or_default, TomlConfigFile};
+use crate::config::{ConfigType, TomlConfigFile};
 use crate::error::AppResult;
 
 use super::style::AppStyle;
@@ -30,8 +30,10 @@ impl AppTheme {
 }
 
 impl TomlConfigFile for AppTheme {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<AppThemeRaw, AppTheme>(file_name)
+    type Raw = AppThemeRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::Theme
     }
 }
 

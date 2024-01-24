@@ -1,6 +1,9 @@
 pub mod clean;
 pub mod raw;
 
+pub mod config_type;
+pub use config_type::ConfigType;
+
 use serde::de::DeserializeOwned;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -8,8 +11,14 @@ use std::path::{Path, PathBuf};
 use crate::error::AppResult;
 use crate::CONFIG_HIERARCHY;
 
-pub trait TomlConfigFile {
-    fn get_config(file_name: &str) -> Self;
+pub trait TomlConfigFile: Sized + Default {
+    type Raw: Into<Self> + DeserializeOwned;
+
+    fn get_type() -> config_type::ConfigType;
+
+    fn get_config() -> Self {
+        parse_config_or_default::<Self::Raw, Self>(Self::get_type().as_filename())
+    }
 }
 
 // searches a list of folders for a given file in order of preference
@@ -17,13 +26,10 @@ pub fn search_directories<P>(file_name: &str, directories: &[P]) -> Option<PathB
 where
     P: AsRef<Path>,
 {
-    for path in directories.iter() {
-        let file_path = path.as_ref().join(file_name);
-        if file_path.exists() {
-            return Some(file_path);
-        }
-    }
-    None
+    directories
+        .iter()
+        .map(|path| path.as_ref().join(file_name))
+        .find(|path| path.exists())
 }
 
 pub fn search_config_directories(file_name: &str) -> Option<PathBuf> {
@@ -32,18 +38,17 @@ pub fn search_config_directories(file_name: &str) -> Option<PathBuf> {
 
 fn parse_file_to_config<T, S>(file_path: &Path) -> AppResult<S>
 where
-    T: DeserializeOwned,
-    S: From<T>,
+    T: DeserializeOwned + Into<S>,
 {
     let file_contents = fs::read_to_string(file_path)?;
     let config = toml::from_str::<T>(&file_contents)?;
-    Ok(S::from(config))
+    Ok(config.into())
 }
 
 pub fn parse_config_or_default<T, S>(file_name: &str) -> S
 where
-    T: DeserializeOwned,
-    S: From<T> + std::default::Default,
+    T: DeserializeOwned + Into<S>,
+    S: std::default::Default,
 {
     match search_config_directories(file_name) {
         Some(file_path) => match parse_file_to_config::<T, S>(&file_path) {

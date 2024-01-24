@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 
-use crate::config::{parse_config_or_default, raw::preview::FileEntryPreviewRaw, TomlConfigFile};
+use crate::config::{raw::preview::FileEntryPreviewRaw, ConfigType, TomlConfigFile};
 
 #[derive(Debug, Deserialize)]
 pub struct FileEntryPreviewEntry {
@@ -17,8 +17,10 @@ pub struct FileEntryPreview {
 }
 
 impl TomlConfigFile for FileEntryPreview {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<FileEntryPreviewRaw, FileEntryPreview>(file_name)
+    type Raw = FileEntryPreviewRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::Preview
     }
 }
 

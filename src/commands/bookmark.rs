@@ -7,7 +7,7 @@ use ratatui::widgets::Clear;
 use termion::event::Event;
 
 use crate::config::raw::bookmarks::{BookmarkRaw, BookmarksRaw};
-use crate::config::search_directories;
+use crate::config::{search_directories, ConfigType};
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::event::{process_event, AppEvent};
@@ -17,7 +17,7 @@ use crate::ui::widgets::TuiMenu;
 use crate::ui::AppBackend;
 use crate::util::unix;
 
-use crate::{BOOKMARKS_FILE, BOOKMARKS_T, CONFIG_HIERARCHY};
+use crate::{BOOKMARKS_T, CONFIG_HIERARCHY};
 
 use super::change_directory::change_directory;
 
@@ -33,10 +33,11 @@ fn find_bookmark_file() -> Option<path::PathBuf> {
 pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
     let cwd = std::env::current_dir()?;
 
-    let bookmark_path = match search_directories(BOOKMARKS_FILE, &CONFIG_HIERARCHY) {
-        Some(file_path) => Some(file_path),
-        None => find_bookmark_file(),
-    };
+    let bookmark_path =
+        match search_directories(ConfigType::Bookmarks.as_filename(), &CONFIG_HIERARCHY) {
+            Some(file_path) => Some(file_path),
+            None => find_bookmark_file(),
+        };
 
     if let Some(bookmark_path) = bookmark_path {
         let key = poll_for_bookmark_key(context, backend);

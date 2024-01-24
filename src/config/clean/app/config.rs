@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use crate::{
     config::{
-        parse_config_or_default,
         raw::app::{AppConfigRaw, CustomCommand},
-        TomlConfigFile,
+        ConfigType, TomlConfigFile,
     },
     error::AppResult,
 };
@@ -71,8 +70,10 @@ impl std::default::Default for AppConfig {
 }
 
 impl TomlConfigFile for AppConfig {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<AppConfigRaw, AppConfig>(file_name)
+    type Raw = AppConfigRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::App
     }
 }
 

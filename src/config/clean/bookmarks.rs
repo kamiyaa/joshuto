@@ -3,16 +3,16 @@ use termion::event::Event;
 use std::collections::HashMap;
 
 use crate::config::raw::bookmarks::BookmarksRaw;
-use crate::config::TomlConfigFile;
+use crate::config::{ConfigType, TomlConfigFile};
 use crate::util::keyparse;
-
-use crate::config::parse_config_or_default;
 
 pub type Bookmarks = HashMap<Event, String>;
 
 impl TomlConfigFile for Bookmarks {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<BookmarksRaw, Bookmarks>(file_name)
+    type Raw = BookmarksRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::Bookmarks
     }
 }
 
