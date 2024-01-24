@@ -115,7 +115,7 @@ pub enum Commands {
     #[command(about = "Show shell completions")]
     Completions { shell: clap_complete::Shell },
 
-    #[command(about = "Show config types")]
+    #[command(about = "Print embedded toml configs")]
     Config { config_type: ConfigType },
 
     #[command(about = "Show version")]
