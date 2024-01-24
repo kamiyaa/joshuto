@@ -121,7 +121,6 @@ pub enum Commands {
         config_type: ConfigType,
     },
 
-    #[command(about = "Show version")]
     /// Print 'joshuto' build version.
     Version,
 }
