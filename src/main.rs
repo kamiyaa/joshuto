@@ -112,13 +112,17 @@ pub struct Args {
 
 #[derive(Clone, Debug, Subcommand)]
 pub enum Commands {
-    #[command(about = "Show shell completions")]
+    /// Print completions for a given shell.
     Completions { shell: clap_complete::Shell },
 
-    #[command(about = "Print embedded toml configs")]
-    Config { config_type: ConfigType },
+    /// Print embedded toml configuration for a given config type.
+    Config {
+        /// Filename of the given config without '.toml' extension.
+        config_type: ConfigType,
+    },
 
     #[command(about = "Show version")]
+    /// Print 'joshuto' build version.
     Version,
 }
 
