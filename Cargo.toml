@@ -26,6 +26,7 @@ filetime = "^0"
 globset = "^0"
 lazy_static = "^1"
 libc = "^0"
+lscolors = { version = "0.17.0", features = ["nu-ansi-term"] }
 notify = "^6"
 open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
