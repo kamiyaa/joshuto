@@ -108,19 +108,20 @@ fn poll_for_bookmark_key(context: &mut AppContext, backend: &mut AppBackend) -> 
                 frame.render_widget(view, area);
             }
 
-            let menu_widget = TuiMenu::new(bookmarks_str.as_slice());
-            let menu_len = menu_widget.len();
-            let menu_y = if menu_len + 1 > area.height as usize {
-                0
+            let (menu_widget, menu_y) = if bookmarks_str.len() > area.height as usize - 1 {
+                (TuiMenu::new(&bookmarks_str[0..area.height as usize - 1]), 0)
             } else {
-                (area.height as usize - menu_len - 1) as u16
+                (
+                    TuiMenu::new(bookmarks_str.as_slice()),
+                    (area.height as usize - bookmarks_str.len() - 1) as u16,
+                )
             };
 
             let menu_rect = Rect {
                 x: 0,
-                y: menu_y - 1,
+                y: menu_y,
                 width: area.width,
-                height: menu_len as u16 + 1,
+                height: menu_widget.len() as u16 + 1,
             };
             frame.render_widget(Clear, menu_rect);
             frame.render_widget(menu_widget, menu_rect);
