@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    config::{parse_config_or_default, raw::icon::IconsRaw, TomlConfigFile},
+    config::{raw::icon::IconsRaw, ConfigType, TomlConfigFile},
     error::AppResult,
 };
 
@@ -30,8 +30,10 @@ impl std::default::Default for Icons {
 }
 
 impl TomlConfigFile for Icons {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<IconsRaw, Icons>(file_name)
+    type Raw = IconsRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::Icons
     }
 }
 

@@ -9,12 +9,20 @@ pub struct AppError {
     _cause: String,
 }
 
-#[allow(dead_code)]
 impl AppError {
     pub fn new(_kind: AppErrorKind, _cause: String) -> Self {
         Self { _kind, _cause }
     }
 
+    pub fn error(cause: impl ToString) -> Self {
+        Self::new(AppErrorKind::UnknownError, cause.to_string())
+    }
+
+    pub fn fail<T>(cause: impl ToString) -> Result<T, AppError> {
+        Err(Self::error(cause))
+    }
+
+    #[allow(dead_code)]
     pub fn kind(&self) -> &AppErrorKind {
         &self._kind
     }
