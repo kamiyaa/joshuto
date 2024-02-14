@@ -543,12 +543,12 @@ mod tests_facator_tab_bar_sequence {
     /// an empty tab line is returned.
     fn too_little_available_width_for_anything() {
         // Given
-        let tabs = vec![TabLabel {
+        let tabs = [&TabLabel {
             long: "/foo/a".to_string(),
             short: "a".to_string(),
         }];
         // When
-        let elements = factor_tab_bar_sequence(1, &tabs.iter().collect(), 0, &test_config());
+        let elements = factor_tab_bar_sequence(1, &tabs, 0, &test_config());
         // Then
         assert_eq!(Vec::<TabBarElement>::new(), elements)
     }
@@ -559,12 +559,12 @@ mod tests_facator_tab_bar_sequence {
     /// (`[/foo/a]` is exactly a width of 8).
     fn one_tab_that_fits() {
         // Given
-        let tabs = vec![TabLabel {
+        let tabs = [&TabLabel {
             long: "/foo/a".to_string(),
             short: "a".to_string(),
         }];
         // When
-        let elements = factor_tab_bar_sequence(8, &tabs.iter().collect(), 0, &test_config());
+        let elements = factor_tab_bar_sequence(8, &tabs, 0, &test_config());
         // Then
         assert_eq!(
             vec![
@@ -584,12 +584,12 @@ mod tests_facator_tab_bar_sequence {
     /// (`[a]`).
     fn one_tab_that_fits_only_in_short_form() {
         // Given
-        let tabs = vec![TabLabel {
+        let tabs = [&TabLabel {
             long: "/foo/a".to_string(),
             short: "a".to_string(),
         }];
         // When
-        let elements = factor_tab_bar_sequence(7, &tabs.iter().collect(), 0, &test_config());
+        let elements = factor_tab_bar_sequence(7, &tabs, 0, &test_config());
         // Then
         assert_eq!(
             vec![
@@ -610,12 +610,12 @@ mod tests_facator_tab_bar_sequence {
     /// (`aaaaaaa`).
     fn one_tab_that_fits_only_in_short_form_without_prepostfixes() {
         // Given
-        let tabs = vec![TabLabel {
+        let tabs = [&TabLabel {
             long: "/foo/a".to_string(),
             short: "aaaaaaa".to_string(),
         }];
         // When
-        let elements = factor_tab_bar_sequence(7, &tabs.iter().collect(), 0, &test_config());
+        let elements = factor_tab_bar_sequence(7, &tabs, 0, &test_config());
         // Then
         assert_eq!(
             vec![TabBarElement::TabA(0, "aaaaaaa".to_string()),],
@@ -632,12 +632,12 @@ mod tests_facator_tab_bar_sequence {
     /// (`aaaaa…`).
     fn case_2c_one_tab_that_does_not_fit_unless_further_shortened() {
         // Given
-        let tabs = vec![TabLabel {
+        let tabs = [&TabLabel {
             long: "/foo/a".to_string(),
             short: "aaaaaaa".to_string(),
         }];
         // When
-        let elements = factor_tab_bar_sequence(6, &tabs.iter().collect(), 0, &test_config());
+        let elements = factor_tab_bar_sequence(6, &tabs, 0, &test_config());
         // Then
         assert_eq!(
             vec![TabBarElement::TabA(0, "aaaaa…".to_string()),],
@@ -653,18 +653,18 @@ mod tests_facator_tab_bar_sequence {
     /// (`[1: /foo/a]| 2: /foo/b ` has exactly a width of 23 )
     fn case_1_two_tabs_that_fit() {
         // Given
-        let tabs = vec![
-            TabLabel {
+        let tabs = [
+            &TabLabel {
                 long: "/foo/a".to_string(),
                 short: "a".to_string(),
             },
-            TabLabel {
+            &TabLabel {
                 long: "/foo/b".to_string(),
                 short: "b".to_string(),
             },
         ];
         // When
-        let elements = factor_tab_bar_sequence(23, &tabs.iter().collect(), 0, &test_config());
+        let elements = factor_tab_bar_sequence(23, &tabs, 0, &test_config());
         // Then
         assert_eq!(
             vec![
@@ -688,18 +688,18 @@ mod tests_facator_tab_bar_sequence {
     /// (`[1: /foo/a]| 2: b `).
     fn case_3_two_tabs_fit_shortened() {
         // Given
-        let tabs = vec![
-            TabLabel {
+        let tabs = [
+            &TabLabel {
                 long: "/foo/a".to_string(),
                 short: "a".to_string(),
             },
-            TabLabel {
+            &TabLabel {
                 long: "/foo/b".to_string(),
                 short: "b".to_string(),
             },
         ];
         // When
-        let elements = factor_tab_bar_sequence(22, &tabs.iter().collect(), 0, &test_config());
+        let elements = factor_tab_bar_sequence(22, &tabs, 0, &test_config());
         // Then
         assert_eq!(
             vec![
@@ -724,12 +724,12 @@ mod tests_facator_tab_bar_sequence {
     /// `«0 [1: long_name_a]···· 1»`
     fn multiple_tabs_but_active_one_does_only_fit_in_short_form_with_scroll_tags() {
         // Given
-        let tabs = vec![
-            TabLabel {
+        let tabs = [
+            &TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            TabLabel {
+            &TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
@@ -737,7 +737,7 @@ mod tests_facator_tab_bar_sequence {
         // When
         let elements = factor_tab_bar_sequence(
             16 + 3 + 2 + 6 - 1, //label + tab-index + pre/postfix + scroll tags - 1 to make it not fit
-            &tabs.iter().collect(),
+            &tabs,
             0,
             &test_config(),
         );
@@ -770,12 +770,12 @@ mod tests_facator_tab_bar_sequence {
     /// `1: long_name_a`
     fn multiple_tabs_but_active_one_does_not_fit_in_short_form_with_scroll_tags() {
         // Given
-        let tabs = vec![
-            TabLabel {
+        let tabs = [
+            &TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            TabLabel {
+            &TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
@@ -783,7 +783,7 @@ mod tests_facator_tab_bar_sequence {
         // When
         let elements = factor_tab_bar_sequence(
             21, //label + tab-index + pre/postfix + scroll tags - 1 to make it not fit
-            &tabs.iter().collect(),
+            &tabs,
             0,
             &test_config(),
         );
@@ -803,12 +803,12 @@ mod tests_facator_tab_bar_sequence {
     /// `1: long…`
     fn multiple_tabs_but_active_one_does_not_fit_in_short_even_without_scroll_tags() {
         // Given
-        let tabs = vec![
-            TabLabel {
+        let tabs = [
+            &TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            TabLabel {
+            &TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
@@ -816,7 +816,7 @@ mod tests_facator_tab_bar_sequence {
         // When
         let elements = factor_tab_bar_sequence(
             8, //label + tab-index + pre/postfix + scroll tags - 1 to make it not fit
-            &tabs.iter().collect(),
+            &tabs,
             0,
             &test_config(),
         );
@@ -834,16 +834,16 @@ mod tests_facator_tab_bar_sequence {
         expected: Vec<TabBarElement>,
     ) {
         // Given
-        let tabs = vec![
-            TabLabel {
+        let tabs = [
+            &TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            TabLabel {
+            &TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
-            TabLabel {
+            &TabLabel {
                 long: "/foo/long_name_c".to_string(),
                 short: "long_name_c".to_string(),
             },
@@ -851,7 +851,7 @@ mod tests_facator_tab_bar_sequence {
         // When
         let elements = factor_tab_bar_sequence(
             available_width,
-            &tabs.iter().collect(),
+            &tabs,
             current_index,
             &test_config(),
         );
