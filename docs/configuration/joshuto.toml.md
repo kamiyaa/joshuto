@@ -5,6 +5,8 @@ This file is for general configurations.
 All options available and their default values:
 
 ```toml
+# Enables mouse support (true by default)
+mouse_support = true
 # This is for configuring how many items to reach before 'scrolling' the view
 scroll_offset = 6
 
