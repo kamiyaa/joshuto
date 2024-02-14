@@ -849,12 +849,8 @@ mod tests_facator_tab_bar_sequence {
             },
         ];
         // When
-        let elements = factor_tab_bar_sequence(
-            available_width,
-            &tabs,
-            current_index,
-            &test_config(),
-        );
+        let elements =
+            factor_tab_bar_sequence(available_width, &tabs, current_index, &test_config());
         // Then
         assert_eq!(expected, elements)
     }
