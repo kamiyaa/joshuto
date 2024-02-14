@@ -6,7 +6,6 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 use termion::screen::IntoAlternateScreen;
 
-#[cfg(feature = "mouse")]
 use termion::input::MouseTerminal;
 
 trait New {
@@ -15,24 +14,12 @@ trait New {
         Self: Sized;
 }
 
-#[cfg(feature = "mouse")]
 type Screen = MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>;
-#[cfg(feature = "mouse")]
 impl New for Screen {
     // Returns alternate screen
     fn new() -> io::Result<Self> {
         let stdout = io::stdout().into_raw_mode()?;
         Ok(MouseTerminal::from(stdout.into_alternate_screen().unwrap()))
-    }
-}
-#[cfg(not(feature = "mouse"))]
-type Screen = AlternateScreen<RawTerminal<std::io::Stdout>>;
-#[cfg(not(feature = "mouse"))]
-impl New for Screen {
-    // Returns alternate screen
-    fn new() -> io::Result<Self> {
-        let stdout = std::io::stdout().into_raw_mode()?;
-        Ok(stdout.into_alternate_screen().unwrap())
     }
 }
 

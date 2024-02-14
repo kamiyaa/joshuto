@@ -65,6 +65,5 @@ shadow-rs = "0.26"
 [features]
 devicons = ["phf"]
 file_mimetype = []
-mouse = []
 syntax_highlight = ["ansi-to-tui"]
-default = ["devicons", "mouse", "syntax_highlight"]
+default = ["devicons", "syntax_highlight"]

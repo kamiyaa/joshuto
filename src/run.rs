@@ -83,6 +83,10 @@ fn process_input(
     // handle the event
     match event {
         AppEvent::Termion(Event::Mouse(event)) => {
+            if !context.config_ref().mouse_support {
+                context.flush_event();
+                return;
+            }
             process_event::process_mouse(event, context, backend, keymap_t);
             preview_default::load_preview(context, backend);
         }
