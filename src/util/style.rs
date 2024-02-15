@@ -1,4 +1,7 @@
+use ansi_to_tui::IntoText;
+use lscolors::LsColors;
 use ratatui::style::Style;
+use std::path::Path;
 
 use crate::fs::{FileType, JoshutoDirEntry, LinkType};
 use crate::util::unix;
@@ -23,6 +26,13 @@ impl PathStyleIfSome for Style {
 }
 
 pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
+    match &THEME_T.lscolors {
+        Some(lscolors) => entry_lscolors_style(lscolors, entry),
+        None => entry_theme_style(entry),
+    }
+}
+
+fn entry_theme_style(entry: &JoshutoDirEntry) -> Style {
     let metadata = &entry.metadata;
     let filetype = &metadata.file_type();
     let linktype = &metadata.link_type();
@@ -83,4 +93,25 @@ fn file_style(entry: &JoshutoDirEntry) -> Style {
             })
             .unwrap_or(regular_style)
     }
+}
+
+fn entry_lscolors_style(lscolors: &LsColors, entry: &JoshutoDirEntry) -> Style {
+    let path = &entry.file_path();
+    let default = Style::default();
+    lscolors_style(lscolors, path).unwrap_or(default)
+}
+
+fn lscolors_style(lscolors: &LsColors, path: &Path) -> Option<Style> {
+    let nu_ansi_term_style = lscolors.style_for_path(path)?.to_nu_ansi_term_style();
+    // Paths that are not valid UTF-8 are not styled by LS_COLORS.
+    let str = path.to_str()?;
+    let text = nu_ansi_term_style
+        .paint(str)
+        .to_string()
+        .into_bytes()
+        .into_text()
+        .ok()?;
+    // Extract the first Style from the returned Text.
+    let style = text.lines.first()?.spans.first()?.style;
+    Some(style)
 }

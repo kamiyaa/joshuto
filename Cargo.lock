@@ -632,6 +632,7 @@ dependencies = [
  "globset",
  "lazy_static",
  "libc",
+ "lscolors",
  "nix 0.27.1",
  "notify",
  "open",
@@ -764,6 +765,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lscolors"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53304fff6ab1e597661eee37e42ea8c47a146fca280af902bb76bff8a896e523"
+dependencies = [
+ "nu-ansi-term",
+]
+
+[[package]]
 name = "memchr"
 version = "2.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -844,6 +854,15 @@ dependencies = [
  "log",
  "mio",
  "walkdir",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "nu-ansi-term"
+version = "0.50.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd2800e1520bdc966782168a627aa5d1ad92e33b984bf7c7615d31280c83ff14"
+dependencies = [
  "windows-sys 0.48.0",
 ]
 
