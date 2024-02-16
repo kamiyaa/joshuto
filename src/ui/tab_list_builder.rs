@@ -124,7 +124,7 @@ fn check_fit_and_build_sequence(
 
 fn factor_tab_bar_sequence(
     available_width: usize,
-    tab_records: &Vec<&TabLabel>,
+    tab_records: &[&TabLabel],
     current_index: usize,
     config: &TabTheme,
 ) -> Vec<TabBarElement> {

@@ -33,7 +33,7 @@ fn str_to_color(s: &str) -> style::Color {
             let b = rgb.get_blue() as u8;
             style::Color::Rgb(r, g, b)
         }
-        s if s.is_empty() => style::Color::Reset,
+        "" => style::Color::Reset,
         s => match s.parse::<Rgb>() {
             Ok(rgb) => {
                 let r = rgb.get_red() as u8;
