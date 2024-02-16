@@ -27,48 +27,33 @@ impl PathStyleIfSome for Style {
 
 pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
     let metadata = &entry.metadata;
-    let filetype = &metadata.file_type();
-    let linktype = &metadata.link_type();
+    let filetype = metadata.file_type();
+    let linktype = metadata.link_type();
+
+    if entry.is_visual_mode_selected() {
+        return visual_mode_selected_style();
+    }
+    if entry.is_permanent_selected() {
+        return permanent_selected_style();
+    }
 
     match &THEME_T.lscolors {
         Some(lscolors) => {
-            let default = Style::default();
-            let path = &entry.file_path();
-
-            if entry.is_visual_mode_selected() {
-                visual_mode_selected_style()
-            } else if entry.is_permanent_selected() {
-                permanent_selected_style()
-            } else {
-                match linktype {
-                    LinkType::Symlink { valid: true, .. } => symlink_valid_style(),
-                    LinkType::Symlink { valid: false, .. } => symlink_invalid_style(),
-                    LinkType::Normal => match filetype {
-                        FileType::Directory => directory_style(),
-                        FileType::File => file_style(entry),
-                    },
-                };
-                lscolors_style(lscolors, path).unwrap_or(default)
-            }
+            let path = entry.file_path();
+            lscolors_style(lscolors, path).unwrap_or(default_style(entry, linktype, filetype))
         }
-        None => entry_theme_style(entry, linktype, filetype),
+        None => default_style(entry, linktype, filetype),
     }
 }
 
-fn entry_theme_style(entry: &JoshutoDirEntry, linktype: &LinkType, filetype: &FileType) -> Style {
-    if entry.is_visual_mode_selected() {
-        visual_mode_selected_style()
-    } else if entry.is_permanent_selected() {
-        permanent_selected_style()
-    } else {
-        match linktype {
-            LinkType::Symlink { valid: true, .. } => symlink_valid_style(),
-            LinkType::Symlink { valid: false, .. } => symlink_invalid_style(),
-            LinkType::Normal => match filetype {
-                FileType::Directory => directory_style(),
-                FileType::File => file_style(entry),
-            },
-        }
+fn default_style(entry: &JoshutoDirEntry, linktype: &LinkType, filetype: &FileType) -> Style {
+    match linktype {
+        LinkType::Symlink { valid: true, .. } => symlink_valid_style(),
+        LinkType::Symlink { valid: false, .. } => symlink_invalid_style(),
+        LinkType::Normal => match filetype {
+            FileType::Directory => directory_style(),
+            FileType::File => file_style(entry),
+        },
     }
 }
 
