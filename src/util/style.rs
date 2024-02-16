@@ -40,7 +40,8 @@ pub fn entry_style(entry: &JoshutoDirEntry) -> Style {
     match &THEME_T.lscolors {
         Some(lscolors) => {
             let path = entry.file_path();
-            lscolors_style(lscolors, path).unwrap_or(default_style(entry, linktype, filetype))
+            lscolors_style(lscolors, path)
+                .unwrap_or_else(|| default_style(entry, linktype, filetype))
         }
         None => default_style(entry, linktype, filetype),
     }
