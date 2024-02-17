@@ -1,8 +1,10 @@
+use std::fmt::Debug;
 use std::io;
 use std::path;
 use std::sync::mpsc;
 use std::thread;
 
+use ratatui_image::protocol::Protocol;
 use signal_hook::consts::signal;
 use signal_hook::iterator::exfiltrator::SignalOnly;
 use signal_hook::iterator::SignalsInfo;
@@ -16,6 +18,20 @@ use crate::error::AppResult;
 use crate::fs::JoshutoDirList;
 use crate::io::FileOperationProgress;
 use crate::preview::preview_file::FilePreview;
+
+pub enum PreviewData {
+    Script(Box<FilePreview>),
+    Image(Box<dyn Protocol>),
+}
+
+impl Debug for PreviewData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Script(_) => f.debug_tuple("Script").field(&"_").finish(),
+            Self::Image(_) => f.debug_tuple("Image").field(&"_").finish(),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub enum AppEvent {
@@ -38,7 +54,7 @@ pub enum AppEvent {
     },
     PreviewFile {
         path: path::PathBuf,
-        res: Box<io::Result<FilePreview>>,
+        res: io::Result<PreviewData>,
     },
     // terminal size change events
     Signal(i32),
