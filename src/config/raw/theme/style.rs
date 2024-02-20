@@ -22,7 +22,7 @@ fn str_to_color(s: &str) -> style::Color {
         "light_magenta" => style::Color::LightMagenta,
         "light_cyan" => style::Color::LightCyan,
         "white" => style::Color::White,
-        "reset" => style::Color::Reset,
+        "reset" | "" => style::Color::Reset,
         s if s.starts_with('#') => {
             let rgb = match Rgb::from_hex_str(s) {
                 Ok(s) => s,
@@ -33,7 +33,6 @@ fn str_to_color(s: &str) -> style::Color {
             let b = rgb.get_blue() as u8;
             style::Color::Rgb(r, g, b)
         }
-        s if s.is_empty() => style::Color::Reset,
         s => match s.parse::<Rgb>() {
             Ok(rgb) => {
                 let r = rgb.get_red() as u8;
