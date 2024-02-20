@@ -24,7 +24,9 @@ impl Screen {
     fn new(mouse_support: bool) -> io::Result<Self> {
         let stdout = io::stdout().into_raw_mode()?;
         if mouse_support {
-            Ok(Self::WithMouse(MouseTerminal::from(stdout.into_alternate_screen().unwrap())))
+            Ok(Self::WithMouse(MouseTerminal::from(
+                stdout.into_alternate_screen().unwrap(),
+            )))
         } else {
             Ok(Self::WithoutMouse(stdout.into_alternate_screen().unwrap()))
         }

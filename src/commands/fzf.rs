@@ -50,7 +50,12 @@ pub fn fzf_multi(
     fzf_impl(context, backend, items, args)
 }
 
-fn fzf_impl(context: &mut AppContext, backend: &mut AppBackend, items: Vec<String>, args: Vec<String>) -> AppResult<String> {
+fn fzf_impl(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    items: Vec<String>,
+    args: Vec<String>,
+) -> AppResult<String> {
     backend.terminal_drop();
 
     let mut cmd = Command::new("fzf");
