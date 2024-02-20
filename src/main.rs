@@ -169,7 +169,7 @@ fn run_main(args: Args) -> Result<i32, AppError> {
 
     let mut context = AppContext::new(config, args.clone());
     {
-        let mut backend: ui::AppBackend = ui::AppBackend::new()?;
+        let mut backend: ui::AppBackend = ui::AppBackend::new(context.config_ref().mouse_support)?;
         run::run_loop(&mut backend, &mut context, keymap)?;
     }
     run_quit(&args, &context)?;

@@ -81,7 +81,7 @@ pub fn sub_process(
 ) -> AppResult {
     backend.terminal_drop();
     let res = execute_sub_process(context, words, spawn);
-    backend.terminal_restore()?;
+    backend.terminal_restore(context.config_ref().mouse_support)?;
     let _ = reload::soft_reload_curr_tab(context);
     context.message_queue_mut().push_info(format!(
         "{}: {}",
