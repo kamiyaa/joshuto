@@ -25,7 +25,7 @@ pub fn fzf(
         CaseSensitivity::Smart => {}
     }
 
-    fzf_impl(backend, items, args)
+    fzf_impl(context, backend, items, args)
 }
 
 pub fn fzf_multi(
@@ -47,10 +47,15 @@ pub fn fzf_multi(
     }
 
     args.push("-m".to_owned());
-    fzf_impl(backend, items, args)
+    fzf_impl(context, backend, items, args)
 }
 
-fn fzf_impl(backend: &mut AppBackend, items: Vec<String>, args: Vec<String>) -> AppResult<String> {
+fn fzf_impl(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    items: Vec<String>,
+    args: Vec<String>,
+) -> AppResult<String> {
     backend.terminal_drop();
 
     let mut cmd = Command::new("fzf");
@@ -63,7 +68,7 @@ fn fzf_impl(backend: &mut AppBackend, items: Vec<String>, args: Vec<String>) -> 
     let mut fzf = match cmd.spawn() {
         Ok(child) => child,
         Err(e) => {
-            backend.terminal_restore()?;
+            backend.terminal_restore(context.config_ref().mouse_support)?;
             return Err(AppError::from(e));
         }
     };
@@ -77,7 +82,7 @@ fn fzf_impl(backend: &mut AppBackend, items: Vec<String>, args: Vec<String>) -> 
     }
 
     let fzf_output = fzf.wait_with_output();
-    backend.terminal_restore()?;
+    backend.terminal_restore(context.config_ref().mouse_support)?;
 
     if let Ok(output) = fzf_output {
         if output.status.success() {

@@ -128,7 +128,7 @@ pub fn bulk_rename(context: &mut AppContext, backend: &mut AppBackend) -> AppRes
     context.remove_external_preview();
     backend.terminal_drop();
     let res = _bulk_rename(context);
-    backend.terminal_restore()?;
+    backend.terminal_restore(context.config_ref().mouse_support)?;
     reload::soft_reload_curr_tab(context)?;
     res
 }
