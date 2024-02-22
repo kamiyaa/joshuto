@@ -12,8 +12,8 @@ pub struct ProgramEntry {
     _fork: bool,
     #[serde(default, rename = "silent")]
     _silent: bool,
-    #[serde(default, rename = "confirm_exit")]
-    _confirm_exit: bool,
+    #[serde(default, rename = "pager")]
+    _pager: bool,
 }
 
 impl ProgramEntry {
@@ -23,7 +23,7 @@ impl ProgramEntry {
             _args: Vec::new(),
             _fork: false,
             _silent: false,
-            _confirm_exit: false,
+            _pager: false,
         }
     }
 
@@ -54,12 +54,6 @@ impl ProgramEntry {
         self
     }
 
-    #[allow(dead_code)]
-    pub fn confirm_exit(&mut self, confirm_exit: bool) -> &mut Self {
-        self._confirm_exit = confirm_exit;
-        self
-    }
-
     pub fn get_command(&self) -> &str {
         self._command.as_str()
     }
@@ -76,8 +70,8 @@ impl ProgramEntry {
         self._silent
     }
 
-    pub fn get_confirm_exit(&self) -> bool {
-        self._confirm_exit
+    pub fn get_pager(&self) -> bool {
+        self._pager
     }
 
     // TODO: Windows support
@@ -96,7 +90,7 @@ impl std::default::Default for ProgramEntry {
             _args: Vec::new(),
             _fork: false,
             _silent: false,
-            _confirm_exit: false,
+            _pager: false,
         }
     }
 }
@@ -115,8 +109,8 @@ impl std::fmt::Display for ProgramEntry {
         if self.get_silent() {
             f.write_str("[silent]").unwrap();
         }
-        if self.get_confirm_exit() {
-            f.write_str("[confirm-exit]").unwrap();
+        if self.get_pager() {
+            f.write_str("[pager]").unwrap();
         }
         f.write_str("")
     }
