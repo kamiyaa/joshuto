@@ -356,7 +356,11 @@ fn trash_file<P>(file_path: P) -> AppResult
 where
     P: AsRef<path::Path>,
 {
-    let file_path_str = file_path.as_ref().as_os_str().to_string_lossy();
+    let file_path_str = file_path
+        .as_ref()
+        .as_os_str()
+        .to_string_lossy()
+        .replace("'", "'\\''");
 
     let clipboards = [
         ("gio trash", format!("gio trash -- '{}'", file_path_str)),
