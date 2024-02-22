@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "devicons")]
-use crate::ICONS_T;
+use crate::{CONFIG_T, ICONS_T};
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
@@ -155,11 +155,15 @@ fn create_icon_label(name: &str, metadata: &JoshutoMetadata) -> String {
                 .get(name)
                 .cloned()
                 .unwrap_or(match name.rsplit_once('.') {
-                    Some((_, ext)) => ICONS_T
-                        .ext
-                        .get(ext)
-                        .unwrap_or(&ICONS_T.default_file)
-                        .to_string(),
+                    Some((_, ext)) => {
+                        let icon = if CONFIG_T.case_sensitive_ext {
+                            ICONS_T.ext.get(ext)
+                        } else {
+                            ICONS_T.ext.get(&ext.to_lowercase())
+                        };
+
+                        icon.unwrap_or(&ICONS_T.default_file).to_string()
+                    }
                     None => ICONS_T.default_file.clone(),
                 }),
         };
