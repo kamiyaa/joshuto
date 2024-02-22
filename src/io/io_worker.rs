@@ -360,7 +360,7 @@ where
         .as_ref()
         .as_os_str()
         .to_string_lossy()
-        .replace("'", "'\\''");
+        .replace('\'', "'\\''");
 
     let clipboards = [
         ("gio trash", format!("gio trash -- '{}'", file_path_str)),
