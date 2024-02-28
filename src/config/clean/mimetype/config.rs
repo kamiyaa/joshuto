@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::config::{raw::mimetype::AppProgramRegistryRaw, ConfigType, TomlConfigFile};
-use crate::CONFIG_T;
 
 use super::{ExtensionAppList, MimetypeAppList};
 
@@ -17,11 +16,7 @@ pub struct AppProgramRegistry {
 
 impl AppProgramRegistry {
     pub fn app_list_for_ext(&self, extension: &str) -> Option<&ExtensionAppList> {
-        if CONFIG_T.case_sensitive_ext {
-            self._extension.get(extension)
-        } else {
-            self._extension.get(&extension.to_lowercase())
-        }
+        self._extension.get(extension)
     }
 
     pub fn app_list_for_mimetype(&self, mimetype: &str) -> Option<&MimetypeAppList> {

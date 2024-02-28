@@ -34,6 +34,7 @@ pub fn run_loop(
         // Initialize an initial tab
         let tab = JoshutoTab::new(
             curr_path,
+            context.config_ref(),
             context.ui_context_ref(),
             context.config_ref().display_options_ref(),
         )?;

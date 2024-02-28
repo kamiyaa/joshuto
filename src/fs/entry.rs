@@ -1,16 +1,17 @@
 use std::{fs, io, path};
 
 use crate::{
-    config::clean::app::display::DisplayOption,
+    config::clean::app::{display::DisplayOption, AppConfig},
     fs::{FileType, JoshutoMetadata},
 };
 
 #[cfg(feature = "devicons")]
-use crate::{CONFIG_T, ICONS_T};
+use crate::ICONS_T;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
     name: String,
+    ext: Option<String>,
     label: String,
     path: path::PathBuf,
     pub metadata: JoshutoMetadata,
@@ -25,6 +26,7 @@ impl JoshutoDirEntry {
     pub fn from(
         direntry: &walkdir::DirEntry,
         base: &path::Path,
+        config: &AppConfig,
         options: &DisplayOption,
     ) -> io::Result<Self> {
         let path = direntry.path().to_path_buf();
@@ -36,6 +38,18 @@ impl JoshutoDirEntry {
             .to_string_lossy()
             .to_string();
 
+        let ext = direntry
+            .path()
+            .extension()
+            .and_then(|s| s.to_str())
+            .map(|s| {
+                if config.case_sensitive_ext {
+                    s.to_string()
+                } else {
+                    s.to_lowercase()
+                }
+            });
+
         let mut metadata = JoshutoMetadata::from(&path)?;
 
         if options.automatically_count_files() && metadata.file_type().is_dir() {
@@ -46,7 +60,7 @@ impl JoshutoDirEntry {
 
         #[cfg(feature = "devicons")]
         let label = if options.show_icons() {
-            create_icon_label(name.as_str(), &metadata)
+            create_icon_label(name.as_str(), &ext, config, &metadata)
         } else {
             name.clone()
         };
@@ -56,6 +70,7 @@ impl JoshutoDirEntry {
 
         Ok(Self {
             name,
+            ext,
             label,
             path,
             metadata,
@@ -67,6 +82,10 @@ impl JoshutoDirEntry {
 
     pub fn file_name(&self) -> &str {
         self.name.as_str()
+    }
+
+    pub fn ext(&self) -> Option<&str> {
+        self.ext.as_ref().map(|e| e.as_str())
     }
 
     pub fn label(&self) -> &str {
@@ -99,14 +118,6 @@ impl JoshutoDirEntry {
 
     pub fn set_visual_mode_selected(&mut self, visual_mode_selected: bool) {
         self.visual_mode_selected = visual_mode_selected;
-    }
-
-    pub fn get_ext(&self) -> &str {
-        let fname = self.file_name();
-        match fname.rfind('.') {
-            Some(pos) => &fname[pos..],
-            None => "",
-        }
     }
 }
 
@@ -142,7 +153,7 @@ impl std::cmp::Ord for JoshutoDirEntry {
 }
 
 #[cfg(feature = "devicons")]
-fn create_icon_label(name: &str, metadata: &JoshutoMetadata) -> String {
+fn create_icon_label(name: &str, ext: &Option<String>, config: &AppConfig, metadata: &JoshutoMetadata) -> String {
     let label = {
         let icon = match metadata.file_type() {
             FileType::Directory => ICONS_T
@@ -154,9 +165,9 @@ fn create_icon_label(name: &str, metadata: &JoshutoMetadata) -> String {
                 .file_exact
                 .get(name)
                 .cloned()
-                .unwrap_or(match name.rsplit_once('.') {
-                    Some((_, ext)) => {
-                        let icon = if CONFIG_T.case_sensitive_ext {
+                .unwrap_or(match ext {
+                    Some(ext) => {
+                        let icon = if config.case_sensitive_ext {
                             ICONS_T.ext.get(ext)
                         } else {
                             ICONS_T.ext.get(&ext.to_lowercase())

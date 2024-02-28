@@ -6,7 +6,7 @@ use std::path::Path;
 use crate::fs::{FileType, JoshutoDirEntry, LinkType};
 use crate::util::unix;
 
-use crate::{CONFIG_T, THEME_T};
+use crate::THEME_T;
 
 /// Allows patching a ratatui style if there is `Some` style, otherwise returns a clone.
 pub trait PathStyleIfSome {
@@ -106,16 +106,8 @@ fn file_style(entry: &JoshutoDirEntry) -> Style {
             .add_modifier(THEME_T.executable.modifier)
     } else {
         entry
-            .file_path()
-            .extension()
-            .and_then(|s| s.to_str())
-            .and_then(|s| {
-                if CONFIG_T.case_sensitive_ext {
-                    THEME_T.ext.get(s)
-                } else {
-                    THEME_T.ext.get(&s.to_lowercase())
-                }
-            })
+            .ext()
+            .and_then(|s| THEME_T.ext.get(s))
             .map(|theme| {
                 Style::default()
                     .fg(theme.fg)

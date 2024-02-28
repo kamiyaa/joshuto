@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path;
 
+use crate::config::clean::app::AppConfig;
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
 use crate::context::UiContext;
@@ -23,13 +24,14 @@ pub struct JoshutoTab {
 impl JoshutoTab {
     pub fn new(
         cwd: path::PathBuf,
+        config: &AppConfig,
         ui_context: &UiContext,
         options: &DisplayOption,
     ) -> std::io::Result<Self> {
         let mut history = JoshutoHistory::new();
         let tab_options = options.default_tab_display_option.clone();
 
-        history.populate_to_root(cwd.as_path(), ui_context, options, &tab_options)?;
+        history.populate_to_root(cwd.as_path(), config, ui_context, options, &tab_options)?;
         let new_tab = Self {
             _cwd: cwd,
             _previous_dir: None,

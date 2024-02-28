@@ -68,8 +68,6 @@ lazy_static! {
 
         config_dirs
     };
-
-    static ref CONFIG_T: AppConfig = AppConfig::get_config();
     static ref THEME_T: AppTheme = AppTheme::get_config();
     static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config();
     static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config();
@@ -157,8 +155,8 @@ fn run_main(args: Args) -> Result<i32, AppError> {
     }
 
     // make sure all configs have been loaded before starting
+    let config = AppConfig::get_config();
     let keymap = AppKeyMapping::get_config();
-    lazy_static::initialize(&CONFIG_T);
     lazy_static::initialize(&THEME_T);
     lazy_static::initialize(&MIMETYPE_T);
     lazy_static::initialize(&PREVIEW_T);
@@ -169,7 +167,7 @@ fn run_main(args: Args) -> Result<i32, AppError> {
     lazy_static::initialize(&USERNAME);
     lazy_static::initialize(&HOSTNAME);
 
-    let mut context = AppContext::new(CONFIG_T.clone(), args.clone());
+    let mut context = AppContext::new(config, args.clone());
     {
         let mut backend: ui::AppBackend = ui::AppBackend::new(context.config_ref().mouse_support)?;
         run::run_loop(&mut backend, &mut context, keymap)?;

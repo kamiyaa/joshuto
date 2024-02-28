@@ -93,12 +93,13 @@ pub fn delete_selected_files(
     }
 
     let curr_tab = context.tab_context_ref().curr_tab_ref();
+    let config = context.config_ref().clone();
     let options = context.config_ref().display_options_ref().clone();
     let curr_path = curr_tab.cwd().to_path_buf();
     for (_, tab) in context.tab_context_mut().iter_mut() {
         let tab_options = tab.option_ref().clone();
         tab.history_mut()
-            .reload(&curr_path, &options, &tab_options)?;
+            .reload(&curr_path, &config, &options, &tab_options)?;
     }
     Ok(())
 }
