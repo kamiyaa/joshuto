@@ -4,6 +4,7 @@ use ratatui::style::{Color, Style};
 use ratatui::symbols::line::{HORIZONTAL_DOWN, HORIZONTAL_UP};
 use ratatui::text::Span;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
+use ratatui_image::Image;
 
 use crate::context::AppContext;
 use crate::preview::preview_dir::PreviewDirState;
@@ -195,21 +196,32 @@ impl<'a> Widget for TuiFolderView<'a> {
                         .render(layout_rect[2], buf);
                 }
                 None => {
-                    let preview_area = calculate_preview(self.context, layout_rect[2]);
-                    if let Some(preview_area) = preview_area {
-                        let area = Rect {
-                            x: preview_area.preview_area.x,
-                            y: preview_area.preview_area.y,
-                            width: preview_area.preview_area.width,
-                            height: preview_area.preview_area.height,
-                        };
-                        if let Some(PreviewFileState::Success { data }) = preview_context
-                            .previews_ref()
-                            .get(&preview_area.file_preview_path)
-                        {
+                    let image_offset = match preview_context.image_preview_ref(entry.file_path()) {
+                        Some(protocol) => {
+                            let area = layout_rect[2];
+                            Image::new(protocol).render(area, buf);
+                            protocol.rect().height
+                        }
+                        _ => 0,
+                    };
+
+                    if let Some(PreviewFileState::Success(data)) =
+                        preview_context.previews_ref().get(entry.file_path())
+                    {
+                        let preview_area = calculate_preview(self.context, layout_rect[2]);
+                        if let Some(preview_area) = preview_area {
+                            let area = Rect {
+                                x: preview_area.preview_area.x,
+                                y: preview_area.preview_area.y + image_offset,
+                                width: preview_area.preview_area.width,
+                                height: preview_area
+                                    .preview_area
+                                    .height
+                                    .saturating_sub(image_offset),
+                            };
                             TuiFilePreview::new(data).render(area, buf);
                         }
-                    }
+                    };
                 }
             }
         } else {
@@ -268,11 +280,8 @@ pub fn get_constraints(context: &AppContext) -> &[Constraint; 3] {
                     &display_options.default_layout
                 }
                 Some(entry) => match preview_context.previews_ref().get(entry.file_path()) {
-                    Some(PreviewFileState::Success { data }) if data.status.code() != Some(1) => {
-                        &display_options.default_layout
-                    }
-                    Some(PreviewFileState::Loading) => &display_options.default_layout,
-                    _ => &display_options.no_preview_layout,
+                    None => &display_options.no_preview_layout,
+                    _ => &display_options.default_layout,
                 },
             },
         }
@@ -327,24 +336,18 @@ pub fn calculate_preview(context: &AppContext, rect: Rect) -> Option<PreviewArea
     if child_list.as_ref().is_some() {
         None
     } else if let Some(entry) = curr_entry {
-        if let Some(PreviewFileState::Success { data }) =
-            preview_context.previews_ref().get(entry.file_path())
-        {
-            match data.status.code() {
-                Some(1) | None => None,
-                _ => {
-                    let file_preview_path = entry.file_path_buf();
-                    let preview_area = ui::Rect {
-                        x: rect.x,
-                        y: rect.y,
-                        width: rect.width,
-                        height: rect.height,
-                    };
-                    Some(PreviewArea::new(file_preview_path, preview_area))
-                }
+        match preview_context.previews_ref().get(entry.file_path()) {
+            None | Some(PreviewFileState::Loading) | Some(PreviewFileState::Error(_)) => None,
+            _ => {
+                let file_preview_path = entry.file_path_buf();
+                let preview_area = ui::Rect {
+                    x: rect.x,
+                    y: rect.y,
+                    width: rect.width,
+                    height: rect.height,
+                };
+                Some(PreviewArea::new(file_preview_path, preview_area))
             }
-        } else {
-            None
         }
     } else {
         None

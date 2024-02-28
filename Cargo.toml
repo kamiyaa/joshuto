@@ -24,6 +24,7 @@ colors-transform = "^0"
 dirs-next = "^2"
 filetime = "^0"
 globset = "^0"
+image = "0.24.5"
 lazy_static = "^1"
 libc = "^0"
 lscolors = { version = "0.17.0", features = ["nu-ansi-term"] }
@@ -31,6 +32,7 @@ notify = "^6"
 open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
 rand = "^0"
+ratatui-image = { version = "0.8.1", default-features = false, features = ["termion", "rustix", "serde"] }
 regex = "1.9.3"
 rustyline = "^12"
 serde = { version = "^1", features = ["derive"] }

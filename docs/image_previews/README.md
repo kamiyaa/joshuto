@@ -1,21 +1,38 @@
 # Image Thumbnails in File Previews
 
-Joshuto does not support image previews directly.
-One reason is that Joshuto wants to stay independent of specific display protocols and terminal emulators.
+Joshuto supports some terminal graphics protocols for image previews directly.
+See [ratatui-image](https://github.com/benjajaja/ratatui-image?tab=readme-ov-file#compatibility-matrix)
+for which terminals are supported.
 
-However, Joshuto offers two text-preview-related hooks which allow to easily implement an
-image preview with some simple scripts.
+To disable or override the detected protocol, the `preview_protocol` option can
+be used in the `joshuto.toml` file. Accepted values are `auto` (default), 
+`disabled`, or any of the [implemented protocols](https://docs.rs/ratatui-image/latest/ratatui_image/picker/enum.ProtocolType.html) 
+in lowercase.
+```toml
+[preview]
+preview_protocol = "halfblocks"
+...
+```
+
+However, since not all terminals have some graphics protocol implementation, 
+Joshuto offers two text-preview-related hooks which allow to easily implement
+an image preview with some simple scripts.
 The hooks can be configured in the `joshuto.toml` file.
 ```toml
 [preview]
 ...
-preview_shown_hook_script = "~/path/to/some/executable_script_1"
-preview_removed_hook_script = "~/path/to/some/executable_script_2"
+preview_script = "~/path/to/some/executable_script_1"
+preview_shown_hook_script = "~/path/to/some/executable_script_2"
+preview_removed_hook_script = "~/path/to/some/executable_script_3"
 ```
-The shown-hook is called whenever a new file-preview (in the 3rd pane) is activated.
+The `preview_script` hook is called the first time for textual previews (thus
+it's cached). If the script returns zero, then its output is displayed.
 
-The removed-hook will be called each time the file preview panel
-completely disappears in Joshuto.
+The `preview_shown_hook_script` is called each time a file-preview (in the 3rd 
+pane) is focused.
+
+The `preview_removed_hook_script` will be called each time the file preview 
+panel completely disappears in Joshuto.
 That is the case if the user selects a file for which no file preview is shown
 (either due to missing output of the preview script or due to file size),
 if the preview is not cached already and the preview pane is temporarily removed,
@@ -42,9 +59,6 @@ The “removed” script does not get any arguments.
 Using these hooks, one can trigger various actions when moving the cursor along files in Joshuto,
 and they can also be used to show image previews by the help of other 3rd party tools.
 
-Keep in mind that the result of the “normal” `preview` script you use for textual previews
-is cached by Joshuto and is not called every time a file is focused, but the “shown” hook is.
-
 # Wrapper Script
 For some of the 3rd party tools, it's necessary 
 to run them as a separate process, in parallel to Joshuto.
@@ -60,7 +74,6 @@ in the terminal and then Joshuto.
 We have recipes for a few famous solutions.
 * [Überzug](ueberzug.md) (only for X11)
 * [Überzug++](ueberzugpp.md) (for X11, some Wayland compositors, and some specific terminal emulators)
-* [Kitty](kitty.md) (for the Kitty terminal)
 
 ## Other Recipes and Tricks
 * [Combining text preview and image preview](combined_with_text.md)
