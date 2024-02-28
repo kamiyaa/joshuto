@@ -4,10 +4,10 @@ use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-use crate::config::clean::app::AppConfig;
 use crate::config::clean::app::display::dirlist::DirListDisplayOptions;
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
+use crate::config::clean::app::AppConfig;
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
 
@@ -71,8 +71,12 @@ impl DirectoryHistory for JoshutoHistory {
                 }
                 dirlists.push(new_dirlist);
             } else {
-                let mut new_dirlist =
-                    JoshutoDirList::from_path(curr.to_path_buf().clone(), config, options, tab_options)?;
+                let mut new_dirlist = JoshutoDirList::from_path(
+                    curr.to_path_buf().clone(),
+                    config,
+                    options,
+                    tab_options,
+                )?;
                 if let Some(ancestor) = prev.as_ref() {
                     if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
                         new_dirlist.set_index(Some(i), ui_context, options);

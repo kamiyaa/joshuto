@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::path;
 
-use crate::config::clean::app::AppConfig;
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
+use crate::config::clean::app::AppConfig;
 use crate::context::UiContext;
 use crate::fs::JoshutoDirList;
 use crate::history::{DirectoryHistory, JoshutoHistory};

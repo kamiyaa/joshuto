@@ -39,8 +39,13 @@ pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
             .map(|t| t.history_mut())
         {
             for path in paths {
-                let new_dirlist =
-                    create_dirlist_with_history(history, path.as_path(), &config, &options, &tab_options)?;
+                let new_dirlist = create_dirlist_with_history(
+                    history,
+                    path.as_path(),
+                    &config,
+                    &options,
+                    &tab_options,
+                )?;
                 history.insert(path, new_dirlist);
             }
         }
@@ -81,8 +86,13 @@ pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
             .map(|t| t.history_mut())
         {
             for path in paths {
-                let new_dirlist =
-                    create_dirlist_with_history(history, path.as_path(), &config, &options, &tab_options)?;
+                let new_dirlist = create_dirlist_with_history(
+                    history,
+                    path.as_path(),
+                    &config,
+                    &options,
+                    &tab_options,
+                )?;
                 history.insert(path, new_dirlist);
             }
         }

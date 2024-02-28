@@ -85,7 +85,7 @@ impl JoshutoDirEntry {
     }
 
     pub fn ext(&self) -> Option<&str> {
-        self.ext.as_ref().map(|e| e.as_str())
+        self.ext.as_deref()
     }
 
     pub fn label(&self) -> &str {
@@ -153,7 +153,12 @@ impl std::cmp::Ord for JoshutoDirEntry {
 }
 
 #[cfg(feature = "devicons")]
-fn create_icon_label(name: &str, ext: &Option<String>, config: &AppConfig, metadata: &JoshutoMetadata) -> String {
+fn create_icon_label(
+    name: &str,
+    ext: &Option<String>,
+    config: &AppConfig,
+    metadata: &JoshutoMetadata,
+) -> String {
     let label = {
         let icon = match metadata.file_type() {
             FileType::Directory => ICONS_T
@@ -161,22 +166,18 @@ fn create_icon_label(name: &str, ext: &Option<String>, config: &AppConfig, metad
                 .get(name)
                 .cloned()
                 .unwrap_or(ICONS_T.default_dir.clone()),
-            _ => ICONS_T
-                .file_exact
-                .get(name)
-                .cloned()
-                .unwrap_or(match ext {
-                    Some(ext) => {
-                        let icon = if config.case_sensitive_ext {
-                            ICONS_T.ext.get(ext)
-                        } else {
-                            ICONS_T.ext.get(&ext.to_lowercase())
-                        };
+            _ => ICONS_T.file_exact.get(name).cloned().unwrap_or(match ext {
+                Some(ext) => {
+                    let icon = if config.case_sensitive_ext {
+                        ICONS_T.ext.get(ext)
+                    } else {
+                        ICONS_T.ext.get(&ext.to_lowercase())
+                    };
 
-                        icon.unwrap_or(&ICONS_T.default_file).to_string()
-                    }
-                    None => ICONS_T.default_file.clone(),
-                }),
+                    icon.unwrap_or(&ICONS_T.default_file).to_string()
+                }
+                None => ICONS_T.default_file.clone(),
+            }),
         };
         format!("{} {}", icon, name)
     };

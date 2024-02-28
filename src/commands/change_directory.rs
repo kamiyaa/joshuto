@@ -40,7 +40,13 @@ pub fn change_directory(context: &mut AppContext, mut path: &path::Path) -> AppR
         .tab_context_mut()
         .curr_tab_mut()
         .history_mut()
-        .populate_to_root(new_cwd.as_path(), &config, &ui_context, &options, &tab_options)?;
+        .populate_to_root(
+            new_cwd.as_path(),
+            &config,
+            &ui_context,
+            &options,
+            &tab_options,
+        )?;
     Ok(())
 }
 
