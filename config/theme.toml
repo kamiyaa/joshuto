@@ -1,4 +1,9 @@
 ##########################################
+## General
+##########################################
+lscolors_enabled = false
+
+##########################################
 ## Tabs
 ##########################################
 
@@ -85,7 +90,7 @@ bold = true
 ##########################################
 ## File list - Override style by extension
 ##########################################
-# This sections allows to override the basic 
+# This sections allows to override the basic
 # style with a specific style for the file's
 # extension.
 

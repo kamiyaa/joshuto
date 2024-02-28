@@ -5,15 +5,17 @@ use std::thread;
 
 use crate::commands::quit::QuitAction;
 use crate::config::clean::app::AppConfig;
+use crate::config::raw::app::display::preview::PreviewProtocol;
 use crate::context::{
     CommandLineContext, LocalStateContext, MatchContext, MessageQueue, PreviewContext, TabContext,
     UiContext, WorkerContext,
 };
 use crate::event::{AppEvent, Events};
-use crate::ui::views;
-use crate::ui::PreviewArea;
+use crate::preview::preview_file::PreviewFileState;
+use crate::ui::{views, AppBackend, PreviewArea};
 use crate::Args;
 use notify::{RecursiveMode, Watcher};
+use ratatui_image::picker::Picker;
 use std::path;
 
 pub struct AppContext {
@@ -51,6 +53,28 @@ pub struct AppContext {
 
 impl AppContext {
     pub fn new(config: AppConfig, args: Args) -> Self {
+        let picker = if config
+            .preview_options_ref()
+            .preview_shown_hook_script
+            .is_none()
+        {
+            Picker::from_termios().ok().and_then(|mut picker| {
+                match config.preview_options_ref().preview_protocol {
+                    PreviewProtocol::Auto => {
+                        picker.guess_protocol(); // Must run before Events::new() because it makes ioctl calls.
+                        Some(picker)
+                    }
+                    PreviewProtocol::Disabled => None,
+                    PreviewProtocol::ProtocolType(protocol_type) => {
+                        picker.protocol_type = protocol_type;
+                        Some(picker)
+                    }
+                }
+            })
+        } else {
+            None
+        };
+
         let events = Events::new();
         let event_tx = events.event_tx.clone();
 
@@ -66,6 +90,8 @@ impl AppContext {
         .unwrap();
         let watched_paths = HashSet::with_capacity(3);
 
+        let preview_script = config.preview_options_ref().preview_script.clone();
+
         Self {
             quit: QuitAction::DoNot,
             events,
@@ -74,8 +100,8 @@ impl AppContext {
             local_state: None,
             search_context: None,
             message_queue: MessageQueue::new(),
-            worker_context: WorkerContext::new(event_tx),
-            preview_context: PreviewContext::new(),
+            worker_context: WorkerContext::new(event_tx.clone()),
+            preview_context: PreviewContext::new(picker, preview_script, event_tx),
             ui_context: UiContext { layout: vec![] },
             commandline_context,
             config,
@@ -278,5 +304,19 @@ impl AppContext {
     }
     pub fn commandline_context_mut(&mut self) -> &mut CommandLineContext {
         &mut self.commandline_context
+    }
+    pub fn load_preview(&mut self, backend: &AppBackend, path: path::PathBuf) {
+        // always load image without cache
+        self.preview_context_mut().set_image_preview(None);
+        self.preview_context
+            .load_preview_image(self, backend, path.clone());
+
+        let previews = self.preview_context_mut().previews_mut();
+        if previews.get(path.as_path()).is_none() {
+            // add to loading state
+            previews.insert(path.clone(), PreviewFileState::Loading);
+            self.preview_context
+                .load_preview_script(self, backend, path);
+        }
     }
 }

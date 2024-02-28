@@ -13,12 +13,13 @@ use crate::config::clean::keymap::KeyMapping;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::event::AppEvent;
+use crate::event::PreviewData;
 use crate::fs::JoshutoDirList;
 use crate::history::DirectoryHistory;
 use crate::io::FileOperationProgress;
 use crate::key_command::{AppExecute, Command, CommandKeybind};
 use crate::preview::preview_dir::PreviewDirState;
-use crate::preview::preview_file::{FilePreview, PreviewFileState};
+use crate::preview::preview_file::PreviewFileState;
 use crate::ui;
 use crate::ui::views::TuiCommandMenu;
 use crate::util::format;
@@ -64,7 +65,7 @@ pub fn process_noninteractive(event: AppEvent, context: &mut AppContext) {
         AppEvent::FileOperationProgress(res) => process_worker_progress(context, res),
         AppEvent::IoWorkerResult(res) => process_finished_worker(context, res),
         AppEvent::PreviewDir { id, path, res } => process_dir_preview(context, id, path, *res),
-        AppEvent::PreviewFile { path, res } => process_file_preview(context, path, *res),
+        AppEvent::PreviewFile { path, res } => process_file_preview(context, path, res),
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, context),
         AppEvent::ChildProcessComplete(child_id) => {
@@ -173,33 +174,29 @@ pub fn process_dir_preview(
 pub fn process_file_preview(
     context: &mut AppContext,
     path: path::PathBuf,
-    res: io::Result<FilePreview>,
+    res: io::Result<PreviewData>,
 ) {
+    let preview_context = context.preview_context_mut();
     match res {
-        Ok(preview) => {
-            if preview.status.code().is_some() {
-                context
-                    .preview_context_mut()
-                    .previews_mut()
-                    .insert(path, PreviewFileState::Success { data: preview });
-            } else {
-                context.preview_context_mut().previews_mut().insert(
-                    path,
-                    PreviewFileState::Error {
-                        message: "Unknown error".to_string(),
-                    },
-                );
-            }
+        Ok(PreviewData::Script(output)) if output.status.code().is_some() => {
+            preview_context
+                .previews_mut()
+                .insert(path, PreviewFileState::Success(*output));
+        }
+        Ok(PreviewData::Script(_)) => {
+            preview_context
+                .previews_mut()
+                .insert(path, PreviewFileState::Error("status error".to_owned()));
+        }
+        Ok(PreviewData::Image(protocol)) => {
+            preview_context.set_image_preview(Some((path, protocol)));
         }
         Err(e) => {
-            context.preview_context_mut().previews_mut().insert(
-                path,
-                PreviewFileState::Error {
-                    message: e.to_string(),
-                },
-            );
+            preview_context
+                .previews_mut()
+                .insert(path, PreviewFileState::Error(e.to_string()));
         }
-    }
+    };
 }
 
 pub fn process_unsupported(

@@ -135,7 +135,7 @@ impl JoshutoDirList {
         }
     }
 
-    fn update_viewport(&mut self, ui_context: &UiContext, options: &DisplayOption) {
+    pub fn update_viewport(&mut self, ui_context: &UiContext, options: &DisplayOption) {
         if let Some(ix) = self.index {
             let height = ui_context.layout[0].height as usize;
 

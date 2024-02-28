@@ -34,6 +34,8 @@ pub struct AppConfigRaw {
     pub watch_files: bool,
     #[serde(default = "default_true")]
     pub focus_on_create: bool,
+    #[serde(default = "default_true")]
+    pub mouse_support: bool,
     #[serde(default)]
     pub cmd_aliases: HashMap<String, String>,
     #[serde(default, rename = "display")]

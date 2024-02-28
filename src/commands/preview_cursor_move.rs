@@ -14,7 +14,7 @@ fn preview_cursor_move(context: &mut AppContext, new_index: usize) -> AppResult 
 
     let preview_context = context.preview_context_mut();
     if let Some(file_path) = file_path {
-        if let Some(PreviewFileState::Success { data }) =
+        if let Some(PreviewFileState::Success(data)) =
             preview_context.previews_mut().get_mut(&file_path)
         {
             data.index = new_index;
@@ -32,7 +32,7 @@ pub fn preview_up(context: &mut AppContext, u: usize) -> AppResult {
 
         let preview_context = context.preview_context_ref();
         if let Some(file_path) = file_path {
-            if let Some(PreviewFileState::Success { data }) =
+            if let Some(PreviewFileState::Success(data)) =
                 preview_context.previews_ref().get(file_path)
             {
                 if data.index < u {
@@ -62,7 +62,7 @@ pub fn preview_down(context: &mut AppContext, u: usize) -> AppResult {
 
         let preview_context = context.preview_context_ref();
         if let Some(file_path) = file_path {
-            if let Some(PreviewFileState::Success { data }) =
+            if let Some(PreviewFileState::Success(data)) =
                 preview_context.previews_ref().get(file_path)
             {
                 Some(data.index + u)

@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use crate::{
     config::{
-        parse_config_or_default,
         raw::app::{AppConfigRaw, CustomCommand},
-        TomlConfigFile,
+        ConfigType, TomlConfigFile,
     },
     error::AppResult,
 };
@@ -22,6 +21,7 @@ pub struct AppConfig {
     pub watch_files: bool,
     pub custom_commands: Vec<CustomCommand>,
     pub focus_on_create: bool,
+    pub mouse_support: bool,
     pub cmd_aliases: HashMap<String, String>,
     pub _display_options: DisplayOption,
     pub _preview_options: PreviewOption,
@@ -71,8 +71,10 @@ impl std::default::Default for AppConfig {
 }
 
 impl TomlConfigFile for AppConfig {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<AppConfigRaw, AppConfig>(file_name)
+    type Raw = AppConfigRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::App
     }
 }
 
@@ -85,6 +87,7 @@ impl From<AppConfigRaw> for AppConfig {
             watch_files: raw.watch_files,
             cmd_aliases: raw.cmd_aliases,
             focus_on_create: raw.focus_on_create,
+            mouse_support: raw.mouse_support,
             _display_options: DisplayOption::from(raw.display_options),
             _preview_options: PreviewOption::from(raw.preview_options),
             _search_options: SearchOption::from(raw.search_options),

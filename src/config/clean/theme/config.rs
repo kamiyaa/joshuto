@@ -1,7 +1,8 @@
+use lscolors::LsColors;
 use std::collections::HashMap;
 
 use crate::config::raw::theme::AppThemeRaw;
-use crate::config::{parse_config_or_default, TomlConfigFile};
+use crate::config::{ConfigType, TomlConfigFile};
 use crate::error::AppResult;
 
 use super::style::AppStyle;
@@ -20,6 +21,7 @@ pub struct AppTheme {
     pub link_invalid: AppStyle,
     pub socket: AppStyle,
     pub ext: HashMap<String, AppStyle>,
+    pub lscolors: Option<LsColors>,
 }
 
 impl AppTheme {
@@ -30,8 +32,10 @@ impl AppTheme {
 }
 
 impl TomlConfigFile for AppTheme {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<AppThemeRaw, AppTheme>(file_name)
+    type Raw = AppThemeRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::Theme
     }
 }
 
@@ -62,6 +66,13 @@ impl From<AppThemeRaw> for AppTheme {
                 (k.clone(), style)
             })
             .collect();
+        let lscolors = if raw.lscolors_enabled {
+            let lscolors = LsColors::from_env();
+            let default = Some(LsColors::default());
+            lscolors.or(default)
+        } else {
+            None
+        };
 
         Self {
             selection,
@@ -74,6 +85,7 @@ impl From<AppThemeRaw> for AppTheme {
             socket,
             ext,
             tabs: TabTheme::from(tabs),
+            lscolors,
         }
     }
 }

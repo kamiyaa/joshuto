@@ -60,7 +60,7 @@ where
     } else {
         backend.terminal_drop();
         let res = execute_and_wait(option, files);
-        backend.terminal_restore()?;
+        backend.terminal_restore(context.config_ref().mouse_support)?;
         res?;
     }
     Ok(())
@@ -79,7 +79,7 @@ fn _open_with_xdg(
         backend.terminal_drop();
         let handle = open::that_in_background(path);
         let result = handle.join();
-        backend.terminal_restore()?;
+        backend.terminal_restore(context.config_ref().mouse_support)?;
         if let Ok(result) = result {
             result?;
         }
@@ -136,7 +136,7 @@ where
                         let mut option = ProgramEntry::new(String::from(cmd));
                         option.args(args_iter);
                         let res = execute_and_wait(&option, files);
-                        backend.terminal_restore()?;
+                        backend.terminal_restore(context.config_ref().mouse_support)?;
                         res?
                     }
                 }

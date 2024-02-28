@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use crate::config::{
-    parse_config_or_default, raw::mimetype::AppProgramRegistryRaw, TomlConfigFile,
-};
+use crate::config::{raw::mimetype::AppProgramRegistryRaw, ConfigType, TomlConfigFile};
 
 use super::{ExtensionAppList, MimetypeAppList};
 
@@ -69,7 +67,9 @@ impl From<AppProgramRegistryRaw> for AppProgramRegistry {
 }
 
 impl TomlConfigFile for AppProgramRegistry {
-    fn get_config(file_name: &str) -> Self {
-        parse_config_or_default::<AppProgramRegistryRaw, AppProgramRegistry>(file_name)
+    type Raw = AppProgramRegistryRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::Mimetype
     }
 }

@@ -2,10 +2,8 @@ use std::path;
 
 use crate::context::AppContext;
 use crate::fs::JoshutoMetadata;
-use crate::preview::{preview_dir, preview_file};
+use crate::preview::preview_dir;
 use crate::ui::AppBackend;
-
-use super::preview_file::PreviewFileState;
 
 pub fn load_preview_path(
     context: &mut AppContext,
@@ -33,19 +31,7 @@ pub fn load_preview_path(
             preview_dir::Background::load_preview(context, p);
         }
     } else if metadata.len() <= preview_options.max_preview_size {
-        let need_to_load = context
-            .preview_context_ref()
-            .previews_ref()
-            .get(p.as_path())
-            .map(|data| match data {
-                PreviewFileState::Success { data } => data.modified < metadata.modified(),
-                _ => false,
-            })
-            .unwrap_or(true);
-
-        if need_to_load {
-            preview_file::Background::preview_path_with_script(context, backend, p);
-        }
+        context.load_preview(backend, p);
     }
 }
 

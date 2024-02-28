@@ -31,7 +31,7 @@ use lazy_static::lazy_static;
 use config::clean::bookmarks::Bookmarks;
 use config::clean::mimetype::AppProgramRegistry;
 use config::clean::theme::AppTheme;
-use config::TomlConfigFile;
+use config::{ConfigType, TomlConfigFile};
 use util::cwd;
 
 use crate::commands::quit::QuitAction;
@@ -41,14 +41,6 @@ use crate::error::AppError;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_HOME: &str = "JOSHUTO_CONFIG_HOME";
-
-const CONFIG_FILE: &str = "joshuto.toml";
-const MIMETYPE_FILE: &str = "mimetype.toml";
-const KEYMAP_FILE: &str = "keymap.toml";
-const THEME_FILE: &str = "theme.toml";
-const PREVIEW_FILE: &str = "preview.toml";
-const BOOKMARKS_FILE: &str = "bookmarks.toml";
-const ICONS_FILE: &str = "icons.toml";
 
 lazy_static! {
     // dynamically builds the config hierarchy
@@ -76,11 +68,11 @@ lazy_static! {
 
         config_dirs
     };
-    static ref THEME_T: AppTheme = AppTheme::get_config(THEME_FILE);
-    static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config(MIMETYPE_FILE);
-    static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config(PREVIEW_FILE);
-    static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config(BOOKMARKS_FILE));
-    static ref ICONS_T: Icons = Icons::get_config(ICONS_FILE);
+    static ref THEME_T: AppTheme = AppTheme::get_config();
+    static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config();
+    static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config();
+    static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config());
+    static ref ICONS_T: Icons = Icons::get_config();
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
     static ref USERNAME: String = whoami::username();
@@ -120,24 +112,38 @@ pub struct Args {
 
 #[derive(Clone, Debug, Subcommand)]
 pub enum Commands {
-    #[command(about = "Show shell completions")]
+    /// Print completions for a given shell.
     Completions { shell: clap_complete::Shell },
 
-    #[command(about = "Show version")]
+    /// Print embedded toml configuration for a given config type.
+    Config {
+        /// Filename of the given config without '.toml' extension.
+        config_type: ConfigType,
+    },
+
+    /// Print 'joshuto' build version.
     Version,
 }
 
 fn run_main(args: Args) -> Result<i32, AppError> {
     if let Some(command) = args.commands {
-        match command {
+        let result = match command {
             Commands::Completions { shell } => {
                 let mut app = Args::command();
                 let bin_name = app.get_name().to_string();
                 clap_complete::generate(shell, &mut app, bin_name, &mut std::io::stdout());
-                return Ok(0);
+                Ok(0)
             }
-            Commands::Version => return print_version(),
-        }
+            Commands::Config { config_type } => match config_type.embedded_config() {
+                None => AppError::fail("no default config"),
+                Some(config) => {
+                    println!("{config}");
+                    Ok(0)
+                }
+            },
+            Commands::Version => print_version(),
+        };
+        return result;
     }
 
     if args.version {
@@ -145,15 +151,12 @@ fn run_main(args: Args) -> Result<i32, AppError> {
     }
 
     if let Some(path) = args.rest.first() {
-        if let Err(err) = cwd::set_current_dir(path) {
-            eprintln!("{err}");
-            process::exit(1);
-        }
+        cwd::set_current_dir(path)?;
     }
 
     // make sure all configs have been loaded before starting
-    let config = AppConfig::get_config(CONFIG_FILE);
-    let keymap = AppKeyMapping::get_config(KEYMAP_FILE);
+    let config = AppConfig::get_config();
+    let keymap = AppKeyMapping::get_config();
     lazy_static::initialize(&THEME_T);
     lazy_static::initialize(&MIMETYPE_T);
     lazy_static::initialize(&PREVIEW_T);
@@ -166,7 +169,7 @@ fn run_main(args: Args) -> Result<i32, AppError> {
 
     let mut context = AppContext::new(config, args.clone());
     {
-        let mut backend: ui::AppBackend = ui::AppBackend::new()?;
+        let mut backend: ui::AppBackend = ui::AppBackend::new(context.config_ref().mouse_support)?;
         run::run_loop(&mut backend, &mut context, keymap)?;
     }
     run_quit(&args, &context)?;
