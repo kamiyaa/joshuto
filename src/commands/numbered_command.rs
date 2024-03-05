@@ -57,6 +57,7 @@ pub fn numbered_command(
                                 let _ =
                                     command.numbered_execute(num_prefix, context, backend, keymap);
                             }
+                            return Ok(());
                         }
                         _ => {
                             return Err(AppError::new(
