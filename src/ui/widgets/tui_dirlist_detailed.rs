@@ -128,6 +128,7 @@ fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn print_entry(
     buf: &mut Buffer,
     entry: &JoshutoDirEntry,

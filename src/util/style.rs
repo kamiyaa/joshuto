@@ -60,7 +60,7 @@ pub fn entry_prefix(entry: &JoshutoDirEntry) -> (&str, usize) {
             THEME_T.selection.prefix_width,
         );
     }
-    return ("", 0);
+    ("", 0)
 }
 
 fn default_style(entry: &JoshutoDirEntry, linktype: &LinkType, filetype: &FileType) -> Style {
