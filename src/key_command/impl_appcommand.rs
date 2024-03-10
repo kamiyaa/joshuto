@@ -1,5 +1,6 @@
 use super::constants::*;
 use super::{AppCommand, Command};
+use crate::commands::sub_process::SubprocessCallMode;
 
 impl AppCommand for Command {
     fn command(&self) -> &'static str {
@@ -85,8 +86,19 @@ impl AppCommand for Command {
             Self::FilterRegex { .. } => CMD_FILTER_REGEX,
             Self::FilterString { .. } => CMD_FILTER_STRING,
 
-            Self::SubProcess { spawn: false, .. } => CMD_SUBPROCESS_FOREGROUND,
-            Self::SubProcess { spawn: true, .. } => CMD_SUBPROCESS_BACKGROUND,
+            Self::SubProcess {
+                mode: SubprocessCallMode::Interactive,
+                ..
+            } => CMD_SUBPROCESS_INTERACTIVE,
+            Self::SubProcess {
+                mode: SubprocessCallMode::Spawn,
+                ..
+            } => CMD_SUBPROCESS_SPAWN,
+            Self::SubProcess {
+                mode: SubprocessCallMode::Capture,
+                ..
+            } => CMD_SUBPROCESS_CAPTURE,
+            Self::StdOutPostProcess { .. } => CMD_STDOUT_POST_PROCESS,
             Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
             Self::SetLineMode(_) => CMD_SET_LINEMODE,
 
