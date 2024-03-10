@@ -40,15 +40,13 @@ bold = true
 [selection]
 fg = "light_yellow"
 bold = true
+prefix = " "
 
 # Files selected in current visual mode
 [visual_mode_selection]
 fg = "light_red"
 bold = true
-
-[selection.prefix]
-prefix = "  "
-size = 2
+prefix = "v "
 
 ##########################################
 ## File List - System File Types

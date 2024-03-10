@@ -89,11 +89,8 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
 
                 buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
-                let mut prefix = if entry.is_selected() {
-                    " ".to_string()
-                } else {
-                    "".to_string()
-                };
+                let (prefix, prefix_width) = style::entry_prefix(entry);
+                let mut prefix = prefix.to_string();
                 let line_number_prefix = match line_num_style {
                     LineNumberStyle::None => "".to_string(),
                     _ if ix == curr_index => format!("{:<1$} ", curr_index + 1, max_index_length),
@@ -114,6 +111,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                     self.tab_display_options.linemode,
                     drawing_width - 1,
                     &prefix,
+                    prefix_width,
                 );
             });
     }
@@ -138,6 +136,7 @@ fn print_entry(
     linemode: LineMode,
     drawing_width: usize,
     prefix: &str,
+    prefix_width: usize,
 ) {
     let symlink_string = match entry.metadata.link_type() {
         LinkType::Normal => "",
@@ -162,7 +161,6 @@ fn print_entry(
     );
 
     // draw prefix first
-    let prefix_width = prefix.width();
     buf.set_stringn(x, y, prefix, prefix_width, Style::default());
     let x = x + prefix_width as u16;
 

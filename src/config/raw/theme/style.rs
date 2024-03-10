@@ -1,6 +1,7 @@
 use colors_transform::{Color, Rgb};
 use ratatui::style::{self, Style};
 use serde::Deserialize;
+use unicode_width::UnicodeWidthStr;
 
 use crate::config::clean::theme::style::AppStyle;
 
@@ -97,6 +98,8 @@ pub struct AppStyleRaw {
     #[serde(default)]
     pub bg: String,
     #[serde(default)]
+    pub prefix: String,
+    #[serde(default)]
     pub bold: bool,
     #[serde(default)]
     pub underline: bool,
@@ -108,6 +111,8 @@ impl AppStyleRaw {
     pub fn to_style_theme(&self) -> AppStyle {
         let bg = Self::str_to_color(self.bg.as_str());
         let fg = Self::str_to_color(self.fg.as_str());
+        let prefix = self.prefix.clone();
+        let prefix_width = prefix.width();
 
         let mut modifier = style::Modifier::empty();
         if self.bold {
@@ -120,7 +125,11 @@ impl AppStyleRaw {
             modifier.insert(style::Modifier::REVERSED);
         }
 
-        AppStyle::default().set_fg(fg).set_bg(bg).insert(modifier)
+        AppStyle::default()
+            .set_fg(fg)
+            .set_bg(bg)
+            .set_prefix(prefix, prefix_width)
+            .insert(modifier)
     }
 
     pub fn str_to_color(s: &str) -> style::Color {
@@ -133,6 +142,7 @@ impl std::default::Default for AppStyleRaw {
         Self {
             bg: "".to_string(),
             fg: "".to_string(),
+            prefix: "".to_string(),
             bold: false,
             underline: false,
             invert: false,
