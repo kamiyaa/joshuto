@@ -35,6 +35,7 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
         None => None,
     };
 
+    let config = context.config_ref().clone();
     let options = context.config_ref().display_options_ref().clone();
     let tab_options = context
         .tab_context_ref()
@@ -44,7 +45,7 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
 
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
     if history
-        .create_or_soft_update(cwd.as_path(), &options, &tab_options)
+        .create_or_soft_update(cwd.as_path(), &config, &options, &tab_options)
         .is_err()
     {
         history.remove(cwd.as_path());
@@ -52,7 +53,7 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
 
     if let Some(cwd_parent) = cwd.parent() {
         if history
-            .create_or_soft_update(cwd_parent, &options, &tab_options)
+            .create_or_soft_update(cwd_parent, &config, &options, &tab_options)
             .is_err()
         {
             history.remove(cwd_parent);
@@ -61,7 +62,7 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
 
     if let Some(file_path) = entry_path {
         if history
-            .create_or_soft_update(file_path.as_path(), &options, &tab_options)
+            .create_or_soft_update(file_path.as_path(), &config, &options, &tab_options)
             .is_err()
         {
             history.remove(file_path.as_path());
@@ -141,6 +142,7 @@ pub fn new_tab(context: &mut AppContext, mode: &NewTabMode) -> AppResult {
         let id = Uuid::new_v4();
         let tab = JoshutoTab::new(
             new_tab_path,
+            context.config_ref(),
             context.ui_context_ref(),
             context.config_ref().display_options_ref(),
         )?;
