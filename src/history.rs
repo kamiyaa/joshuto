@@ -7,7 +7,6 @@ use walkdir::WalkDir;
 use crate::config::clean::app::display::dirlist::DirListDisplayOptions;
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
-use crate::config::clean::app::AppConfig;
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
 
@@ -227,7 +226,6 @@ where
 
 pub fn generate_entries_to_root(
     path: &Path,
-    config: &AppConfig,
     history: &JoshutoHistory,
     ui_context: &UiContext,
     display_options: &DisplayOption,

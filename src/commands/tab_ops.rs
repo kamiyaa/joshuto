@@ -159,7 +159,6 @@ pub fn new_tab(context: &mut AppContext, mode: &NewTabMode) -> AppResult {
             .clone();
         let dirlists = generate_entries_to_root(
             new_tab_path.as_path(),
-            context.config_ref(),
             &new_tab_history,
             context.ui_context_ref(),
             context.config_ref().display_options_ref(),

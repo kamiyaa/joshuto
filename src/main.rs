@@ -75,8 +75,9 @@ lazy_static! {
     static ref ICONS_T: Icons = Icons::get_config();
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
-    static ref USERNAME: String = whoami::username();
-    static ref HOSTNAME: String = whoami::hostname();
+
+    static ref USERNAME: String = whoami::fallible::realname().unwrap_or("No Username".to_string());
+    static ref HOSTNAME: String = whoami::fallible::hostname().unwrap_or("No Hostname".to_string());
 
     static ref TIMEZONE_STR: String = {
         let offset = chrono::Local::now().offset().local_minus_utc() / 3600;

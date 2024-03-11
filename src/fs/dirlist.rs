@@ -3,7 +3,6 @@ use std::{io, path};
 
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
-use crate::config::clean::app::AppConfig;
 use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::history::read_directory;

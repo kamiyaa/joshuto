@@ -18,7 +18,7 @@ xdg_open_fork = false
 
 # If true, all file extensions checks will be case sensitive.
 # Applies to `[extension]` in `mimetype.toml` and `[ext]` in `theme.toml` and `icons.toml`
-case_sensitive_ext = false
+case_insensitive_ext = false
 
 # Use system trash can instead of permanently removing files
 use_trash = true

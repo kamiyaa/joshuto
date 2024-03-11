@@ -8,7 +8,6 @@ use uuid::Uuid;
 pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
     if let Some(curr_tab) = context.tab_context_ref().tab_ref(id) {
-        let config = context.config_ref();
         let display_options = context.config_ref().display_options_ref();
         let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
         let history = curr_tab.history_ref();
@@ -50,7 +49,6 @@ pub fn soft_reload_curr_tab(context: &mut AppContext) -> std::io::Result<()> {
 pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
     if let Some(curr_tab) = context.tab_context_ref().tab_ref(id) {
-        let config = context.config_ref();
         let display_options = context.config_ref().display_options_ref();
         let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
         let history = curr_tab.history_ref();

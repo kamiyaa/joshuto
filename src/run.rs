@@ -44,7 +44,6 @@ pub fn run_loop(
             .clone();
         let dirlists = generate_entries_to_root(
             curr_path.as_path(),
-            context.config_ref(),
             &new_tab_history,
             context.ui_context_ref(),
             context.config_ref().display_options_ref(),

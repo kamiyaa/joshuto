@@ -56,11 +56,11 @@ impl<'a> Widget for TuiDirList<'a> {
                 let ix = skip_dist + i;
 
                 let style = if !self.focused {
-                    style::entry_style(entry)
+                    style::entry_style(self.config, entry)
                 } else if ix == curr_index {
-                    style::entry_style(entry).add_modifier(Modifier::REVERSED)
+                    style::entry_style(self.config, entry).add_modifier(Modifier::REVERSED)
                 } else {
-                    style::entry_style(entry)
+                    style::entry_style(self.config, entry)
                 };
 
                 buf.set_string(x, y + i as u16, space_fill.as_str(), style);
@@ -89,7 +89,7 @@ fn print_entry(
     #[cfg(feature = "devicons")]
     let (label, label_width) = {
         if config.display_options_ref().show_icons() {
-            let icon = get_entry_icon(&config, entry.file_name(), entry.ext(), &entry.metadata);
+            let icon = get_entry_icon(config, entry.file_name(), entry.ext(), &entry.metadata);
             let label = format!("{icon} {name}");
             let label_width = label.width();
             (label, label_width)
@@ -135,10 +135,10 @@ pub fn get_entry_icon(
         .map(|s| s.as_str())
         .unwrap_or_else(|| {
             ext.and_then(|ext| {
-                let ext: String = if config.case_sensitive_ext {
-                    ext.to_owned()
-                } else {
+                let ext: String = if config.case_insensitive_ext {
                     ext.to_lowercase()
+                } else {
+                    ext.to_owned()
                 };
                 ICONS_T.ext.get(&ext).map(|s| s.as_str())
             })

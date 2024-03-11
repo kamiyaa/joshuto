@@ -29,7 +29,7 @@ pub struct AppConfigRaw {
     #[serde(default)]
     pub xdg_open: bool,
     #[serde(default)]
-    pub case_sensitive_ext: bool,
+    pub case_insensitive_ext: bool,
     #[serde(default)]
     pub xdg_open_fork: bool,
     #[serde(default = "default_true")]

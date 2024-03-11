@@ -30,7 +30,6 @@ pub fn change_directory(context: &mut AppContext, mut path: &path::Path) -> AppR
     cd(new_cwd.as_path(), context)?;
     let dirlists = generate_entries_to_root(
         new_cwd.as_path(),
-        context.config_ref(),
         context.tab_context_ref().curr_tab_ref().history_ref(),
         context.ui_context_ref(),
         context.config_ref().display_options_ref(),
