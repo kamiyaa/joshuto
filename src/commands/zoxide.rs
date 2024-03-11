@@ -49,7 +49,7 @@ pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut AppBacke
         .spawn()?;
     let zoxide_output = zoxide_process.wait_with_output()?;
 
-    backend.terminal_restore(context.config_ref().mouse_support)?;
+    backend.terminal_restore()?;
 
     if zoxide_output.status.success() {
         if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stdout) {

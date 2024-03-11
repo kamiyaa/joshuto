@@ -126,7 +126,7 @@ pub fn sub_process(
             // shell command and restore it afterwards
             backend.terminal_drop();
             execute_sub_process(context, words, mode)?;
-            backend.terminal_restore(context.config_ref().mouse_support)?;
+            backend.terminal_restore()?;
             let _ = reload::soft_reload_curr_tab(context);
             context
                 .message_queue_mut()

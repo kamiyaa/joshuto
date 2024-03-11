@@ -1,5 +1,6 @@
 use crate::commands::quit::QuitAction;
 use crate::config::clean::keymap::AppKeyMapping;
+use crate::context::calculate_external_preview;
 use crate::context::AppContext;
 use crate::event::process_event;
 use crate::event::AppEvent;
@@ -53,7 +54,17 @@ pub fn run_loop(
             backend.render(TuiView::new(context));
 
             // invoke preview hooks, if appropriate
-            context.update_external_preview();
+            {
+                let new_preview_area = calculate_external_preview(
+                    context.tab_context_ref(),
+                    context.preview_context_ref(),
+                    context.ui_context_ref(),
+                    context.config_ref().preview_options_ref(),
+                );
+                context
+                    .preview_context_mut()
+                    .update_external_preview(new_preview_area);
+            }
         }
 
         // wait for an event and pop it

@@ -51,7 +51,7 @@ pub fn fzf_multi(
 }
 
 fn fzf_impl(
-    context: &mut AppContext,
+    _context: &mut AppContext,
     backend: &mut AppBackend,
     items: Vec<String>,
     args: Vec<String>,
@@ -68,7 +68,7 @@ fn fzf_impl(
     let mut fzf = match cmd.spawn() {
         Ok(child) => child,
         Err(e) => {
-            backend.terminal_restore(context.config_ref().mouse_support)?;
+            backend.terminal_restore()?;
             return Err(AppError::from(e));
         }
     };
@@ -82,7 +82,7 @@ fn fzf_impl(
     }
 
     let fzf_output = fzf.wait_with_output();
-    backend.terminal_restore(context.config_ref().mouse_support)?;
+    backend.terminal_restore()?;
 
     if let Ok(output) = fzf_output {
         if output.status.success() {

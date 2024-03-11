@@ -8,12 +8,6 @@ use termion::screen::IntoAlternateScreen;
 
 use termion::input::MouseTerminal;
 
-trait New {
-    fn new() -> io::Result<Self>
-    where
-        Self: Sized;
-}
-
 pub enum Screen {
     WithMouse(MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>),
     WithoutMouse(AlternateScreen<RawTerminal<std::io::Stdout>>),
@@ -54,6 +48,7 @@ pub type TuiTerminal = ratatui::Terminal<TermionBackend<Screen>>;
 
 pub struct AppBackend {
     pub terminal: Option<TuiTerminal>,
+    pub mouse_support: bool,
 }
 
 impl AppBackend {
@@ -66,6 +61,7 @@ impl AppBackend {
         let mut terminal = ratatui::Terminal::new(backend)?;
         terminal.hide_cursor()?;
         Ok(Self {
+            mouse_support,
             terminal: Some(terminal),
         })
     }
@@ -93,8 +89,8 @@ impl AppBackend {
         let _ = stdout().flush();
     }
 
-    pub fn terminal_restore(&mut self, mouse_support: bool) -> io::Result<()> {
-        let mut new_backend = Self::new(mouse_support)?;
+    pub fn terminal_restore(&mut self) -> io::Result<()> {
+        let mut new_backend = Self::new(self.mouse_support)?;
         std::mem::swap(&mut self.terminal, &mut new_backend.terminal);
         Ok(())
     }

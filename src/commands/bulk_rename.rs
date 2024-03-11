@@ -6,6 +6,7 @@ use std::process;
 
 use rand::Rng;
 
+use crate::context::remove_external_preview;
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::ui::AppBackend;
@@ -125,10 +126,10 @@ pub fn _bulk_rename(context: &mut AppContext) -> AppResult {
 }
 
 pub fn bulk_rename(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
-    context.remove_external_preview();
+    remove_external_preview(context);
     backend.terminal_drop();
     let res = _bulk_rename(context);
-    backend.terminal_restore(context.config_ref().mouse_support)?;
+    backend.terminal_restore()?;
     reload::soft_reload_curr_tab(context)?;
     res
 }

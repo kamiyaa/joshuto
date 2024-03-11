@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use termion::event::{Event, Key};
 
 use crate::config::clean::keymap::AppKeyMapping;
+use crate::context::remove_external_preview;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::event::process_event;
@@ -30,7 +31,7 @@ pub fn help_loop(
             widgets::get_keymap_table(&keymap_t.default_view, &search_query[1..], sort_by)
         };
 
-        context.remove_external_preview();
+        remove_external_preview(context);
         backend.render(TuiHelp::new(&keymap, &mut offset, &search_query));
 
         let event = match context.poll_event() {

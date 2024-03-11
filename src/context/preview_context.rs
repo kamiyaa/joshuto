@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::path::{self, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{self, Command, Stdio};
 use std::sync::mpsc::{self, Sender};
 use std::sync::Mutex;
 use std::{io, thread};
@@ -11,12 +11,15 @@ use ratatui_image::picker::Picker;
 use ratatui_image::protocol::Protocol;
 use ratatui_image::Resize;
 
+use crate::config::clean::app::preview::PreviewOption;
 use crate::config::clean::app::AppConfig;
 use crate::event::{AppEvent, PreviewData};
 use crate::lazy_static;
 use crate::preview::preview_file::{FilePreview, PreviewFileState};
-use crate::ui::{views, AppBackend};
+use crate::ui::{views, AppBackend, PreviewArea};
 use crate::AppContext;
+
+use super::{TabContext, UiContext};
 
 lazy_static! {
     static ref GUARD: Mutex<()> = Mutex::new(());
@@ -25,10 +28,15 @@ lazy_static! {
 type FilePreviewMetadata = HashMap<path::PathBuf, PreviewFileState>;
 
 pub struct PreviewContext {
+    // the last preview area (or None if now preview shown) to check if a preview hook script needs
+    // to be called
+    pub preview_area: Option<PreviewArea>,
+    // hashmap of cached previews
     previews: FilePreviewMetadata,
     image_preview: Option<(PathBuf, Box<dyn Protocol>)>,
     sender_script: Sender<(PathBuf, Rect)>,
     sender_image: Option<Sender<(PathBuf, Rect)>>,
+    // for telling main thread when previews are ready
     event_ts: Sender<AppEvent>,
 }
 
@@ -88,6 +96,7 @@ impl PreviewContext {
         });
 
         PreviewContext {
+            preview_area: None,
             previews: HashMap::new(),
             image_preview: None,
             sender_script,
@@ -190,6 +199,21 @@ impl PreviewContext {
         }
     }
 
+    pub fn update_external_preview(&mut self, preview_area: Option<PreviewArea>) {
+        self.preview_area = preview_area;
+    }
+
+    /// Updates the external preview to the current preview in Joshuto.
+    ///
+    /// The function checks if the current preview content is the same as the preview content which
+    /// has been last communicated to an external preview logic with the preview hook scripts.
+    /// If the preview content has changed, one of the hook scripts is called. Either the "preview
+    /// shown hook", if a preview is shown in Joshuto, or the "preview removed hook", if Joshuto has
+    /// changed from an entry with preview to an entry without a preview.
+    ///
+    /// This function shall be called each time a change of Joshuto's preview can be expected.
+    /// (As of now, it's called in each cycle of the main loop.)
+
     fn backend_rect(config: &AppConfig, backend: &AppBackend) -> io::Result<Rect> {
         let area = backend.terminal_ref().size()?;
         let area = Rect {
@@ -211,5 +235,82 @@ impl PreviewContext {
     #[inline]
     fn map_io_err(err: impl Error) -> io::Error {
         io::Error::new(io::ErrorKind::Other, format!("{err}"))
+    }
+}
+
+/// Calls the "preview removed hook script" if it's configured.
+pub fn call_preview_removed_hook(preview_options: &PreviewOption) {
+    let preview_removed_hook_script = preview_options.preview_removed_hook_script.as_ref();
+    if let Some(hook_script) = preview_removed_hook_script {
+        let hook_script = hook_script.to_path_buf();
+        let _ = thread::spawn(|| {
+            let _ = process::Command::new(hook_script).status();
+        });
+    }
+}
+
+pub fn calculate_external_preview(
+    tab_context: &TabContext,
+    preview_context: &PreviewContext,
+    ui_context: &UiContext,
+    preview_options: &PreviewOption,
+) -> Option<PreviewArea> {
+    let layout = &ui_context.layout;
+    let preview_area = views::calculate_preview(tab_context, preview_context, layout[2]);
+    match preview_area.as_ref() {
+        Some(new_preview_area) => {
+            let should_preview = if let Some(old) = &preview_context.preview_area {
+                new_preview_area.file_preview_path != old.file_preview_path
+                    || new_preview_area.preview_area != old.preview_area
+            } else {
+                true
+            };
+            if should_preview {
+                call_preview_shown_hook(new_preview_area.clone(), preview_options)
+            }
+        }
+        None => {
+            if preview_context.preview_area.is_some() {
+                call_preview_removed_hook(preview_options)
+            }
+        }
+    }
+    preview_area
+}
+/// Calls the "preview shown hook script" if it's configured.
+///
+/// This method takes the current preview area as argument to check for both, the path of the
+/// currently previewed file and the geometry of the preview area.
+fn call_preview_shown_hook(preview_area: PreviewArea, preview_options: &PreviewOption) {
+    let preview_shown_hook_script = preview_options.preview_shown_hook_script.as_ref();
+    if let Some(hook_script) = preview_shown_hook_script {
+        let hook_script = hook_script.to_path_buf();
+        let _ = thread::spawn(move || {
+            let _ = process::Command::new(hook_script.as_path())
+                .arg(preview_area.file_preview_path.as_path())
+                .arg(preview_area.preview_area.x.to_string())
+                .arg(preview_area.preview_area.y.to_string())
+                .arg(preview_area.preview_area.width.to_string())
+                .arg(preview_area.preview_area.height.to_string())
+                .status();
+        });
+    }
+}
+
+/// Remove the external preview, if any is present.
+///
+/// If the last preview hook script called was the "preview shown hook", this function will
+/// call the "preview removed hook" to remove any external preview.
+/// Otherwise it won't do anything.
+///
+/// To restore the external preview, `update_external_preview` is called which will detect the
+/// difference and call the "preview shown hook" again for the current preview (if any).
+///
+/// This function can be called if an external preview shall be temporarily removed, for example
+/// when entering the help screen.
+pub fn remove_external_preview(context: &mut AppContext) {
+    if context.preview_context_mut().preview_area.take().is_some() {
+        let preview_options = context.config_ref().preview_options_ref();
+        call_preview_removed_hook(preview_options);
     }
 }

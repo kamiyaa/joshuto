@@ -57,7 +57,7 @@ pub fn custom_search(
             .stdout(Stdio::piped())
             .spawn()?
             .wait_with_output()?;
-        backend.terminal_restore(context.config_ref().mouse_support)?;
+        backend.terminal_restore()?;
         cmd_result
     } else {
         cmd.output()?
