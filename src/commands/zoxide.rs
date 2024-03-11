@@ -10,6 +10,18 @@ use crate::ui::AppBackend;
 pub fn zoxide_query(context: &mut AppContext, args: &str) -> AppResult {
     let cwd = std::env::current_dir()?;
 
+    let path = Path::new(args);
+    if change_directory::change_directory(context, path).is_ok() {
+        let cwd = context
+            .tab_context_ref()
+            .curr_tab_ref()
+            .cwd()
+            .to_str()
+            .expect("path cannot be converted to string");
+        zoxide_add(cwd)?;
+        return Ok(());
+    }
+
     let zoxide_output = Command::new("zoxide")
         .arg("query")
         .arg("--exclude")
