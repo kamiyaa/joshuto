@@ -24,9 +24,9 @@ fn _get_options<'a>(path: &path::Path, config: &AppConfig) -> Vec<&'a ProgramEnt
         .and_then(|ext| ext.to_str())
         .and_then(|ext| {
             if config.case_insensitive_ext {
-                MIMETYPE_T.app_list_for_ext(ext)
-            } else {
                 MIMETYPE_T.app_list_for_ext(&ext.to_lowercase())
+            } else {
+                MIMETYPE_T.app_list_for_ext(ext)
             }
         })
     {
