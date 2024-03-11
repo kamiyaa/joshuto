@@ -1,11 +1,15 @@
-use std::path;
+use std::collections::HashMap;
+use std::path::Path;
+use std::{io, path};
 
 use uuid::Uuid;
 
 use crate::config::clean::app::display::new_tab::NewTabMode;
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
-use crate::history::DirectoryHistory;
+use crate::history::{
+    create_dirlist_with_history, generate_entries_to_root, DirectoryHistory, JoshutoHistory,
+};
 use crate::tab::{JoshutoTab, TabHomePage};
 use crate::util::{cwd, unix};
 
@@ -35,39 +39,46 @@ fn _tab_switch(new_index: usize, context: &mut AppContext) -> std::io::Result<()
         None => None,
     };
 
-    let config = context.config_ref().clone();
-    let options = context.config_ref().display_options_ref().clone();
-    let tab_options = context
-        .tab_context_ref()
-        .curr_tab_ref()
-        .option_ref()
-        .clone();
+    let display_options = context.config_ref().display_options_ref();
+    let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
+
+    let history = context.tab_context_ref().curr_tab_ref().history_ref();
+
+    let mut dirlists = Vec::with_capacity(3);
+    for curr_path in [
+        Some(cwd.as_path().to_path_buf()),
+        cwd.parent().map(|p| p.to_path_buf()),
+        entry_path,
+    ]
+    .into_iter()
+    .flatten()
+    {
+        match history.get(&curr_path) {
+            Some(list) => {
+                if list.need_update() {
+                    let dirlist = create_dirlist_with_history(
+                        history,
+                        cwd.as_path(),
+                        display_options,
+                        tab_options,
+                    )?;
+                    dirlists.push(dirlist);
+                }
+            }
+            None => {
+                let dirlist = create_dirlist_with_history(
+                    history,
+                    cwd.as_path(),
+                    display_options,
+                    tab_options,
+                )?;
+                dirlists.push(dirlist);
+            }
+        }
+    }
 
     let history = context.tab_context_mut().curr_tab_mut().history_mut();
-    if history
-        .create_or_soft_update(cwd.as_path(), &config, &options, &tab_options)
-        .is_err()
-    {
-        history.remove(cwd.as_path());
-    }
-
-    if let Some(cwd_parent) = cwd.parent() {
-        if history
-            .create_or_soft_update(cwd_parent, &config, &options, &tab_options)
-            .is_err()
-        {
-            history.remove(cwd_parent);
-        }
-    }
-
-    if let Some(file_path) = entry_path {
-        if history
-            .create_or_soft_update(file_path.as_path(), &config, &options, &tab_options)
-            .is_err()
-        {
-            history.remove(file_path.as_path());
-        }
-    }
+    history.insert_entries(dirlists);
 
     Ok(())
 }
@@ -140,12 +151,28 @@ pub fn new_tab(context: &mut AppContext, mode: &NewTabMode) -> AppResult {
     }?;
     if new_tab_path.exists() && new_tab_path.is_dir() {
         let id = Uuid::new_v4();
-        let tab = JoshutoTab::new(
-            new_tab_path,
+        let mut new_tab_history = JoshutoHistory::new();
+        let tab_display_options = context
+            .config_ref()
+            .display_options_ref()
+            .default_tab_display_option
+            .clone();
+        let dirlists = generate_entries_to_root(
+            new_tab_path.as_path(),
             context.config_ref(),
+            &new_tab_history,
             context.ui_context_ref(),
             context.config_ref().display_options_ref(),
+            &tab_display_options,
         )?;
+        new_tab_history.insert_entries(dirlists);
+
+        let tab_display_options = context
+            .config_ref()
+            .display_options_ref()
+            .default_tab_display_option
+            .clone();
+        let tab = JoshutoTab::new(new_tab_path, new_tab_history, tab_display_options)?;
         context.tab_context_mut().insert_tab(id, tab);
         let new_index = context.tab_context_ref().len() - 1;
         context.tab_context_mut().index = new_index;
@@ -178,4 +205,32 @@ pub fn close_tab(context: &mut AppContext) -> AppResult {
     }
     _tab_switch(tab_index, context)?;
     Ok(())
+}
+
+pub fn reload_all_tabs(context: &mut AppContext, curr_path: &Path) -> io::Result<()> {
+    let mut map = HashMap::new();
+    {
+        let display_options = context.config_ref().display_options_ref();
+
+        for (id, tab) in context.tab_context_ref().iter() {
+            let tab_options = tab.option_ref();
+            let history = tab.history_ref();
+            let dirlist =
+                create_dirlist_with_history(history, curr_path, display_options, tab_options)?;
+            map.insert(*id, dirlist);
+        }
+    }
+
+    for (id, dirlist) in map {
+        if let Some(tab) = context.tab_context_mut().tab_mut(&id) {
+            tab.history_mut().insert(curr_path.to_path_buf(), dirlist);
+        }
+    }
+    Ok(())
+}
+
+pub fn remove_entry_from_all_tabs(context: &mut AppContext, curr_path: &Path) {
+    for (_, tab) in context.tab_context_mut().iter_mut() {
+        tab.history_mut().remove(curr_path);
+    }
 }

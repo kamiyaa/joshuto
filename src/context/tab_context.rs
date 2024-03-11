@@ -1,4 +1,4 @@
-use std::collections::hash_map::IterMut;
+use std::collections::hash_map::{Iter, IterMut};
 use std::collections::HashMap;
 
 use uuid::Uuid;
@@ -66,6 +66,9 @@ impl TabContext {
         tab
     }
 
+    pub fn iter(&self) -> Iter<Uuid, JoshutoTab> {
+        self.tabs.iter()
+    }
     pub fn iter_mut(&mut self) -> IterMut<Uuid, JoshutoTab> {
         self.tabs.iter_mut()
     }

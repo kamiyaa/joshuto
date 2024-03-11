@@ -21,7 +21,7 @@ column_ratio = [1, 4, 4]
 scroll_offset = 6
 show_borders = true
 show_hidden = false
-show_icons = true
+show_icons = false
 # none, absolute, relative
 line_number_style = "none"
 

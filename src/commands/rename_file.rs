@@ -27,16 +27,13 @@ pub fn _rename_file(
         .map(|lst| lst.file_path().to_path_buf());
 
     if let Some(path) = path {
-        let config = context.config_ref().clone();
-        let options = context.config_ref().display_options_ref().clone();
-        let tab_options = context
-            .tab_context_ref()
-            .curr_tab_ref()
-            .option_ref()
-            .clone();
+        let new_dirlist = {
+            let display_options = context.config_ref().display_options_ref();
+            let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
+            let history = context.tab_context_ref().curr_tab_ref().history_ref();
+            create_dirlist_with_history(history, path.as_path(), display_options, tab_options)?
+        };
         let history = context.tab_context_mut().curr_tab_mut().history_mut();
-        let new_dirlist =
-            create_dirlist_with_history(history, path.as_path(), &config, &options, &tab_options)?;
         history.insert(path, new_dirlist);
     }
     Ok(())

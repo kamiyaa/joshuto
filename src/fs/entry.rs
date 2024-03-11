@@ -10,10 +10,9 @@ use crate::ICONS_T;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
-    name: String,
-    ext: Option<String>,
-    label: String,
-    path: path::PathBuf,
+    pub name: String,
+    pub ext: Option<String>,
+    pub path: path::PathBuf,
     pub metadata: JoshutoMetadata,
     /// Directly selected by the user, _not_ by a current visual mode selection
     permanent_selected: bool,
@@ -26,7 +25,6 @@ impl JoshutoDirEntry {
     pub fn from(
         direntry: &walkdir::DirEntry,
         base: &path::Path,
-        config: &AppConfig,
         options: &DisplayOption,
     ) -> io::Result<Self> {
         let path = direntry.path().to_path_buf();
@@ -42,13 +40,7 @@ impl JoshutoDirEntry {
             .path()
             .extension()
             .and_then(|s| s.to_str())
-            .map(|s| {
-                if config.case_sensitive_ext {
-                    s.to_string()
-                } else {
-                    s.to_lowercase()
-                }
-            });
+            .map(|s| s.to_string());
 
         let mut metadata = JoshutoMetadata::from(&path)?;
 
@@ -58,20 +50,9 @@ impl JoshutoDirEntry {
             }
         }
 
-        #[cfg(feature = "devicons")]
-        let label = if options.show_icons() {
-            create_icon_label(name.as_str(), &ext, config, &metadata)
-        } else {
-            name.clone()
-        };
-
-        #[cfg(not(feature = "devicons"))]
-        let label = name.clone();
-
         Ok(Self {
             name,
             ext,
-            label,
             path,
             metadata,
             permanent_selected: false,
@@ -86,10 +67,6 @@ impl JoshutoDirEntry {
 
     pub fn ext(&self) -> Option<&str> {
         self.ext.as_deref()
-    }
-
-    pub fn label(&self) -> &str {
-        self.label.as_str()
     }
 
     pub fn file_path(&self) -> &path::Path {
@@ -150,38 +127,6 @@ impl std::cmp::Ord for JoshutoDirEntry {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.file_path().cmp(other.file_path())
     }
-}
-
-#[cfg(feature = "devicons")]
-fn create_icon_label(
-    name: &str,
-    ext: &Option<String>,
-    config: &AppConfig,
-    metadata: &JoshutoMetadata,
-) -> String {
-    let label = {
-        let icon = match metadata.file_type() {
-            FileType::Directory => ICONS_T
-                .directory_exact
-                .get(name)
-                .cloned()
-                .unwrap_or(ICONS_T.default_dir.clone()),
-            _ => ICONS_T.file_exact.get(name).cloned().unwrap_or(match ext {
-                Some(ext) => {
-                    let icon = if config.case_sensitive_ext {
-                        ICONS_T.ext.get(ext)
-                    } else {
-                        ICONS_T.ext.get(&ext.to_lowercase())
-                    };
-
-                    icon.unwrap_or(&ICONS_T.default_file).to_string()
-                }
-                None => ICONS_T.default_file.clone(),
-            }),
-        };
-        format!("{} {}", icon, name)
-    };
-    label
 }
 
 fn get_directory_size(path: &path::Path) -> io::Result<usize> {

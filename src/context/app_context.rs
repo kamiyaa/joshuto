@@ -23,27 +23,27 @@ pub struct AppContext {
     // args from the command line
     pub args: Args,
     // app config
-    config: AppConfig,
+    pub config: AppConfig,
     // context related to tabs
-    tab_context: TabContext,
+    pub tab_context: TabContext,
     // context related to local file state
-    local_state: Option<LocalStateContext>,
+    pub local_state: Option<LocalStateContext>,
     // context related to searching
-    search_context: Option<MatchContext>,
+    pub search_context: Option<MatchContext>,
     // message queue for displaying messages
-    message_queue: MessageQueue,
+    pub message_queue: MessageQueue,
     // context related to io workers
-    worker_context: WorkerContext,
+    pub worker_context: WorkerContext,
     // context related to previews
     pub preview_context: PreviewContext,
     // context related to command line
-    commandline_context: CommandLineContext,
+    pub commandline_context: CommandLineContext,
     // user interface context; data which is input to both, the UI rendering and the app state
-    ui_context: UiContext,
+    pub ui_context: UiContext,
     // filesystem watcher to inform about changes in shown directories
-    watcher: notify::RecommendedWatcher,
+    pub watcher: notify::RecommendedWatcher,
     // list of watched paths; seems not to be possible to get them from a notify::Watcher
-    watched_paths: HashSet<path::PathBuf>,
+    pub watched_paths: HashSet<path::PathBuf>,
     // the stdout of the last `shell` command
     pub last_stdout: Option<String>,
 }

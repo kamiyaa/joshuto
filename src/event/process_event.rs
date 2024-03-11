@@ -7,6 +7,7 @@ use signal_hook::consts::signal;
 use termion::event::{Event, Key, MouseButton, MouseEvent};
 use uuid::Uuid;
 
+use crate::commands::tab_ops;
 use crate::commands::{cursor_move, parent_cursor_move, reload};
 use crate::config::clean::keymap::AppKeyMapping;
 use crate::config::clean::keymap::KeyMapping;
@@ -15,7 +16,6 @@ use crate::error::AppResult;
 use crate::event::AppEvent;
 use crate::event::PreviewData;
 use crate::fs::JoshutoDirList;
-use crate::history::DirectoryHistory;
 use crate::io::FileOperationProgress;
 use crate::key_command::{AppExecute, Command, CommandKeybind};
 use crate::preview::preview_dir::PreviewDirState;
@@ -94,24 +94,19 @@ pub fn process_worker_progress(context: &mut AppContext, res: FileOperationProgr
 pub fn process_finished_worker(context: &mut AppContext, res: AppResult<FileOperationProgress>) {
     let worker_context = context.worker_context_mut();
     let observer = worker_context.remove_worker().unwrap();
-    let config = context.config_ref().clone();
-    let options = context.config_ref().display_options_ref().clone();
-    for (_, tab) in context.tab_context_mut().iter_mut() {
-        let tab_options = tab.option_ref().clone();
-        if observer.dest_path().exists() {
-            let _ = tab
-                .history_mut()
-                .reload(observer.dest_path(), &config, &options, &tab_options);
-        } else {
-            tab.history_mut().remove(observer.dest_path());
-        }
-        if observer.src_path().exists() {
-            let _ = tab
-                .history_mut()
-                .reload(observer.src_path(), &config, &options, &tab_options);
-        } else {
-            tab.history_mut().remove(observer.src_path());
-        }
+
+    let observer_path = observer.dest_path();
+    if observer_path.exists() {
+        let _ = tab_ops::reload_all_tabs(context, observer_path);
+    } else {
+        tab_ops::remove_entry_from_all_tabs(context, observer_path);
+    }
+
+    let observer_path = observer.src_path();
+    if observer_path.exists() {
+        let _ = tab_ops::reload_all_tabs(context, observer_path);
+    } else {
+        tab_ops::remove_entry_from_all_tabs(context, observer_path);
     }
 
     observer.join();

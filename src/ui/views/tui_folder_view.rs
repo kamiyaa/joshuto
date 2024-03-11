@@ -143,14 +143,14 @@ impl<'a> Widget for TuiFolderView<'a> {
             Constraint::Ratio(0, _) => {}
             _ => {
                 if let Some(list) = curr_tab.parent_list_ref().as_ref() {
-                    TuiDirList::new(list, true).render(layout_rect[0], buf);
+                    TuiDirList::new(config, list, true).render(layout_rect[0], buf);
                 }
             }
         }
 
         // render current view
         if let Some(list) = curr_list.as_ref() {
-            TuiDirListDetailed::new(list, display_options, curr_tab.option_ref(), true)
+            TuiDirListDetailed::new(config, list, display_options, curr_tab.option_ref(), true)
                 .render(layout_rect[1], buf);
 
             let footer_area = Self::footer_area(&area);
@@ -185,7 +185,7 @@ impl<'a> Widget for TuiFolderView<'a> {
         }
 
         if let Some(list) = child_list.as_ref() {
-            TuiDirList::new(list, true).render(layout_rect[2], buf);
+            TuiDirList::new(config, list, true).render(layout_rect[2], buf);
         } else if let Some(entry) = curr_entry {
             match curr_tab.history_metadata_ref().get(entry.file_path()) {
                 Some(PreviewDirState::Loading) => {

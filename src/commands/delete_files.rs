@@ -5,10 +5,11 @@ use termion::event::Key;
 
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
-use crate::history::DirectoryHistory;
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::AppBackend;
+
+use super::tab_ops;
 
 fn prompt(context: &mut AppContext, backend: &mut AppBackend, paths_len: usize) -> bool {
     let ch = {
@@ -92,14 +93,7 @@ pub fn delete_selected_files(
         delete_files(context, paths, background, permanently)?;
     }
 
-    let curr_tab = context.tab_context_ref().curr_tab_ref();
-    let config = context.config_ref().clone();
-    let options = context.config_ref().display_options_ref().clone();
-    let curr_path = curr_tab.cwd().to_path_buf();
-    for (_, tab) in context.tab_context_mut().iter_mut() {
-        let tab_options = tab.option_ref().clone();
-        tab.history_mut()
-            .reload(&curr_path, &config, &options, &tab_options)?;
-    }
+    let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+    tab_ops::reload_all_tabs(context, curr_path.as_path())?;
     Ok(())
 }

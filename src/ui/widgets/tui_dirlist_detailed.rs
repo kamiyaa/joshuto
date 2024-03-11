@@ -9,30 +9,36 @@ use crate::config::clean::app::display::line_mode::LineMode;
 use crate::config::clean::app::display::line_number::LineNumberStyle;
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
+use crate::config::clean::app::AppConfig;
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
 use crate::util::string::UnicodeTruncate;
 use crate::util::style;
 use crate::util::{format, unix};
 use unicode_width::UnicodeWidthStr;
 
+use super::tui_dirlist::get_entry_icon;
+
 const MIN_LEFT_LABEL_WIDTH: i32 = 15;
 
 const ELLIPSIS: &str = "…";
 
 pub struct TuiDirListDetailed<'a> {
-    dirlist: &'a JoshutoDirList,
-    display_options: &'a DisplayOption,
-    tab_display_options: &'a TabDisplayOption,
+    pub config: &'a AppConfig,
+    pub dirlist: &'a JoshutoDirList,
+    pub display_options: &'a DisplayOption,
+    pub tab_display_options: &'a TabDisplayOption,
     pub focused: bool,
 }
 impl<'a> TuiDirListDetailed<'a> {
     pub fn new(
+        config: &'a AppConfig,
         dirlist: &'a JoshutoDirList,
         display_options: &'a DisplayOption,
         tab_display_options: &'a TabDisplayOption,
         focused: bool,
     ) -> Self {
         Self {
+            config,
             dirlist,
             display_options,
             tab_display_options,
@@ -104,6 +110,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
                 prefix.push_str(&line_number_prefix);
 
                 print_entry(
+                    self.config,
                     buf,
                     entry,
                     style,
@@ -130,6 +137,7 @@ fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
 
 #[allow(clippy::too_many_arguments)]
 fn print_entry(
+    config: &AppConfig,
     buf: &mut Buffer,
     entry: &JoshutoDirEntry,
     style: Style,
@@ -143,7 +151,22 @@ fn print_entry(
         LinkType::Normal => "",
         LinkType::Symlink { .. } => "-> ",
     };
-    let left_label_original = entry.label();
+
+    let name = entry.file_name();
+    #[cfg(feature = "devicons")]
+    let label = {
+        if config.display_options_ref().show_icons() {
+            let icon = get_entry_icon(&config, entry.file_name(), entry.ext(), &entry.metadata);
+            format!("{icon} {name}")
+        } else {
+            name.to_string()
+        }
+    };
+
+    #[cfg(not(feature = "devicons"))]
+    let label = name.to_string();
+
+    let left_label_original = label;
     let right_label_original = format!(
         " {}{} ",
         symlink_string,
@@ -168,7 +191,7 @@ fn print_entry(
     // factor left_label and right_label
     let drawing_width = drawing_width - prefix_width;
     let (left_label, right_label) = factor_labels_for_entry(
-        left_label_original,
+        &left_label_original,
         right_label_original.as_str(),
         drawing_width,
     );

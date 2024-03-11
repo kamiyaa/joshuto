@@ -2,11 +2,8 @@ use std::collections::HashMap;
 use std::path;
 
 use crate::config::clean::app::display::tab::TabDisplayOption;
-use crate::config::clean::app::display::DisplayOption;
-use crate::config::clean::app::AppConfig;
-use crate::context::UiContext;
 use crate::fs::JoshutoDirList;
-use crate::history::{DirectoryHistory, JoshutoHistory};
+use crate::history::JoshutoHistory;
 use crate::preview::preview_dir::PreviewDirState;
 // use crate::HOSTNAME;
 
@@ -16,22 +13,17 @@ pub struct JoshutoTab {
     _cwd: path::PathBuf,
     // history is just a HashMap, so we have this property to store last workdir
     _previous_dir: Option<path::PathBuf>,
-    history: JoshutoHistory,
-    history_metadata: HistoryMetadata,
-    options: TabDisplayOption,
+    pub history: JoshutoHistory,
+    pub history_metadata: HistoryMetadata,
+    pub options: TabDisplayOption,
 }
 
 impl JoshutoTab {
     pub fn new(
         cwd: path::PathBuf,
-        config: &AppConfig,
-        ui_context: &UiContext,
-        options: &DisplayOption,
+        history: JoshutoHistory,
+        tab_options: TabDisplayOption,
     ) -> std::io::Result<Self> {
-        let mut history = JoshutoHistory::new();
-        let tab_options = options.default_tab_display_option.clone();
-
-        history.populate_to_root(cwd.as_path(), config, ui_context, options, &tab_options)?;
         let new_tab = Self {
             _cwd: cwd,
             _previous_dir: None,

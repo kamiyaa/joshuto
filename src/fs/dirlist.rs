@@ -44,13 +44,11 @@ impl JoshutoDirList {
 
     pub fn from_path(
         path: path::PathBuf,
-        config: &AppConfig,
         options: &DisplayOption,
         tab_options: &TabDisplayOption,
     ) -> io::Result<Self> {
         let filter_func = options.filter_func();
-        let mut contents =
-            read_directory(path.as_path(), filter_func, config, options, tab_options)?;
+        let mut contents = read_directory(path.as_path(), filter_func, options, tab_options)?;
 
         contents.sort_by(|f1, f2| tab_options.sort_options_ref().compare(f1, f2));
 
