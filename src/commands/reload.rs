@@ -26,6 +26,7 @@ pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     }
 
     if !paths.is_empty() {
+        let config = context.config_ref().clone();
         let options = context.config_ref().display_options_ref().clone();
         let tab_options = context
             .tab_context_ref()
@@ -38,8 +39,13 @@ pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
             .map(|t| t.history_mut())
         {
             for path in paths {
-                let new_dirlist =
-                    create_dirlist_with_history(history, path.as_path(), &options, &tab_options)?;
+                let new_dirlist = create_dirlist_with_history(
+                    history,
+                    path.as_path(),
+                    &config,
+                    &options,
+                    &tab_options,
+                )?;
                 history.insert(path, new_dirlist);
             }
         }
@@ -67,6 +73,7 @@ pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     }
 
     if !paths.is_empty() {
+        let config = context.config_ref().clone();
         let options = context.config_ref().display_options_ref().clone();
         let tab_options = context
             .tab_context_ref()
@@ -79,8 +86,13 @@ pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
             .map(|t| t.history_mut())
         {
             for path in paths {
-                let new_dirlist =
-                    create_dirlist_with_history(history, path.as_path(), &options, &tab_options)?;
+                let new_dirlist = create_dirlist_with_history(
+                    history,
+                    path.as_path(),
+                    &config,
+                    &options,
+                    &tab_options,
+                )?;
                 history.insert(path, new_dirlist);
             }
         }

@@ -2,6 +2,7 @@ use std::io;
 use std::path;
 
 use crate::commands::{quit, reload};
+use crate::config::clean::app::AppConfig;
 use crate::config::clean::mimetype::ProgramEntry;
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
@@ -15,13 +16,19 @@ use super::change_directory;
 
 use crate::MIMETYPE_T;
 
-fn _get_options<'a>(path: &path::Path) -> Vec<&'a ProgramEntry> {
+fn _get_options<'a>(path: &path::Path, config: &AppConfig) -> Vec<&'a ProgramEntry> {
     let mut options: Vec<&ProgramEntry> = Vec::new();
 
     if let Some(entries) = path
         .extension()
         .and_then(|ext| ext.to_str())
-        .and_then(|file_ext| MIMETYPE_T.app_list_for_ext(file_ext))
+        .and_then(|ext| {
+            if config.case_sensitive_ext {
+                MIMETYPE_T.app_list_for_ext(ext)
+            } else {
+                MIMETYPE_T.app_list_for_ext(&ext.to_lowercase())
+            }
+        })
     {
         options.extend(entries);
         return options;
@@ -172,7 +179,7 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
                     paths.iter().map(|e| e.file_name()).collect(),
                 )
             };
-            let options = _get_options(path);
+            let options = _get_options(path, context.config_ref());
             let option = options.iter().find(|option| option.program_exists());
 
             let config = context.config_ref();
@@ -207,7 +214,7 @@ pub fn open_with_index(
         ));
     }
     let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
-    let options = _get_options(paths[0].file_path());
+    let options = _get_options(paths[0].file_path(), context.config_ref());
 
     if index >= options.len() {
         return Err(AppError::new(
@@ -240,7 +247,7 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut AppBackend)
         );
     }
     let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
-    let options = _get_options(paths[0].file_path());
+    let options = _get_options(paths[0].file_path(), context.config_ref());
 
     _open_with_helper(context, backend, options, &files)?;
     Ok(())

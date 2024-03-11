@@ -94,20 +94,21 @@ pub fn process_worker_progress(context: &mut AppContext, res: FileOperationProgr
 pub fn process_finished_worker(context: &mut AppContext, res: AppResult<FileOperationProgress>) {
     let worker_context = context.worker_context_mut();
     let observer = worker_context.remove_worker().unwrap();
+    let config = context.config_ref().clone();
     let options = context.config_ref().display_options_ref().clone();
     for (_, tab) in context.tab_context_mut().iter_mut() {
         let tab_options = tab.option_ref().clone();
         if observer.dest_path().exists() {
             let _ = tab
                 .history_mut()
-                .reload(observer.dest_path(), &options, &tab_options);
+                .reload(observer.dest_path(), &config, &options, &tab_options);
         } else {
             tab.history_mut().remove(observer.dest_path());
         }
         if observer.src_path().exists() {
             let _ = tab
                 .history_mut()
-                .reload(observer.src_path(), &options, &tab_options);
+                .reload(observer.src_path(), &config, &options, &tab_options);
         } else {
             tab.history_mut().remove(observer.src_path());
         }

@@ -122,9 +122,7 @@ fn file_style(entry: &JoshutoDirEntry) -> Style {
             .add_modifier(THEME_T.executable.modifier)
     } else {
         entry
-            .file_path()
-            .extension()
-            .and_then(|s| s.to_str())
+            .ext()
             .and_then(|s| THEME_T.ext.get(s))
             .map(|theme| {
                 Style::default()

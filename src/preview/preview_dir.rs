@@ -22,6 +22,7 @@ pub struct Background {}
 impl Background {
     pub fn load_preview(context: &mut AppContext, p: path::PathBuf) -> thread::JoinHandle<()> {
         let event_tx = context.events.event_tx.clone();
+        let config = context.config_ref().clone();
         let options = context.config_ref().display_options_ref().clone();
         let tab_options = context
             .tab_context_ref()
@@ -39,7 +40,7 @@ impl Background {
 
         thread::spawn(move || {
             let path_clone = p.clone();
-            let dir_res = JoshutoDirList::from_path(p, &options, &tab_options);
+            let dir_res = JoshutoDirList::from_path(p, &config, &options, &tab_options);
             let res = AppEvent::PreviewDir {
                 id: tab_id,
                 path: path_clone,
