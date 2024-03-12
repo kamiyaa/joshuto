@@ -271,6 +271,8 @@ function joshuto() {
 
 ### `paste_files`: move/copy files stored from a previous `cut_files` or `copy_files` command
 
+### `cancel_file_operation`: unmark and cancel the current file operation
+
 ### `delete_files`: delete selected files (or current file if none were selected).
 
 - `--foreground=true`: will delete files in the foreground
@@ -369,7 +371,7 @@ This command has the same options for `select`. Notice that it's necessary to qu
 
 ### `select_fzf`: select files in the current directory via fzf
 
-This command has the same options for `select`. Use tab to select or deselect files in fzf. 
+This command has the same options for `select`. Use tab to select or deselect files in fzf.
 
 ### `filter`: filter the current directory list.
 
@@ -398,7 +400,7 @@ When disabling, the current “visual mode selection” is turned into normal se
   - `--type=string`: change configurations of operations using substring matching
   - `--type=glob`: change configurations of operations using glob matching
   - `--type=regex`: change configurations of operations using regex
-  - `--type=fzf`: change configurations of operations using fzf 
+  - `--type=fzf`: change configurations of operations using fzf
   - when no option is added, type is set to `string` by default
 - Value
   - `insensitive`
@@ -417,7 +419,7 @@ Define search command using [`custom_command`]()
 
 ### `custom_search_interactive`
 
-Similar to `select` and `custom_search`. Allows user to execute `custom_command` and 
+Similar to `select` and `custom_search`. Allows user to execute `custom_command` and
 then interactively operate on the results.
 
 ## Bookmarks

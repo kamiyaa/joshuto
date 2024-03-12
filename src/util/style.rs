@@ -31,11 +31,20 @@ pub fn entry_style(config: &AppConfig, entry: &JoshutoDirEntry) -> Style {
     let filetype = metadata.file_type();
     let linktype = metadata.link_type();
 
-    if entry.is_visual_mode_selected() {
-        return visual_mode_selected_style();
+    if entry.is_marked_cut() {
+        return mark_selected_style("cut");
+    }
+    if entry.is_marked_copy() {
+        return mark_selected_style("copy");
+    }
+    if entry.is_marked_sym() {
+        return mark_selected_style("symlink");
     }
     if entry.is_permanent_selected() {
         return permanent_selected_style();
+    }
+    if entry.is_visual_mode_selected() {
+        return visual_mode_selected_style();
     }
 
     match &THEME_T.lscolors {
@@ -49,6 +58,21 @@ pub fn entry_style(config: &AppConfig, entry: &JoshutoDirEntry) -> Style {
 }
 
 pub fn entry_prefix(entry: &JoshutoDirEntry) -> (&str, usize) {
+    if entry.is_marked_cut() {
+        if let Some(cut_mark) = THEME_T.mark.get("cut") {
+            return (cut_mark.prefix.as_str(), cut_mark.prefix_width);
+        }
+    }
+    if entry.is_marked_copy() {
+        if let Some(copy_mark) = THEME_T.mark.get("copy") {
+            return (copy_mark.prefix.as_str(), copy_mark.prefix_width);
+        }
+    }
+    if entry.is_marked_sym() {
+        if let Some(sym_mark) = THEME_T.mark.get("symlink") {
+            return (sym_mark.prefix.as_str(), sym_mark.prefix_width);
+        }
+    }
     if entry.is_visual_mode_selected() {
         return (
             THEME_T.visual_mode_selection.prefix.as_str(),
@@ -87,21 +111,32 @@ fn visual_mode_selected_style() -> Style {
         .add_modifier(THEME_T.visual_mode_selection.modifier)
 }
 
-fn permanent_selected_style() -> Style {
+pub fn permanent_selected_style() -> Style {
     Style::default()
         .fg(THEME_T.selection.fg)
         .bg(THEME_T.selection.bg)
         .add_modifier(THEME_T.selection.modifier)
 }
 
-fn symlink_valid_style() -> Style {
+pub fn mark_selected_style(file_op: &str) -> Style {
+    if let Some(mark) = THEME_T.mark.get(file_op) {
+        Style::default()
+            .fg(mark.fg)
+            .bg(mark.bg)
+            .add_modifier(mark.modifier)
+    } else {
+        Style::default()
+    }
+}
+
+pub fn symlink_valid_style() -> Style {
     Style::default()
         .fg(THEME_T.link.fg)
         .bg(THEME_T.link.bg)
         .add_modifier(THEME_T.link.modifier)
 }
 
-fn symlink_invalid_style() -> Style {
+pub fn symlink_invalid_style() -> Style {
     Style::default()
         .fg(THEME_T.link_invalid.fg)
         .bg(THEME_T.link_invalid.bg)

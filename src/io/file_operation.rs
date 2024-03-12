@@ -43,6 +43,7 @@ pub struct FileOperationOptions {
     // cut, copy
     pub overwrite: bool,
     pub skip_exist: bool,
+    pub cancel: bool,
 
     // delete
     pub permanently: bool,

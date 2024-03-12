@@ -15,6 +15,7 @@ pub struct AppTheme {
     pub regular: AppStyle,
     pub selection: AppStyle,
     pub visual_mode_selection: AppStyle,
+    pub mark: HashMap<String, AppStyle>,
     pub directory: AppStyle,
     pub executable: AppStyle,
     pub link: AppStyle,
@@ -52,6 +53,14 @@ impl From<AppThemeRaw> for AppTheme {
         let tabs = raw.tabs;
         let selection = raw.selection.to_style_theme();
         let visual_mode_selection = raw.visual_mode_selection.to_style_theme();
+        let mark: HashMap<String, AppStyle> = raw
+            .mark
+            .iter()
+            .map(|(k, v)| {
+                let style = v.to_style_theme();
+                (k.clone(), style)
+            })
+            .collect();
         let executable = raw.executable.to_style_theme();
         let regular = raw.regular.to_style_theme();
         let directory = raw.directory.to_style_theme();
@@ -77,6 +86,7 @@ impl From<AppThemeRaw> for AppTheme {
         Self {
             selection,
             visual_mode_selection,
+            mark,
             executable,
             regular,
             directory,

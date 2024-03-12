@@ -42,6 +42,9 @@ impl AppConfig {
     pub fn display_options_mut(&mut self) -> &mut DisplayOption {
         &mut self._display_options
     }
+    pub fn display_options_clone(&self) -> DisplayOption {
+        self._display_options.clone()
+    }
 
     pub fn preview_options_ref(&self) -> &PreviewOption {
         &self._preview_options

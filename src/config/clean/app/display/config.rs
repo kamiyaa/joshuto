@@ -26,6 +26,7 @@ pub struct DisplayOption {
     pub _show_borders: bool,
     pub _show_hidden: bool,
     pub _show_icons: bool,
+    pub _preserve_selection: bool,
     pub _line_nums: LineNumberStyle,
     pub column_ratio: (usize, usize, usize),
     pub default_layout: [Constraint; 3],
@@ -70,6 +71,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
             _show_borders: raw.show_borders,
             _show_hidden: raw.show_hidden,
             _show_icons: raw.show_icons,
+            _preserve_selection: raw.preserve_selection,
             _line_nums,
 
             column_ratio,
@@ -158,6 +160,7 @@ impl std::default::Default for DisplayOption {
             _show_borders: true,
             _show_hidden: false,
             _show_icons: false,
+            _preserve_selection: true,
             _line_nums: LineNumberStyle::None,
             default_layout,
             no_preview_layout,

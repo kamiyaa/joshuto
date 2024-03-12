@@ -44,6 +44,9 @@ pub enum Command {
     PasteFiles {
         options: FileOperationOptions,
     },
+    CancelFiles {
+        options: FileOperationOptions,
+    },
 
     DeleteFiles {
         background: bool,

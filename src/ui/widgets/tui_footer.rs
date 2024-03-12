@@ -7,6 +7,9 @@ use ratatui::widgets::{Paragraph, Widget};
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::fs::{JoshutoDirList, LinkType};
 use crate::util::format;
+use crate::util::style::{
+    mark_selected_style, permanent_selected_style, symlink_invalid_style, symlink_valid_style,
+};
 use crate::util::unix;
 use crate::{THEME_T, TIMEZONE_STR};
 
@@ -37,11 +40,14 @@ impl<'a> Widget for TuiFooter<'a> {
             .fg(Color::LightBlue)
             .add_modifier(THEME_T.selection.modifier);
 
-        let selection_style = Style::default()
-            .fg(THEME_T.selection.fg)
-            .bg(THEME_T.selection.bg)
-            .add_modifier(THEME_T.selection.modifier);
+        let selection_style = permanent_selected_style();
+        let mark_cut_style = mark_selected_style("cut");
+        let mark_copy_style = mark_selected_style("copy");
+        let mark_sym_style = mark_selected_style("symlink");
         let selected_count = self.dirlist.selected_count();
+        let marked_cut_count = self.dirlist.marked_cut_count();
+        let marked_copy_count = self.dirlist.marked_copy_count();
+        let marked_sym_count = self.dirlist.marked_sym_count();
 
         match self.dirlist.get_index() {
             Some(i) if i < self.dirlist.len() => {
@@ -103,23 +109,56 @@ impl<'a> Widget for TuiFooter<'a> {
                         if selected_count > 0 {
                             format!("{} selected", selected_count)
                         } else {
-                            " ".to_string()
+                            "".to_string()
                         },
                         selection_style,
+                    ),
+                    Span::raw(if marked_cut_count > 0 {
+                        " | ".to_string()
+                    } else {
+                        "".to_string()
+                    }),
+                    Span::styled(
+                        if marked_cut_count > 0 {
+                            format!("{} marked -> cut", marked_cut_count)
+                        } else {
+                            "".to_string()
+                        },
+                        mark_cut_style,
+                    ),
+                    Span::raw(if marked_copy_count > 0 {
+                        " | ".to_string()
+                    } else {
+                        "".to_string()
+                    }),
+                    Span::styled(
+                        if marked_copy_count > 0 {
+                            format!("{} marked -> copy", marked_copy_count)
+                        } else {
+                            "".to_string()
+                        },
+                        mark_copy_style,
+                    ),
+                    Span::raw(if marked_sym_count > 0 {
+                        " | ".to_string()
+                    } else {
+                        "".to_string()
+                    }),
+                    Span::styled(
+                        if marked_sym_count > 0 {
+                            format!("{} marked -> symlink", marked_sym_count)
+                        } else {
+                            "".to_string()
+                        },
+                        mark_sym_style,
                     ),
                 ];
 
                 if let LinkType::Symlink { target, valid } = entry.metadata.link_type() {
                     let link_style = if *valid {
-                        Style::default()
-                            .fg(THEME_T.link.fg)
-                            .bg(THEME_T.link.bg)
-                            .add_modifier(THEME_T.link.modifier)
+                        symlink_valid_style()
                     } else {
-                        Style::default()
-                            .fg(THEME_T.link_invalid.fg)
-                            .bg(THEME_T.link_invalid.bg)
-                            .add_modifier(THEME_T.link_invalid.modifier)
+                        symlink_invalid_style()
                     };
                     text.push(Span::styled(" -> ", link_style));
                     text.push(Span::styled(target, link_style));

@@ -262,6 +262,22 @@ impl std::str::FromStr for Command {
                 }
             }
             Ok(Self::PasteFiles { options })
+        } else if command == CMD_CANCEL_FILES {
+            let default = FileOperationOptions::default();
+            match arg {
+                "" => Ok(Self::CancelFiles {
+                    options: FileOperationOptions {
+                        overwrite: default.overwrite,
+                        skip_exist: default.skip_exist,
+                        cancel: true,
+                        permanently: default.permanently,
+                    },
+                }),
+                _ => Err(AppError::new(
+                    AppErrorKind::UnrecognizedArgument,
+                    format!("{}: unkown option '{}'", command, arg),
+                )),
+            }
         } else if command == CMD_DELETE_FILES {
             let [mut permanently, mut background, mut noconfirm] = [false; 3];
             for arg in arg.split_whitespace() {
