@@ -29,7 +29,7 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> AppResult {
         .arg("--exclude")
         .arg(&cwd)
         .arg("--")
-        .args(args.split(' ').collect::<Vec<&str>>())
+        .args(args.split(' '))
         .output()?;
 
     if zoxide_output.status.success() {
@@ -53,13 +53,18 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> AppResult {
     Ok(())
 }
 
-pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
+pub fn zoxide_query_interactive(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    args: &str,
+) -> AppResult {
     backend.terminal_drop();
 
     let zoxide_process = Command::new("zoxide")
         .arg("query")
         .arg("-i")
         .arg("--")
+        .args(args.split(' '))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;

@@ -167,7 +167,9 @@ impl AppExecute for Command {
             Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),
             Self::SelectFzf { options } => select_fzf::select_fzf(context, backend, options),
             Self::Zoxide(arg) => zoxide::zoxide_query(context, arg),
-            Self::ZoxideInteractive => zoxide::zoxide_query_interactive(context, backend),
+            Self::ZoxideInteractive(args) => {
+                zoxide::zoxide_query_interactive(context, backend, args)
+            }
 
             Self::BookmarkAdd => bookmark::add_bookmark(context, backend),
             Self::BookmarkChangeDirectory => bookmark::change_directory_bookmark(context, backend),

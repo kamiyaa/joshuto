@@ -187,7 +187,7 @@ pub enum Command {
         processor: PostProcessor,
     },
     Zoxide(String),
-    ZoxideInteractive,
+    ZoxideInteractive(String),
 
     CustomSearch(Vec<String>),
     CustomSearchInteractive(Vec<String>),

@@ -113,7 +113,11 @@ impl std::str::FromStr for Command {
             Self::CustomSearchInteractive(arg.split(' ').map(|x| x.to_string()).collect())
         );
         simple_command_conversion_case!(command, CMD_SUBDIR_FZF, Self::SubdirFzf);
-        simple_command_conversion_case!(command, CMD_ZOXIDE_INTERACTIVE, Self::ZoxideInteractive);
+        simple_command_conversion_case!(
+            command,
+            CMD_ZOXIDE_INTERACTIVE,
+            Self::ZoxideInteractive(arg.to_string())
+        );
 
         if command == CMD_QUIT {
             match arg {
