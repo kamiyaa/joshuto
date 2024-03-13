@@ -510,13 +510,27 @@ impl std::str::FromStr for Command {
         } else if command == CMD_SORT {
             match arg {
                 "reverse" => Ok(Self::SortReverse),
-                arg => match SortType::from_str(arg) {
-                    Some(s) => Ok(Self::Sort(s)),
-                    None => Err(AppError::new(
-                        AppErrorKind::InvalidParameters,
-                        format!("{}: Unknown option '{}'", command, arg),
-                    )),
-                },
+                arg => {
+                    let (sort, reverse) = match arg.split_once(' ') {
+                        Some((s, "--reverse=true")) => (s, Some(true)),
+                        Some((s, "--reverse=false")) => (s, Some(false)),
+                        Some((_, opt)) => {
+                            return Err(AppError::new(
+                                AppErrorKind::InvalidParameters,
+                                format!("{}: Unknown option '{}'", command, opt),
+                            ))
+                        }
+                        None => (arg, None),
+                    };
+
+                    match SortType::from_str(sort) {
+                        Some(sort_type) => Ok(Self::Sort { sort_type, reverse }),
+                        None => Err(AppError::new(
+                            AppErrorKind::InvalidParameters,
+                            format!("{}: Unknown option '{}'", command, sort),
+                        )),
+                    }
+                }
             }
         } else if command == CMD_SET_LINEMODE {
             Ok(Self::SetLineMode(LineMode::from_string(arg)?))

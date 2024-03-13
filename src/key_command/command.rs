@@ -153,7 +153,10 @@ pub enum Command {
         initial: char,
     },
 
-    Sort(SortType),
+    Sort {
+        sort_type: SortType,
+        reverse: Option<bool>,
+    },
     SortReverse,
 
     FilterGlob {
