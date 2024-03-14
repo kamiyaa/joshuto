@@ -48,20 +48,14 @@ pub fn entry_style(config: &AppConfig, entry: &JoshutoDirEntry) -> Style {
     }
 }
 
-pub fn entry_prefix(entry: &JoshutoDirEntry) -> (&str, usize) {
+pub fn entry_prefix(entry: &JoshutoDirEntry) -> &str {
     if entry.is_visual_mode_selected() {
-        return (
-            THEME_T.visual_mode_selection.prefix.as_str(),
-            THEME_T.visual_mode_selection.prefix_width,
-        );
+        &THEME_T.visual_mode_selection.prefix
+    } else if entry.is_permanent_selected() {
+        &THEME_T.selection.prefix
+    } else {
+        ""
     }
-    if entry.is_permanent_selected() {
-        return (
-            THEME_T.selection.prefix.as_str(),
-            THEME_T.selection.prefix_width,
-        );
-    }
-    ("", 0)
 }
 
 fn default_style(
