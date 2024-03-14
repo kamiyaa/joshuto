@@ -76,7 +76,7 @@ lazy_static! {
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
 
-    static ref USERNAME: String = whoami::fallible::realname().unwrap_or("No Username".to_string());
+    static ref USERNAME: String = whoami::fallible::username().unwrap_or("No Username".to_string());
     static ref HOSTNAME: String = whoami::fallible::hostname().unwrap_or("No Hostname".to_string());
 
     static ref TIMEZONE_STR: String = {
