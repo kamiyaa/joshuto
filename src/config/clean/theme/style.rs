@@ -9,7 +9,6 @@ pub struct AppStyle {
     pub fg: style::Color,
     pub bg: style::Color,
     pub prefix: String,
-    pub prefix_width: usize,
     pub modifier: style::Modifier,
 }
 
@@ -22,9 +21,8 @@ impl AppStyle {
         self.fg = fg;
         self
     }
-    pub fn set_prefix(mut self, prefix: String, prefix_width: usize) -> Self {
+    pub fn set_prefix(mut self, prefix: String) -> Self {
         self.prefix = prefix;
-        self.prefix_width = prefix_width;
         self
     }
 
@@ -44,7 +42,6 @@ impl std::default::Default for AppStyle {
             fg: default_color(),
             bg: default_color(),
             prefix: String::new(),
-            prefix_width: 0,
             modifier: style::Modifier::empty(),
         }
     }
