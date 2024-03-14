@@ -119,7 +119,7 @@ impl CommandComment for Command {
             Self::Flat { .. } => "Flattern directory list",
             Self::NumberedCommand { .. } => "Jump via input number",
 
-            Self::Sort(sort_type) => match sort_type {
+            Self::Sort { sort_type, .. } => match sort_type {
                 SortType::Lexical => "Sort lexically",
                 SortType::Mtime => "Sort by modification time",
                 SortType::Natural => "Sort naturally",

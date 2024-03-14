@@ -5,13 +5,18 @@ use crate::history::DirectoryHistory;
 
 use super::reload;
 
-pub fn set_sort(context: &mut AppContext, method: SortType) -> AppResult {
+pub fn set_sort(context: &mut AppContext, method: SortType, reverse: Option<bool>) -> AppResult {
     let curr_tab = context.tab_context_mut().curr_tab_mut();
     curr_tab
         .option_mut()
         .sort_options_mut()
         .set_sort_method(method);
     curr_tab.history_mut().depreciate_all_entries();
+
+    if let Some(r) = reverse {
+        curr_tab.option_mut().sort_options_mut().reverse = r;
+    }
+
     refresh(context)
 }
 

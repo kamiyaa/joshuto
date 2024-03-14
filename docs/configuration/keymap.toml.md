@@ -152,7 +152,13 @@ function joshuto() {
 - `sort lexical`: sort lexically (`10.txt` comes before `2.txt`)
 - `sort natural`: sort naturally (`2.txt` comes before `10.txt`)
 - `sort mtime`: sort via last modified time
+- `sort size`: sort by file size
+- `sort ext`: sort by extension
 - `sort reverse`: reverse the sorting
+
+All methods (except `reverse`) support the `--reverse` flag:
+- `--reverse=true` applies sort method and sets reverse to `true`
+- `--reverse=false` applies sort method and sets reverse to `false`
 
 ### `linemode`: change the line-mode (textual representation of files and directories in the “current view”)
 

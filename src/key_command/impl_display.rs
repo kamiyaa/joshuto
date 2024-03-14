@@ -49,7 +49,17 @@ impl std::fmt::Display for Command {
             Self::SearchRegex { pattern } => write!(f, "{} {}", self.command(), pattern),
             Self::SearchString { pattern } => write!(f, "{} {}", self.command(), pattern),
             Self::SubProcess { words, .. } => write!(f, "{} {:?}", self.command(), words),
-            Self::Sort(t) => write!(f, "{} {}", self.command(), t),
+            Self::Sort { sort_type, reverse } => write!(
+                f,
+                "{} {}{}",
+                self.command(),
+                sort_type,
+                match reverse {
+                    Some(true) => " --reverse=true",
+                    Some(false) => " --reverse=false",
+                    None => "",
+                },
+            ),
             Self::TabSwitch { offset } => write!(f, "{} {}", self.command(), offset),
             Self::TabSwitchIndex { index } => write!(f, "{} {}", self.command(), index),
             _ => write!(f, "{}", self.command()),

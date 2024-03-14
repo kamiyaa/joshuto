@@ -79,7 +79,7 @@ impl AppCommand for Command {
             Self::Flat { .. } => CMD_FLAT,
             Self::NumberedCommand { .. } => CMD_NUMBERED_COMMAND,
 
-            Self::Sort(_) => CMD_SORT,
+            Self::Sort { .. } => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,
 
             Self::FilterGlob { .. } => CMD_FILTER_GLOB,
