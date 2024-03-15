@@ -135,7 +135,7 @@ impl AppExecute for Command {
             } => case_sensitivity::set_case_sensitivity(context, *case_sensitivity, *set_type),
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShowTasks => show_tasks::show_tasks(context, backend, keymap_t),
-            Self::Sort(t) => sort::set_sort(context, *t),
+            Self::Sort { sort_type, reverse } => sort::set_sort(context, *sort_type, *reverse),
             Self::SetLineMode(mode) => linemode::set_linemode(context, *mode),
             Self::SortReverse => sort::toggle_reverse(context),
             Self::SubProcess { words, mode } => {
