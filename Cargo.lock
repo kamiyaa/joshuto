@@ -812,7 +812,7 @@ dependencies = [
 
 [[package]]
 name = "joshuto"
-version = "0.9.7"
+version = "0.9.8"
 dependencies = [
  "alphanumeric-sort",
  "ansi-to-tui",
