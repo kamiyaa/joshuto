@@ -1,6 +1,7 @@
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::ui::AppBackend;
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 use super::reload;
@@ -12,20 +13,17 @@ pub enum SubprocessCallMode {
     Capture,
 }
 
-pub fn current_filenames(context: &AppContext) -> Vec<&str> {
+pub fn current_files(context: &AppContext) -> Vec<(&str, &Path)> {
     let mut result = Vec::new();
     if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
         let mut i = 0;
-        curr_list
-            .iter_selected()
-            .map(|e| e.file_name())
-            .for_each(|file_name| {
-                result.push(file_name);
-                i += 1;
-            });
+        curr_list.iter_selected().for_each(|entry| {
+            result.push((entry.file_name(), entry.file_path()));
+            i += 1;
+        });
         if i == 0 {
             if let Some(entry) = curr_list.curr_entry_ref() {
-                result.push(entry.file_name());
+                result.push((entry.file_name(), entry.file_path()));
             }
         }
     }
@@ -38,29 +36,28 @@ fn execute_sub_process(
     words: &[String],
     mode: SubprocessCallMode,
 ) -> std::io::Result<()> {
-    let mut command = Command::new(words[0].clone());
+    let current_files = current_files(context);
+    let command_base = if current_files.len() == 1 {
+        match words[0].as_str() {
+            "%s" | "./%s" => current_files[0].0.to_string(),
+            "%p" => current_files[0].1.to_string_lossy().to_string(),
+            cmd => cmd.to_string(),
+        }
+    } else {
+        words[0].clone()
+    };
+
+    let mut command = Command::new(command_base);
     for word in words.iter().skip(1) {
-        match (*word).as_str() {
+        match word.as_str() {
             "%s" => {
-                current_filenames(context).into_iter().for_each(|x| {
-                    command.arg(x);
-                });
+                for (file_name, _) in &current_files {
+                    command.arg(file_name);
+                }
             }
             "%p" => {
-                if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
-                    let mut i = 0;
-                    curr_list
-                        .iter_selected()
-                        .map(|e| e.file_path())
-                        .for_each(|file_path| {
-                            command.arg(file_path);
-                            i += 1;
-                        });
-                    if i == 0 {
-                        if let Some(entry) = curr_list.curr_entry_ref() {
-                            command.arg(entry.file_path());
-                        }
-                    }
+                for (_, file_path) in &current_files {
+                    command.arg(file_path);
                 }
             }
             s => {
@@ -84,7 +81,7 @@ fn execute_sub_process(
                 }
                 Err(err) => Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
-                    format!("Shell execution failed: {:?}", err),
+                    format!("Shell execution failed: {}", err),
                 )),
             }
         }
@@ -125,12 +122,13 @@ pub fn sub_process(
             // Joshuto needs to release the terminal when handing it over to some interactive
             // shell command and restore it afterwards
             backend.terminal_drop();
-            execute_sub_process(context, words, mode)?;
+            let res = execute_sub_process(context, words, mode);
             backend.terminal_restore()?;
             let _ = reload::soft_reload_curr_tab(context);
             context
                 .message_queue_mut()
                 .push_info(format!("Finished: {}", words.join(" ")));
+            res?;
         }
         SubprocessCallMode::Spawn => {
             execute_sub_process(context, words, mode)?;
