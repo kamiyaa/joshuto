@@ -125,10 +125,10 @@ pub fn sub_process(
             let res = execute_sub_process(context, words, mode);
             backend.terminal_restore()?;
             let _ = reload::soft_reload_curr_tab(context);
+            res?;
             context
                 .message_queue_mut()
                 .push_info(format!("Finished: {}", words.join(" ")));
-            res?;
         }
         SubprocessCallMode::Spawn => {
             execute_sub_process(context, words, mode)?;
