@@ -36,6 +36,9 @@ focus_on_create = true
 # The maximum file size to show a preview for
 max_preview_size = 2097152 # 2MB
 
+# Update the zoxide database with every navigation type instead of only with the z command
+zoxide_update = false
+
 # Define custom commands (using shell) with parameters like %text, %s etc.
 custom_commands = [
    { name = "rgfzf", command = "/home/<USER>/.config/joshuto/rgfzf '%text' %s" },

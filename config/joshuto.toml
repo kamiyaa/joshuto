@@ -7,6 +7,7 @@ watch_files = true
 xdg_open = false
 xdg_open_fork = false
 case_insensitive_ext = false
+zoxide_update = false
 
 custom_commands = []
 

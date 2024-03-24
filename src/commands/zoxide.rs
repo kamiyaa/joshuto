@@ -10,18 +10,34 @@ use crate::ui::AppBackend;
 pub fn zoxide_query(context: &mut AppContext, args: &str) -> AppResult {
     let cwd = std::env::current_dir()?;
 
+    let path = Path::new(args);
+    if change_directory::change_directory(context, path).is_ok() {
+        if !context.config_ref().zoxide_update {
+            let cwd = context
+                .tab_context_ref()
+                .curr_tab_ref()
+                .cwd()
+                .to_str()
+                .expect("path cannot be converted to string");
+            zoxide_add(cwd)?;
+        }
+        return Ok(());
+    }
+
     let zoxide_output = Command::new("zoxide")
         .arg("query")
         .arg("--exclude")
         .arg(&cwd)
         .arg("--")
-        .args(args.split(' ').collect::<Vec<&str>>())
+        .args(args.split(' '))
         .output()?;
 
     if zoxide_output.status.success() {
         if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stdout) {
             let zoxide_path = &zoxide_str[..zoxide_str.len() - 1];
-            zoxide_add(zoxide_path)?;
+            if !context.config_ref().zoxide_update {
+                zoxide_add(zoxide_path)?;
+            }
 
             let path = Path::new(zoxide_path);
             context
@@ -37,13 +53,18 @@ pub fn zoxide_query(context: &mut AppContext, args: &str) -> AppResult {
     Ok(())
 }
 
-pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
+pub fn zoxide_query_interactive(
+    context: &mut AppContext,
+    backend: &mut AppBackend,
+    args: &str,
+) -> AppResult {
     backend.terminal_drop();
 
     let zoxide_process = Command::new("zoxide")
         .arg("query")
         .arg("-i")
         .arg("--")
+        .args(args.split(' '))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
@@ -54,7 +75,9 @@ pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut AppBacke
     if zoxide_output.status.success() {
         if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stdout) {
             let zoxide_path = &zoxide_str[..zoxide_str.len() - 1];
-            zoxide_add(zoxide_path)?;
+            if !context.config_ref().zoxide_update {
+                zoxide_add(zoxide_path)?;
+            }
 
             let path = Path::new(zoxide_path);
             context
@@ -70,7 +93,7 @@ pub fn zoxide_query_interactive(context: &mut AppContext, backend: &mut AppBacke
     Ok(())
 }
 
-fn zoxide_add(s: &str) -> io::Result<()> {
+pub fn zoxide_add(s: &str) -> io::Result<()> {
     Command::new("zoxide").arg("add").arg(s).output()?;
     Ok(())
 }

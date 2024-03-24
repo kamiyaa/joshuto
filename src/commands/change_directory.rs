@@ -1,6 +1,6 @@
 use std::path;
 
-use crate::commands::reload;
+use crate::commands::{reload, zoxide};
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::{generate_entries_to_root, DirectoryHistory};
@@ -10,6 +10,10 @@ use crate::util::cwd;
 pub fn cd(path: &path::Path, context: &mut AppContext) -> std::io::Result<()> {
     cwd::set_current_dir(path)?;
     context.tab_context_mut().curr_tab_mut().set_cwd(path);
+    if context.config_ref().zoxide_update {
+        debug_assert!(path.is_absolute());
+        zoxide::zoxide_add(path.to_str().expect("cannot convert path to string"))?;
+    }
     Ok(())
 }
 

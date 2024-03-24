@@ -22,12 +22,20 @@ pub fn read_and_execute(
         .suffix(suffix)
         .get_input(backend, context, &mut listener);
 
-    if let Some(s) = user_input {
+    if let Some(mut s) = user_input {
         let mut trimmed = s.trim_start();
         let _ = context.commandline_context_mut().history_mut().add(trimmed);
 
+        let (command, arg) = match trimmed.find(' ') {
+            Some(i) => (&trimmed[..i], &trimmed[i..]),
+            None => (trimmed, ""),
+        };
+
         if let Some(alias) = context.config_ref().cmd_aliases.get(trimmed) {
             trimmed = alias;
+        } else if let Some(alias) = context.config_ref().cmd_aliases.get(command) {
+            s.replace_range(..s.len() - arg.len(), alias);
+            trimmed = &s;
         }
 
         let command = Command::from_str(trimmed)?;
