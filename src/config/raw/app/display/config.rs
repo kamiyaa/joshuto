@@ -43,6 +43,9 @@ pub struct DisplayOptionRaw {
     pub show_icons: bool,
 
     #[serde(default = "default_true")]
+    pub preserve_selection: bool,
+
+    #[serde(default = "default_true")]
     pub tilde_in_titlebar: bool,
 
     #[serde(default, rename = "sort")]
@@ -66,6 +69,7 @@ impl std::default::Default for DisplayOptionRaw {
             show_borders: true,
             show_hidden: false,
             show_icons: false,
+            preserve_selection: true,
             sort_options: SortOptionRaw::default(),
             tilde_in_titlebar: true,
             line_number_style: "none".to_string(),

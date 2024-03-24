@@ -12,11 +12,11 @@ pub fn file_size_to_string(file_size: u64) -> String {
     }
 
     if file_size >= 100.0 {
-        format!("{:>4.0} {}", file_size, FILE_UNITS[index])
+        format!("{:>4.0}{}", file_size, FILE_UNITS[index])
     } else if file_size >= 10.0 {
-        format!("{:>4.1} {}", file_size, FILE_UNITS[index])
+        format!("{:>4.1}{}", file_size, FILE_UNITS[index])
     } else {
-        format!("{:>4.2} {}", file_size, FILE_UNITS[index])
+        format!("{:>4.2}{}", file_size, FILE_UNITS[index])
     }
 }
 
