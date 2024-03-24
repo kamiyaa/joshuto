@@ -1,5 +1,5 @@
 use super::change_directory::change_directory;
-use super::sub_process::current_filenames;
+use super::sub_process::current_files;
 use crate::commands::cursor_move;
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
@@ -26,7 +26,7 @@ pub fn custom_search(
         .command
         .clone();
 
-    let current_filenames = current_filenames(context);
+    let current_filenames: Vec<&str> = current_files(context).iter().map(|f| f.0).collect();
 
     let text = custom_command.replace("%s", &current_filenames.join(" "));
     let text = text.replace(
