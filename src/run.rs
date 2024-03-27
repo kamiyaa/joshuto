@@ -52,7 +52,7 @@ pub fn run_loop(
         new_tab_history.insert_entries(dirlists);
 
         let tab = JoshutoTab::new(curr_path, new_tab_history, tab_display_options)?;
-        context.tab_context_mut().insert_tab(id, tab);
+        context.tab_context_mut().insert_tab(id, tab, true);
 
         // trigger a preview of child
         preview_default::load_preview(context, backend);

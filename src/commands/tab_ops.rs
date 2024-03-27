@@ -97,7 +97,7 @@ pub fn tab_switch_index(context: &mut AppContext, new_index: usize) -> AppResult
         _tab_switch(new_index - 1, context)?;
     } else if new_index > num_tabs {
         for _ in 0..(new_index - num_tabs) {
-            new_tab(context, &NewTabMode::Default)?;
+            new_tab(context, &NewTabMode::Default, true)?;
         }
         _tab_switch(new_index - 1, context)?;
     }
@@ -115,7 +115,7 @@ pub fn new_tab_home_path(context: &AppContext) -> path::PathBuf {
     }
 }
 
-pub fn new_tab(context: &mut AppContext, mode: &NewTabMode) -> AppResult {
+pub fn new_tab(context: &mut AppContext, mode: &NewTabMode, last: bool) -> AppResult {
     let new_tab_path = match mode {
         NewTabMode::Default => Ok(new_tab_home_path(context)),
         NewTabMode::CurrentTabDir => {
@@ -172,8 +172,13 @@ pub fn new_tab(context: &mut AppContext, mode: &NewTabMode) -> AppResult {
             .default_tab_display_option
             .clone();
         let tab = JoshutoTab::new(new_tab_path, new_tab_history, tab_display_options)?;
-        context.tab_context_mut().insert_tab(id, tab);
-        let new_index = context.tab_context_ref().len() - 1;
+        context.tab_context_mut().insert_tab(id, tab, last);
+        let new_index = if last {
+            context.tab_context_ref().len() - 1
+        } else {
+            context.tab_context_ref().index + 1
+        };
+
         context.tab_context_mut().index = new_index;
         _tab_switch(new_index, context)?;
         Ok(())

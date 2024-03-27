@@ -237,7 +237,7 @@ All methods (except `reverse`) support the `--reverse` flag:
 
 ## Tabs
 
-### `new_tab [--current][--cursor][dir]`: opens a new tab
+### `new_tab [--last] [--current|--cursor|dir]`: opens a new tab
 
 - `new_tab`, without any argument, opens a new tab with the default directory.
 
@@ -246,6 +246,8 @@ All methods (except `reverse`) support the `--reverse` flag:
 - `new_tab some-dir` opens new tab with directory `some-dir`
 - `new_tab --current` opens new tab with the same directory as the current tab
 - `new_tab --cursor` opens new tab with the directory which is currently marked by the cursor
+- `new_tab --last` new tab will be placed at the end of the stack.
+  This is the only flag that can be combined with the others described above.
 
 ### `close_tab`: close current tab
 

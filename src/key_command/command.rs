@@ -171,6 +171,7 @@ pub enum Command {
 
     NewTab {
         mode: NewTabMode,
+        last: bool,
     },
     CloseTab,
     TabSwitch {
