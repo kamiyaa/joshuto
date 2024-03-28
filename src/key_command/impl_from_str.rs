@@ -124,7 +124,7 @@ impl std::str::FromStr for Command {
                 _ => Ok(Self::Quit(QuitAction::Noop)),
             }
         } else if command == CMD_NEW_TAB {
-            let new_arg = arg.split("--last").collect::<Vec<_>>().join(" ");
+            let new_arg = arg.split(" --last").collect::<Vec<_>>().join("");
             let last = arg != new_arg;
 
             Ok(Self::NewTab {
