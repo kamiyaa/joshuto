@@ -124,8 +124,16 @@ impl std::str::FromStr for Command {
                 _ => Ok(Self::Quit(QuitAction::Noop)),
             }
         } else if command == CMD_NEW_TAB {
-            let new_arg = arg.split(" --last").collect::<Vec<_>>().join("");
-            let last = arg != new_arg;
+            let mut new_arg = arg.to_string();
+            let mut last = false;
+
+            for arg in arg.split_whitespace() {
+                if arg == "--last" {
+                    new_arg = new_arg.split("--last").collect();
+                    last = true;
+                    break;
+                }
+            }
 
             Ok(Self::NewTab {
                 mode: NewTabMode::from_str(&new_arg),
