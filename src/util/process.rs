@@ -60,7 +60,7 @@ where
 
     if entry.get_pager() {
         println!("{}", termion::clear::All);
-        let pager_env = std::env::var("PAGER").unwrap_or_else(|_| String::from("less"));
+        let pager_env = std::env::var("PAGER").unwrap_or_else(|_| String::from("tail"));
         let pager_args: Vec<&str> = pager_env.split_whitespace().collect();
 
         if let Some(child_stdout) = command
@@ -74,9 +74,13 @@ where
                 .stdin(child_stdout)
                 .status()?;
         }
+        command.status()?;
+    } else {
+        let _ = command.status()?;
+        if entry.get_confirm_exit() {
+            wait_for_enter()?;
+        }
     }
-    command.status()?;
-
     Ok(())
 }
 
