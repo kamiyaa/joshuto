@@ -73,7 +73,7 @@ fn execute_sub_process(
                     } else {
                         Err(std::io::Error::new(
                             std::io::ErrorKind::Other,
-                            format!("Command failed with {:?}", status),
+                            format!("Command failed with {}", status),
                         ))
                     }
                 }
@@ -101,7 +101,7 @@ fn execute_sub_process(
             } else {
                 Err(std::io::Error::new(
                     std::io::ErrorKind::Other,
-                    format!("Command failed with {:?}", output.status),
+                    format!("Command failed with {}", output.status),
                 ))
             }
         }
