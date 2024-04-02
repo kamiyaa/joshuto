@@ -7,6 +7,7 @@ pub enum ConfigType {
     Preview,
     Bookmarks,
     Icons,
+    StateContext,
 }
 
 impl std::fmt::Display for ConfigType {
@@ -35,6 +36,7 @@ impl ConfigType {
             Self::Preview,
             Self::Bookmarks,
             Self::Icons,
+            Self::StateContext,
         ]
     }
 
@@ -47,6 +49,7 @@ impl ConfigType {
             Self::Preview => "preview",
             Self::Bookmarks => "bookmarks",
             Self::Icons => "icons",
+            Self::StateContext => "state_context",
         }
     }
 
@@ -59,6 +62,7 @@ impl ConfigType {
             Self::Preview => "preview.toml",
             Self::Bookmarks => "bookmarks.toml",
             Self::Icons => "icons.toml",
+            Self::StateContext => "state_context.toml"
         }
     }
 
@@ -69,7 +73,7 @@ impl ConfigType {
             Self::Keymap => Some(clean::keymap::DEFAULT_CONFIG_FILE_PATH),
             Self::Theme => Some(clean::theme::DEFAULT_CONFIG_FILE_PATH),
             Self::Icons => Some(clean::icon::DEFAULT_CONFIG_FILE_PATH),
-            Self::Mimetype | Self::Preview | Self::Bookmarks => None,
+            Self::Mimetype | Self::Preview | Self::Bookmarks | Self::StateContext => None,
         }
     }
 }

@@ -31,6 +31,11 @@ impl AppCommand for Command {
             Self::SymlinkFiles { .. } => CMD_SYMLINK_FILES,
             Self::PasteFiles { .. } => CMD_PASTE_FILES,
 
+            Self::CutFilesExport => CMD_CUT_FILES_EXPORT,
+            Self::CopyFilesExport => CMD_COPY_FILES_EXPORT,
+            Self::SymlinkFilesExport { .. } => CMD_SYMLINK_FILES_EXPORT,
+            Self::PasteFilesImport { .. } => CMD_PASTE_FILES_IMPORT,
+
             Self::DeleteFiles { .. } => CMD_DELETE_FILES,
 
             Self::CursorMoveUp { .. } => CMD_CURSOR_MOVE_UP,

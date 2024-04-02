@@ -1,11 +1,26 @@
-use std::io;
+use std::fs::{self, File};
+use std::io::{self, Read};
+use std::io::Write;
+use std::path;
 use std::process::{Command, Stdio};
 
+use crate::config::{search_directories, ConfigType};
 use crate::context::{AppContext, LocalStateContext};
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
-fn new_local_state(context: &mut AppContext, file_op: FileOperation) -> Option<()> {
+use crate::{BOOKMARKS_T, CONFIG_HIERARCHY};
+
+fn find_state_context_file() -> Option<path::PathBuf> {
+    for p in CONFIG_HIERARCHY.iter() {
+        if p.exists() {
+            return Some(p.clone());
+        }
+    }
+    None
+}
+
+fn new_local_state(context: &mut AppContext, file_op: FileOperation) -> Option<LocalStateContext> {
     let list = context.tab_context_ref().curr_tab_ref().curr_list_ref()?;
     let selected = list.get_selected_paths();
 
@@ -13,27 +28,45 @@ fn new_local_state(context: &mut AppContext, file_op: FileOperation) -> Option<(
     local_state.set_paths(selected.into_iter());
     local_state.set_file_op(file_op);
 
-    context.set_local_state(local_state);
-    Some(())
+    Some(local_state)
 }
 
 pub fn cut(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Cut);
+    let local_state = new_local_state(context, FileOperation::Cut).unwrap_or(LocalStateContext::new());
+    context.set_local_state(local_state);
     Ok(())
 }
 
 pub fn copy(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Copy);
+    let local_state = new_local_state(context, FileOperation::Copy).unwrap_or(LocalStateContext::new());
+    context.set_local_state(local_state);
     Ok(())
 }
 
 pub fn symlink_absolute(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Symlink { relative: false });
+    let local_state = new_local_state(context, FileOperation::Symlink { relative: false }).unwrap_or(LocalStateContext::new());
+    context.set_local_state(local_state);
     Ok(())
 }
 
 pub fn symlink_relative(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Symlink { relative: true });
+    let local_state = new_local_state(context, FileOperation::Symlink { relative: true }).unwrap_or(LocalStateContext::new());
+    context.set_local_state(local_state);
+    Ok(())
+}
+
+pub fn save_local_state(local_state: &LocalStateContext) -> AppResult {
+    let local_state_path = match search_directories(ConfigType::StateContext.as_filename(), &CONFIG_HIERARCHY) {
+        Some(file_path) => Some(file_path),
+        None => find_state_context_file(),
+    };
+
+    if let Some(local_state_path) = local_state_path {
+        if let Ok(content) = toml::to_string(&local_state) {
+            let mut file = File::create(local_state_path)?;
+            file.write_all(content.as_bytes())?;
+        }
+    }
     Ok(())
 }
 
@@ -51,6 +84,48 @@ pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> AppResu
         )),
     }
 }
+
+pub fn cut_export(context: &mut AppContext) -> AppResult {
+    let local_state = new_local_state(context, FileOperation::Cut).unwrap_or(LocalStateContext::new());
+    let _ = save_local_state(&local_state);
+    Ok(())
+}
+
+pub fn copy_export(context: &mut AppContext) -> AppResult {
+    let local_state = new_local_state(context, FileOperation::Copy).unwrap_or(LocalStateContext::new());
+    let _ = save_local_state(&local_state);
+    Ok(())
+}
+pub fn symlink_absolute_export(context: &mut AppContext) -> AppResult {
+    let local_state = new_local_state(context, FileOperation::Symlink { relative: false }).unwrap_or(LocalStateContext::new());
+    let _ = save_local_state(&local_state);
+    Ok(())
+}
+
+pub fn symlink_relative_export(context: &mut AppContext) -> AppResult {
+    let local_state = new_local_state(context, FileOperation::Symlink { relative: true }).unwrap_or(LocalStateContext::new());
+    let _ = save_local_state(&local_state);
+    Ok(())
+}
+
+pub fn paste_import(context: &mut AppContext, options: FileOperationOptions) -> AppResult {
+
+    let local_state_path = match search_directories(ConfigType::StateContext.as_filename(), &CONFIG_HIERARCHY) {
+        Some(file_path) => Some(file_path),
+        None => find_state_context_file(),
+    };
+
+    if let Some(local_state_path) = local_state_path {
+        let file_contents = fs::read_to_string(&local_state_path)?;
+        let local_state = toml::from_str::<LocalStateContext>(&file_contents).unwrap();
+
+        let dest = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+        let worker_thread = IoWorkerThread::new(local_state.file_op, local_state.paths, dest, options);
+        context.worker_context_mut().push_worker(worker_thread);
+    }
+    Ok(())
+}
+
 
 pub fn copy_filename(context: &mut AppContext) -> AppResult {
     let entry_file_name = context

@@ -1,8 +1,10 @@
 use crate::io::FileOperation;
+use serde::{Serialize, Deserialize};
 
 use std::iter::Iterator;
 use std::path;
 
+#[derive(Serialize, Deserialize)]
 pub struct LocalStateContext {
     pub paths: Vec<path::PathBuf>,
     pub file_op: FileOperation,

@@ -40,16 +40,23 @@ impl CommandComment for Command {
                 _ => "Open a command line",
             },
 
-            Self::CutFiles => "Cut selected files",
-            Self::CopyFiles => "Copy selected files",
+            Self::CutFiles | Self::CutFilesExport => "Cut selected files",
+            Self::CopyFiles | Self::CopyFilesExport => "Copy selected files",
             Self::CopyFileName => "Copy filename",
             Self::CopyFileNameWithoutExtension => "Copy filename without extension",
             Self::CopyFilePath { all_selected: true } => "Copy all selected paths to file",
             Self::CopyFilePath { .. } => "Copy path to file",
             Self::CopyDirPath => "Copy directory name",
-            Self::SymlinkFiles { .. } => "Symlink selected files",
+            Self::SymlinkFiles { .. } | Self::SymlinkFilesExport { .. } => "Symlink selected files",
 
             Self::PasteFiles {
+                options:
+                    FileOperationOptions {
+                        overwrite,
+                        skip_exist,
+                        ..
+                    },
+            } | Self::PasteFilesImport {
                 options:
                     FileOperationOptions {
                         overwrite,

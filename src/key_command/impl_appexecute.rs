@@ -50,6 +50,12 @@ impl AppExecute for Command {
             Self::SymlinkFiles { relative: false } => file_ops::symlink_absolute(context),
             Self::PasteFiles { options } => file_ops::paste(context, *options),
 
+            Self::CutFilesExport => file_ops::cut_export(context),
+            Self::CopyFilesExport => file_ops::copy_export(context),
+            Self::SymlinkFilesExport { relative: true } => file_ops::symlink_relative_export(context),
+            Self::SymlinkFilesExport { relative: false } => file_ops::symlink_absolute_export(context),
+            Self::PasteFilesImport { options } => file_ops::paste_import(context, *options),
+
             Self::DeleteFiles {
                 background,
                 permanently,
