@@ -39,6 +39,8 @@ pub struct AppConfigRaw {
     #[serde(default = "default_true")]
     pub mouse_support: bool,
     #[serde(default)]
+    pub zoxide_update: bool,
+    #[serde(default)]
     pub cmd_aliases: HashMap<String, String>,
     #[serde(default, rename = "display")]
     pub display_options: DisplayOptionRaw,

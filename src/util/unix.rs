@@ -56,6 +56,16 @@ pub fn mode_to_string(mode: u32) -> String {
     mode_str
 }
 
+pub fn expand_shell_string_cow(s: &str) -> std::borrow::Cow<'_, str> {
+    let dir = dirs_next::home_dir();
+    let os_str = dir.map(|s| s.as_os_str().to_owned());
+    let context_func = || {
+        let cow_str = os_str.as_ref().map(|s| s.to_string_lossy());
+        cow_str
+    };
+    shellexpand::tilde_with_context(s, context_func)
+}
+
 pub fn expand_shell_string(s: &str) -> path::PathBuf {
     let dir = dirs_next::home_dir();
     let os_str = dir.map(|s| s.as_os_str().to_owned());
