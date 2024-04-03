@@ -14,6 +14,7 @@ Joshuto supports the following options from the command line:
 
 - `--change-directory`: sets the quit behavior to change directory instead of
   noop when closing the last tab
+  - Requires shell script function to work, see [here](https://github.com/kamiyaa/joshuto/blob/main/docs/configuration/keymap.toml.md#quit-quit-joshuto)
 
 - `--output-file <output-file>`: tells joshuto to output data to `<output-file>`.
   - This is usually used so programs can know how to behave after joshuto exits.
