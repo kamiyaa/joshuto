@@ -3,8 +3,8 @@ use std::process::{Command, Stdio};
 use std::str::from_utf8;
 
 use crate::config::clean::app::search::CaseSensitivity;
-use crate::context::AppContext;
 use crate::context::remove_external_preview;
+use crate::context::AppContext;
 use crate::error::{AppError, AppResult};
 use crate::ui::AppBackend;
 

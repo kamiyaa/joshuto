@@ -1,6 +1,6 @@
 use crate::config::clean::keymap::AppKeyMapping;
-use crate::context::AppContext;
 use crate::context::remove_external_preview;
+use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::event::process_event;
 use crate::event::AppEvent;
