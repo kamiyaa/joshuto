@@ -57,6 +57,7 @@ fn fzf_impl(
     args: Vec<String>,
 ) -> AppResult<String> {
     backend.terminal_drop();
+    context.remove_external_preview();
 
     let mut cmd = Command::new("fzf");
     cmd.stdout(Stdio::piped()).args(&args);

@@ -14,6 +14,7 @@ pub fn show_tasks(
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
     context.flush_event();
+    context.remove_external_preview();
 
     let mut exit = false;
 
