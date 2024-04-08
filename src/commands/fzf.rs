@@ -4,6 +4,7 @@ use std::str::from_utf8;
 
 use crate::config::clean::app::search::CaseSensitivity;
 use crate::context::AppContext;
+use crate::context::remove_external_preview;
 use crate::error::{AppError, AppResult};
 use crate::ui::AppBackend;
 
@@ -51,13 +52,13 @@ pub fn fzf_multi(
 }
 
 fn fzf_impl(
-    _context: &mut AppContext,
+    context: &mut AppContext,
     backend: &mut AppBackend,
     items: Vec<String>,
     args: Vec<String>,
 ) -> AppResult<String> {
+    remove_external_preview(context);
     backend.terminal_drop();
-    context.remove_external_preview();
 
     let mut cmd = Command::new("fzf");
     cmd.stdout(Stdio::piped()).args(&args);
