@@ -62,7 +62,7 @@ jobs:
         with:
           use-cross: ${{ matrix.job.use-cross }}
           command: build
-          args: --offline --release --target=${{ matrix.job.target }}
+          args: --release --target=${{ matrix.job.target }}
       - name: Create tarball
         id: package
         shell: bash
