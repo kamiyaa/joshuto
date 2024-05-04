@@ -116,6 +116,17 @@ max_preview_size = 2097152
 # Executable script for previews
 preview_script = "~/.config/joshuto/preview_file.sh"
 
+# Use thumbnail images according to the freedesktop.org (XDG) standard.
+# (https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html)
+# This only affects Joshuto's internal image-thumbnail feature.
+# It does not affect the hook-script based previews.
+use_xdg_thumbs = true
+
+# The XDG thumb size used for the preview.
+# Allowed values are 'normal', 'large', 'xlarge', and 'xxlarge' with maximum edge lengths
+# of 128 px, 256 px, 512 px, and 1024 px respectively.
+xdg_thumb_size = "xlarge"
+
 # Configurations related to searching and selecting files
 [search]
 # Different case sensitivities for operations using substring matching
