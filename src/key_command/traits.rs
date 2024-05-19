@@ -3,6 +3,8 @@ use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::ui::AppBackend;
 
+pub use super::impl_completion::CompletionKind;
+
 pub trait AppExecute {
     fn execute(
         &self,
@@ -32,4 +34,8 @@ pub trait AppCommand: AppExecute + std::fmt::Display + std::fmt::Debug {
 
 pub trait CommandComment {
     fn comment(&self) -> &'static str;
+}
+
+pub trait Completion {
+    fn completion_kind(cmd: &str) -> Option<CompletionKind>;
 }
