@@ -45,6 +45,15 @@ pub enum Command {
         options: FileOperationOptions,
     },
 
+    CutFilesExport,
+    CopyFilesExport,
+    SymlinkFilesExport {
+        relative: bool,
+    },
+    PasteFilesImport {
+        options: FileOperationOptions,
+    },
+
     DeleteFiles {
         background: bool,
         permanently: bool,

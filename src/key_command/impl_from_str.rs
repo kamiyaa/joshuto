@@ -74,6 +74,8 @@ impl std::str::FromStr for Command {
 
         simple_command_conversion_case!(command, CMD_CUT_FILES, Self::CutFiles);
         simple_command_conversion_case!(command, CMD_COPY_FILES, Self::CopyFiles);
+        simple_command_conversion_case!(command, CMD_CUT_FILES_EXPORT, Self::CutFilesExport);
+        simple_command_conversion_case!(command, CMD_COPY_FILES_EXPORT, Self::CopyFilesExport);
         simple_command_conversion_case!(command, CMD_COPY_FILENAME, Self::CopyFileName);
         simple_command_conversion_case!(
             command,
@@ -245,6 +247,21 @@ impl std::str::FromStr for Command {
                 }
             }
             Ok(Self::SymlinkFiles { relative })
+        } else if command == CMD_SYMLINK_FILES_EXPORT {
+            let mut relative = false;
+            for arg in arg.split_whitespace() {
+                match arg {
+                    "--relative=true" => relative = true,
+                    "--relative=false" => relative = false,
+                    _ => {
+                        return Err(AppError::new(
+                            AppErrorKind::UnrecognizedArgument,
+                            format!("{}: unknown option '{}'", command, arg),
+                        ));
+                    }
+                }
+            }
+            Ok(Self::SymlinkFilesExport { relative })
         } else if command == CMD_COPY_FILEPATH {
             let mut all_selected = false;
             for arg in arg.split_whitespace() {
@@ -277,6 +294,23 @@ impl std::str::FromStr for Command {
                 }
             }
             Ok(Self::PasteFiles { options })
+        } else if command == CMD_PASTE_FILES_IMPORT {
+            let mut options = FileOperationOptions::default();
+            for arg in arg.split_whitespace() {
+                match arg {
+                    "--overwrite=true" => options.overwrite = true,
+                    "--skip_exist=true" => options.skip_exist = true,
+                    "--overwrite=false" => options.overwrite = false,
+                    "--skip_exist=false" => options.skip_exist = false,
+                    _ => {
+                        return Err(AppError::new(
+                            AppErrorKind::UnrecognizedArgument,
+                            format!("{}: unknown option '{}'", command, arg),
+                        ));
+                    }
+                }
+            }
+            Ok(Self::PasteFilesImport { options })
         } else if command == CMD_DELETE_FILES {
             let [mut permanently, mut background, mut noconfirm] = [false; 3];
             for arg in arg.split_whitespace() {

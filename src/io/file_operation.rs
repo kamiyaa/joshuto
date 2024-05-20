@@ -1,6 +1,7 @@
 use std::path;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum FileOperation {
     Cut,
     Copy,
