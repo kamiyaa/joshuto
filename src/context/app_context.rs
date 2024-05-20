@@ -12,6 +12,7 @@ use crate::event::{AppEvent, Events};
 use crate::preview::preview_file::PreviewFileState;
 use crate::ui::AppBackend;
 use crate::Args;
+use allmytoes::{AMTConfiguration, AMT};
 use notify::{RecursiveMode, Watcher};
 use ratatui_image::picker::Picker;
 use std::path;
@@ -88,6 +89,12 @@ impl AppContext {
         let watched_paths = HashSet::with_capacity(3);
 
         let preview_script = config.preview_options_ref().preview_script.clone();
+        let allmytoes = if config.preview_options_ref().use_xdg_thumbs {
+            Some(AMT::new(&AMTConfiguration::default()))
+        } else {
+            None
+        };
+        let xdg_thumb_size = config.preview_options_ref().xdg_thumb_size;
 
         Self {
             quit: QuitAction::DoNot,
@@ -99,7 +106,13 @@ impl AppContext {
             search_context: None,
             message_queue: MessageQueue::new(),
             worker_context: WorkerContext::new(event_tx.clone()),
-            preview_context: PreviewContext::new(picker, preview_script, event_tx),
+            preview_context: PreviewContext::new(
+                picker,
+                preview_script,
+                allmytoes,
+                xdg_thumb_size,
+                event_tx,
+            ),
             ui_context: UiContext { layout: vec![] },
             commandline_context,
             watcher,
