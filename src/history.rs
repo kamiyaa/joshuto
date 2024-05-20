@@ -121,8 +121,15 @@ pub fn create_dirlist_with_history(
         );
         for entry in contents.iter_mut() {
             if let Some(former_entry) = former_entries_by_file_name.get(entry.file_name()) {
-                entry.set_permanent_selected(former_entry.is_permanent_selected());
-                entry.set_visual_mode_selected(former_entry.is_visual_mode_selected());
+                if options._preserve_selection {
+                    entry.set_mark_cut_selected(former_entry.is_marked_cut());
+                    entry.set_mark_copy_selected(former_entry.is_marked_copy());
+                    entry.set_mark_sym_selected(former_entry.is_marked_sym());
+                    entry.set_permanent_selected(former_entry.is_permanent_selected());
+                    entry.set_visual_mode_selected(former_entry.is_visual_mode_selected());
+                } else {
+                    entry.set_all_selected(false);
+                }
             }
         }
     }

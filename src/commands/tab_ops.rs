@@ -233,6 +233,29 @@ pub fn reload_all_tabs(context: &mut AppContext, curr_path: &Path) -> io::Result
     Ok(())
 }
 
+pub fn reload_all_tabs_no_preserve(context: &mut AppContext, curr_path: &Path) -> io::Result<()> {
+    let mut map = HashMap::new();
+    {
+        let mut display_options = context.config_ref().display_options_clone();
+        display_options._preserve_selection = false;
+
+        for (id, tab) in context.tab_context_ref().iter() {
+            let tab_options = tab.option_ref();
+            let history = tab.history_ref();
+            let dirlist =
+                create_dirlist_with_history(history, curr_path, &display_options, tab_options)?;
+            map.insert(*id, dirlist);
+        }
+    }
+
+    for (id, dirlist) in map {
+        if let Some(tab) = context.tab_context_mut().tab_mut(&id) {
+            tab.history_mut().insert(curr_path.to_path_buf(), dirlist);
+        }
+    }
+    Ok(())
+}
+
 pub fn remove_entry_from_all_tabs(context: &mut AppContext, curr_path: &Path) {
     for (_, tab) in context.tab_context_mut().iter_mut() {
         tab.history_mut().remove(curr_path);
