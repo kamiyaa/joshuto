@@ -293,6 +293,7 @@ All methods (except `reverse`) support the `--reverse` flag:
   - `gio trash`
   - `trash-put`: https://github.com/andreafrancia/trash-cli
   - `trash`
+  - `gtrash put`
 
 ### `rename`: rename the current file the cursor is on
 
