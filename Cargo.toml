@@ -48,6 +48,7 @@ unicode-width = "^0"
 walkdir = "^2"
 whoami = "^1"
 xdg = "^2"
+bytesize = "1.3.0"
 
 [dependencies.nix]
 version = "^0"

@@ -110,8 +110,8 @@ reverse = false
 # Configurations related to preview
 [preview]
 
-# Maximum preview file size in bytes
-max_preview_size = 2097152
+# Maximum preview file size in bytes, can be a string like "2MiB(2097152)", "2MB(2000000)" or integer like 2097152
+max_preview_size = "2MiB"
 
 # Executable script for previews
 preview_script = "~/.config/joshuto/preview_file.sh"
