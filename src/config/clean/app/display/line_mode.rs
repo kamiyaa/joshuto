@@ -12,14 +12,14 @@ impl LineMode {
             mode: [
                 LineModeArgs::Size,
                 LineModeArgs::ModifyTime,
+                LineModeArgs::AccessTime,
+                LineModeArgs::BirthTime,
                 LineModeArgs::User,
                 LineModeArgs::Group,
                 LineModeArgs::Permission,
                 LineModeArgs::Null,
-                LineModeArgs::BirthTime,
-                LineModeArgs::AccessTime,
             ],
-            size: 5,
+            size: 7,
         }
     }
 
@@ -44,8 +44,8 @@ impl LineMode {
 pub enum LineModeArgs {
     Size,
     ModifyTime,
-    BirthTime,  // unsupport now
-    AccessTime, // unsupport now
+    AccessTime,
+    BirthTime,
     User,
     Group,
     Permission,
@@ -58,8 +58,8 @@ impl AsRef<str> for LineModeArgs {
         match self {
             LineModeArgs::Size => "size",
             LineModeArgs::ModifyTime => "mtime",
-            LineModeArgs::BirthTime => "ctime",
             LineModeArgs::AccessTime => "atime",
+            LineModeArgs::BirthTime => "ctime",
             LineModeArgs::User => "user",
             LineModeArgs::Group => "group",
             LineModeArgs::Permission => "perm",
@@ -83,27 +83,25 @@ impl LineMode {
             "all" => Ok(LineMode::all()),
             "none" => Ok(LineMode::empty()),
             _ => {
-                let mut flags = name.split('|');
-
                 let mut line_mode = LineMode::empty();
 
-                flags.try_for_each(|flag| {
-                    match flag.trim() {
+                for mode in name.split('|').map(|mode| mode.trim()) {
+                    match mode {
                         "size" => line_mode.add_mode(LineModeArgs::Size),
                         "mtime" => line_mode.add_mode(LineModeArgs::ModifyTime),
+                        "atime" => line_mode.add_mode(LineModeArgs::AccessTime),
+                        "btime" => line_mode.add_mode(LineModeArgs::BirthTime),
                         "user" => line_mode.add_mode(LineModeArgs::User),
                         "group" => line_mode.add_mode(LineModeArgs::Group),
                         "perm" => line_mode.add_mode(LineModeArgs::Permission),
-                        flag => {
+                        e => {
                             return Err(AppError::new(
                                 AppErrorKind::InvalidParameters,
-                                format!("Linemode '{}' unknown.", flag),
+                                format!("Linemode '{}' unknown.", e),
                             ))
                         }
                     }
-
-                    Ok(())
-                })?;
+                }
 
                 Ok(line_mode)
             }

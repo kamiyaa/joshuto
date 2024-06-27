@@ -11,7 +11,7 @@ use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
 use crate::config::clean::app::AppConfig;
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
-use crate::util::format::mtime_to_string;
+use crate::util::format::time_to_string;
 use crate::util::string::UnicodeTruncate;
 use crate::util::style;
 use crate::util::{format, unix};
@@ -142,12 +142,13 @@ fn display_line_mode(mode: LineMode, entry: &JoshutoDirEntry) -> String {
         .take(mode.size)
         .map(|arg| match arg {
             LineModeArgs::Size => get_entry_size_string(entry),
-            LineModeArgs::ModifyTime => mtime_to_string(metadata.modified()),
+            LineModeArgs::ModifyTime => time_to_string(metadata.modified()),
+            LineModeArgs::AccessTime => time_to_string(metadata.accessed()),
+            LineModeArgs::BirthTime => time_to_string(metadata.created()),
             LineModeArgs::User => unix::uid_to_string(metadata.uid).unwrap_or("unknown".into()),
             LineModeArgs::Group => unix::gid_to_string(metadata.gid).unwrap_or("unknown".into()),
             LineModeArgs::Permission => unix::mode_to_string(metadata.mode),
             LineModeArgs::Null => unreachable!(),
-            _ => unimplemented!(),
         })
         .collect::<Vec<String>>()
         .join(" ")
@@ -194,11 +195,8 @@ fn print_entry(
 
     // factor left_label and right_label
     let drawing_width = drawing_width - prefix_width;
-    let (left_label, right_label) = factor_labels_for_entry(
-        &left_label_original,
-        right_label_original.as_str(),
-        drawing_width,
-    );
+    let (left_label, right_label) =
+        factor_labels_for_entry(left_label_original, right_label_original, drawing_width);
 
     // Draw labels
     buf.set_stringn(x, y, left_label, drawing_width, style);
@@ -211,11 +209,11 @@ fn print_entry(
     );
 }
 
-fn factor_labels_for_entry<'a>(
-    left_label_original: &'a str,
-    right_label_original: &'a str,
+fn factor_labels_for_entry(
+    left_label_original: String,
+    right_label_original: String,
     drawing_width: usize,
-) -> (String, &'a str) {
+) -> (String, String) {
     let left_label_original_width = left_label_original.width();
     let right_label_original_width = right_label_original.width();
 
@@ -223,21 +221,25 @@ fn factor_labels_for_entry<'a>(
     let width_remainder = left_width_remainder - left_label_original_width as i32;
 
     if drawing_width == 0 {
-        ("".to_string(), "")
+        ("".into(), "".into())
     } else if width_remainder >= 0 {
         (left_label_original.to_string(), right_label_original)
     } else if left_width_remainder < MIN_LEFT_LABEL_WIDTH {
         (
             if left_label_original.width() as i32 <= left_width_remainder {
-                trim_file_label(left_label_original, drawing_width)
+                trim_file_label(&left_label_original, drawing_width)
             } else {
                 left_label_original.to_string()
             },
-            "",
+            right_label_original
+                .chars()
+                .take(drawing_width - MIN_LEFT_LABEL_WIDTH as usize - 3)
+                .collect::<String>()
+                + " ..",
         )
     } else {
         (
-            trim_file_label(left_label_original, left_width_remainder as usize),
+            trim_file_label(&left_label_original, left_width_remainder as usize),
             right_label_original,
         )
     }
@@ -284,8 +286,8 @@ mod test_factor_labels {
         let left = "foo.ext";
         let right = "right";
         assert_eq!(
-            ("".to_string(), ""),
-            factor_labels_for_entry(left, right, 0)
+            ("".to_string(), "".to_string()),
+            factor_labels_for_entry(left.into(), right.into(), 0)
         );
     }
 
@@ -294,8 +296,8 @@ mod test_factor_labels {
         let left = "foo.ext";
         let right = "right";
         assert_eq!(
-            (left.to_string(), right),
-            factor_labels_for_entry(left, right, 20)
+            (left.to_string(), right.to_string()),
+            factor_labels_for_entry(left.into(), right.into(), 20)
         );
     }
 
@@ -304,8 +306,8 @@ mod test_factor_labels {
         let left = "foo.ext";
         let right = "right";
         assert_eq!(
-            (left.to_string(), right),
-            factor_labels_for_entry(left, right, 12)
+            (left.to_string(), right.to_string()),
+            factor_labels_for_entry(left.into(), right.into(), 12)
         );
     }
 
@@ -315,8 +317,8 @@ mod test_factor_labels {
         let right = "right";
         assert!(left.chars().count() as i32 == MIN_LEFT_LABEL_WIDTH);
         assert_eq!(
-            ("foobarbazfo.ext".to_string(), ""),
-            factor_labels_for_entry(left, right, MIN_LEFT_LABEL_WIDTH as usize)
+            ("foobarbazfo.ext".to_string(), "".to_string()),
+            factor_labels_for_entry(left.into(), right.into(), MIN_LEFT_LABEL_WIDTH as usize)
         );
     }
 
@@ -326,10 +328,10 @@ mod test_factor_labels {
         let right = "right";
         assert!(left.chars().count() as i32 > MIN_LEFT_LABEL_WIDTH + right.chars().count() as i32);
         assert_eq!(
-            ("foobarbazf….ext".to_string(), right),
+            ("foobarbazf….ext".to_string(), right.to_string()),
             factor_labels_for_entry(
-                left,
-                right,
+                left.into(),
+                right.into(),
                 MIN_LEFT_LABEL_WIDTH as usize + right.chars().count()
             )
         );
@@ -343,8 +345,8 @@ mod test_factor_labels {
         let right = "right";
         assert!(left.chars().count() as i32 > MIN_LEFT_LABEL_WIDTH);
         assert_eq!(
-            ("foooooobaaaaaaarbaaaa…".to_string(), right),
-            factor_labels_for_entry(left, right, left.chars().count())
+            ("foooooobaaaaaaarbaaaa…".to_string(), right.to_string()),
+            factor_labels_for_entry(left.into(), right.into(), left.chars().count())
         );
     }
 }
