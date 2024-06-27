@@ -12,14 +12,14 @@ impl LineMode {
             mode: [
                 LineModeArgs::Size,
                 LineModeArgs::ModifyTime,
-                LineModeArgs::BirthTime,
-                LineModeArgs::AccessTime,
                 LineModeArgs::User,
                 LineModeArgs::Group,
                 LineModeArgs::Permission,
                 LineModeArgs::Null,
+                LineModeArgs::BirthTime,
+                LineModeArgs::AccessTime,
             ],
-            size: 7,
+            size: 5,
         }
     }
 
@@ -44,8 +44,8 @@ impl LineMode {
 pub enum LineModeArgs {
     Size,
     ModifyTime,
-    BirthTime, // unsupport now
-    AccessTime,// unsupport now
+    BirthTime,  // unsupport now
+    AccessTime, // unsupport now
     User,
     Group,
     Permission,
