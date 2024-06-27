@@ -52,7 +52,7 @@ impl<'a> Widget for TuiFooter<'a> {
                 let user_str = unix::uid_to_string(entry.metadata.uid).unwrap_or("unknown".into());
                 let group_str = unix::gid_to_string(entry.metadata.gid).unwrap_or("unknown".into());
 
-                let mtime_str = format::mtime_to_string(entry.metadata.modified());
+                let mtime_str = format::time_to_string(entry.metadata.modified());
                 let size_str = format::file_size_to_string(entry.metadata.len());
 
                 let path = self.dirlist.file_path();
