@@ -231,11 +231,11 @@ fn factor_labels_for_entry(
             } else {
                 left_label_original.to_string()
             },
-            right_label_original
-                .chars()
-                .take(drawing_width - MIN_LEFT_LABEL_WIDTH as usize - 3)
-                .collect::<String>()
-                + " ..",
+            if let Some(width) = (drawing_width - MIN_LEFT_LABEL_WIDTH as usize).checked_sub(3) {
+                right_label_original.chars().take(width).collect::<String>() + " .."
+            } else {
+                "".into()
+            },
         )
     } else {
         (
