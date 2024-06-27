@@ -5,12 +5,13 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::config::clean::app::display::line_mode::LineMode;
+use crate::config::clean::app::display::line_mode::{LineMode, LineModeArgs};
 use crate::config::clean::app::display::line_number::LineNumberStyle;
 use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::config::clean::app::display::DisplayOption;
 use crate::config::clean::app::AppConfig;
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
+use crate::util::format::mtime_to_string;
 use crate::util::string::UnicodeTruncate;
 use crate::util::style;
 use crate::util::{format, unix};
@@ -133,6 +134,25 @@ fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
     }
 }
 
+fn display_line_mode(mode: LineMode, entry: &JoshutoDirEntry) -> String {
+    let metadata = &entry.metadata;
+
+    mode.mode
+        .iter()
+        .take(mode.size)
+        .map(|arg| match arg {
+            LineModeArgs::Size => get_entry_size_string(entry),
+            LineModeArgs::ModifyTime => mtime_to_string(metadata.modified()),
+            LineModeArgs::User => unix::uid_to_string(metadata.uid).unwrap_or("unknown".into()),
+            LineModeArgs::Group => unix::gid_to_string(metadata.gid).unwrap_or("unknown".into()),
+            LineModeArgs::Permission => unix::mode_to_string(metadata.mode),
+            LineModeArgs::Null => unreachable!(),
+            _ => unimplemented!(),
+        })
+        .collect::<Vec<String>>()
+        .join(" ")
+}
+
 #[allow(clippy::too_many_arguments)]
 fn print_entry(
     config: &AppConfig,
@@ -164,22 +184,8 @@ fn print_entry(
     let label = name.to_string();
 
     let left_label_original = label;
-    let right_label_original = format!(
-        " {}{} ",
-        symlink_string,
-        linemode
-            .iter_names()
-            .map(|f| match f.0 {
-                "size" => get_entry_size_string(entry),
-                "mtime" => format::mtime_to_string(entry.metadata.modified()),
-                "user" => unix::uid_to_string(entry.metadata.uid).unwrap_or("unknown".into()),
-                "group" => unix::gid_to_string(entry.metadata.gid).unwrap_or("unknown".into()),
-                "perm" => unix::mode_to_string(entry.metadata.mode),
-                _ => unreachable!(),
-            })
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
+    let right_label_original =
+        format!(" {}{} ", symlink_string, display_line_mode(linemode, entry));
 
     // draw prefix first
     let prefix_width = prefix.width();
