@@ -1,4 +1,4 @@
-use rustyline::completion::Pair;
+use lazy_static::lazy_static;
 
 pub const CMD_COMMAND_LINE: &str = ":";
 
@@ -8,8 +8,8 @@ macro_rules! cmd_constants {
             pub const $cmd_name: &str = $cmd_value;
         )*
 
-        pub fn commands() -> Vec<&'static str> {
-            vec![$($cmd_value,)*]
+        lazy_static! {
+            pub static ref COMMANDS: Vec<&'static str> = vec![$($cmd_name,)*];
         }
     };
 }
@@ -99,14 +99,3 @@ cmd_constants![
     (CMD_CUSTOM_SEARCH, "custom_search"),
     (CMD_CUSTOM_SEARCH_INTERACTIVE, "custom_search_interactive"),
 ];
-
-pub fn complete_command(partial_command: &str) -> Vec<Pair> {
-    commands()
-        .into_iter()
-        .filter(|command| command.starts_with(partial_command))
-        .map(|command| Pair {
-            display: command.to_string(),
-            replacement: command.to_string(),
-        })
-        .collect()
-}

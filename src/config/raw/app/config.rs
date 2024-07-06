@@ -10,9 +10,6 @@ use super::display::DisplayOptionRaw;
 const fn default_true() -> bool {
     true
 }
-const fn default_scroll_offset() -> usize {
-    6
-}
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct CustomCommand {
@@ -22,8 +19,6 @@ pub struct CustomCommand {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AppConfigRaw {
-    #[serde(default = "default_scroll_offset")]
-    pub scroll_offset: usize,
     #[serde(default = "default_true")]
     pub use_trash: bool,
     #[serde(default)]
@@ -38,6 +33,8 @@ pub struct AppConfigRaw {
     pub focus_on_create: bool,
     #[serde(default = "default_true")]
     pub mouse_support: bool,
+    #[serde(default)]
+    pub zoxide_update: bool,
     #[serde(default)]
     pub cmd_aliases: HashMap<String, String>,
     #[serde(default, rename = "display")]

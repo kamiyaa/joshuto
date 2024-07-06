@@ -1,6 +1,6 @@
-use ratatui::text::Span;
-use std::isize;
 use std::path::Path;
+
+use ratatui::text::Span;
 
 use crate::config::clean::theme::tab::TabTheme;
 use crate::util::string::UnicodeTruncate;
@@ -397,11 +397,7 @@ fn factor_tab_bar_sequence(
     tab_bar_elements.insert(0, TabBarElement::ScrollFrontPostfix);
     tab_bar_elements.insert(
         0,
-        TabBarElement::ScrollFront(if let Some(remains) = remaining_left {
-            remains
-        } else {
-            0
-        }),
+        TabBarElement::ScrollFront(remaining_left.unwrap_or_default()),
     );
     tab_bar_elements.insert(0, TabBarElement::ScrollFrontPrefix);
     // padding...
@@ -417,11 +413,7 @@ fn factor_tab_bar_sequence(
     // right scroll tag...
     tab_bar_elements.push(TabBarElement::ScrollBackPrefix);
     tab_bar_elements.push(TabBarElement::ScrollBack(
-        if let Some(remains) = remaining_right {
-            remains
-        } else {
-            0
-        },
+        remaining_right.unwrap_or_default(),
     ));
     tab_bar_elements.push(TabBarElement::ScrollBackPostfix);
 

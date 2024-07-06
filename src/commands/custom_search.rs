@@ -1,5 +1,5 @@
 use super::change_directory::change_directory;
-use super::sub_process::current_filenames;
+use super::sub_process::current_files;
 use crate::commands::cursor_move;
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
@@ -26,7 +26,7 @@ pub fn custom_search(
         .command
         .clone();
 
-    let current_filenames = current_filenames(context);
+    let current_filenames: Vec<&str> = current_files(context).iter().map(|f| f.0).collect();
 
     let text = custom_command.replace("%s", &current_filenames.join(" "));
     let text = text.replace(
@@ -67,7 +67,7 @@ pub fn custom_search(
         let returned_text = std::str::from_utf8(&cmd_result.stdout)
             .map_err(|_| {
                 AppError::new(
-                    AppErrorKind::ParseError,
+                    AppErrorKind::Parse,
                     "Could not get command result as utf8".into(),
                 )
             })?
@@ -77,7 +77,7 @@ pub fn custom_search(
         change_directory(
             context,
             path.parent().ok_or(AppError::new(
-                AppErrorKind::ParseError,
+                AppErrorKind::Parse,
                 "Could not get parent directory".into(),
             ))?,
         )?;
@@ -97,13 +97,13 @@ pub fn custom_search(
     } else {
         let returned_text = std::str::from_utf8(&cmd_result.stderr).map_err(|_| {
             AppError::new(
-                AppErrorKind::ParseError,
+                AppErrorKind::Parse,
                 "Could not get command result as utf8".into(),
             )
         })?;
 
         Err(AppError::new(
-            AppErrorKind::ParseError,
+            AppErrorKind::Parse,
             format!("Command failed: {}", returned_text),
         ))
     }

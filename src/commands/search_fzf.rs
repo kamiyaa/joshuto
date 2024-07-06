@@ -1,5 +1,3 @@
-use std::io;
-
 use crate::commands::{cursor_move, fzf};
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
@@ -22,7 +20,7 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> AppResu
 
     if items.is_empty() {
         return Err(AppError::new(
-            AppErrorKind::Io(io::ErrorKind::InvalidData),
+            AppErrorKind::Io,
             "no files to select".to_string(),
         ));
     }

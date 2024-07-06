@@ -36,6 +36,9 @@ focus_on_create = true
 # The maximum file size to show a preview for
 max_preview_size = 2097152 # 2MB
 
+# Update the zoxide database with every navigation type instead of only with the z command
+zoxide_update = false
+
 # Define custom commands (using shell) with parameters like %text, %s etc.
 custom_commands = [
    { name = "rgfzf", command = "/home/<USER>/.config/joshuto/rgfzf '%text' %s" },
@@ -78,11 +81,13 @@ line_number_style = "none"
 # Options include
 # - size
 # - mtime
+# - atime
+# - btime
 # - user
 # - group
 # - perm
 # - none (can't be combined with other options)
-# - all (can't be combined with other options)
+# - all (same with none, but if there are not enough space to display the whole string, it will be cut off)
 linemode = "size"
 
 # Configurations related to file sorting
@@ -112,6 +117,17 @@ max_preview_size = 2097152
 
 # Executable script for previews
 preview_script = "~/.config/joshuto/preview_file.sh"
+
+# Use thumbnail images according to the freedesktop.org (XDG) standard.
+# (https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html)
+# This only affects Joshuto's internal image-thumbnail feature.
+# It does not affect the hook-script based previews.
+use_xdg_thumbs = true
+
+# The XDG thumb size used for the preview.
+# Allowed values are 'normal', 'large', 'xlarge', and 'xxlarge' with maximum edge lengths
+# of 128 px, 256 px, 512 px, and 1024 px respectively.
+xdg_thumb_size = "xlarge"
 
 # Configurations related to searching and selecting files
 [search]

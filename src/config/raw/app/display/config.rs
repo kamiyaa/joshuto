@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
-use crate::config::clean::app::display::line_mode::LineMode;
+use crate::config::clean::app::display::line_mode::{LineMode, LineModeArgs};
 
 use super::sort::SortOptionRaw;
 
@@ -45,16 +45,13 @@ pub struct DisplayOptionRaw {
     #[serde(default = "default_true")]
     pub preserve_selection: bool,
 
-    #[serde(default = "default_true")]
-    pub tilde_in_titlebar: bool,
-
     #[serde(default, rename = "sort")]
     pub sort_options: SortOptionRaw,
 
     #[serde(default)]
     pub line_number_style: String,
 
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_line_mode")]
     pub linemode: LineMode,
 }
 
@@ -71,9 +68,32 @@ impl std::default::Default for DisplayOptionRaw {
             show_icons: false,
             preserve_selection: true,
             sort_options: SortOptionRaw::default(),
-            tilde_in_titlebar: true,
             line_number_style: "none".to_string(),
             linemode: LineMode::default(),
         }
     }
+}
+
+fn deserialize_line_mode<'de, D>(deserializer: D) -> Result<LineMode, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let line_mode_string: String = Deserialize::deserialize(deserializer)?;
+
+    let mut line_mode = LineMode::empty();
+
+    for mode in line_mode_string.split('|').map(|mode| mode.trim()) {
+        match mode {
+            "size" => line_mode.add_mode(LineModeArgs::Size),
+            "mtime" => line_mode.add_mode(LineModeArgs::ModifyTime),
+            "atime" => line_mode.add_mode(LineModeArgs::AccessTime),
+            "btime" => line_mode.add_mode(LineModeArgs::BirthTime),
+            "user" => line_mode.add_mode(LineModeArgs::User),
+            "group" => line_mode.add_mode(LineModeArgs::Group),
+            "perm" => line_mode.add_mode(LineModeArgs::Permission),
+            e => eprintln!("{e} is an unsupportted line mode, will be ignored"),
+        }
+    }
+
+    Ok(line_mode)
 }

@@ -1,6 +1,6 @@
 use std::env;
 use std::fs;
-use std::io::{self, BufRead, Write};
+use std::io::{BufRead, Write};
 use std::path;
 use std::process;
 
@@ -89,7 +89,7 @@ pub fn _bulk_rename(context: &mut AppContext) -> AppResult {
     }
     if paths_renamed.len() < entries.len() {
         return Err(AppError::new(
-            AppErrorKind::Io(io::ErrorKind::InvalidInput),
+            AppErrorKind::Io,
             "Insufficient inputs".to_string(),
         ));
     }

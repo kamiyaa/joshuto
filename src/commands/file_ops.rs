@@ -1,4 +1,3 @@
-use std::io;
 use std::process::{Command, Stdio};
 
 use crate::context::{AppContext, LocalStateContext};
@@ -92,7 +91,7 @@ fn unmark_and_cancel_all(context: &mut AppContext) -> AppResult {
     });
 
     Err(AppError::new(
-        AppErrorKind::Io(io::ErrorKind::Interrupted),
+        AppErrorKind::Io,
         "File operation cancelled!".to_string(),
     ))
 }
@@ -136,7 +135,7 @@ pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> AppResu
             Ok(())
         }
         _ => Err(AppError::new(
-            AppErrorKind::Io(io::ErrorKind::InvalidData),
+            AppErrorKind::Io,
             "no files selected".to_string(),
         )),
     }
@@ -245,7 +244,7 @@ fn copy_string_to_buffer(string: String) -> AppResult {
         }
     }
     Err(AppError::new(
-        AppErrorKind::ClipboardError,
+        AppErrorKind::Clipboard,
         "Failed to copy to clipboard".to_string(),
     ))
 }

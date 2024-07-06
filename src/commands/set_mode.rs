@@ -8,9 +8,6 @@ use crate::util::unix;
 
 use super::cursor_move;
 
-#[derive(Clone, Debug)]
-pub struct SetMode;
-
 #[allow(clippy::unnecessary_cast)]
 #[cfg(unix)]
 const LIBC_PERMISSION_VALS: [(u32, char); 9] = [

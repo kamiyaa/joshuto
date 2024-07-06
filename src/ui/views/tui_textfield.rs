@@ -1,10 +1,14 @@
+use std::os::unix::fs::MetadataExt;
+use std::path::PathBuf;
 use std::str::FromStr;
+use std::{env, fs};
 
 use rustyline::completion::{Candidate, FilenameCompleter, Pair};
 use rustyline::history::SearchDirection;
 use rustyline::line_buffer::{self, ChangeListener, DeleteListener, Direction, LineBuffer};
 use rustyline::{At, Word};
 
+use lazy_static::lazy_static;
 use ratatui::layout::Rect;
 use ratatui::widgets::Clear;
 use termion::event::{Event, Key};
@@ -13,10 +17,48 @@ use unicode_width::UnicodeWidthStr;
 use crate::context::AppContext;
 use crate::event::process_event;
 use crate::event::AppEvent;
-use crate::key_command::{complete_command, Command, InteractiveExecute};
+use crate::key_command::constants::COMMANDS;
+use crate::key_command::{Command, Completion, CompletionKind, InteractiveExecute};
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::AppBackend;
+
+lazy_static! {
+    static ref EXECUTABLES: Vec<&'static str> = {
+        let mut vec = vec![];
+
+        if let Some(path) = env::var_os("PATH") {
+            for path in env::split_paths(&path) {
+                let Ok(files) = fs::read_dir(path) else {
+                    continue;
+                };
+
+                for file in files {
+                    let Ok(file) = file else {
+                        continue;
+                    };
+
+                    let Ok(metadata) = file.metadata() else {
+                        continue;
+                    };
+
+                    #[cfg(unix)]
+                    if metadata.mode() & 0o100 == 0 {
+                        // if file is not executable
+                        continue;
+                    }
+
+                    if let Some(basename) = file.path().file_name() {
+                        let boxed = Box::new(basename.to_string_lossy().to_string());
+                        vec.push(Box::leak(boxed).as_str());
+                    }
+                }
+            }
+        }
+
+        vec
+    };
+}
 
 // Might need to be implemented in the future
 #[derive(Clone, Debug)]
@@ -185,14 +227,24 @@ impl<'a> TuiTextField<'a> {
                     AppEvent::Termion(Event::Key(key)) => {
                         let dirty = match key {
                             Key::Backspace => {
-                                let res = line_buffer.backspace(1, listener);
+                                if line_buffer.is_empty() {
+                                    let _ = terminal.hide_cursor();
+                                    return None;
+                                }
 
+                                let res = line_buffer.backspace(1, listener);
                                 if let Ok(command) = Command::from_str(line_buffer.as_str()) {
                                     command.interactive_execute(context)
                                 }
                                 res
                             }
-                            Key::Delete => line_buffer.delete(1, listener).is_some(),
+                            Key::Delete => {
+                                if line_buffer.is_empty() {
+                                    let _ = terminal.hide_cursor();
+                                    return None;
+                                }
+                                line_buffer.delete(1, listener).is_some()
+                            }
                             Key::Home => line_buffer.move_home(),
                             Key::End => line_buffer.move_end(),
                             Key::Up => {
@@ -205,6 +257,7 @@ impl<'a> TuiTextField<'a> {
                                     .get(curr_history_index, SearchDirection::Forward)
                                 {
                                     line_buffer.insert_str(0, &s.entry, listener);
+                                    line_buffer.move_end();
                                 }
                                 true
                             }
@@ -224,6 +277,7 @@ impl<'a> TuiTextField<'a> {
                                     .get(curr_history_index, SearchDirection::Reverse)
                                 {
                                     line_buffer.insert_str(0, &s.entry, listener);
+                                    line_buffer.move_end();
                                 }
                                 true
                             }
@@ -407,20 +461,94 @@ fn move_to_the_end(line_buffer: &mut LineBuffer) {
     }
 }
 
+fn pair_from_str(s: &str) -> Pair {
+    Pair {
+        display: s.to_string(),
+        replacement: s.to_string(),
+    }
+}
+
+fn start_of_word(line_buffer: &LineBuffer) -> usize {
+    line_buffer
+        .as_str()
+        .split_at(line_buffer.pos())
+        .0
+        .rfind(' ')
+        .map(|x| x + 1)
+        .unwrap_or(0)
+}
+
+fn complete_word(candidates: &[&str], partial: &str) -> Vec<Pair> {
+    candidates
+        .iter()
+        .filter(|entry| entry.starts_with(partial))
+        .map(|entry| pair_from_str(entry))
+        .collect()
+}
+
 fn get_candidates(
     completer: &FilenameCompleter,
     line_buffer: &mut LineBuffer,
 ) -> Option<(usize, Vec<Pair>)> {
-    let line = line_buffer.as_str().split_once(' ');
-    let res = match line {
-        None => Ok((0, complete_command(line_buffer.as_str()))),
+    let res = match line_buffer.as_str().split_once(' ') {
+        None => Ok((0, complete_word(&COMMANDS, line_buffer.as_str()))),
 
-        Some((command, _files)) => {
+        Some((command, arg)) => {
             // We want to autocomplete a command if we are inside it.
             if line_buffer.pos() <= command.len() {
-                Ok((0, complete_command(command)))
+                Ok((0, complete_word(&COMMANDS, command)))
             } else {
-                completer.complete_path(line_buffer.as_str(), line_buffer.pos())
+                match Command::completion_kind(command)? {
+                    CompletionKind::Bin => {
+                        if arg.starts_with("./") || arg.starts_with('/') {
+                            let (start, list) = completer
+                                .complete_path(line_buffer.as_str(), line_buffer.pos())
+                                .ok()?;
+
+                            #[cfg(unix)]
+                            let list = list
+                                .into_iter()
+                                .filter(|pair| {
+                                    // keep entry only if it's executable
+                                    if let Ok(file) = PathBuf::from(pair.replacement()).metadata() {
+                                        file.mode() & 0o100 != 0
+                                    } else {
+                                        false
+                                    }
+                                })
+                                .collect();
+
+                            Ok((start, list))
+                        } else {
+                            Ok((start_of_word(line_buffer), complete_word(&EXECUTABLES, arg)))
+                        }
+                    }
+
+                    CompletionKind::Custom(v) => {
+                        Ok((start_of_word(line_buffer), complete_word(&v, arg)))
+                    }
+
+                    CompletionKind::File => {
+                        completer.complete_path(line_buffer.as_str(), line_buffer.pos())
+                    }
+
+                    CompletionKind::Dir(flags) => {
+                        let (start, list) = completer
+                            .complete_path(line_buffer.as_str(), line_buffer.pos())
+                            .ok()?;
+
+                        let mut new_list: Vec<Pair> = list
+                            .into_iter()
+                            .filter(|pair| PathBuf::from(pair.replacement()).is_dir())
+                            .collect();
+
+                        if let Some(flags) = flags {
+                            new_list.append(&mut flags.iter().map(|f| pair_from_str(f)).collect())
+                        }
+
+                        Ok((start, new_list))
+                    }
+                }
             }
         }
     };

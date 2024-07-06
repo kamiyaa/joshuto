@@ -34,7 +34,7 @@ pub fn numbered_command(
             Err(_) => {
                 context.message_queue_mut().pop_front();
                 return Err(AppError::new(
-                    AppErrorKind::ParseError,
+                    AppErrorKind::Parse,
                     "Number is too big".to_string(),
                 ));
             }

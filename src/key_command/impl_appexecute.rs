@@ -26,7 +26,7 @@ impl AppExecute for Command {
             Self::ParentDirectory => change_directory::parent_directory(context),
             Self::PreviousDirectory => change_directory::previous_directory(context),
 
-            Self::NewTab { mode } => tab_ops::new_tab(context, mode),
+            Self::NewTab { mode, last } => tab_ops::new_tab(context, mode, *last),
             Self::CloseTab => tab_ops::close_tab(context),
             Self::CommandLine { prefix, suffix } => command_line::read_and_execute(
                 context,
@@ -136,7 +136,7 @@ impl AppExecute for Command {
             } => case_sensitivity::set_case_sensitivity(context, *case_sensitivity, *set_type),
             Self::SetMode => set_mode::set_mode(context, backend),
             Self::ShowTasks => show_tasks::show_tasks(context, backend, keymap_t),
-            Self::Sort(t) => sort::set_sort(context, *t),
+            Self::Sort { sort_type, reverse } => sort::set_sort(context, *sort_type, *reverse),
             Self::SetLineMode(mode) => linemode::set_linemode(context, *mode),
             Self::SortReverse => sort::toggle_reverse(context),
             Self::SubProcess { words, mode } => {
@@ -168,7 +168,9 @@ impl AppExecute for Command {
             Self::SubdirFzf => subdir_fzf::subdir_fzf(context, backend),
             Self::SelectFzf { options } => select_fzf::select_fzf(context, backend, options),
             Self::Zoxide(arg) => zoxide::zoxide_query(context, arg),
-            Self::ZoxideInteractive => zoxide::zoxide_query_interactive(context, backend),
+            Self::ZoxideInteractive(args) => {
+                zoxide::zoxide_query_interactive(context, backend, args)
+            }
 
             Self::BookmarkAdd => bookmark::add_bookmark(context, backend),
             Self::BookmarkChangeDirectory => bookmark::change_directory_bookmark(context, backend),

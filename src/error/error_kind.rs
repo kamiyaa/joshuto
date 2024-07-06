@@ -4,17 +4,17 @@ use std::io;
 #[derive(Clone, Debug)]
 pub enum AppErrorKind {
     // io related
-    Io(io::ErrorKind),
+    Io,
 
     // environment variable not found
-    EnvVarNotPresent,
+    EnvVar,
 
     // parse error
-    ParseError,
-    ClipboardError,
-    TomlDeError(toml::de::Error),
+    Parse,
+    Clipboard,
+    Config,
 
-    TrashError,
+    Trash,
 
     Glob,
 
@@ -32,8 +32,8 @@ pub enum AppErrorKind {
 }
 
 impl From<io::ErrorKind> for AppErrorKind {
-    fn from(err: io::ErrorKind) -> Self {
-        Self::Io(err)
+    fn from(_: io::ErrorKind) -> Self {
+        Self::Io
     }
 }
 
@@ -45,12 +45,12 @@ impl From<&globset::ErrorKind> for AppErrorKind {
 
 impl From<std::env::VarError> for AppErrorKind {
     fn from(_: std::env::VarError) -> Self {
-        Self::EnvVarNotPresent
+        Self::EnvVar
     }
 }
 
 impl From<toml::de::Error> for AppErrorKind {
-    fn from(err: toml::de::Error) -> Self {
-        Self::TomlDeError(err)
+    fn from(_: toml::de::Error) -> Self {
+        Self::Config
     }
 }

@@ -6,6 +6,7 @@ use std::sync::mpsc::{self, Sender};
 use std::sync::Mutex;
 use std::{io, thread};
 
+use allmytoes::{ThumbSize, AMT};
 use ratatui::layout::Rect;
 use ratatui_image::picker::Picker;
 use ratatui_image::protocol::Protocol;
@@ -44,6 +45,8 @@ impl PreviewContext {
     pub fn new(
         picker: Option<Picker>,
         script: Option<PathBuf>,
+        allmytoes: Option<AMT>,
+        xdg_thumb_size: ThumbSize,
         event_ts: Sender<AppEvent>,
     ) -> PreviewContext {
         let (sender_script, receiver) = mpsc::channel::<(PathBuf, Rect)>();
@@ -71,7 +74,17 @@ impl PreviewContext {
                     .last()
                     .or_else(|| receiver.iter().next())
                 {
-                    let proto = image::io::Reader::open(path.as_path())
+                    let thumb_path = if let Some(amt) = &allmytoes {
+                        let thumb_result = amt.get(&path, xdg_thumb_size);
+                        if let Ok(thumb) = thumb_result {
+                            PathBuf::from(thumb.path)
+                        } else {
+                            path.clone()
+                        }
+                    } else {
+                        path.clone()
+                    };
+                    let proto = image::io::Reader::open(thumb_path.as_path())
                         .and_then(|reader| reader.decode().map_err(Self::map_io_err))
                         .and_then(|dyn_img| {
                             picker

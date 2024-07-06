@@ -273,7 +273,10 @@ pub fn process_mouse(
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
-                // TODO: scroll in child list
+                let command = Command::PreviewCursorMoveUp { offset: 1 };
+                if let Err(e) = command.execute(context, backend, keymap_t) {
+                    context.message_queue_mut().push_error(e.to_string());
+                }
             }
         }
         MouseEvent::Press(MouseButton::WheelDown, x, _) => {
@@ -288,7 +291,10 @@ pub fn process_mouse(
                     context.message_queue_mut().push_error(e.to_string());
                 }
             } else {
-                // TODO: scroll in child list
+                let command = Command::PreviewCursorMoveDown { offset: 1 };
+                if let Err(e) = command.execute(context, backend, keymap_t) {
+                    context.message_queue_mut().push_error(e.to_string());
+                }
             }
         }
         MouseEvent::Press(button @ MouseButton::Left, x, y)

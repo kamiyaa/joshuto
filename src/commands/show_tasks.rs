@@ -1,4 +1,5 @@
 use crate::config::clean::keymap::AppKeyMapping;
+use crate::context::remove_external_preview;
 use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::event::process_event;
@@ -14,6 +15,7 @@ pub fn show_tasks(
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
     context.flush_event();
+    remove_external_preview(context);
 
     let mut exit = false;
 

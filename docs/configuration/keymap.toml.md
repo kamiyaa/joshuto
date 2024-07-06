@@ -152,7 +152,13 @@ function joshuto() {
 - `sort lexical`: sort lexically (`10.txt` comes before `2.txt`)
 - `sort natural`: sort naturally (`2.txt` comes before `10.txt`)
 - `sort mtime`: sort via last modified time
+- `sort size`: sort by file size
+- `sort ext`: sort by extension
 - `sort reverse`: reverse the sorting
+
+All methods (except `reverse`) support the `--reverse` flag:
+- `--reverse=true` applies sort method and sets reverse to `true`
+- `--reverse=false` applies sort method and sets reverse to `false`
 
 ### `linemode`: change the line-mode (textual representation of files and directories in the “current view”)
 
@@ -231,7 +237,7 @@ function joshuto() {
 
 ## Tabs
 
-### `new_tab [--current][--cursor][dir]`: opens a new tab
+### `new_tab [--last] [--current|--cursor|dir]`: opens a new tab
 
 - `new_tab`, without any argument, opens a new tab with the default directory.
 
@@ -240,6 +246,8 @@ function joshuto() {
 - `new_tab some-dir` opens new tab with directory `some-dir`
 - `new_tab --current` opens new tab with the same directory as the current tab
 - `new_tab --cursor` opens new tab with the directory which is currently marked by the cursor
+- `new_tab --last` new tab will be placed at the end of the stack.
+  This is the only flag that can be combined with the others described above.
 
 ### `close_tab`: close current tab
 
@@ -287,6 +295,7 @@ function joshuto() {
   - `gio trash`
   - `trash-put`: https://github.com/andreafrancia/trash-cli
   - `trash`
+  - `gtrash put`
 
 ### `rename`: rename the current file the cursor is on
 

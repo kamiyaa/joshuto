@@ -80,7 +80,7 @@ impl AppCommand for Command {
             Self::Flat { .. } => CMD_FLAT,
             Self::NumberedCommand { .. } => CMD_NUMBERED_COMMAND,
 
-            Self::Sort(_) => CMD_SORT,
+            Self::Sort { .. } => CMD_SORT,
             Self::SortReverse => CMD_SORT_REVERSE,
 
             Self::FilterGlob { .. } => CMD_FILTER_GLOB,
@@ -112,7 +112,7 @@ impl AppCommand for Command {
             Self::SubdirFzf => CMD_SUBDIR_FZF,
             Self::SelectFzf { .. } => CMD_SELECT_FZF,
             Self::Zoxide(_) => CMD_ZOXIDE,
-            Self::ZoxideInteractive => CMD_ZOXIDE_INTERACTIVE,
+            Self::ZoxideInteractive(_) => CMD_ZOXIDE_INTERACTIVE,
 
             Self::CustomSearch(_) => CMD_CUSTOM_SEARCH,
             Self::CustomSearchInteractive(_) => CMD_CUSTOM_SEARCH_INTERACTIVE,

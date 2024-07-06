@@ -1,5 +1,3 @@
-use std::io;
-
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
 
@@ -33,7 +31,7 @@ pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> Ap
     let worker_context = context.worker_context_ref();
     if worker_context.is_busy() || !worker_context.is_empty() {
         Err(AppError::new(
-            AppErrorKind::Io(io::ErrorKind::Other),
+            AppErrorKind::Io,
             String::from("operations running in background, use `quit --force` to quit"),
         ))
     } else {
