@@ -235,15 +235,21 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut AppBackend)
         .map_or(vec![], |s| s.iter_selected().cloned().collect());
 
     if paths.is_empty() {
-        paths.push(
-            context
-                .tab_context_ref()
-                .curr_tab_ref()
-                .curr_list_ref()
-                .and_then(|s| s.curr_entry_ref())
-                .unwrap()
-                .clone(),
-        );
+        match context
+            .tab_context_ref()
+            .curr_tab_ref()
+            .curr_list_ref()
+            .and_then(|s| s.curr_entry_ref())
+            .map(|s| s.clone())
+        {
+            Some(entry) => {
+                paths.push(entry);
+            }
+            None => {
+                let err = AppError::new(AppErrorKind::Io, "No files selected".to_string());
+                return Err(err);
+            }
+        }
     }
     let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
     let options = _get_options(paths[0].file_path(), context.config_ref());
