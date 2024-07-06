@@ -1,4 +1,3 @@
-use std::io;
 use std::process::{Command, Stdio};
 
 use crate::context::{AppContext, LocalStateContext};
@@ -46,7 +45,7 @@ pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> AppResu
             Ok(())
         }
         _ => Err(AppError::new(
-            AppErrorKind::Io(io::ErrorKind::InvalidData),
+            AppErrorKind::Io,
             "no files selected".to_string(),
         )),
     }

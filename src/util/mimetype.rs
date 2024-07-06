@@ -1,5 +1,5 @@
 use std::path::Path;
-use std::{io, process::Command};
+use std::process::Command;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
 
@@ -36,7 +36,7 @@ pub fn get_mimetype(p: &Path) -> AppResult<Mimetype> {
     if !output.status.success() {
         let stderr_msg = String::from_utf8_lossy(&output.stderr).to_string();
 
-        let error = AppError::new(AppErrorKind::Io(io::ErrorKind::InvalidInput), stderr_msg);
+        let error = AppError::new(AppErrorKind::Io, stderr_msg);
         return Err(error);
     }
 
@@ -44,10 +44,7 @@ pub fn get_mimetype(p: &Path) -> AppResult<Mimetype> {
     match stdout_msg.trim().split_once('/') {
         Some((ttype, subtype)) => Ok(Mimetype::new(ttype.to_string(), subtype.to_string())),
         None => {
-            let error = AppError::new(
-                AppErrorKind::Io(io::ErrorKind::InvalidInput),
-                "Unknown mimetype".to_string(),
-            );
+            let error = AppError::new(AppErrorKind::Io, "Unknown mimetype".to_string());
             Err(error)
         }
     }

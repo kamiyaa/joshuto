@@ -1,5 +1,3 @@
-use std::io;
-
 use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::ui::AppBackend;
@@ -28,7 +26,7 @@ pub fn select_fzf(
 
     if items.is_empty() {
         return Err(AppError::new(
-            AppErrorKind::Io(io::ErrorKind::InvalidData),
+            AppErrorKind::Io,
             "no files to select".to_string(),
         ));
     }

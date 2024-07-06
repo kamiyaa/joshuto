@@ -1,4 +1,3 @@
-use std::io;
 use std::path;
 
 use crate::commands::{quit, reload};
@@ -209,7 +208,7 @@ pub fn open_with_index(
 
     if paths.is_empty() {
         return Err(AppError::new(
-            AppErrorKind::Io(io::ErrorKind::NotFound),
+            AppErrorKind::Io,
             String::from("No files selected"),
         ));
     }
@@ -218,7 +217,7 @@ pub fn open_with_index(
 
     if index >= options.len() {
         return Err(AppError::new(
-            AppErrorKind::Io(std::io::ErrorKind::InvalidData),
+            AppErrorKind::Io,
             "option does not exist".to_string(),
         ));
     }

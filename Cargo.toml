@@ -51,7 +51,7 @@ xdg = "^2"
 
 [dependencies.nix]
 version = "^0"
-default_features = false
+default-features = false
 features = ["user"]
 
 [dependencies.ratatui]

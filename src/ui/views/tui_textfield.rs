@@ -227,14 +227,24 @@ impl<'a> TuiTextField<'a> {
                     AppEvent::Termion(Event::Key(key)) => {
                         let dirty = match key {
                             Key::Backspace => {
-                                let res = line_buffer.backspace(1, listener);
+                                if line_buffer.is_empty() {
+                                    let _ = terminal.hide_cursor();
+                                    return None;
+                                }
 
+                                let res = line_buffer.backspace(1, listener);
                                 if let Ok(command) = Command::from_str(line_buffer.as_str()) {
                                     command.interactive_execute(context)
                                 }
                                 res
                             }
-                            Key::Delete => line_buffer.delete(1, listener).is_some(),
+                            Key::Delete => {
+                                if line_buffer.is_empty() {
+                                    let _ = terminal.hide_cursor();
+                                    return None;
+                                }
+                                line_buffer.delete(1, listener).is_some()
+                            }
                             Key::Home => line_buffer.move_home(),
                             Key::End => line_buffer.move_end(),
                             Key::Up => {
