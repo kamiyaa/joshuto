@@ -20,9 +20,9 @@ pub fn file_size_to_string(file_size: u64) -> String {
     }
 }
 
-pub fn mtime_to_string(mtime: time::SystemTime) -> String {
-    const MTIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
+pub fn time_to_string(time: time::SystemTime) -> String {
+    const TIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
 
-    let datetime: chrono::DateTime<chrono::offset::Local> = mtime.into();
-    datetime.format(MTIME_FORMATTING).to_string()
+    let datetime: chrono::DateTime<chrono::offset::Local> = time.into();
+    datetime.format(TIME_FORMATTING).to_string()
 }
