@@ -33,8 +33,8 @@ watch_files = true
 # - `:mkdir ./b` keeps the cursor where it was
 focus_on_create = true
 
-# The maximum file size to show a preview for
-max_preview_size = 2097152 # 2MB
+# The maximum file size to show a preview for, it can be "2 MB", "2 Mb" or "2097152"
+max_preview_size = "2 MB"
 
 # Update the zoxide database with every navigation type instead of only with the z command
 zoxide_update = false
