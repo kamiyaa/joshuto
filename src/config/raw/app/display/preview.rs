@@ -1,6 +1,8 @@
 use allmytoes::ThumbSize;
+use bytesize::ByteSize;
 use ratatui_image::picker::ProtocolType;
-use serde::Deserialize;
+use serde::{de::Unexpected, Deserialize, Deserializer};
+use toml::Value;
 
 pub const fn default_max_preview_size() -> u64 {
     2 * 1024 * 1024 // 2 MB
@@ -43,7 +45,10 @@ impl XDGThumbSizes {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct PreviewOptionRaw {
-    #[serde(default = "default_max_preview_size")]
+    #[serde(
+        default = "default_max_preview_size",
+        deserialize_with = "deserialize_max_preview_size"
+    )]
     pub max_preview_size: u64,
     #[serde(default)]
     pub preview_protocol: PreviewProtocol,
@@ -72,4 +77,28 @@ impl std::default::Default for PreviewOptionRaw {
             preview_removed_hook_script: None,
         }
     }
+}
+
+fn deserialize_max_preview_size<'de, D>(deserializer: D) -> Result<u64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: Value = Deserialize::deserialize(deserializer)?;
+
+    let string = match value {
+        Value::String(s) => s,
+        Value::Integer(i) => (i as u64).to_string(),
+        v => {
+            return Err(serde::de::Error::invalid_type(
+                Unexpected::Other(v.type_str()),
+                &"String or Integer",
+            ))
+        }
+    };
+
+    let size = string
+        .parse::<ByteSize>()
+        .map_err(serde::de::Error::custom)?;
+
+    Ok(size.as_u64())
 }
