@@ -155,7 +155,7 @@ fn copy_string_to_buffer(string: String) -> AppResult {
         }
     }
     Err(AppError::new(
-        AppErrorKind::ClipboardError,
+        AppErrorKind::Clipboard,
         "Failed to copy to clipboard".to_string(),
     ))
 }

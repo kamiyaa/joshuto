@@ -382,7 +382,7 @@ where
         }
     }
     Err(AppError::new(
-        AppErrorKind::TrashError,
+        AppErrorKind::Trash,
         "Failed to trash file".to_string(),
     ))
 }

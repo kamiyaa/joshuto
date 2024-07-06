@@ -10,8 +10,8 @@
 
 ## Dependencies
 
-- [cargo](https://github.com/rust-lang/cargo/) >= 1.55
-- [rustc](https://www.rust-lang.org/) >= 1.55
+- [cargo](https://github.com/rust-lang/cargo/) >= 1.67
+- [rustc](https://www.rust-lang.org/) >= 1.67
 - xsel/xclip/wl-clipboard (optional, for clipboard support)
 - fzf (optional)
 - zoxide (optional)

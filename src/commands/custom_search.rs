@@ -67,7 +67,7 @@ pub fn custom_search(
         let returned_text = std::str::from_utf8(&cmd_result.stdout)
             .map_err(|_| {
                 AppError::new(
-                    AppErrorKind::ParseError,
+                    AppErrorKind::Parse,
                     "Could not get command result as utf8".into(),
                 )
             })?
@@ -77,7 +77,7 @@ pub fn custom_search(
         change_directory(
             context,
             path.parent().ok_or(AppError::new(
-                AppErrorKind::ParseError,
+                AppErrorKind::Parse,
                 "Could not get parent directory".into(),
             ))?,
         )?;
@@ -97,13 +97,13 @@ pub fn custom_search(
     } else {
         let returned_text = std::str::from_utf8(&cmd_result.stderr).map_err(|_| {
             AppError::new(
-                AppErrorKind::ParseError,
+                AppErrorKind::Parse,
                 "Could not get command result as utf8".into(),
             )
         })?;
 
         Err(AppError::new(
-            AppErrorKind::ParseError,
+            AppErrorKind::Parse,
             format!("Command failed: {}", returned_text),
         ))
     }
