@@ -12,21 +12,7 @@ use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
 
 pub trait DirectoryHistory {
     fn insert_entries(&mut self, entries: Vec<JoshutoDirList>);
-    fn create_or_soft_update(
-        &mut self,
-        path: &Path,
-        options: &DisplayOption,
-        tab_options: &TabDisplayOption,
-    ) -> io::Result<()>;
-    fn create_or_reload(
-        &mut self,
-        path: &Path,
-        options: &DisplayOption,
-        tab_options: &TabDisplayOption,
-    ) -> io::Result<()>;
     fn depreciate_all_entries(&mut self);
-
-    fn depreciate_entry(&mut self, path: &Path);
 }
 
 pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
@@ -38,51 +24,8 @@ impl DirectoryHistory for JoshutoHistory {
         }
     }
 
-    fn create_or_soft_update(
-        &mut self,
-        path: &Path,
-        options: &DisplayOption,
-        tab_options: &TabDisplayOption,
-    ) -> io::Result<()> {
-        let (contains_key, need_update) = if let Some(dirlist) = self.get(path) {
-            (true, dirlist.need_update())
-        } else {
-            (false, true)
-        };
-        if need_update {
-            let dirlist = if contains_key {
-                create_dirlist_with_history(self, path, options, tab_options)?
-            } else {
-                JoshutoDirList::from_path(path.to_path_buf(), options, tab_options)?
-            };
-            self.insert(path.to_path_buf(), dirlist);
-        }
-        Ok(())
-    }
-
-    fn create_or_reload(
-        &mut self,
-        path: &Path,
-        options: &DisplayOption,
-        tab_options: &TabDisplayOption,
-    ) -> io::Result<()> {
-        let dirlist = if self.contains_key(path) {
-            create_dirlist_with_history(self, path, options, tab_options)?
-        } else {
-            JoshutoDirList::from_path(path.to_path_buf(), options, tab_options)?
-        };
-        self.insert(path.to_path_buf(), dirlist);
-        Ok(())
-    }
-
     fn depreciate_all_entries(&mut self) {
         self.iter_mut().for_each(|(_, v)| v.depreciate());
-    }
-
-    fn depreciate_entry(&mut self, path: &Path) {
-        if let Some(v) = self.get_mut(path) {
-            v.depreciate();
-        }
     }
 }
 
