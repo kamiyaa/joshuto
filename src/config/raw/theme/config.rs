@@ -15,6 +15,8 @@ pub struct AppThemeRaw {
     #[serde(default)]
     pub visual_mode_selection: AppStyleRaw,
     #[serde(default)]
+    pub mark: HashMap<String, AppStyleRaw>,
+    #[serde(default)]
     pub directory: AppStyleRaw,
     #[serde(default)]
     pub executable: AppStyleRaw,

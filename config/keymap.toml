@@ -90,6 +90,8 @@ keymap = [
   { keys = [" "], commands = ["select --toggle=true"] },
   { keys = ["t"], commands = ["select --all=true --toggle=true"] },
   { keys = ["V"], commands = ["toggle_visual"] },
+  { keys = ["ctrl+v"], commands = ["select --all=true --deselect=true"] },
+  { keys = ["alt+v"], commands = ["cancel_file_operation"] },
 
   { keys = ["w"], commands = ["show_tasks --exit-key=w"] },
   { keys = ["b", "b"], commands = ["bulk_rename"] },

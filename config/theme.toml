@@ -38,15 +38,30 @@ bold = true
 
 # Selected files (standard selection)
 [selection]
-fg = "light_yellow"
+fg = "light_green"
 bold = true
 prefix = " "
 
 # Files selected in current visual mode
 [visual_mode_selection]
-fg = "light_red"
+fg = "light_yellow"
 bold = true
 prefix = "v "
+
+[mark.cut]
+fg = "red"
+bold = true
+# prefix = " "
+
+[mark.copy]
+fg = "rgb(235, 104, 65)" # orange
+bold = true
+# prefix = " "
+
+[mark.symlink]
+fg = "rgb(254, 132, 172)" # pink
+bold = true
+# prefix = " "
 
 ##########################################
 ## File List - System File Types

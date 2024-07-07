@@ -49,6 +49,7 @@ impl AppExecute for Command {
             Self::SymlinkFiles { relative: true } => file_ops::symlink_relative(context),
             Self::SymlinkFiles { relative: false } => file_ops::symlink_absolute(context),
             Self::PasteFiles { options } => file_ops::paste(context, *options),
+            Self::CancelFiles { options } => file_ops::paste(context, *options),
 
             Self::DeleteFiles {
                 background,

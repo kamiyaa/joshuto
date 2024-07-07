@@ -30,6 +30,7 @@ impl AppCommand for Command {
             Self::CopyDirPath => CMD_COPY_DIRECTORY_PATH,
             Self::SymlinkFiles { .. } => CMD_SYMLINK_FILES,
             Self::PasteFiles { .. } => CMD_PASTE_FILES,
+            Self::CancelFiles { .. } => CMD_PASTE_FILES,
 
             Self::DeleteFiles { .. } => CMD_DELETE_FILES,
 
