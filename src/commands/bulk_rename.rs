@@ -6,11 +6,11 @@ use std::process;
 
 use rand::Rng;
 
-use crate::context::remove_external_preview;
-use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::types::state::remove_external_preview;
+use crate::types::state::AppState;
 use crate::ui::AppBackend;
-use crate::util::process::wait_for_enter;
+use crate::utils::process::wait_for_enter;
 
 use super::reload;
 
@@ -19,7 +19,7 @@ const ENV_EDITOR: &str = "EDITOR";
 const FILE_PREFIX: &str = "joshuto-";
 const RAND_STR_LEN: usize = 10;
 
-pub fn _bulk_rename(context: &mut AppContext) -> AppResult {
+pub fn _bulk_rename(app_state: &mut AppState) -> AppResult {
     let tmp_directory = env::var(ENV_TMP_DIR).unwrap_or_else(|_| "/tmp".to_string());
 
     let editor = std::env::var(ENV_EDITOR)?;
@@ -36,8 +36,9 @@ pub fn _bulk_rename(context: &mut AppContext) -> AppResult {
     let mut file_path = path::PathBuf::from(&tmp_directory);
     file_path.push(rand_str);
 
-    let entries = context
-        .tab_context_ref()
+    let entries = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .map_or(vec![], |s| s.selected_or_current());
@@ -125,11 +126,11 @@ pub fn _bulk_rename(context: &mut AppContext) -> AppResult {
     Ok(())
 }
 
-pub fn bulk_rename(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
-    remove_external_preview(context);
+pub fn bulk_rename(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
+    remove_external_preview(app_state);
     backend.terminal_drop();
-    let res = _bulk_rename(context);
+    let res = _bulk_rename(app_state);
     backend.terminal_restore()?;
-    reload::soft_reload_curr_tab(context)?;
+    reload::soft_reload_curr_tab(app_state)?;
     res
 }

@@ -4,18 +4,18 @@ use ratatui::style::{Color, Style};
 use ratatui::widgets::{Paragraph, Text, Widget};
 
 use super::{TuiDirList, TuiDirListDetailed, TuiFooter, TuiTabBar, TuiTopBar};
-use crate::context::AppContext;
+use crate::app_state::AppState;
 
 const TAB_VIEW_WIDTH: u16 = 15;
 
 pub struct TuiProgressView<'a> {
-    pub context: &'a AppContext,
+    pub app_state: &'a AppState,
 }
 
 impl<'a> TuiProgressView<'a> {
-    pub fn new(context: &'a AppContext) -> Self {
+    pub fn new(app_state: &'a AppState) -> Self {
         Self {
-            context,
+            app_state,
             show_bottom_status: true,
         }
     }
@@ -35,7 +35,7 @@ impl<'a> Widget for TuiProgressView<'a> {
         loop {
             terminal.draw(|mut frame| {}).unwrap();
 
-            if let Ok(event) = context.events.next() {
+            if let Ok(event) = app_state.events.next() {
                 match event {
                     Event::IOWorkerProgress(_) => {}
                     Event::Input(key) => {
@@ -114,7 +114,7 @@ impl<'a> Widget for TuiProgressView<'a> {
                             }
                             _ => {}
                         }
-                        context.events.flush();
+                        app_state.events.flush();
                     }
                     _ => {}
                 };

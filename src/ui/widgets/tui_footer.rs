@@ -4,10 +4,10 @@ use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
-use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::fs::{JoshutoDirList, LinkType};
-use crate::util::format;
-use crate::util::unix;
+use crate::types::option::tab::TabDisplayOption;
+use crate::utils::format;
+use crate::utils::unix;
 use crate::{THEME_T, TIMEZONE_STR};
 
 pub struct TuiFooter<'a> {
@@ -92,8 +92,8 @@ impl<'a> Widget for TuiFooter<'a> {
                     ),
                     Span::styled(
                         match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
-                            Some(opt) if !opt.filter_context_ref().is_none() => {
-                                format!("filter:{} ", opt.filter_context_ref())
+                            Some(opt) if !opt.filter_state_ref().is_none() => {
+                                format!("filter:{} ", opt.filter_state_ref())
                             }
                             _ => "".to_owned(),
                         },

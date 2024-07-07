@@ -5,9 +5,9 @@ use std::time::SystemTime;
 use filetime::FileTime;
 
 use crate::commands::cursor_move;
-use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::create_dirlist_with_history;
+use crate::types::state::AppState;
 
 fn _update_actime(file: &path::Path) -> std::io::Result<()> {
     let file_time = FileTime::from_system_time(SystemTime::now());
@@ -19,12 +19,13 @@ fn _create_file(file: &path::Path) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn touch_file(context: &mut AppContext, arg: &str) -> AppResult {
-    let curr_tab = context.tab_context_ref().curr_tab_ref();
+pub fn touch_file(app_state: &mut AppState, arg: &str) -> AppResult {
+    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
     match arg {
         "" => {
-            if let Some(selected_file_path) = context
-                .tab_context_ref()
+            if let Some(selected_file_path) = app_state
+                .state
+                .tab_state_ref()
                 .curr_tab_ref()
                 .curr_list_ref()
                 .and_then(|s| s.curr_entry_ref())
@@ -49,18 +50,18 @@ pub fn touch_file(context: &mut AppContext, arg: &str) -> AppResult {
 
     if let Some(path) = path {
         let new_dirlist = {
-            let options = context.config_ref().display_options_ref();
-            let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
-            let history = context.tab_context_ref().curr_tab_ref().history_ref();
+            let options = &app_state.config.display_options;
+            let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
+            let history = app_state.state.tab_state_ref().curr_tab_ref().history_ref();
 
             create_dirlist_with_history(history, path.as_path(), options, tab_options)?
         };
-        let history = context.tab_context_mut().curr_tab_mut().history_mut();
+        let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();
         history.insert(path, new_dirlist);
     }
 
-    if context.config_ref().focus_on_create {
-        cursor_move::to_path(context, path::Path::new(arg))?;
+    if app_state.config.focus_on_create {
+        cursor_move::to_path(app_state, path::Path::new(arg))?;
     }
 
     Ok(())

@@ -1,17 +1,18 @@
-use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
 use super::fzf;
 use super::select::SelectOption;
 
 pub fn select_fzf(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     options: &SelectOption,
 ) -> AppResult {
-    let items = context
-        .tab_context_ref()
+    let items = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .map(|list| {
@@ -31,9 +32,14 @@ pub fn select_fzf(
         ));
     }
 
-    let fzf_output = fzf::fzf_multi(context, backend, items)?;
+    let fzf_output = fzf::fzf_multi(app_state, backend, items)?;
 
-    if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+    if let Some(curr_list) = app_state
+        .state
+        .tab_state_mut()
+        .curr_tab_mut()
+        .curr_list_mut()
+    {
         let mut found = 0;
 
         for selected in fzf_output.lines() {
@@ -53,7 +59,8 @@ pub fn select_fzf(
             }
         }
 
-        context
+        app_state
+            .state
             .message_queue_mut()
             .push_info(format!("{} files selected", found));
     }

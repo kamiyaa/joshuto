@@ -1,17 +1,14 @@
-use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::DirectoryHistory;
+use crate::types::state::AppState;
 
 use super::reload;
 
-pub fn _toggle_hidden(context: &mut AppContext) {
-    let opposite = !context.config_ref().display_options_ref().show_hidden();
-    context
-        .config_mut()
-        .display_options_mut()
-        .set_show_hidden(opposite);
+pub fn _toggle_hidden(app_state: &mut AppState) {
+    let opposite = !app_state.config.display_options.show_hidden;
+    app_state.config.display_options.show_hidden = opposite;
 
-    for (_, tab) in context.tab_context_mut().iter_mut() {
+    for (_, tab) in app_state.state.tab_state_mut().iter_mut() {
         tab.history_mut().depreciate_all_entries();
         if let Some(s) = tab.curr_list_mut() {
             s.depreciate();
@@ -19,8 +16,8 @@ pub fn _toggle_hidden(context: &mut AppContext) {
     }
 }
 
-pub fn toggle_hidden(context: &mut AppContext) -> AppResult {
-    _toggle_hidden(context);
-    reload::soft_reload_curr_tab(context)?;
+pub fn toggle_hidden(app_state: &mut AppState) -> AppResult {
+    _toggle_hidden(app_state);
+    reload::soft_reload_curr_tab(app_state)?;
     Ok(())
 }

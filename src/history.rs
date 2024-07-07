@@ -4,11 +4,11 @@ use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-use crate::config::clean::app::display::dirlist::DirListDisplayOptions;
-use crate::config::clean::app::display::tab::TabDisplayOption;
-use crate::config::clean::app::display::DisplayOption;
-use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
+use crate::types::option::display::DisplayOption;
+use crate::types::option::fs::DirListDisplayOptions;
+use crate::types::option::tab::TabDisplayOption;
+use crate::types::state::UiState;
 
 pub trait DirectoryHistory {
     fn insert_entries(&mut self, entries: Vec<JoshutoDirList>);
@@ -170,7 +170,7 @@ where
 pub fn generate_entries_to_root(
     path: &Path,
     history: &JoshutoHistory,
-    ui_context: &UiContext,
+    ui_state: &UiState,
     display_options: &DisplayOption,
     tab_options: &TabDisplayOption,
 ) -> io::Result<Vec<JoshutoDirList>> {
@@ -183,7 +183,7 @@ pub fn generate_entries_to_root(
                 create_dirlist_with_history(history, curr, display_options, tab_options)?;
             if let Some(ancestor) = prev.as_ref() {
                 if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
-                    new_dirlist.set_index(Some(i), ui_context, display_options);
+                    new_dirlist.set_index(Some(i), ui_state, display_options);
                 }
             }
             dirlists.push(new_dirlist);
@@ -195,7 +195,7 @@ pub fn generate_entries_to_root(
             )?;
             if let Some(ancestor) = prev.as_ref() {
                 if let Some(i) = get_index_of_value(&new_dirlist.contents, ancestor) {
-                    new_dirlist.set_index(Some(i), ui_context, display_options);
+                    new_dirlist.set_index(Some(i), ui_state, display_options);
                 }
             }
             dirlists.push(new_dirlist);

@@ -1,15 +1,15 @@
 use std::path;
 
 use crate::commands::{quit, reload};
-use crate::config::clean::app::AppConfig;
-use crate::config::clean::mimetype::ProgramEntry;
-use crate::context::AppContext;
+use crate::config::app::AppConfig;
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::types::mimetype::ProgramEntry;
+use crate::types::state::AppState;
 use crate::ui::views::DummyListener;
 use crate::ui::views::TuiTextField;
 use crate::ui::AppBackend;
-use crate::util::mimetype::get_mimetype;
-use crate::util::process::{execute_and_wait, fork_execute};
+use crate::utils::mimetype::get_mimetype;
+use crate::utils::process::{execute_and_wait, fork_execute};
 
 use super::change_directory;
 
@@ -35,13 +35,13 @@ fn _get_options<'a>(path: &path::Path, config: &AppConfig) -> Vec<&'a ProgramEnt
 
     if let Ok(file_mimetype) = get_mimetype(path) {
         if let Some(entry) = MIMETYPE_T.app_list_for_mimetype(file_mimetype.get_type()) {
-            match entry.subtypes().get(file_mimetype.get_subtype()) {
+            match entry.subtypes.get(file_mimetype.get_subtype()) {
                 Some(entries) => {
                     options.extend(entries);
                     return options;
                 }
                 None => {
-                    let entries = entry.app_list();
+                    let entries = &entry.app_list;
                     options.extend(entries);
                     return options;
                 }
@@ -52,7 +52,7 @@ fn _get_options<'a>(path: &path::Path, config: &AppConfig) -> Vec<&'a ProgramEnt
 }
 
 fn _open_with_entry<S>(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     option: &ProgramEntry,
     files: &[S],
@@ -61,8 +61,11 @@ where
     S: AsRef<std::ffi::OsStr>,
 {
     if option.get_fork() {
-        let (child_id, handle) = fork_execute(option, files, context.clone_event_tx())?;
-        context.worker_context_mut().push_child(child_id, handle);
+        let (child_id, handle) = fork_execute(option, files, app_state.clone_event_tx())?;
+        app_state
+            .state
+            .worker_state_mut()
+            .push_child(child_id, handle);
     } else {
         backend.terminal_drop();
         let res = execute_and_wait(option, files);
@@ -73,13 +76,11 @@ where
 }
 
 fn _open_with_xdg(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     path: &path::Path,
 ) -> std::io::Result<()> {
-    let config = context.config_ref();
-
-    if config.xdg_open_fork {
+    if app_state.config.xdg_open_fork {
         open::that_in_background(path);
     } else {
         backend.terminal_drop();
@@ -94,7 +95,7 @@ fn _open_with_xdg(
 }
 
 fn _open_with_helper<S>(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     options: Vec<&ProgramEntry>,
     files: &[S],
@@ -105,7 +106,7 @@ where
     const PROMPT: &str = "open_with ";
 
     let user_input: Option<String> = {
-        context.flush_event();
+        app_state.flush_event();
 
         let menu_options: Vec<String> = options
             .iter()
@@ -118,7 +119,7 @@ where
             .prompt(":")
             .prefix(PROMPT)
             .menu_items(menu_options.iter().map(|s| s.as_str()))
-            .get_input(backend, context, &mut listener)
+            .get_input(app_state, backend, &mut listener)
     };
     match user_input.as_ref() {
         Some(user_input) if user_input.starts_with(PROMPT) => {
@@ -133,7 +134,7 @@ where
                 }
                 Ok(n) => {
                     let option = &options[n];
-                    _open_with_entry(context, backend, option, files)?;
+                    _open_with_entry(app_state, backend, option, files)?;
                 }
                 Err(_) => {
                     let mut args_iter = user_input.split_whitespace();
@@ -153,20 +154,24 @@ where
     Ok(())
 }
 
-pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
-    let curr_list = context.tab_context_ref().curr_tab_ref().curr_list_ref();
+pub fn open(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
+    let curr_list = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .curr_list_ref();
     let entry = curr_list.and_then(|s| s.curr_entry_ref().cloned());
 
     match entry {
         None => (),
         Some(entry) if entry.file_path().is_dir() => {
             let path = entry.file_path().to_path_buf();
-            change_directory::cd(path.as_path(), context)?;
-            reload::soft_reload_curr_tab(context)?;
+            change_directory::cd(path.as_path(), app_state)?;
+            reload::soft_reload_curr_tab(app_state)?;
         }
         Some(entry) => {
-            if context.args.file_chooser {
-                return quit::quit_with_action(context, quit::QuitAction::OutputSelectedFiles);
+            if app_state.args.file_chooser {
+                return quit::quit_with_action(app_state, quit::QuitAction::OutputSelectedFiles);
             }
 
             let paths = curr_list.map_or_else(Vec::new, |s| s.iter_selected().cloned().collect());
@@ -178,17 +183,15 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
                     paths.iter().map(|e| e.file_name()).collect(),
                 )
             };
-            let options = _get_options(path, context.config_ref());
+            let options = _get_options(path, &app_state.config);
             let option = options.iter().find(|option| option.program_exists());
 
-            let config = context.config_ref();
-
             if let Some(option) = option {
-                _open_with_entry(context, backend, option, &files)?;
-            } else if config.xdg_open {
-                _open_with_xdg(context, backend, path)?;
+                _open_with_entry(app_state, backend, option, &files)?;
+            } else if app_state.config.xdg_open {
+                _open_with_xdg(app_state, backend, path)?;
             } else {
-                _open_with_helper(context, backend, options, &files)?;
+                _open_with_helper(app_state, backend, options, &files)?;
             }
         }
     }
@@ -196,12 +199,13 @@ pub fn open(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
 }
 
 pub fn open_with_index(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     index: usize,
 ) -> AppResult {
-    let paths = context
-        .tab_context_ref()
+    let paths = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .map_or(vec![], |s| s.iter_selected().cloned().collect());
@@ -213,7 +217,7 @@ pub fn open_with_index(
         ));
     }
     let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
-    let options = _get_options(paths[0].file_path(), context.config_ref());
+    let options = _get_options(paths[0].file_path(), &app_state.config);
 
     if index >= options.len() {
         return Err(AppError::new(
@@ -223,20 +227,22 @@ pub fn open_with_index(
     }
 
     let option = &options[index];
-    _open_with_entry(context, backend, option, &files)?;
+    _open_with_entry(app_state, backend, option, &files)?;
     Ok(())
 }
 
-pub fn open_with_interactive(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
-    let mut paths = context
-        .tab_context_ref()
+pub fn open_with_interactive(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
+    let mut paths = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .map_or(vec![], |s| s.iter_selected().cloned().collect());
 
     if paths.is_empty() {
-        match context
-            .tab_context_ref()
+        match app_state
+            .state
+            .tab_state_ref()
             .curr_tab_ref()
             .curr_list_ref()
             .and_then(|s| s.curr_entry_ref())
@@ -252,8 +258,8 @@ pub fn open_with_interactive(context: &mut AppContext, backend: &mut AppBackend)
         }
     }
     let files: Vec<&str> = paths.iter().map(|e| e.file_name()).collect();
-    let options = _get_options(paths[0].file_path(), context.config_ref());
+    let options = _get_options(paths[0].file_path(), &app_state.config);
 
-    _open_with_helper(context, backend, options, &files)?;
+    _open_with_helper(app_state, backend, options, &files)?;
     Ok(())
 }

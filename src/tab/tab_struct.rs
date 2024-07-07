@@ -1,18 +1,18 @@
 use std::collections::HashMap;
 use std::path;
 
-use crate::config::clean::app::display::tab::TabDisplayOption;
 use crate::fs::JoshutoDirList;
 use crate::history::JoshutoHistory;
 use crate::preview::preview_dir::PreviewDirState;
+use crate::types::option::tab::TabDisplayOption;
 // use crate::HOSTNAME;
 
 type HistoryMetadata = HashMap<path::PathBuf, PreviewDirState>;
 
 pub struct JoshutoTab {
-    _cwd: path::PathBuf,
+    pub cwd: path::PathBuf,
     // history is just a HashMap, so we have this property to store last workdir
-    _previous_dir: Option<path::PathBuf>,
+    pub previous_dir: Option<path::PathBuf>,
     pub history: JoshutoHistory,
     pub history_metadata: HistoryMetadata,
     pub options: TabDisplayOption,
@@ -25,8 +25,8 @@ impl JoshutoTab {
         tab_options: TabDisplayOption,
     ) -> std::io::Result<Self> {
         let new_tab = Self {
-            _cwd: cwd,
-            _previous_dir: None,
+            cwd,
+            previous_dir: None,
             history,
             history_metadata: HashMap::new(),
             options: tab_options,
@@ -43,23 +43,19 @@ impl JoshutoTab {
         &mut self.options
     }
 
-    pub fn cwd(&self) -> &path::Path {
-        self._cwd.as_path()
+    pub fn get_cwd(&self) -> &path::Path {
+        self.cwd.as_path()
     }
     pub fn set_cwd(&mut self, cwd: &path::Path) {
-        self._previous_dir = Some(self._cwd.to_path_buf());
-        self._cwd = cwd.to_path_buf();
+        self.previous_dir = Some(self.cwd.to_path_buf());
+        self.cwd = cwd.to_path_buf();
 
         // OSC 7: Escape sequence to set the working directory
         // print!("\x1b]7;file://{}{}\x1b\\", HOSTNAME.as_str(), cwd.display());
     }
 
     pub fn previous_dir(&self) -> Option<&path::Path> {
-        // This converts PathBuf to Path
-        match &self._previous_dir {
-            Some(path) => Some(path),
-            None => None,
-        }
+        self.previous_dir.as_ref().map(|p| p.as_path())
     }
 
     pub fn history_ref(&self) -> &JoshutoHistory {
@@ -77,10 +73,10 @@ impl JoshutoTab {
     }
 
     pub fn curr_list_ref(&self) -> Option<&JoshutoDirList> {
-        self.history.get(self.cwd())
+        self.history.get(self.get_cwd())
     }
     pub fn parent_list_ref(&self) -> Option<&JoshutoDirList> {
-        let parent = self.cwd().parent()?;
+        let parent = self.get_cwd().parent()?;
         self.history.get(parent)
     }
     pub fn child_list_ref(&self) -> Option<&JoshutoDirList> {
@@ -91,10 +87,10 @@ impl JoshutoTab {
     }
 
     pub fn curr_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
-        self.history.get_mut(self._cwd.as_path())
+        self.history.get_mut(self.cwd.as_path())
     }
     pub fn parent_list_mut(&mut self) -> Option<&mut JoshutoDirList> {
-        let parent = self._cwd.parent()?;
+        let parent = self.cwd.parent()?;
         self.history.get_mut(parent)
     }
     #[allow(dead_code)]

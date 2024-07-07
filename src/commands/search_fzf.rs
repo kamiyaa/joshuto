@@ -1,11 +1,12 @@
 use crate::commands::{cursor_move, fzf};
-use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
-pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
-    let items = context
-        .tab_context_ref()
+pub fn search_fzf(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
+    let items = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .map(|list| {
@@ -25,12 +26,12 @@ pub fn search_fzf(context: &mut AppContext, backend: &mut AppBackend) -> AppResu
         ));
     }
 
-    let fzf_output = fzf::fzf(context, backend, items)?;
+    let fzf_output = fzf::fzf(app_state, backend, items)?;
     let selected_idx_str = fzf_output.split_once(' ');
 
     if let Some((selected_idx_str, _)) = selected_idx_str {
         if let Ok(index) = selected_idx_str.parse::<usize>() {
-            cursor_move::cursor_move(context, index);
+            cursor_move::cursor_move(app_state, index);
         }
     }
 

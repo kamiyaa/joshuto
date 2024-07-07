@@ -1,11 +1,11 @@
-use crate::context::AppContext;
 use crate::error::AppResult;
+use crate::types::state::AppState;
 
 use super::reload;
 
-pub fn flatten(context: &mut AppContext, depth: usize) -> AppResult {
-    let curr_tab = context.tab_context_mut().curr_tab_mut();
-    let path = curr_tab.cwd().to_path_buf();
+pub fn flatten(app_state: &mut AppState, depth: usize) -> AppResult {
+    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
+    let path = curr_tab.get_cwd().to_path_buf();
     curr_tab
         .option_mut()
         .dirlist_options_mut(&path)
@@ -15,6 +15,6 @@ pub fn flatten(context: &mut AppContext, depth: usize) -> AppResult {
         list.depreciate();
     }
 
-    reload::soft_reload_curr_tab(context)?;
+    reload::soft_reload_curr_tab(app_state)?;
     Ok(())
 }

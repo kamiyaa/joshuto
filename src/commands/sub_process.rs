@@ -1,5 +1,5 @@
-use crate::context::AppContext;
 use crate::error::AppResult;
+use crate::types::state::AppState;
 use crate::ui::AppBackend;
 use std::path::Path;
 use std::process::{Command, Stdio};
@@ -13,9 +13,14 @@ pub enum SubprocessCallMode {
     Capture,
 }
 
-pub fn current_files(context: &AppContext) -> Vec<(&str, &Path)> {
+pub fn current_files(app_state: &AppState) -> Vec<(&str, &Path)> {
     let mut result = Vec::new();
-    if let Some(curr_list) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+    if let Some(curr_list) = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+    {
         let mut i = 0;
         curr_list.iter_selected().for_each(|entry| {
             result.push((entry.file_name(), entry.file_path()));
@@ -32,11 +37,11 @@ pub fn current_files(context: &AppContext) -> Vec<(&str, &Path)> {
 }
 
 fn execute_sub_process(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     words: &[String],
     mode: SubprocessCallMode,
 ) -> std::io::Result<()> {
-    let current_files = current_files(context);
+    let current_files = current_files(app_state);
     let command_base = if current_files.len() == 1 {
         words[0]
             .replace("%s", current_files[0].0)
@@ -96,7 +101,8 @@ fn execute_sub_process(
                 .stderr(Stdio::piped())
                 .output()?;
             if output.status.code() == Some(0) {
-                context.last_stdout = Some(String::from_utf8_lossy(&output.stdout).to_string());
+                app_state.state.last_stdout =
+                    Some(String::from_utf8_lossy(&output.stdout).to_string());
                 Ok(())
             } else {
                 Err(std::io::Error::new(
@@ -110,7 +116,7 @@ fn execute_sub_process(
 
 /// Handler for Joshuto's `shell` and `spawn` commands.
 pub fn sub_process(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     words: &[String],
     mode: SubprocessCallMode,
@@ -120,23 +126,25 @@ pub fn sub_process(
             // Joshuto needs to release the terminal when handing it over to some interactive
             // shell command and restore it afterwards
             backend.terminal_drop();
-            let res = execute_sub_process(context, words, mode);
+            let res = execute_sub_process(app_state, words, mode);
             backend.terminal_restore()?;
-            let _ = reload::soft_reload_curr_tab(context);
+            let _ = reload::soft_reload_curr_tab(app_state);
             res?;
-            context
+            app_state
+                .state
                 .message_queue_mut()
                 .push_info(format!("Finished: {}", words.join(" ")));
         }
         SubprocessCallMode::Spawn => {
-            execute_sub_process(context, words, mode)?;
-            context
+            execute_sub_process(app_state, words, mode)?;
+            app_state
+                .state
                 .message_queue_mut()
                 .push_info(format!("Spawned: {}", words.join(" ")));
         }
         SubprocessCallMode::Capture => {
-            execute_sub_process(context, words, mode)?;
-            let _ = reload::soft_reload_curr_tab(context);
+            execute_sub_process(app_state, words, mode)?;
+            let _ = reload::soft_reload_curr_tab(app_state);
         }
     };
     Ok(())

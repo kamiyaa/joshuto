@@ -1,17 +1,12 @@
-#[derive(Clone, Copy, Debug)]
-pub enum TabHomePage {
-    Inherit,
-    Home,
-    Root,
-}
+use serde::{Deserialize, Serialize};
 
-impl TabHomePage {
-    pub fn from_str(s: &str) -> Option<Self> {
-        match s {
-            "inherit" => Some(Self::Inherit),
-            "home" => Some(Self::Home),
-            "root" => Some(Self::Root),
-            _ => None,
-        }
-    }
+#[derive(Clone, Copy, Default, Debug, Serialize, Deserialize)]
+pub enum TabHomePage {
+    #[default]
+    #[serde(rename = "home")]
+    Home,
+    #[serde(rename = "inherit")]
+    Inherit,
+    #[serde(rename = "root")]
+    Root,
 }

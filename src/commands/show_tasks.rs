@@ -1,33 +1,35 @@
-use crate::config::clean::keymap::AppKeyMapping;
-use crate::context::remove_external_preview;
-use crate::context::AppContext;
 use crate::error::AppResult;
-use crate::event::process_event;
-use crate::event::AppEvent;
-use crate::key_command::{Command, CommandKeybind};
+use crate::run::process_event;
 use crate::traits::ToString;
+use crate::types::command::Command;
+use crate::types::event::AppEvent;
+use crate::types::keybind::CommandKeybind;
+use crate::types::keymap::AppKeyMapping;
+use crate::types::state::remove_external_preview;
+use crate::types::state::AppState;
 use crate::ui::views::TuiWorkerView;
 use crate::ui::AppBackend;
 
 pub fn show_tasks(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
-    context.flush_event();
-    remove_external_preview(context);
+    app_state.flush_event();
+    remove_external_preview(app_state);
 
     let mut exit = false;
 
     while !exit {
-        backend.render(TuiWorkerView::new(context));
+        backend.render(TuiWorkerView::new(app_state));
 
-        if let Ok(event) = context.poll_event() {
+        if let Ok(event) = app_state.poll_event() {
             match event {
                 AppEvent::Termion(key) => {
                     match keymap_t.task_view.get(&key) {
                         None => {
-                            context
+                            app_state
+                                .state
                                 .message_queue_mut()
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
@@ -39,8 +41,9 @@ pub fn show_tasks(
                             }
                         }
                         Some(CommandKeybind::CompositeKeybind(m)) => {
-                            let commands =
-                                process_event::poll_event_until_simple_keybind(backend, context, m);
+                            let commands = process_event::poll_event_until_simple_keybind(
+                                app_state, backend, m,
+                            );
 
                             if let Some(commands) = commands {
                                 for command in commands {
@@ -51,9 +54,9 @@ pub fn show_tasks(
                             }
                         }
                     }
-                    context.flush_event();
+                    app_state.flush_event();
                 }
-                event => process_event::process_noninteractive(event, context),
+                event => process_event::process_noninteractive(event, app_state),
             };
         }
     }

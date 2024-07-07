@@ -1,11 +1,11 @@
 use std::slice::{Iter, IterMut};
 use std::{io, path};
 
-use crate::config::clean::app::display::tab::TabDisplayOption;
-use crate::config::clean::app::display::DisplayOption;
-use crate::context::UiContext;
 use crate::fs::{JoshutoDirEntry, JoshutoMetadata};
 use crate::history::read_directory;
+use crate::types::option::display::DisplayOption;
+use crate::types::option::tab::TabDisplayOption;
+use crate::types::state::UiState;
 
 #[derive(Clone, Debug)]
 pub struct JoshutoDirList {
@@ -43,13 +43,18 @@ impl JoshutoDirList {
 
     pub fn from_path(
         path: path::PathBuf,
-        options: &DisplayOption,
-        tab_options: &TabDisplayOption,
+        display_options: &DisplayOption,
+        tab_display_options: &TabDisplayOption,
     ) -> io::Result<Self> {
-        let filter_func = options.filter_func();
-        let mut contents = read_directory(path.as_path(), filter_func, options, tab_options)?;
+        let filter_func = display_options.filter_func();
+        let mut contents = read_directory(
+            path.as_path(),
+            filter_func,
+            display_options,
+            tab_display_options,
+        )?;
 
-        contents.sort_by(|f1, f2| tab_options.sort_options_ref().compare(f1, f2));
+        contents.sort_by(|f1, f2| tab_display_options.sort_options_ref().compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
         let metadata = JoshutoMetadata::from(&path)?;
@@ -135,17 +140,17 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn update_viewport(&mut self, ui_context: &UiContext, options: &DisplayOption) {
+    pub fn update_viewport(&mut self, ui_state: &UiState, options: &DisplayOption) {
         if let Some(ix) = self.index {
-            let height = ui_context.layout[0].height as usize;
+            let height = ui_state.layout[0].height as usize;
 
             // get scroll buffer size, corrected in case of too small terminal
             let scroll_offset = if height < 4 {
                 0
-            } else if options.scroll_offset() * 2 > height - 1 {
+            } else if options.scroll_offset * 2 > height - 1 {
                 height / 2 - 1
             } else {
-                options.scroll_offset()
+                options.scroll_offset
             };
 
             // calculate viewport
@@ -166,18 +171,13 @@ impl JoshutoDirList {
         }
     }
 
-    pub fn set_index(
-        &mut self,
-        index: Option<usize>,
-        ui_context: &UiContext,
-        options: &DisplayOption,
-    ) {
+    pub fn set_index(&mut self, index: Option<usize>, ui_state: &UiState, options: &DisplayOption) {
         if index == self.index {
             return;
         }
         self.index = index;
-        if !ui_context.layout.is_empty() {
-            self.update_viewport(ui_context, options);
+        if !ui_state.layout.is_empty() {
+            self.update_viewport(ui_state, options);
         }
         self.update_visual_mode_selection();
     }

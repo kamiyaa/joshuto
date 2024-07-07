@@ -6,16 +6,18 @@ use ratatui::layout::Rect;
 use ratatui::widgets::Clear;
 use termion::event::Event;
 
-use crate::config::raw::bookmarks::{BookmarkRaw, BookmarksRaw};
-use crate::config::{search_directories, ConfigType};
-use crate::context::AppContext;
+use crate::config::bookmarks::{BookmarkRaw, BookmarksRaw};
 use crate::error::AppResult;
-use crate::event::{process_event, AppEvent};
+use crate::run::process_event;
+use crate::traits::config::search_directories;
 use crate::traits::ToString;
+use crate::types::config_type::ConfigType;
+use crate::types::event::AppEvent;
+use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
 use crate::ui::AppBackend;
-use crate::util::unix;
+use crate::utils::unix;
 
 use crate::{BOOKMARKS_T, CONFIG_HIERARCHY};
 
@@ -30,7 +32,7 @@ fn find_bookmark_file() -> Option<path::PathBuf> {
     None
 }
 
-pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
+pub fn add_bookmark(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let cwd = std::env::current_dir()?;
 
     let bookmark_path =
@@ -40,12 +42,12 @@ pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> AppRe
         };
 
     if let Some(bookmark_path) = bookmark_path {
-        let key = poll_for_bookmark_key(context, backend);
+        let key = poll_for_bookmark_key(app_state, backend);
         if let Some(key) = key {
             if let Ok(mut bookmark) = BOOKMARKS_T.lock() {
                 bookmark.insert(key, cwd.to_string_lossy().to_string());
             }
-            let new_bookmarks_vec: Vec<BookmarkRaw> = BOOKMARKS_T
+            let new_bookmarks_vec: Vec<_> = BOOKMARKS_T
                 .lock()
                 .unwrap()
                 .clone()
@@ -69,22 +71,22 @@ pub fn add_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> AppRe
     Ok(())
 }
 
-pub fn change_directory_bookmark(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
-    let key = poll_for_bookmark_key(context, backend);
+pub fn change_directory_bookmark(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
+    let key = poll_for_bookmark_key(app_state, backend);
 
     if let Some(key) = key {
         if let Ok(bookmarks) = BOOKMARKS_T.lock() {
             if let Some(p) = bookmarks.get(&key) {
                 let path = unix::expand_shell_string(p);
-                change_directory(context, &path)?;
+                change_directory(app_state, &path)?;
             }
         }
     }
     Ok(())
 }
 
-fn poll_for_bookmark_key(context: &mut AppContext, backend: &mut AppBackend) -> Option<Event> {
-    context.flush_event();
+fn poll_for_bookmark_key(app_state: &mut AppState, backend: &mut AppBackend) -> Option<Event> {
+    app_state.flush_event();
 
     let mut bookmarks: Vec<String> = BOOKMARKS_T
         .lock()
@@ -104,7 +106,7 @@ fn poll_for_bookmark_key(context: &mut AppContext, backend: &mut AppBackend) -> 
             }
             // redraw view
             {
-                let mut view = TuiView::new(context);
+                let mut view = TuiView::new(app_state);
                 view.show_bottom_status = false;
                 frame.render_widget(view, area);
             }
@@ -128,10 +130,10 @@ fn poll_for_bookmark_key(context: &mut AppContext, backend: &mut AppBackend) -> 
             frame.render_widget(menu_widget, menu_rect);
         });
 
-        if let Ok(event) = context.poll_event() {
+        if let Ok(event) = app_state.poll_event() {
             match event {
                 AppEvent::Termion(key) => return Some(key),
-                event => process_event::process_noninteractive(event, context),
+                event => process_event::process_noninteractive(event, app_state),
             };
         }
     }

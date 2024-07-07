@@ -1,15 +1,15 @@
 use std::path;
 
-use crate::config::clean::keymap::AppKeyMapping;
-use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::create_dirlist_with_history;
+use crate::types::keymap::AppKeyMapping;
+use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
 use super::command_line;
 
 pub fn _rename_file(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     src: &path::Path,
     dest: &path::Path,
 ) -> std::io::Result<()> {
@@ -20,7 +20,7 @@ pub fn _rename_file(
     }
     std::fs::rename(src, dest)?;
 
-    let curr_tab = context.tab_context_ref().curr_tab_ref();
+    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
 
     let path = curr_tab
         .curr_list_ref()
@@ -28,57 +28,59 @@ pub fn _rename_file(
 
     if let Some(path) = path {
         let new_dirlist = {
-            let display_options = context.config_ref().display_options_ref();
-            let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
-            let history = context.tab_context_ref().curr_tab_ref().history_ref();
+            let display_options = &app_state.config.display_options;
+            let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
+            let history = app_state.state.tab_state_ref().curr_tab_ref().history_ref();
             create_dirlist_with_history(history, path.as_path(), display_options, tab_options)?
         };
-        let history = context.tab_context_mut().curr_tab_mut().history_mut();
+        let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();
         history.insert(path, new_dirlist);
     }
     Ok(())
 }
 
-pub fn rename_file(context: &mut AppContext, dest: &path::Path) -> AppResult {
-    let path: Option<path::PathBuf> = context
-        .tab_context_ref()
+pub fn rename_file(app_state: &mut AppState, dest: &path::Path) -> AppResult {
+    let path: Option<path::PathBuf> = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|s| s.curr_entry_ref())
         .map(|s| s.file_path().to_path_buf());
 
     if let Some(path) = path {
-        _rename_file(context, path.as_path(), dest)?;
+        _rename_file(app_state, path.as_path(), dest)?;
     }
     Ok(())
 }
 
-fn _get_current_file_name(context: &mut AppContext) -> Option<String> {
-    context
-        .tab_context_ref()
+fn _get_current_file_name(app_state: &mut AppState) -> Option<String> {
+    app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|list| list.curr_entry_ref().map(|s| s.file_name().to_string()))
 }
 
 pub fn rename_file_append(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
-    if let Some(file_name) = _get_current_file_name(context) {
+    if let Some(file_name) = _get_current_file_name(app_state) {
         let (prefix, suffix) = (format!("rename {}", file_name), "".to_string());
-        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
+        command_line::read_and_execute(app_state, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }
 
 pub fn rename_file_append_base(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
-    if let Some(file_name) = _get_current_file_name(context) {
+    if let Some(file_name) = _get_current_file_name(app_state) {
         let (prefix, suffix): (String, String) = match file_name.rfind('.') {
             Some(ext) => (
                 format!("rename {}", &file_name[0..ext]),
@@ -86,34 +88,34 @@ pub fn rename_file_append_base(
             ),
             None => (format!("rename {}", file_name), "".to_string()),
         };
-        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
+        command_line::read_and_execute(app_state, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }
 
 pub fn rename_file_prepend(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
-    if let Some(file_name) = _get_current_file_name(context) {
+    if let Some(file_name) = _get_current_file_name(app_state) {
         let (prefix, suffix) = ("rename ".to_string(), file_name);
-        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
+        command_line::read_and_execute(app_state, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }
 
 pub fn rename_file_keep_ext(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
-    if let Some(file_name) = _get_current_file_name(context) {
+    if let Some(file_name) = _get_current_file_name(app_state) {
         let (prefix, suffix): (String, String) = match file_name.rfind('.') {
             Some(ext) => ("rename ".to_string(), file_name[ext..].to_string()),
             None => ("rename ".to_string(), "".to_string()),
         };
-        command_line::read_and_execute(context, backend, keymap_t, &prefix, &suffix)?;
+        command_line::read_and_execute(app_state, backend, keymap_t, &prefix, &suffix)?;
     }
     Ok(())
 }

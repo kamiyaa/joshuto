@@ -1,15 +1,15 @@
-use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::{create_dirlist_with_history, DirectoryHistory};
+use crate::types::state::AppState;
 
 use uuid::Uuid;
 
 // reload only if we have a queued reload
-pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
+pub fn soft_reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
-    if let Some(curr_tab) = context.tab_context_ref().tab_ref(id) {
-        let display_options = context.config_ref().display_options_ref();
-        let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
+    if let Some(curr_tab) = app_state.state.tab_state_ref().tab_ref(id) {
+        let display_options = &app_state.config.display_options;
+        let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
         let history = curr_tab.history_ref();
         for curr_list in [
             curr_tab.parent_list_ref(),
@@ -31,8 +31,9 @@ pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
         }
     }
 
-    if let Some(history) = context
-        .tab_context_mut()
+    if let Some(history) = app_state
+        .state
+        .tab_state_mut()
         .tab_mut(id)
         .map(|t| t.history_mut())
     {
@@ -41,16 +42,16 @@ pub fn soft_reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn soft_reload_curr_tab(context: &mut AppContext) -> std::io::Result<()> {
-    let curr_tab_id = context.tab_context_ref().curr_tab_id();
-    soft_reload(context, &curr_tab_id)
+pub fn soft_reload_curr_tab(app_state: &mut AppState) -> std::io::Result<()> {
+    let curr_tab_id = app_state.state.tab_state_ref().curr_tab_id();
+    soft_reload(app_state, &curr_tab_id)
 }
 
-pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
+pub fn reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
-    if let Some(curr_tab) = context.tab_context_ref().tab_ref(id) {
-        let display_options = context.config_ref().display_options_ref();
-        let tab_options = context.tab_context_ref().curr_tab_ref().option_ref();
+    if let Some(curr_tab) = app_state.state.tab_state_ref().tab_ref(id) {
+        let display_options = &app_state.config.display_options;
+        let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
         let history = curr_tab.history_ref();
         for curr_list in [
             curr_tab.parent_list_ref(),
@@ -70,20 +71,22 @@ pub fn reload(context: &mut AppContext, id: &Uuid) -> std::io::Result<()> {
         }
     }
 
-    if let Some(history) = context
-        .tab_context_mut()
+    if let Some(history) = app_state
+        .state
+        .tab_state_mut()
         .tab_mut(id)
         .map(|t| t.history_mut())
     {
         history.insert_entries(dirlists);
     }
-    context
+    app_state
+        .state
         .message_queue_mut()
         .push_success("Directory listing reloaded!".to_string());
     Ok(())
 }
 
-pub fn reload_dirlist(context: &mut AppContext) -> AppResult {
-    reload(context, &context.tab_context_ref().curr_tab_id())?;
+pub fn reload_dirlist(app_state: &mut AppState) -> AppResult {
+    reload(app_state, &app_state.state.tab_state_ref().curr_tab_id())?;
     Ok(())
 }

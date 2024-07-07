@@ -3,19 +3,19 @@ use std::sync::mpsc;
 
 use termion::event::Key;
 
-use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
+use crate::types::state::AppState;
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::AppBackend;
 
 use super::tab_ops;
 
-fn prompt(context: &mut AppContext, backend: &mut AppBackend, paths_len: usize) -> bool {
+fn prompt(app_state: &mut AppState, backend: &mut AppBackend, paths_len: usize) -> bool {
     let ch = {
         let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
         let mut prompt = TuiPrompt::new(&prompt_str);
-        prompt.get_key(backend, context)
+        prompt.get_key(app_state, backend)
     };
 
     match ch {
@@ -25,7 +25,7 @@ fn prompt(context: &mut AppContext, backend: &mut AppBackend, paths_len: usize) 
                 let ch = {
                     let prompt_str = "Are you sure? (y/N)";
                     let mut prompt = TuiPrompt::new(prompt_str);
-                    prompt.get_key(backend, context)
+                    prompt.get_key(app_state, backend)
                 };
                 ch == Key::Char('y')
             } else {
@@ -37,7 +37,7 @@ fn prompt(context: &mut AppContext, backend: &mut AppBackend, paths_len: usize) 
 }
 
 fn delete_files(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     paths: Vec<path::PathBuf>,
     background: bool,
     permanently: bool,
@@ -46,19 +46,22 @@ fn delete_files(
     let options = FileOperationOptions {
         overwrite: false,
         skip_exist: false,
-        permanently: !context.config_ref().use_trash || permanently,
+        permanently: !app_state.config.use_trash || permanently,
     };
 
     let dest = path::PathBuf::new();
     let worker_thread = IoWorkerThread::new(file_op, paths.clone(), dest, options);
     if background {
-        context.worker_context_mut().push_worker(worker_thread);
+        app_state
+            .state
+            .worker_state_mut()
+            .push_worker(worker_thread);
     } else {
         let (wtx, _) = mpsc::channel();
         worker_thread.start(wtx)?;
     }
 
-    let history = context.tab_context_mut().curr_tab_mut().history_mut();
+    let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();
     for path in paths.iter().filter(|p| p.is_dir()) {
         history.remove(path);
     }
@@ -67,14 +70,15 @@ fn delete_files(
 }
 
 pub fn delete_selected_files(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     background: bool,
     permanently: bool,
     noconfirm: bool,
 ) -> AppResult {
-    let paths = context
-        .tab_context_ref()
+    let paths = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .map(|s| s.get_selected_paths())
@@ -89,11 +93,16 @@ pub fn delete_selected_files(
         return Err(err);
     }
 
-    if noconfirm || prompt(context, backend, paths_len) {
-        delete_files(context, paths, background, permanently)?;
+    if noconfirm || prompt(app_state, backend, paths_len) {
+        delete_files(app_state, paths, background, permanently)?;
     }
 
-    let curr_path = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
-    tab_ops::reload_all_tabs(context, curr_path.as_path())?;
+    let curr_path = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .get_cwd()
+        .to_path_buf();
+    tab_ops::reload_all_tabs(app_state, curr_path.as_path())?;
     Ok(())
 }

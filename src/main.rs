@@ -1,19 +1,18 @@
 mod commands;
 mod config;
-mod context;
+mod constants;
 mod error;
-mod event;
 mod fs;
 mod history;
 mod io;
-mod key_command;
 mod preview;
 mod run;
 mod shadow;
 mod tab;
 mod traits;
+mod types;
 mod ui;
-mod util;
+mod utils;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -22,22 +21,23 @@ use std::process;
 use std::sync::Mutex;
 
 use clap::{CommandFactory, Parser, Subcommand};
-use config::clean::app::AppConfig;
-use config::clean::icon::Icons;
-use config::clean::keymap::AppKeyMapping;
-use config::clean::preview::FileEntryPreview;
+use config::app::AppConfig;
+use config::bookmarks::Bookmarks;
+use config::icon::AppIcons;
+use config::mimetype::AppProgramRegistry;
+use config::preview::preview::FileEntryPreview;
+use config::theme::theme::AppTheme;
 use lazy_static::lazy_static;
 
-use config::clean::bookmarks::Bookmarks;
-use config::clean::mimetype::AppProgramRegistry;
-use config::clean::theme::AppTheme;
-use config::{ConfigType, TomlConfigFile};
-use util::cwd;
+use traits::config::TomlConfigFile;
+use types::config_type::ConfigType;
+use types::keymap::AppKeyMapping;
+use utils::cwd;
 
 use crate::commands::quit::QuitAction;
 
-use crate::context::AppContext;
 use crate::error::AppError;
+use crate::types::state::AppState;
 
 const PROGRAM_NAME: &str = "joshuto";
 const CONFIG_HOME: &str = "JOSHUTO_CONFIG_HOME";
@@ -72,7 +72,7 @@ lazy_static! {
     static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config();
     static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config();
     static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config());
-    static ref ICONS_T: Icons = Icons::get_config();
+    static ref ICONS_T: AppIcons = AppIcons::get_config();
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
 
@@ -170,26 +170,26 @@ fn run_main(args: Args) -> Result<i32, AppError> {
     lazy_static::initialize(&HOSTNAME);
 
     let mouse_support = config.mouse_support;
-    let mut context = AppContext::new(config, args.clone());
+    let mut app_state = AppState::new(config, args.clone());
     {
         let mut backend: ui::AppBackend = ui::AppBackend::new(mouse_support)?;
-        run::run_loop(&mut backend, &mut context, keymap)?;
+        run::run_loop(&mut backend, &mut app_state, keymap)?;
     }
-    run_quit(&args, &context)?;
-    Ok(context.quit.exit_code())
+    run_quit(&args, &app_state)?;
+    Ok(app_state.quit.exit_code())
 }
 
-fn run_quit(args: &Args, context: &AppContext) -> Result<(), AppError> {
+fn run_quit(args: &Args, app_state: &AppState) -> Result<(), AppError> {
     match &args.output_file {
-        Some(output_path) => match context.quit {
+        Some(output_path) => match app_state.quit {
             QuitAction::OutputCurrentDirectory => {
-                let curr_path = context.tab_context_ref().curr_tab_ref().cwd();
+                let curr_path = app_state.state.tab_state_ref().curr_tab_ref().get_cwd();
                 let mut file = File::create(output_path)?;
                 file.write_all(curr_path.as_os_str().to_string_lossy().as_bytes())?;
                 file.write_all("\n".as_bytes())?;
             }
             QuitAction::OutputSelectedFiles => {
-                let curr_tab = context.tab_context_ref().curr_tab_ref();
+                let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
                 let selected_files = curr_tab
                     .curr_list_ref()
                     .into_iter()
@@ -201,7 +201,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), AppError> {
             }
             _ => {}
         },
-        None => match context.quit {
+        None => match app_state.quit {
             QuitAction::OutputCurrentDirectory => {
                 let curr_path = std::env::current_dir()?;
                 eprintln!(
@@ -210,7 +210,7 @@ fn run_quit(args: &Args, context: &AppContext) -> Result<(), AppError> {
                 );
             }
             QuitAction::OutputSelectedFiles => {
-                let curr_tab = context.tab_context_ref().curr_tab_ref();
+                let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
                 let selected_files = curr_tab
                     .curr_list_ref()
                     .into_iter()

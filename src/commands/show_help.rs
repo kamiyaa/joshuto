@@ -2,23 +2,24 @@ use std::cmp::Ordering;
 
 use termion::event::{Event, Key};
 
-use crate::config::clean::keymap::AppKeyMapping;
-use crate::context::remove_external_preview;
-use crate::context::AppContext;
 use crate::error::AppResult;
-use crate::event::process_event;
-use crate::event::AppEvent;
-use crate::key_command::{Command, CommandKeybind};
+use crate::run::process_event;
+use crate::types::command::Command;
+use crate::types::event::AppEvent;
+use crate::types::keybind::CommandKeybind;
+use crate::types::keymap::AppKeyMapping;
+use crate::types::state::remove_external_preview;
+use crate::types::state::AppState;
 use crate::ui::widgets;
 use crate::ui::widgets::TuiHelp;
 use crate::ui::AppBackend;
 
 pub fn help_loop(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     keymap_t: &AppKeyMapping,
 ) -> AppResult {
-    context.flush_event();
+    app_state.flush_event();
 
     let mut offset = 0;
     let mut search_query = String::new();
@@ -31,10 +32,10 @@ pub fn help_loop(
             widgets::get_keymap_table(&keymap_t.default_view, &search_query[1..], sort_by)
         };
 
-        remove_external_preview(context);
+        remove_external_preview(app_state);
         backend.render(TuiHelp::new(&keymap, &mut offset, &search_query));
 
-        let event = match context.poll_event() {
+        let event = match app_state.poll_event() {
             Ok(event) => event,
             Err(_) => return Ok(()),
         };
@@ -85,9 +86,9 @@ pub fn help_loop(
                         _ => (),
                     }
                 }
-                context.flush_event();
+                app_state.flush_event();
             }
-            _ => process_event::process_noninteractive(event, context),
+            _ => process_event::process_noninteractive(event, app_state),
         }
     }
 

@@ -11,8 +11,8 @@ use crate::error::AppError;
 use crate::error::AppErrorKind;
 use crate::error::AppResult;
 use crate::io::{FileOperation, FileOperationOptions, FileOperationProgress};
-use crate::util::fs::query_number_of_items;
-use crate::util::name_resolution::rename_filename_conflict;
+use crate::utils::fs::query_number_of_items;
+use crate::utils::name_resolution::rename_filename_conflict;
 
 #[derive(Clone, Debug)]
 pub struct IoWorkerThread {

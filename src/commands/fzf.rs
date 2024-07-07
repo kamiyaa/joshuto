@@ -2,23 +2,20 @@ use std::io::{BufWriter, Write};
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
 
-use crate::config::clean::app::search::CaseSensitivity;
-use crate::context::remove_external_preview;
-use crate::context::AppContext;
 use crate::error::{AppError, AppResult};
+use crate::types::option::search::CaseSensitivity;
+use crate::types::state::remove_external_preview;
+use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
 pub fn fzf(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     items: Vec<String>,
 ) -> AppResult<String> {
     let mut args = Vec::new();
 
-    let case_sensitivity = context
-        .config_ref()
-        .search_options_ref()
-        .fzf_case_sensitivity;
+    let case_sensitivity = app_state.config.search_options.fzf_case_sensitivity;
 
     match case_sensitivity {
         CaseSensitivity::Insensitive => args.push("-i".to_owned()),
@@ -26,20 +23,17 @@ pub fn fzf(
         CaseSensitivity::Smart => {}
     }
 
-    fzf_impl(context, backend, items, args)
+    fzf_impl(app_state, backend, items, args)
 }
 
 pub fn fzf_multi(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     items: Vec<String>,
 ) -> AppResult<String> {
     let mut args = Vec::new();
 
-    let case_sensitivity = context
-        .config_ref()
-        .search_options_ref()
-        .fzf_case_sensitivity;
+    let case_sensitivity = app_state.config.search_options.fzf_case_sensitivity;
 
     match case_sensitivity {
         CaseSensitivity::Insensitive => args.push("-i".to_owned()),
@@ -48,16 +42,16 @@ pub fn fzf_multi(
     }
 
     args.push("-m".to_owned());
-    fzf_impl(context, backend, items, args)
+    fzf_impl(app_state, backend, items, args)
 }
 
 fn fzf_impl(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     items: Vec<String>,
     args: Vec<String>,
 ) -> AppResult<String> {
-    remove_external_preview(context);
+    remove_external_preview(app_state);
     backend.terminal_drop();
 
     let mut cmd = Command::new("fzf");

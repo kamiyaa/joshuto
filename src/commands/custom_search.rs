@@ -1,20 +1,20 @@
 use super::change_directory::change_directory;
 use super::sub_process::current_files;
 use crate::commands::cursor_move;
-use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::types::state::AppState;
 use crate::ui::AppBackend;
 use shell_words::split;
 use std::process::{Command, Stdio};
 
 pub fn custom_search(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     words: &[String],
     interactive: bool,
 ) -> AppResult {
-    let custom_command = context
-        .config_ref()
+    let custom_command = app_state
+        .config
         .custom_commands
         .as_slice()
         .iter()
@@ -26,7 +26,7 @@ pub fn custom_search(
         .command
         .clone();
 
-    let current_filenames: Vec<&str> = current_files(context).iter().map(|f| f.0).collect();
+    let current_filenames: Vec<&str> = current_files(app_state).iter().map(|f| f.0).collect();
 
     let text = custom_command.replace("%s", &current_filenames.join(" "));
     let text = text.replace(
@@ -75,14 +75,19 @@ pub fn custom_search(
 
         let path = std::path::Path::new(returned_text);
         change_directory(
-            context,
+            app_state,
             path.parent().ok_or(AppError::new(
                 AppErrorKind::Parse,
                 "Could not get parent directory".into(),
             ))?,
         )?;
 
-        if let Some(current_dir_items) = context.tab_context_ref().curr_tab_ref().curr_list_ref() {
+        if let Some(current_dir_items) = app_state
+            .state
+            .tab_state_ref()
+            .curr_tab_ref()
+            .curr_list_ref()
+        {
             let position = current_dir_items
                 .iter()
                 .enumerate()
@@ -90,7 +95,7 @@ pub fn custom_search(
                 .map(|x| x.0)
                 .unwrap_or_default();
 
-            cursor_move::cursor_move(context, position);
+            cursor_move::cursor_move(app_state, position);
         }
 
         Ok(())

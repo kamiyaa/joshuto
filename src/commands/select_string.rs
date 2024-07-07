@@ -1,19 +1,16 @@
-use crate::context::{AppContext, MatchContext};
 use crate::error::AppResult;
+use crate::types::state::{AppState, MatchState};
 
 use super::select::{self, SelectOption};
 
-pub fn select_string(context: &mut AppContext, pattern: &str, options: &SelectOption) -> AppResult {
-    let case_sensitivity = context
-        .config_ref()
-        .search_options_ref()
-        .string_case_sensitivity;
+pub fn select_string(app_state: &mut AppState, pattern: &str, options: &SelectOption) -> AppResult {
+    let case_sensitivity = app_state.config.search_options.string_case_sensitivity;
 
-    let select_context = if !pattern.is_empty() {
-        MatchContext::new_string(pattern, case_sensitivity)
+    let select_state = if !pattern.is_empty() {
+        MatchState::new_string(pattern, case_sensitivity)
     } else {
-        MatchContext::None
+        MatchState::None
     };
 
-    select::select_files(context, &select_context, options)
+    select::select_files(app_state, &select_state, options)
 }

@@ -1,30 +1,34 @@
 use termion::event::{Event, Key};
 
 use crate::commands::cursor_move;
-use crate::config::clean::keymap::AppKeyMapping;
-use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
-use crate::event::process_event;
-use crate::event::AppEvent;
-use crate::key_command::{CommandKeybind, NumberedExecute};
+use crate::run::process_event;
+use crate::traits::app_execute::NumberedExecute;
+use crate::types::event::AppEvent;
+use crate::types::keybind::CommandKeybind;
+use crate::types::keymap::AppKeyMapping;
+use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
 
 pub fn numbered_command(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     backend: &mut AppBackend,
     keymap: &AppKeyMapping,
     first_char: char,
 ) -> AppResult {
-    context.flush_event();
+    app_state.flush_event();
     let mut prefix = String::from(first_char);
 
     loop {
-        context.message_queue_mut().push_info(prefix.clone());
-        backend.render(TuiView::new(context));
-        context.message_queue_mut().pop_front();
+        app_state
+            .state
+            .message_queue_mut()
+            .push_info(prefix.clone());
+        backend.render(TuiView::new(app_state));
+        app_state.state.message_queue_mut().pop_front();
 
-        let event = match context.poll_event() {
+        let event = match app_state.poll_event() {
             Ok(event) => event,
             Err(_) => return Ok(()),
         };
@@ -32,7 +36,7 @@ pub fn numbered_command(
         let num_prefix = match prefix.parse::<usize>() {
             Ok(n) => n,
             Err(_) => {
-                context.message_queue_mut().pop_front();
+                app_state.state.message_queue_mut().pop_front();
                 return Err(AppError::new(
                     AppErrorKind::Parse,
                     "Number is too big".to_string(),
@@ -45,7 +49,7 @@ pub fn numbered_command(
                 match event {
                     Event::Key(Key::Esc) => return Ok(()),
                     Event::Key(Key::Char('g')) => {
-                        cursor_move::cursor_move(context, num_prefix - 1);
+                        cursor_move::cursor_move(app_state, num_prefix - 1);
                         return Ok(());
                     }
                     Event::Key(Key::Char(c)) if c.is_numeric() => {
@@ -54,8 +58,8 @@ pub fn numbered_command(
                     key => match keymap.default_view.get(&key) {
                         Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
                             for command in commands {
-                                let _ =
-                                    command.numbered_execute(num_prefix, context, backend, keymap);
+                                let _ = command
+                                    .numbered_execute(num_prefix, app_state, backend, keymap);
                             }
                             return Ok(());
                         }
@@ -68,9 +72,9 @@ pub fn numbered_command(
                         }
                     },
                 }
-                context.flush_event();
+                app_state.flush_event();
             }
-            event => process_event::process_noninteractive(event, context),
+            event => process_event::process_noninteractive(event, app_state),
         }
     }
 }

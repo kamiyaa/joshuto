@@ -1,5 +1,5 @@
-use crate::context::AppContext;
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::types::state::AppState;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuitAction {
@@ -22,20 +22,20 @@ impl QuitAction {
     }
 }
 
-pub fn quit_with_action(context: &mut AppContext, quit_action: QuitAction) -> AppResult {
+pub fn quit_with_action(app_state: &mut AppState, quit_action: QuitAction) -> AppResult {
     if quit_action == QuitAction::Force {
-        context.quit = quit_action;
+        app_state.quit = quit_action;
         return Ok(());
     }
 
-    let worker_context = context.worker_context_ref();
-    if worker_context.is_busy() || !worker_context.is_empty() {
+    let worker_state = app_state.state.worker_state_ref();
+    if worker_state.is_busy() || !worker_state.is_empty() {
         Err(AppError::new(
             AppErrorKind::Io,
             String::from("operations running in background, use `quit --force` to quit"),
         ))
     } else {
-        context.quit = quit_action;
+        app_state.quit = quit_action;
         Ok(())
     }
 }

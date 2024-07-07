@@ -4,9 +4,9 @@ use ratatui::text::Span;
 use ratatui::widgets::{Clear, Paragraph, Wrap};
 use termion::event::{Event, Key};
 
-use crate::context::AppContext;
-use crate::event::process_event;
-use crate::event::AppEvent;
+use crate::run::process_event;
+use crate::types::event::AppEvent;
+use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
 
@@ -19,10 +19,10 @@ impl<'a> TuiPrompt<'a> {
         Self { prompt }
     }
 
-    pub fn get_key(&mut self, backend: &mut AppBackend, context: &mut AppContext) -> Key {
+    pub fn get_key(&mut self, app_state: &mut AppState, backend: &mut AppBackend) -> Key {
         let terminal = backend.terminal_mut();
 
-        context.flush_event();
+        app_state.flush_event();
         loop {
             let _ = terminal.draw(|frame| {
                 let f_size: Rect = frame.size();
@@ -31,7 +31,7 @@ impl<'a> TuiPrompt<'a> {
                 }
 
                 {
-                    let mut view = TuiView::new(context);
+                    let mut view = TuiView::new(app_state);
                     view.show_bottom_status = false;
                     frame.render_widget(view, f_size);
                 }
@@ -54,15 +54,15 @@ impl<'a> TuiPrompt<'a> {
                 );
             });
 
-            if let Ok(event) = context.poll_event() {
+            if let Ok(event) = app_state.poll_event() {
                 match event {
                     AppEvent::Termion(Event::Key(key)) => {
                         return key;
                     }
                     AppEvent::Termion(_) => {
-                        context.flush_event();
+                        app_state.flush_event();
                     }
-                    event => process_event::process_noninteractive(event, context),
+                    event => process_event::process_noninteractive(event, app_state),
                 };
             }
         }

@@ -1,13 +1,10 @@
-use crate::config::clean::app::display::line_number::LineNumberStyle;
-use crate::context::AppContext;
 use crate::error::AppResult;
+use crate::types::option::line_mode::LineNumberStyle;
+use crate::types::state::AppState;
 
 use super::reload;
 
-pub fn switch_line_numbering(context: &mut AppContext, style: LineNumberStyle) -> AppResult {
-    context
-        .config_mut()
-        .display_options_mut()
-        .set_line_nums(style);
-    reload::reload_dirlist(context)
+pub fn switch_line_numbering(app_state: &mut AppState, style: LineNumberStyle) -> AppResult {
+    app_state.config.display_options.line_number_style = style;
+    reload::reload_dirlist(app_state)
 }

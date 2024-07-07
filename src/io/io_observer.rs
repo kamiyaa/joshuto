@@ -2,7 +2,7 @@ use std::path;
 use std::thread;
 
 use crate::io::FileOperationProgress;
-use crate::util::format;
+use crate::utils::format;
 
 #[derive(Debug)]
 pub struct IoWorkerObserver {

@@ -1,47 +1,59 @@
 use std::process::{Command, Stdio};
 
-use crate::context::{AppContext, LocalStateContext};
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
+use crate::types::state::{AppState, LocalStateState};
 
-fn new_local_state(context: &mut AppContext, file_op: FileOperation) -> Option<()> {
-    let list = context.tab_context_ref().curr_tab_ref().curr_list_ref()?;
+fn new_local_state(app_state: &mut AppState, file_op: FileOperation) -> Option<()> {
+    let list = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .curr_list_ref()?;
     let selected = list.get_selected_paths();
 
-    let mut local_state = LocalStateContext::new();
+    let mut local_state = LocalStateState::new();
     local_state.set_paths(selected.into_iter());
     local_state.set_file_op(file_op);
 
-    context.set_local_state(local_state);
+    app_state.state.set_local_state(local_state);
     Some(())
 }
 
-pub fn cut(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Cut);
+pub fn cut(app_state: &mut AppState) -> AppResult {
+    new_local_state(app_state, FileOperation::Cut);
     Ok(())
 }
 
-pub fn copy(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Copy);
+pub fn copy(app_state: &mut AppState) -> AppResult {
+    new_local_state(app_state, FileOperation::Copy);
     Ok(())
 }
 
-pub fn symlink_absolute(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Symlink { relative: false });
+pub fn symlink_absolute(app_state: &mut AppState) -> AppResult {
+    new_local_state(app_state, FileOperation::Symlink { relative: false });
     Ok(())
 }
 
-pub fn symlink_relative(context: &mut AppContext) -> AppResult {
-    new_local_state(context, FileOperation::Symlink { relative: true });
+pub fn symlink_relative(app_state: &mut AppState) -> AppResult {
+    new_local_state(app_state, FileOperation::Symlink { relative: true });
     Ok(())
 }
 
-pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> AppResult {
-    match context.take_local_state() {
+pub fn paste(app_state: &mut AppState, options: FileOperationOptions) -> AppResult {
+    match app_state.state.take_local_state() {
         Some(state) if !state.paths.is_empty() => {
-            let dest = context.tab_context_ref().curr_tab_ref().cwd().to_path_buf();
+            let dest = app_state
+                .state
+                .tab_state_ref()
+                .curr_tab_ref()
+                .get_cwd()
+                .to_path_buf();
             let worker_thread = IoWorkerThread::new(state.file_op, state.paths, dest, options);
-            context.worker_context_mut().push_worker(worker_thread);
+            app_state
+                .state
+                .worker_state_mut()
+                .push_worker(worker_thread);
             Ok(())
         }
         _ => Err(AppError::new(
@@ -51,9 +63,10 @@ pub fn paste(context: &mut AppContext, options: FileOperationOptions) -> AppResu
     }
 }
 
-pub fn copy_filename(context: &mut AppContext) -> AppResult {
-    let entry_file_name = context
-        .tab_context_ref()
+pub fn copy_filename(app_state: &mut AppState) -> AppResult {
+    let entry_file_name = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
@@ -65,9 +78,10 @@ pub fn copy_filename(context: &mut AppContext) -> AppResult {
     Ok(())
 }
 
-pub fn copy_filename_without_extension(context: &mut AppContext) -> AppResult {
-    let entry_file_name = context
-        .tab_context_ref()
+pub fn copy_filename_without_extension(app_state: &mut AppState) -> AppResult {
+    let entry_file_name = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
@@ -85,8 +99,12 @@ pub fn copy_filename_without_extension(context: &mut AppContext) -> AppResult {
     Ok(())
 }
 
-pub fn copy_filepath(context: &mut AppContext, all: bool) -> AppResult {
-    let selected = context.tab_context_ref().curr_tab_ref().curr_list_ref();
+pub fn copy_filepath(app_state: &mut AppState, all: bool) -> AppResult {
+    let selected = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .curr_list_ref();
     let entry_file_path = {
         if all {
             selected.map(|c| c.get_selected_paths()).and_then(|sel| {
@@ -111,9 +129,10 @@ pub fn copy_filepath(context: &mut AppContext, all: bool) -> AppResult {
     Ok(())
 }
 
-pub fn copy_dirpath(context: &mut AppContext) -> AppResult {
-    let opt_entry = context
-        .tab_context_ref()
+pub fn copy_dirpath(app_state: &mut AppState) -> AppResult {
+    let opt_entry = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .map(|dirlist| dirlist.file_path());

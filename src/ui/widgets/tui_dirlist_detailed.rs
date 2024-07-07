@@ -5,16 +5,15 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::config::clean::app::display::line_mode::{LineMode, LineModeArgs};
-use crate::config::clean::app::display::line_number::LineNumberStyle;
-use crate::config::clean::app::display::tab::TabDisplayOption;
-use crate::config::clean::app::display::DisplayOption;
-use crate::config::clean::app::AppConfig;
+use crate::config::app::AppConfig;
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
-use crate::util::format::time_to_string;
-use crate::util::string::UnicodeTruncate;
-use crate::util::style;
-use crate::util::{format, unix};
+use crate::types::option::display::DisplayOption;
+use crate::types::option::line_mode::{LineMode, LineModeArgs, LineNumberStyle};
+use crate::types::option::tab::TabDisplayOption;
+use crate::utils::format::time_to_string;
+use crate::utils::string::UnicodeTruncate;
+use crate::utils::style;
+use crate::utils::{format, unix};
 use unicode_width::UnicodeWidthStr;
 
 use super::tui_dirlist::get_entry_icon;
@@ -67,7 +66,7 @@ impl<'a> Widget for TuiDirListDetailed<'a> {
 
         let drawing_width = area.width as usize;
         let skip_dist = self.dirlist.first_index_for_viewport();
-        let line_num_style = self.display_options.line_nums();
+        let line_num_style = self.display_options.line_number_style;
         // Length (In chars) of the last entry's index on current page.
         // Using this to align all elements
         let max_index_length = (skip_dist
@@ -173,7 +172,7 @@ fn print_entry(
     let name = entry.file_name();
     #[cfg(feature = "devicons")]
     let label = {
-        if config.display_options_ref().show_icons() {
+        if config.display_options.show_icons {
             let icon = get_entry_icon(config, entry.file_name(), entry.ext(), &entry.metadata);
             format!("{icon} {name}")
         } else {

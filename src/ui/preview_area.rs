@@ -1,6 +1,6 @@
 use std::path;
 
-use super::Rect;
+use super::rect::Rect;
 
 #[derive(Debug, Clone)]
 pub struct PreviewArea {

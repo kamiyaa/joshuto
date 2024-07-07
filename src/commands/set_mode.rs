@@ -1,10 +1,10 @@
 use std::fs;
 
-use crate::context::AppContext;
 use crate::error::AppResult;
+use crate::types::state::AppState;
 use crate::ui::views::{DummyListener, TuiTextField};
 use crate::ui::AppBackend;
-use crate::util::unix;
+use crate::utils::unix;
 
 use super::cursor_move;
 
@@ -33,13 +33,14 @@ pub fn str_to_mode(s: &str) -> u32 {
     mode
 }
 
-pub fn set_mode(context: &mut AppContext, backend: &mut AppBackend) -> AppResult {
+pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
 
     const PREFIX: &str = "set_mode ";
-    let entry = context
-        .tab_context_ref()
+    let entry = app_state
+        .state
+        .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|x| x.curr_entry_ref());
@@ -50,12 +51,12 @@ pub fn set_mode(context: &mut AppContext, backend: &mut AppBackend) -> AppResult
             let mode_string = unix::mode_to_string(mode);
             let mut listener = DummyListener {};
 
-            context.flush_event();
+            app_state.flush_event();
             TuiTextField::default()
                 .prompt(":")
                 .prefix(PREFIX)
                 .suffix(&mode_string.as_str()[1..])
-                .get_input(backend, context, &mut listener)
+                .get_input(app_state, backend, &mut listener)
         }
         None => None,
     };
@@ -63,7 +64,12 @@ pub fn set_mode(context: &mut AppContext, backend: &mut AppBackend) -> AppResult
     if let Some(s) = user_input {
         if let Some(stripped) = s.strip_prefix(PREFIX) {
             let mode = str_to_mode(stripped);
-            if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+            if let Some(curr_list) = app_state
+                .state
+                .tab_state_mut()
+                .curr_tab_mut()
+                .curr_list_mut()
+            {
                 if curr_list.selected_count() > 0 {
                     for entry in curr_list.iter_selected_mut() {
                         let mut permissions = entry.metadata.permissions_ref().clone();
@@ -81,7 +87,7 @@ pub fn set_mode(context: &mut AppContext, backend: &mut AppBackend) -> AppResult
                     fs::set_permissions(entry.file_path(), permissions)?;
                     entry.metadata.permissions_mut().set_mode(file_mode);
 
-                    cursor_move::down(context, 1)?;
+                    cursor_move::down(app_state, 1)?;
                 }
             }
         }

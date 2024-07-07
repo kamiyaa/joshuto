@@ -2,10 +2,11 @@ use std::path::Path;
 
 use ratatui::text::Span;
 
-use crate::config::clean::theme::tab::TabTheme;
-use crate::util::string::UnicodeTruncate;
-use crate::HOME_DIR;
 use unicode_width::UnicodeWidthStr;
+
+use crate::config::theme::tab::TabTheme;
+use crate::utils::string::UnicodeTruncate;
+use crate::HOME_DIR;
 
 // This file provides stuff to factor a tab-line from a list of paths.
 //
@@ -518,8 +519,7 @@ pub fn factor_tab_bar_spans<'a>(
 
 #[cfg(test)]
 mod tests_facator_tab_bar_sequence {
-    use crate::config::clean::theme::tab::TabTheme;
-    use crate::config::raw::theme::tab::TabThemeRaw;
+    use crate::config::theme::{tab::TabTheme, tab_raw::TabThemeRaw};
 
     use super::{factor_tab_bar_sequence, TabBarElement, TabLabel};
 

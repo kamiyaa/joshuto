@@ -1,12 +1,12 @@
-use crate::config::clean::app::display::sort_type::SortType;
-use crate::context::AppContext;
 use crate::error::AppResult;
 use crate::history::DirectoryHistory;
+use crate::types::option::sort::SortMethod;
+use crate::types::state::AppState;
 
 use super::reload;
 
-pub fn set_sort(context: &mut AppContext, method: SortType, reverse: Option<bool>) -> AppResult {
-    let curr_tab = context.tab_context_mut().curr_tab_mut();
+pub fn set_sort(app_state: &mut AppState, method: SortMethod, reverse: Option<bool>) -> AppResult {
+    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
     curr_tab
         .option_mut()
         .sort_options_mut()
@@ -17,28 +17,28 @@ pub fn set_sort(context: &mut AppContext, method: SortType, reverse: Option<bool
         curr_tab.option_mut().sort_options_mut().reverse = r;
     }
 
-    refresh(context)
+    refresh(app_state)
 }
 
-pub fn toggle_reverse(context: &mut AppContext) -> AppResult {
-    let curr_tab = context.tab_context_mut().curr_tab_mut();
+pub fn toggle_reverse(app_state: &mut AppState) -> AppResult {
+    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
     let reversed = !curr_tab.option_mut().sort_options_ref().reverse;
     curr_tab.option_mut().sort_options_mut().reverse = reversed;
     curr_tab.history_mut().depreciate_all_entries();
-    refresh(context)
+    refresh(app_state)
 }
 
-fn refresh(context: &mut AppContext) -> AppResult {
-    reload::soft_reload_curr_tab(context)?;
+fn refresh(app_state: &mut AppState) -> AppResult {
+    reload::soft_reload_curr_tab(app_state)?;
 
-    let ui_context = context.ui_context_ref().clone();
-    let display_options = context.config_ref().display_options_ref().clone();
-    let curr_tab = context.tab_context_mut().curr_tab_mut();
+    let ui_state = app_state.state.ui_state_ref().clone();
+    let display_options = &app_state.config.display_options;
+    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
 
     macro_rules! update_viewport {
         ($x_list_mut: ident) => {
             if let Some(list) = curr_tab.$x_list_mut() {
-                list.update_viewport(&ui_context, &display_options);
+                list.update_viewport(&ui_state, display_options);
             }
         };
     }

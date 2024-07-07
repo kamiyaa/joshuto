@@ -2,16 +2,16 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::Widget;
 
-use crate::context::AppContext;
+use crate::types::state::AppState;
 use crate::ui::widgets::{TuiTopBar, TuiWorker};
 
 pub struct TuiWorkerView<'a> {
-    context: &'a AppContext,
+    app_state: &'a AppState,
 }
 
 impl<'a> TuiWorkerView<'a> {
-    pub fn new(context: &'a AppContext) -> Self {
-        Self { context }
+    pub fn new(app_state: &'a AppState) -> Self {
+        Self { app_state }
     }
 }
 
@@ -22,7 +22,7 @@ impl<'a> Widget for TuiWorkerView<'a> {
         }
 
         let rect = Rect { height: 1, ..area };
-        TuiTopBar::new(self.context).render(rect, buf);
+        TuiTopBar::new(self.app_state).render(rect, buf);
 
         let rect = Rect {
             x: 0,
@@ -30,6 +30,6 @@ impl<'a> Widget for TuiWorkerView<'a> {
             width: area.width,
             height: area.height - 1,
         };
-        TuiWorker::new(self.context.worker_context_ref()).render(rect, buf);
+        TuiWorker::new(self.app_state.state.worker_state_ref()).render(rect, buf);
     }
 }

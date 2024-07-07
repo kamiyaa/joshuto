@@ -1,18 +1,15 @@
-use crate::context::{AppContext, MatchContext};
 use crate::error::AppResult;
+use crate::types::state::{AppState, MatchState};
 
 use super::cursor_move;
 use super::search;
 
-pub fn search_regex(context: &mut AppContext, pattern: &str) -> AppResult {
-    let case_sensitivity = context
-        .config_ref()
-        .search_options_ref()
-        .regex_case_sensitivity;
+pub fn search_regex(app_state: &mut AppState, pattern: &str) -> AppResult {
+    let case_sensitivity = app_state.config.search_options.regex_case_sensitivity;
 
-    let search_context = MatchContext::new_regex(pattern, case_sensitivity)?;
+    let search_state = MatchState::new_regex(pattern, case_sensitivity)?;
 
-    let curr_tab = &context.tab_context_ref().curr_tab_ref();
+    let curr_tab = &app_state.state.tab_state_ref().curr_tab_ref();
     let index = curr_tab.curr_list_ref().and_then(|c| c.get_index());
 
     let offset = match index {
@@ -20,10 +17,10 @@ pub fn search_regex(context: &mut AppContext, pattern: &str) -> AppResult {
         None => return Ok(()),
     };
 
-    if let Some(new_index) = search::search_next_impl(curr_tab, &search_context, offset) {
-        cursor_move::cursor_move(context, new_index);
+    if let Some(new_index) = search::search_next_impl(curr_tab, &search_state, offset) {
+        cursor_move::cursor_move(app_state, new_index);
     }
 
-    context.set_search_context(search_context);
+    app_state.state.set_search_state(search_state);
     Ok(())
 }

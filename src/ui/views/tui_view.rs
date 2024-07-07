@@ -2,19 +2,19 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::Widget;
 
-use crate::config::clean::app::display::DisplayMode;
-use crate::context::AppContext;
+use crate::types::option::display::DisplayMode;
+use crate::types::state::AppState;
 use crate::ui::views::{TuiFolderView, TuiHSplitView};
 
 pub struct TuiView<'a> {
-    pub context: &'a AppContext,
+    pub app_state: &'a AppState,
     pub show_bottom_status: bool,
 }
 
 impl<'a> TuiView<'a> {
-    pub fn new(context: &'a AppContext) -> Self {
+    pub fn new(app_state: &'a AppState) -> Self {
         Self {
-            context,
+            app_state,
             show_bottom_status: true,
         }
     }
@@ -22,14 +22,13 @@ impl<'a> TuiView<'a> {
 
 impl<'a> Widget for TuiView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let config = self.context.config_ref();
-        let display_options = config.display_options_ref();
-        match display_options.mode() {
+        let display_options = &self.app_state.config.display_options;
+        match display_options.mode {
             DisplayMode::Default => {
-                TuiFolderView::new(self.context).render(area, buf);
+                TuiFolderView::new(self.app_state).render(area, buf);
             }
             DisplayMode::HSplit => {
-                TuiHSplitView::new(self.context).render(area, buf);
+                TuiHSplitView::new(self.app_state).render(area, buf);
             }
         }
     }

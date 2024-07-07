@@ -7,9 +7,8 @@ use ratatui::layout::{Constraint, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Cell, Row, Table, Widget};
 
-use crate::config::clean::keymap::KeyMapping;
-use crate::key_command::traits::CommandComment;
-use crate::key_command::CommandKeybind;
+use crate::traits::app_execute::CommandComment;
+use crate::types::keybind::{CommandKeybind, KeyMapping};
 
 lazy_static! {
     static ref COMMENT_STYLE: Style = Style::default().add_modifier(Modifier::REVERSED);

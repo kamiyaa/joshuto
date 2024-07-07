@@ -4,9 +4,10 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Clear, Widget};
 
-use crate::config::clean::keymap::KeyMapping;
-use crate::context::AppContext;
+use crate::config::app::AppConfig;
 use crate::traits::ToString;
+use crate::types::keybind::KeyMapping;
+use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
 
@@ -14,19 +15,19 @@ const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;
 
 pub struct TuiCommandMenu<'a> {
-    context: &'a AppContext,
+    app_state: &'a AppState,
     keymap: &'a KeyMapping,
 }
 
 impl<'a> TuiCommandMenu<'a> {
-    pub fn new(context: &'a AppContext, keymap: &'a KeyMapping) -> Self {
-        Self { context, keymap }
+    pub fn new(app_state: &'a AppState, keymap: &'a KeyMapping) -> Self {
+        Self { app_state, keymap }
     }
 }
 
 impl<'a> Widget for TuiCommandMenu<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        TuiView::new(self.context).render(area, buf);
+        TuiView::new(self.app_state).render(area, buf);
 
         // draw menu
         let mut display_vec: Vec<String> = self

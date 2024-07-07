@@ -4,11 +4,11 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
-use crate::config::clean::app::AppConfig;
+use crate::config::app::AppConfig;
 use crate::fs::{FileType, JoshutoMetadata};
 use crate::fs::{JoshutoDirEntry, JoshutoDirList};
 use crate::ui::widgets::trim_file_label;
-use crate::util::style;
+use crate::utils::style;
 
 pub struct TuiDirList<'a> {
     pub config: &'a AppConfig,
@@ -88,7 +88,7 @@ fn print_entry(
     let name = entry.file_name();
     #[cfg(feature = "devicons")]
     let (label, label_width) = {
-        if config.display_options_ref().show_icons() {
+        if config.display_options.show_icons {
             let icon = get_entry_icon(config, entry.file_name(), entry.ext(), &entry.metadata);
             let label = format!("{icon} {name}");
             let label_width = label.width();

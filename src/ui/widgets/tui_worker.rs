@@ -3,17 +3,17 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::context::WorkerContext;
 use crate::io::{FileOperationProgress, IoWorkerObserver};
-use crate::util::format;
+use crate::types::state::WorkerState;
+use crate::utils::format;
 
 pub struct TuiWorker<'a> {
-    pub context: &'a WorkerContext,
+    pub app_state: &'a WorkerState,
 }
 
 impl<'a> TuiWorker<'a> {
-    pub fn new(context: &'a WorkerContext) -> Self {
-        Self { context }
+    pub fn new(app_state: &'a WorkerState) -> Self {
+        Self { app_state }
     }
 }
 
@@ -22,7 +22,7 @@ impl<'a> Widget for TuiWorker<'a> {
         if area.height < 7 {
             return;
         }
-        match self.context.worker_ref() {
+        match self.app_state.worker_ref() {
             Some(io_obs) => {
                 if let Some(progress) = io_obs.progress.as_ref() {
                     let current_area = Rect {
@@ -42,7 +42,7 @@ impl<'a> Widget for TuiWorker<'a> {
                     y: area.y + 7,
                     ..area
                 };
-                TuiWorkerQueue::new(self.context).render(queue_area, buf);
+                TuiWorkerQueue::new(self.app_state).render(queue_area, buf);
             }
             _ => {
                 let style = Style::default();
@@ -121,12 +121,12 @@ impl<'a> Widget for TuiCurrentWorker<'a> {
 }
 
 pub struct TuiWorkerQueue<'a> {
-    pub context: &'a WorkerContext,
+    pub app_state: &'a WorkerState,
 }
 
 impl<'a> TuiWorkerQueue<'a> {
-    pub fn new(context: &'a WorkerContext) -> Self {
-        Self { context }
+    pub fn new(app_state: &'a WorkerState) -> Self {
+        Self { app_state }
     }
 }
 
@@ -139,7 +139,7 @@ impl<'a> Widget for TuiWorkerQueue<'a> {
 
         let style = Style::default();
 
-        for (i, worker) in self.context.iter().enumerate() {
+        for (i, worker) in self.app_state.iter().enumerate() {
             let msg = format!(
                 "{:02} {} {} items {:?}",
                 i + 1,

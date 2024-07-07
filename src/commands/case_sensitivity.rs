@@ -1,6 +1,6 @@
-use crate::config::clean::app::search::CaseSensitivity;
-use crate::context::AppContext;
 use crate::error::AppResult;
+use crate::types::option::search::CaseSensitivity;
+use crate::types::state::AppState;
 
 #[derive(Clone, Copy, Debug)]
 pub enum SetType {
@@ -11,11 +11,11 @@ pub enum SetType {
 }
 
 pub fn set_case_sensitivity(
-    context: &mut AppContext,
+    app_state: &mut AppState,
     case_sensitivity: CaseSensitivity,
     set_type: SetType,
 ) -> AppResult {
-    let options = context.config_mut().search_options_mut();
+    let options = &mut app_state.config.search_options;
 
     match set_type {
         SetType::String => options.string_case_sensitivity = case_sensitivity,

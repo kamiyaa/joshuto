@@ -14,11 +14,13 @@ use ratatui::widgets::Clear;
 use termion::event::{Event, Key};
 use unicode_width::UnicodeWidthStr;
 
-use crate::context::AppContext;
-use crate::event::process_event;
-use crate::event::AppEvent;
-use crate::key_command::constants::COMMANDS;
-use crate::key_command::{Command, Completion, CompletionKind, InteractiveExecute};
+use crate::constants::command_name::COMMANDS;
+use crate::run::process_event;
+use crate::traits::app_execute::{CommandCompletion, InteractiveExecute};
+use crate::types::command::Command;
+use crate::types::completion_kind::CompletionKind;
+use crate::types::event::AppEvent;
+use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::AppBackend;
@@ -133,8 +135,8 @@ impl<'a> TuiTextField<'a> {
 
     pub fn get_input(
         &mut self,
+        app_state: &mut AppState,
         backend: &mut AppBackend,
-        context: &mut AppContext,
         listener: &mut DummyListener,
     ) -> Option<String> {
         let mut line_buffer = line_buffer::LineBuffer::with_capacity(255);
@@ -151,7 +153,7 @@ impl<'a> TuiTextField<'a> {
         let terminal = backend.terminal_mut();
         let _ = terminal.show_cursor();
 
-        let mut curr_history_index = context.commandline_context_ref().history_ref().len();
+        let mut curr_history_index = app_state.state.commandline_state_ref().history_ref().len();
 
         loop {
             terminal
@@ -162,7 +164,7 @@ impl<'a> TuiTextField<'a> {
                     }
                     // redraw view
                     {
-                        let mut view = TuiView::new(context);
+                        let mut view = TuiView::new(app_state);
                         view.show_bottom_status = false;
                         frame.render_widget(view, area);
                     }
@@ -222,7 +224,7 @@ impl<'a> TuiTextField<'a> {
                 })
                 .unwrap();
 
-            if let Ok(event) = context.poll_event() {
+            if let Ok(event) = app_state.poll_event() {
                 match event {
                     AppEvent::Termion(Event::Key(key)) => {
                         let dirty = match key {
@@ -234,7 +236,7 @@ impl<'a> TuiTextField<'a> {
 
                                 let res = line_buffer.backspace(1, listener);
                                 if let Ok(command) = Command::from_str(line_buffer.as_str()) {
-                                    command.interactive_execute(context)
+                                    command.interactive_execute(app_state)
                                 }
                                 res
                             }
@@ -251,8 +253,9 @@ impl<'a> TuiTextField<'a> {
                                 curr_history_index = curr_history_index.saturating_sub(1);
                                 line_buffer.move_home();
                                 line_buffer.kill_line(listener);
-                                if let Ok(Some(s)) = context
-                                    .commandline_context_ref()
+                                if let Ok(Some(s)) = app_state
+                                    .state
+                                    .commandline_state_ref()
                                     .history_ref()
                                     .get(curr_history_index, SearchDirection::Forward)
                                 {
@@ -263,7 +266,7 @@ impl<'a> TuiTextField<'a> {
                             }
                             Key::Down => {
                                 curr_history_index = if curr_history_index
-                                    < context.commandline_context_ref().history_ref().len()
+                                    < app_state.state.commandline_state_ref().history_ref().len()
                                 {
                                     curr_history_index + 1
                                 } else {
@@ -271,8 +274,9 @@ impl<'a> TuiTextField<'a> {
                                 };
                                 line_buffer.move_home();
                                 line_buffer.kill_line(listener);
-                                if let Ok(Some(s)) = context
-                                    .commandline_context_ref()
+                                if let Ok(Some(s)) = app_state
+                                    .state
+                                    .commandline_state_ref()
                                     .history_ref()
                                     .get(curr_history_index, SearchDirection::Reverse)
                                 {
@@ -343,7 +347,7 @@ impl<'a> TuiTextField<'a> {
                                 let dirty = line_buffer.insert(c, 1, listener).is_some();
 
                                 if let Ok(command) = Command::from_str(line_buffer.as_str()) {
-                                    command.interactive_execute(context)
+                                    command.interactive_execute(app_state)
                                 }
                                 dirty
                             }
@@ -352,12 +356,12 @@ impl<'a> TuiTextField<'a> {
                         if dirty {
                             completion_tracker.take();
                         }
-                        context.flush_event();
+                        app_state.flush_event();
                     }
                     AppEvent::Termion(_) => {
-                        context.flush_event();
+                        app_state.flush_event();
                     }
-                    event => process_event::process_noninteractive(event, context),
+                    event => process_event::process_noninteractive(event, app_state),
                 };
             }
         }

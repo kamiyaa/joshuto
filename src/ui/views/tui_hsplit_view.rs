@@ -4,18 +4,18 @@ use ratatui::style::{Color, Style};
 use ratatui::text::Span;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
-use crate::context::AppContext;
+use crate::types::state::AppState;
 use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTopBar};
 
 pub struct TuiHSplitView<'a> {
-    pub context: &'a AppContext,
+    pub app_state: &'a AppState,
     pub show_bottom_status: bool,
 }
 
 impl<'a> TuiHSplitView<'a> {
-    pub fn new(context: &'a AppContext) -> Self {
+    pub fn new(app_state: &'a AppState) -> Self {
         Self {
-            context,
+            app_state,
             show_bottom_status: true,
         }
     }
@@ -23,13 +23,12 @@ impl<'a> TuiHSplitView<'a> {
 
 impl<'a> Widget for TuiHSplitView<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let tab_context = self.context.tab_context_ref();
+        let tab_state = self.app_state.state.tab_state_ref();
 
-        let config = self.context.config_ref();
-        let display_options = config.display_options_ref();
+        let display_options = &self.app_state.config.display_options;
         let constraints = &[Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)];
 
-        let layout_rect = if display_options.show_borders() {
+        let layout_rect = if display_options.show_borders {
             let area = Rect {
                 y: area.top() + 1,
                 height: area.height - 2,
@@ -63,9 +62,9 @@ impl<'a> Widget for TuiHSplitView<'a> {
             calculate_layout(area, constraints)
         };
 
-        let tab_id = tab_context.curr_tab_id();
-        let tab_index = tab_context.index;
-        if let Some(curr_tab) = tab_context.tab_ref(&tab_id) {
+        let tab_id = tab_state.curr_tab_id();
+        let tab_index = tab_state.index;
+        if let Some(curr_tab) = tab_state.tab_ref(&tab_id) {
             let curr_list = curr_tab.curr_list_ref();
 
             let layout_rect = if tab_index % 2 == 0 {
@@ -77,7 +76,7 @@ impl<'a> Widget for TuiHSplitView<'a> {
             // render current view
             if let Some(list) = curr_list.as_ref() {
                 TuiDirListDetailed::new(
-                    self.context.config_ref(),
+                    &self.app_state.config,
                     list,
                     display_options,
                     curr_tab.option_ref(),
@@ -93,13 +92,15 @@ impl<'a> Widget for TuiHSplitView<'a> {
 
                 if self.show_bottom_status {
                     /* draw the bottom status bar */
-                    if let Some(msg) = self.context.worker_context_ref().get_msg() {
+                    if let Some(msg) = self.app_state.state.worker_state_ref().get_msg() {
                         let message_style = Style::default().fg(Color::Yellow);
                         let text = Span::styled(msg, message_style);
                         Paragraph::new(text)
                             .wrap(Wrap { trim: true })
                             .render(rect, buf);
-                    } else if let Some(msg) = self.context.message_queue_ref().current_message() {
+                    } else if let Some(msg) =
+                        self.app_state.state.message_queue_ref().current_message()
+                    {
                         let text = Span::styled(msg.content.as_str(), msg.style);
                         Paragraph::new(text)
                             .wrap(Wrap { trim: true })
@@ -117,7 +118,7 @@ impl<'a> Widget for TuiHSplitView<'a> {
                 width: topbar_width,
                 height: 1,
             };
-            TuiTopBar::new(self.context).render(rect, buf);
+            TuiTopBar::new(self.app_state).render(rect, buf);
         }
 
         let other_tab_index = if tab_index % 2 == 0 {
@@ -126,9 +127,9 @@ impl<'a> Widget for TuiHSplitView<'a> {
             tab_index - 1
         };
 
-        if other_tab_index < tab_context.tab_order.len() {
-            let other_tab_id = tab_context.tab_order[other_tab_index];
-            if let Some(curr_tab) = tab_context.tab_ref(&other_tab_id) {
+        if other_tab_index < tab_state.tab_order.len() {
+            let other_tab_id = tab_state.tab_order[other_tab_index];
+            if let Some(curr_tab) = tab_state.tab_ref(&other_tab_id) {
                 let curr_list = curr_tab.curr_list_ref();
 
                 let layout_rect = if other_tab_index % 2 == 0 {
@@ -139,7 +140,7 @@ impl<'a> Widget for TuiHSplitView<'a> {
 
                 if let Some(list) = curr_list.as_ref() {
                     TuiDirListDetailed::new(
-                        self.context.config_ref(),
+                        &self.app_state.config,
                         list,
                         display_options,
                         curr_tab.option_ref(),

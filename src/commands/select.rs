@@ -1,5 +1,5 @@
-use crate::context::{AppContext, MatchContext};
 use crate::error::AppResult;
+use crate::types::state::{AppState, MatchState};
 
 use super::cursor_move;
 
@@ -31,20 +31,25 @@ impl std::fmt::Display for SelectOption {
 }
 
 pub fn select_files(
-    context: &mut AppContext,
-    pattern: &MatchContext,
+    app_state: &mut AppState,
+    pattern: &MatchState,
     options: &SelectOption,
 ) -> AppResult {
     if pattern.is_none() {
-        select_without_pattern(context, options)
+        select_without_pattern(app_state, options)
     } else {
-        select_with_pattern(context, pattern, options)
+        select_with_pattern(app_state, pattern, options)
     }
 }
 
-fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> AppResult {
+fn select_without_pattern(app_state: &mut AppState, options: &SelectOption) -> AppResult {
     if options.all {
-        if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+        if let Some(curr_list) = app_state
+            .state
+            .tab_state_mut()
+            .curr_tab_mut()
+            .curr_list_mut()
+        {
             curr_list.iter_mut().for_each(|e| {
                 if options.reverse {
                     e.set_permanent_selected(false);
@@ -55,8 +60,9 @@ fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> A
                 }
             });
         }
-    } else if let Some(entry) = context
-        .tab_context_mut()
+    } else if let Some(entry) = app_state
+        .state
+        .tab_state_mut()
         .curr_tab_mut()
         .curr_list_mut()
         .and_then(|s| s.curr_entry_mut())
@@ -68,17 +74,22 @@ fn select_without_pattern(context: &mut AppContext, options: &SelectOption) -> A
         } else {
             entry.set_permanent_selected(true);
         }
-        cursor_move::down(context, 1)?;
+        cursor_move::down(app_state, 1)?;
     }
     Ok(())
 }
 
 fn select_with_pattern(
-    context: &mut AppContext,
-    pattern: &MatchContext,
+    app_state: &mut AppState,
+    pattern: &MatchState,
     options: &SelectOption,
 ) -> AppResult {
-    if let Some(curr_list) = context.tab_context_mut().curr_tab_mut().curr_list_mut() {
+    if let Some(curr_list) = app_state
+        .state
+        .tab_state_mut()
+        .curr_tab_mut()
+        .curr_list_mut()
+    {
         let mut found = 0;
         curr_list
             .iter_mut()
@@ -93,7 +104,8 @@ fn select_with_pattern(
                     e.set_permanent_selected(true);
                 }
             });
-        context
+        app_state
+            .state
             .message_queue_mut()
             .push_info(format!("{} files selected", found));
     }
