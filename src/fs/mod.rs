@@ -1,7 +1,9 @@
 mod dirlist;
 mod entry;
 mod metadata;
+mod options;
 
-pub use self::dirlist::JoshutoDirList;
-pub use self::entry::JoshutoDirEntry;
-pub use self::metadata::{FileType, JoshutoMetadata, LinkType};
+pub use dirlist::*;
+pub use entry::*;
+pub use metadata::*;
+pub use options::*;

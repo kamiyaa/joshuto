@@ -4,7 +4,6 @@ mod constants;
 mod error;
 mod fs;
 mod history;
-mod io;
 mod preview;
 mod run;
 mod shadow;
@@ -13,6 +12,7 @@ mod traits;
 mod types;
 mod ui;
 mod utils;
+mod workers;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -25,8 +25,8 @@ use config::app::AppConfig;
 use config::bookmarks::Bookmarks;
 use config::icon::AppIcons;
 use config::mimetype::AppProgramRegistry;
-use config::preview::preview::FileEntryPreview;
-use config::theme::theme::AppTheme;
+use config::preview::FileEntryPreview;
+use config::theme::AppTheme;
 use lazy_static::lazy_static;
 
 use traits::config::TomlConfigFile;
@@ -70,7 +70,7 @@ lazy_static! {
     };
     static ref THEME_T: AppTheme = AppTheme::get_config();
     static ref MIMETYPE_T: AppProgramRegistry = AppProgramRegistry::get_config();
-    static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config();
+    static ref PREVIEW_T: FileEntryPreview = FileEntryPreview::get_config_or_default();
     static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config());
     static ref ICONS_T: AppIcons = AppIcons::get_config();
 

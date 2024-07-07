@@ -6,9 +6,9 @@ pub struct CommandLineState {
 
 impl std::default::Default for CommandLineState {
     fn default() -> Self {
-        Self {
-            history: MemHistory::new(),
-        }
+        let mut history = MemHistory::new();
+        let _ = history.set_max_len(20);
+        Self { history }
     }
 }
 

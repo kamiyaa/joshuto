@@ -13,6 +13,8 @@ pub fn query_number_of_items(paths: &[path::PathBuf]) -> io::Result<(usize, u64)
         let metadata = path.symlink_metadata()?;
         if metadata.is_dir() {
             dirs.push_back(path.clone());
+            total_bytes += 1;
+            total_files += 1;
         } else {
             let metadata = path.symlink_metadata()?;
             total_bytes += metadata.len();
@@ -25,6 +27,8 @@ pub fn query_number_of_items(paths: &[path::PathBuf]) -> io::Result<(usize, u64)
             let path = entry?.path();
             if path.is_dir() {
                 dirs.push_back(path);
+                total_bytes += 1;
+                total_files += 1;
             } else {
                 let metadata = path.symlink_metadata()?;
                 total_bytes += metadata.len();

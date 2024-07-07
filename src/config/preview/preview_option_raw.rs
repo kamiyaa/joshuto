@@ -4,13 +4,7 @@ use toml::Value;
 
 use crate::types::option::preview::{PreviewProtocol, XDGThumbSizes};
 
-pub const fn default_max_preview_size() -> u64 {
-    2 * 1024 * 1024 // 2 MB
-}
-
-pub const fn default_true() -> bool {
-    true
-}
+use crate::utils::serde::{default_max_preview_size, default_true};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct PreviewOptionRaw {

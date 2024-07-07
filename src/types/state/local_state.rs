@@ -1,8 +1,9 @@
 use std::iter::Iterator;
 use std::path;
 
-use crate::io::FileOperation;
+use crate::workers::io::FileOperation;
 
+#[derive(Clone, Debug)]
 pub struct LocalStateState {
     pub paths: Vec<path::PathBuf>,
     pub file_op: FileOperation,

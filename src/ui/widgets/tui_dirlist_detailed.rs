@@ -7,9 +7,9 @@ use ratatui::widgets::Widget;
 
 use crate::config::app::AppConfig;
 use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
+use crate::tab::TabDisplayOption;
 use crate::types::option::display::DisplayOption;
 use crate::types::option::line_mode::{LineMode, LineModeArgs, LineNumberStyle};
-use crate::types::option::tab::TabDisplayOption;
 use crate::utils::format::time_to_string;
 use crate::utils::string::UnicodeTruncate;
 use crate::utils::style;

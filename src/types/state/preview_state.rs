@@ -38,7 +38,7 @@ pub struct PreviewState {
     pub sender_script: Sender<(PathBuf, Rect)>,
     pub sender_image: Option<Sender<(PathBuf, Rect)>>,
     // for telling main thread when previews are ready
-    pub event_ts: Sender<AppEvent>,
+    pub event_tx: Sender<AppEvent>,
 }
 
 impl PreviewState {
@@ -47,18 +47,18 @@ impl PreviewState {
         script: Option<PathBuf>,
         allmytoes: Option<AMT>,
         xdg_thumb_size: ThumbSize,
-        event_ts: Sender<AppEvent>,
+        event_tx: Sender<AppEvent>,
     ) -> PreviewState {
         let (sender_script, receiver) = mpsc::channel::<(PathBuf, Rect)>();
-        let thread_script_event_ts = event_ts.clone();
+        let thread_script_event_tx = event_tx.clone();
         thread::spawn(move || {
-            for (path, rect) in receiver {
-                if let Some(ref script) = script {
+            if let Some(ref script) = script {
+                for (path, rect) in receiver {
                     PreviewState::spawn_command(
                         path.clone(),
                         script.to_path_buf(),
                         rect,
-                        thread_script_event_ts.clone(),
+                        thread_script_event_tx.clone(),
                     );
                 }
             }
@@ -66,7 +66,7 @@ impl PreviewState {
 
         let (sender_image, receiver) = mpsc::channel::<(PathBuf, Rect)>();
         let sender_image = picker.map(|mut picker| {
-            let thread_image_event_ts = event_ts.clone();
+            let thread_image_event_tx = event_tx.clone();
             thread::spawn(move || loop {
                 // Get last, or block for next.
                 if let Some((path, rect)) = receiver
@@ -98,7 +98,7 @@ impl PreviewState {
                             path,
                             res: Ok(PreviewData::Image(proto)),
                         };
-                        let _ = thread_image_event_ts.send(ev);
+                        let _ = thread_image_event_tx.send(ev);
                     }
                 } else {
                     // Closed.
@@ -114,7 +114,20 @@ impl PreviewState {
             image_preview: None,
             sender_script,
             sender_image,
-            event_ts,
+            event_tx,
+        }
+    }
+
+    pub fn load_preview(&mut self, config: &AppConfig, backend: &AppBackend, path: path::PathBuf) {
+        // always load image without cache
+        self.set_image_preview(None);
+        self.load_preview_image(config, backend, path.clone());
+
+        let previews = self.previews_mut();
+        if previews.get(path.as_path()).is_none() {
+            // add to loading state
+            previews.insert(path.clone(), PreviewFileState::Loading);
+            self.load_preview_script(config, backend, path);
         }
     }
 
@@ -122,7 +135,7 @@ impl PreviewState {
         path: PathBuf,
         script: PathBuf,
         rect: Rect,
-        thread_event_ts: Sender<AppEvent>,
+        thread_event_tx: Sender<AppEvent>,
     ) {
         let output = Command::new(script)
             .stdout(Stdio::piped())
@@ -155,7 +168,7 @@ impl PreviewState {
                 res: Err(io::Error::new(io::ErrorKind::Other, format!("{err}"))),
             },
         };
-        let _ = thread_event_ts.send(res);
+        let _ = thread_event_tx.send(res);
     }
 
     pub fn previews_ref(&self) -> &FilePreviewMetadata {
@@ -189,7 +202,7 @@ impl PreviewState {
                 path,
                 res: Err(err),
             };
-            let _ = self.event_ts.send(ev);
+            let _ = self.event_tx.send(ev);
         }
     }
 
@@ -207,7 +220,7 @@ impl PreviewState {
                     path,
                     res: Err(err),
                 };
-                let _ = self.event_ts.send(ev);
+                let _ = self.event_tx.send(ev);
             }
         }
     }

@@ -76,7 +76,7 @@ pub fn to_path(app_state: &mut AppState, path: &path::Path) -> AppResult {
     {
         if let path::Component::Normal(name) = path.components().next().ok_or_else(err)? {
             let index = curr_list.get_index_from_name(name.to_str().ok_or_else(err)?);
-            curr_list.set_index(index, &ui_state, &display_options);
+            curr_list.set_index(index, &ui_state, display_options);
         }
     }
 

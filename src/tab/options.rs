@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use crate::types::option::fs::DirListDisplayOptions;
+use crate::fs::DirListDisplayOptions;
 use crate::types::option::line_mode::LineMode;
 use crate::types::option::sort::SortOption;
 

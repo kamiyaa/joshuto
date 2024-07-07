@@ -1,30 +1,28 @@
 use std::collections::vec_deque::Iter;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::sync::mpsc;
 use std::thread;
 
-use crate::error::{AppError, AppErrorKind};
-use crate::io::{FileOperationProgress, IoWorkerObserver, IoWorkerThread};
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::event::AppEvent;
+use crate::utils::fs::query_number_of_items;
+use crate::workers::io::{FileOperationProgress, IoWorkerObserver, IoWorkerThread};
 
 pub struct WorkerState {
-    // forks of applications
-    pub child_pool: HashMap<u32, thread::JoinHandle<()>>,
     // to send info
     pub event_tx: mpsc::Sender<AppEvent>,
     // queue of IO workers
     pub worker_queue: VecDeque<IoWorkerThread>,
     // current worker
-    pub worker: Option<IoWorkerObserver>,
+    pub observer: Option<IoWorkerObserver>,
 }
 
 impl WorkerState {
     pub fn new(event_tx: mpsc::Sender<AppEvent>) -> Self {
         Self {
-            child_pool: HashMap::new(),
             event_tx,
             worker_queue: VecDeque::new(),
-            worker: None,
+            observer: None,
         }
     }
     pub fn clone_event_tx(&self) -> mpsc::Sender<AppEvent> {
@@ -37,7 +35,7 @@ impl WorkerState {
         let _ = self.event_tx.send(AppEvent::IoWorkerCreate);
     }
     pub fn is_busy(&self) -> bool {
-        self.worker.is_some()
+        self.observer.is_some()
     }
     pub fn is_empty(&self) -> bool {
         self.worker_queue.is_empty()
@@ -47,31 +45,31 @@ impl WorkerState {
         self.worker_queue.iter()
     }
     pub fn worker_ref(&self) -> Option<&IoWorkerObserver> {
-        self.worker.as_ref()
-    }
-
-    pub fn set_progress(&mut self, res: FileOperationProgress) {
-        if let Some(s) = self.worker.as_mut() {
-            s.set_progress(res);
-        }
+        self.observer.as_ref()
     }
 
     pub fn get_msg(&self) -> Option<&str> {
-        let worker = self.worker.as_ref()?;
+        let worker = self.observer.as_ref()?;
         Some(worker.get_msg())
     }
-    pub fn update_msg(&mut self) {
-        if let Some(s) = self.worker.as_mut() {
-            s.update_msg();
-        }
-    }
 
-    pub fn start_next_job(&mut self) {
+    pub fn start_next_job(&mut self) -> AppResult<()> {
         let tx = self.clone_event_tx();
 
         if let Some(worker) = self.worker_queue.pop_front() {
             let src = worker.paths[0].parent().unwrap().to_path_buf();
             let dest = worker.dest.clone();
+            let (total_files, total_bytes) = query_number_of_items(worker.paths.as_slice())?;
+
+            let operation_progress = FileOperationProgress {
+                kind: worker.operation,
+                current_file: worker.paths[0].clone(),
+                total_files,
+                files_processed: 0,
+                total_bytes,
+                bytes_processed: 0,
+            };
+
             let handle = thread::spawn(move || {
                 let (wtx, wrx) = mpsc::channel();
                 // start worker
@@ -93,22 +91,13 @@ impl WorkerState {
                     }
                 }
             });
-            let observer = IoWorkerObserver::new(handle, src, dest);
-            self.worker = Some(observer);
+            let observer = IoWorkerObserver::new(handle, operation_progress, src, dest);
+            self.observer = Some(observer);
         }
+        Ok(())
     }
 
     pub fn remove_worker(&mut self) -> Option<IoWorkerObserver> {
-        self.worker.take()
-    }
-
-    pub fn push_child(&mut self, child_id: u32, handle: thread::JoinHandle<()>) {
-        self.child_pool.insert(child_id, handle);
-    }
-
-    pub fn join_child(&mut self, child_id: u32) {
-        if let Some(handle) = self.child_pool.remove(&child_id) {
-            let _ = handle.join();
-        }
+        self.observer.take()
     }
 }

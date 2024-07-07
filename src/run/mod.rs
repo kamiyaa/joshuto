@@ -57,7 +57,7 @@ pub fn run_loop(
         app_state.state.tab_state_mut().insert_tab(id, tab, true);
 
         // trigger a preview of child
-        preview_default::load_preview(app_state, backend);
+        preview_default::load_previews(app_state, backend);
     }
 
     while app_state.quit == QuitAction::DoNot {
@@ -112,7 +112,7 @@ fn process_input(
     match event {
         AppEvent::Termion(Event::Mouse(event)) => {
             process_event::process_mouse(app_state, backend, keymap_t, event);
-            preview_default::load_preview(app_state, backend);
+            preview_default::load_previews(app_state, backend);
         }
         AppEvent::Termion(key) => {
             if app_state
@@ -165,7 +165,7 @@ fn process_input(
                     }
                 },
             }
-            preview_default::load_preview(app_state, backend);
+            preview_default::load_previews(app_state, backend);
             app_state.flush_event();
         }
         event => process_event::process_noninteractive(event, app_state),

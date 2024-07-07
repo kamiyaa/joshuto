@@ -5,6 +5,29 @@ use crate::preview::preview_dir;
 use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
+pub fn load_previews(app_state: &mut AppState, backend: &mut AppBackend) {
+    let mut load_list = Vec::with_capacity(2);
+
+    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
+    match curr_tab.curr_list_ref() {
+        Some(curr_list) => {
+            if let Some(index) = curr_list.get_index() {
+                let entry = &curr_list.contents[index];
+                load_list.push((entry.file_path().to_path_buf(), entry.metadata.clone()));
+            }
+        }
+        None => {
+            if let Ok(metadata) = JoshutoMetadata::from(curr_tab.get_cwd()) {
+                load_list.push((curr_tab.get_cwd().to_path_buf(), metadata));
+            }
+        }
+    }
+
+    for (path, metadata) in load_list {
+        load_preview_path(app_state, backend, path, metadata);
+    }
+}
+
 pub fn load_preview_path(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -31,29 +54,9 @@ pub fn load_preview_path(
             preview_dir::Background::load_preview(app_state, p);
         }
     } else if metadata.len() <= preview_options.max_preview_size {
-        app_state.state.load_preview(&app_state.config, backend, p);
-    }
-}
-
-pub fn load_preview(app_state: &mut AppState, backend: &mut AppBackend) {
-    let mut load_list = Vec::with_capacity(2);
-
-    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
-    match curr_tab.curr_list_ref() {
-        Some(curr_list) => {
-            if let Some(index) = curr_list.get_index() {
-                let entry = &curr_list.contents[index];
-                load_list.push((entry.file_path().to_path_buf(), entry.metadata.clone()));
-            }
-        }
-        None => {
-            if let Ok(metadata) = JoshutoMetadata::from(curr_tab.get_cwd()) {
-                load_list.push((curr_tab.get_cwd().to_path_buf(), metadata));
-            }
-        }
-    }
-
-    for (path, metadata) in load_list {
-        load_preview_path(app_state, backend, path, metadata);
+        app_state
+            .state
+            .preview_state_mut()
+            .load_preview(&app_state.config, backend, p);
     }
 }

@@ -62,10 +62,7 @@ where
 {
     if option.get_fork() {
         let (child_id, handle) = fork_execute(option, files, app_state.clone_event_tx())?;
-        app_state
-            .state
-            .worker_state_mut()
-            .push_child(child_id, handle);
+        app_state.state.thread_pool.push_child(child_id, handle);
     } else {
         backend.terminal_drop();
         let res = execute_and_wait(option, files);
@@ -246,10 +243,9 @@ pub fn open_with_interactive(app_state: &mut AppState, backend: &mut AppBackend)
             .curr_tab_ref()
             .curr_list_ref()
             .and_then(|s| s.curr_entry_ref())
-            .map(|s| s.clone())
         {
             Some(entry) => {
-                paths.push(entry);
+                paths.push(entry.clone());
             }
             None => {
                 let err = AppError::new(AppErrorKind::Io, "No files selected".to_string());

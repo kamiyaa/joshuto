@@ -2,9 +2,11 @@ use std::convert::From;
 
 use ratatui::layout::Constraint;
 
-use crate::config::display_raw::DisplayOptionRaw;
+use crate::{
+    config::display_raw::DisplayOptionRaw, fs::DirListDisplayOptions, tab::TabDisplayOption,
+};
 
-use super::{fs::DirListDisplayOptions, line_mode::LineNumberStyle, tab::TabDisplayOption};
+use super::line_mode::LineNumberStyle;
 
 #[derive(Clone, Copy, Debug)]
 pub enum DisplayMode {
@@ -60,7 +62,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
         ];
 
         Self {
-            mode: mode,
+            mode,
             automatically_count_files: raw.automatically_count_files,
             collapse_preview: raw.collapse_preview,
             scroll_offset: raw.scroll_offset,

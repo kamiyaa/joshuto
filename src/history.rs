@@ -4,10 +4,9 @@ use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-use crate::fs::{JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
+use crate::fs::{DirListDisplayOptions, JoshutoDirEntry, JoshutoDirList, JoshutoMetadata};
+use crate::tab::TabDisplayOption;
 use crate::types::option::display::DisplayOption;
-use crate::types::option::fs::DirListDisplayOptions;
-use crate::types::option::tab::TabDisplayOption;
 use crate::types::state::UiState;
 
 pub trait DirectoryHistory {

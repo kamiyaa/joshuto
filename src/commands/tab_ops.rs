@@ -8,8 +8,7 @@ use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::history::{
     create_dirlist_with_history, generate_entries_to_root, DirectoryHistory, JoshutoHistory,
 };
-use crate::tab::{JoshutoTab, TabHomePage};
-use crate::types::option::tab::NewTabMode;
+use crate::tab::{JoshutoTab, NewTabMode, TabHomePage};
 use crate::types::state::AppState;
 use crate::utils::{cwd, unix};
 

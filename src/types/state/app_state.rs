@@ -14,7 +14,7 @@ use crate::types::state::{
 
 use crate::Args;
 
-use super::FileManagerState;
+use super::{FileManagerState, ThreadPool};
 
 pub struct AppState {
     pub config: AppConfig,
@@ -49,8 +49,7 @@ impl AppState {
         let events = Events::new();
         let event_tx = events.event_tx.clone();
 
-        let mut commandline_state = CommandLineState::new();
-        let _ = commandline_state.history_mut().set_max_len(20);
+        let commandline_state = CommandLineState::new();
 
         let event_tx_for_fs_notification = event_tx.clone();
         let watcher = notify::recommended_watcher(move |res| {
@@ -80,6 +79,7 @@ impl AppState {
                 search_state: None,
                 message_queue: MessageQueue::new(),
                 worker_state: WorkerState::new(event_tx.clone()),
+                thread_pool: ThreadPool::new(),
                 preview_state: PreviewState::new(
                     picker,
                     preview_script,

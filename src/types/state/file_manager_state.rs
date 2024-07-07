@@ -3,13 +3,12 @@ use std::path;
 
 use notify::{RecursiveMode, Watcher};
 
-use crate::config::app::AppConfig;
-use crate::preview::preview_file::PreviewFileState;
 use crate::types::state::{
     CommandLineState, LocalStateState, MatchState, MessageQueue, PreviewState, TabState, UiState,
     WorkerState,
 };
-use crate::ui::AppBackend;
+
+use super::ThreadPool;
 
 pub struct FileManagerState {
     // app_state related to tabs
@@ -22,6 +21,8 @@ pub struct FileManagerState {
     pub message_queue: MessageQueue,
     // app_state related to io workers
     pub worker_state: WorkerState,
+    // thread pool of child processes
+    pub thread_pool: ThreadPool,
     // app_state related to previews
     pub preview_state: PreviewState,
     // app_state related to command line
@@ -127,19 +128,5 @@ impl FileManagerState {
     }
     pub fn commandline_state_mut(&mut self) -> &mut CommandLineState {
         &mut self.commandline_state
-    }
-    pub fn load_preview(&mut self, config: &AppConfig, backend: &AppBackend, path: path::PathBuf) {
-        // always load image without cache
-        self.preview_state_mut().set_image_preview(None);
-        self.preview_state
-            .load_preview_image(config, backend, path.clone());
-
-        let previews = self.preview_state_mut().previews_mut();
-        if previews.get(path.as_path()).is_none() {
-            // add to loading state
-            previews.insert(path.clone(), PreviewFileState::Loading);
-            self.preview_state
-                .load_preview_script(config, backend, path);
-        }
     }
 }

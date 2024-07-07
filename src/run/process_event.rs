@@ -11,7 +11,6 @@ use crate::commands::tab_ops;
 use crate::commands::{cursor_move, parent_cursor_move, reload};
 use crate::error::AppResult;
 use crate::fs::JoshutoDirList;
-use crate::io::FileOperationProgress;
 use crate::preview::preview_dir::PreviewDirState;
 use crate::preview::preview_file::PreviewFileState;
 use crate::traits::app_execute::AppExecute;
@@ -25,6 +24,7 @@ use crate::types::state::AppState;
 use crate::ui;
 use crate::ui::views::TuiCommandMenu;
 use crate::utils::format;
+use crate::workers::io::IoWorkerProgressMessage;
 
 pub fn poll_event_until_simple_keybind<'a>(
     app_state: &mut AppState,
@@ -71,7 +71,7 @@ pub fn process_noninteractive(event: AppEvent, app_state: &mut AppState) {
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, app_state),
         AppEvent::ChildProcessComplete(child_id) => {
-            app_state.state.worker_state_mut().join_child(child_id);
+            app_state.state.thread_pool.join_child(child_id);
         }
         _ => {}
     }
@@ -85,17 +85,19 @@ pub fn process_new_worker(app_state: &mut AppState) {
     if !app_state.state.worker_state_ref().is_busy()
         && !app_state.state.worker_state_ref().is_empty()
     {
-        app_state.state.worker_state_mut().start_next_job();
+        let _ = app_state.state.worker_state_mut().start_next_job();
     }
 }
 
-pub fn process_worker_progress(app_state: &mut AppState, res: FileOperationProgress) {
+pub fn process_worker_progress(app_state: &mut AppState, res: IoWorkerProgressMessage) {
     let worker_state = app_state.state.worker_state_mut();
-    worker_state.set_progress(res);
-    worker_state.update_msg();
+    if let Some(observer) = worker_state.observer.as_mut() {
+        observer.process_msg(res);
+        observer.update_msg();
+    }
 }
 
-pub fn process_finished_worker(app_state: &mut AppState, res: AppResult<FileOperationProgress>) {
+pub fn process_finished_worker(app_state: &mut AppState, res: AppResult) {
     let worker_state = app_state.state.worker_state_mut();
     let observer = worker_state.remove_worker().unwrap();
 
@@ -113,18 +115,17 @@ pub fn process_finished_worker(app_state: &mut AppState, res: AppResult<FileOper
         tab_ops::remove_entry_from_all_tabs(app_state, observer_path);
     }
 
+    let progress = observer.progress.clone();
     observer.join();
+
     match res {
-        Ok(progress) => {
-            let op = progress.kind().actioned_str();
-            let processed_size = format::file_size_to_string(progress.bytes_processed());
-            let total_size = format::file_size_to_string(progress.total_bytes());
+        Ok(_) => {
+            let op = progress.kind.actioned_str();
+            let processed_size = format::file_size_to_string(progress.bytes_processed);
+            let total_size = format::file_size_to_string(progress.total_bytes);
             let msg = format!(
                 "successfully {} {} items ({}/{})",
-                op,
-                progress.total_files(),
-                processed_size,
-                total_size,
+                op, progress.total_files, processed_size, total_size,
             );
             app_state.state.message_queue_mut().push_success(msg);
         }
@@ -137,7 +138,7 @@ pub fn process_finished_worker(app_state: &mut AppState, res: AppResult<FileOper
     if !app_state.state.worker_state_ref().is_busy()
         && !app_state.state.worker_state_ref().is_empty()
     {
-        app_state.state.worker_state_mut().start_next_job();
+        let _ = app_state.state.worker_state_mut().start_next_job();
     }
 }
 

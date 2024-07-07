@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use super::preview::preview_option_raw::default_true;
+use crate::utils::serde::default_true;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortOptionRaw {

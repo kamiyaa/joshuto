@@ -4,10 +4,10 @@ use std::sync::mpsc;
 use termion::event::Key;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
-use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 use crate::types::state::AppState;
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::AppBackend;
+use crate::workers::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
 use super::tab_ops;
 

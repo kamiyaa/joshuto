@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::{process::Output, time};
 
+#[derive(Clone)]
 pub enum PreviewFileState {
     Loading,
     Error(String),

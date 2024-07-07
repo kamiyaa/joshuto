@@ -5,7 +5,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
 use crate::fs::{JoshutoDirList, LinkType};
-use crate::types::option::tab::TabDisplayOption;
+use crate::tab::TabDisplayOption;
 use crate::utils::format;
 use crate::utils::unix;
 use crate::{THEME_T, TIMEZONE_STR};

@@ -6,6 +6,7 @@ mod matcher;
 mod message_queue;
 mod preview_state;
 mod tab_state;
+mod thread_pool;
 mod ui_state;
 mod worker_state;
 
@@ -17,5 +18,6 @@ pub use matcher::*;
 pub use message_queue::*;
 pub use preview_state::*;
 pub use tab_state::*;
+pub use thread_pool::*;
 pub use ui_state::*;
 pub use worker_state::*;

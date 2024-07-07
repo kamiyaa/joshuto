@@ -1,8 +1,8 @@
 use std::process::{Command, Stdio};
 
 use crate::error::{AppError, AppErrorKind, AppResult};
-use crate::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 use crate::types::state::{AppState, LocalStateState};
+use crate::workers::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
 fn new_local_state(app_state: &mut AppState, file_op: FileOperation) -> Option<()> {
     let list = app_state

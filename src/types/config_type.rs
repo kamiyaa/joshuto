@@ -65,10 +65,10 @@ impl ConfigType {
     pub const fn embedded_config(&self) -> Option<&'static str> {
         use crate::constants::config::*;
         match self {
-            Self::App => Some(&APP_CONFIG),
-            Self::Keymap => Some(&KEYMAP_CONFIG),
-            Self::Theme => Some(&THEME_CONFIG),
-            Self::Icons => Some(&ICON_CONFIG),
+            Self::App => Some(APP_CONFIG),
+            Self::Keymap => Some(KEYMAP_CONFIG),
+            Self::Theme => Some(THEME_CONFIG),
+            Self::Icons => Some(ICON_CONFIG),
             Self::Mimetype | Self::Preview | Self::Bookmarks => None,
         }
     }

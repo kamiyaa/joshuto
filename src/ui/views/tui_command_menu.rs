@@ -4,7 +4,6 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Clear, Widget};
 
-use crate::config::app::AppConfig;
 use crate::traits::ToString;
 use crate::types::keybind::KeyMapping;
 use crate::types::state::AppState;

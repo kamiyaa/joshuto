@@ -1,10 +1,10 @@
 use crate::types::state::MatchState;
 
 /// Display options valid pre JoshutoDirList in a JoshutoTab
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct DirListDisplayOptions {
-    filter_state: MatchState,
-    depth: u8,
+    pub filter_state: MatchState,
+    pub depth: u8,
 }
 
 impl DirListDisplayOptions {
@@ -22,5 +22,14 @@ impl DirListDisplayOptions {
 
     pub fn depth(&self) -> u8 {
         self.depth
+    }
+}
+
+impl std::default::Default for DirListDisplayOptions {
+    fn default() -> Self {
+        Self {
+            filter_state: MatchState::None,
+            depth: 0,
+        }
     }
 }

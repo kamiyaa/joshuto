@@ -59,67 +59,37 @@ impl std::fmt::Display for FileOperationOptions {
 }
 
 #[derive(Clone, Debug)]
+pub enum IoWorkerProgressMessage {
+    FileStart { file_path: path::PathBuf },
+    FileComplete { file_size: u64 },
+}
+
+#[derive(Clone, Debug)]
 pub struct FileOperationProgress {
-    _kind: FileOperation,
-    _current_file: path::PathBuf,
-    _files_processed: usize,
-    _total_files: usize,
-    _bytes_processed: u64,
-    _total_bytes: u64,
+    pub kind: FileOperation,
+    pub current_file: path::PathBuf,
+    pub files_processed: usize,
+    pub total_files: usize,
+    pub bytes_processed: u64,
+    pub total_bytes: u64,
 }
 
 impl FileOperationProgress {
     pub fn new(
-        _kind: FileOperation,
-        _current_file: path::PathBuf,
-        _files_processed: usize,
-        _total_files: usize,
-        _bytes_processed: u64,
-        _total_bytes: u64,
+        kind: FileOperation,
+        current_file: path::PathBuf,
+        files_processed: usize,
+        total_files: usize,
+        bytes_processed: u64,
+        total_bytes: u64,
     ) -> Self {
         Self {
-            _kind,
-            _current_file,
-            _files_processed,
-            _total_files,
-            _bytes_processed,
-            _total_bytes,
+            kind,
+            current_file,
+            files_processed,
+            total_files,
+            bytes_processed,
+            total_bytes,
         }
-    }
-
-    pub fn kind(&self) -> FileOperation {
-        self._kind
-    }
-
-    pub fn current_file(&self) -> &path::Path {
-        self._current_file.as_path()
-    }
-
-    pub fn set_current_file(&mut self, current_file: path::PathBuf) {
-        self._current_file = current_file;
-    }
-
-    pub fn files_processed(&self) -> usize {
-        self._files_processed
-    }
-
-    pub fn set_files_processed(&mut self, files_processed: usize) {
-        self._files_processed = files_processed;
-    }
-
-    pub fn total_files(&self) -> usize {
-        self._total_files
-    }
-
-    pub fn bytes_processed(&self) -> u64 {
-        self._bytes_processed
-    }
-
-    pub fn set_bytes_processed(&mut self, _bytes_processed: u64) {
-        self._bytes_processed = _bytes_processed;
-    }
-
-    pub fn total_bytes(&self) -> u64 {
-        self._total_bytes
     }
 }
