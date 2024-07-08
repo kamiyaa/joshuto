@@ -2,6 +2,8 @@
 ## General
 ##########################################
 lscolors_enabled = false
+# The image preview background color, only RGB colors are accepted.
+# preview_background = "#FFFFFF"
 
 ##########################################
 ## Tabs

@@ -21,6 +21,8 @@ preview_protocol = "halfblocks"
 ...
 ```
 
+The background color can be configured in `theme.toml`.
+
 ## XDG-Thumbnails and thumbnails for non-image files
 
 By default, Joshuto uses thumbnails and the

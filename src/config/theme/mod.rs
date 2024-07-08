@@ -7,6 +7,7 @@ pub mod theme_raw;
 use std::collections::HashMap;
 
 use lscolors::LsColors;
+use ratatui::style::Color;
 
 use crate::constants::config::THEME_CONFIG;
 use crate::error::AppResult;
@@ -16,6 +17,8 @@ use crate::types::config_type::ConfigType;
 use style::AppStyle;
 use tab::TabTheme;
 use theme_raw::AppThemeRaw;
+
+use self::style_raw::AppStyleRaw;
 
 #[derive(Clone, Debug)]
 pub struct AppTheme {
@@ -30,6 +33,7 @@ pub struct AppTheme {
     pub socket: AppStyle,
     pub ext: HashMap<String, AppStyle>,
     pub lscolors: Option<LsColors>,
+    pub preview_background: Color,
 }
 
 impl AppTheme {
@@ -81,6 +85,7 @@ impl From<AppThemeRaw> for AppTheme {
         } else {
             None
         };
+        let preview_background = AppStyleRaw::str_to_color(&raw.preview_background);
 
         Self {
             selection,
@@ -94,6 +99,7 @@ impl From<AppThemeRaw> for AppTheme {
             ext,
             tabs: TabTheme::from(tabs),
             lscolors,
+            preview_background,
         }
     }
 }
