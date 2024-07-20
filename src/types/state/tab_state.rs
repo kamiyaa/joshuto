@@ -25,7 +25,6 @@ impl TabState {
     pub fn tab_ref(&self, id: &Uuid) -> Option<&JoshutoTab> {
         self.tabs.get(id)
     }
-
     pub fn tab_refs_in_order(&self) -> Vec<&JoshutoTab> {
         let mut tab_refs: Vec<&JoshutoTab> = vec![];
         for tab_id in self.tab_order.iter() {
@@ -35,7 +34,6 @@ impl TabState {
         }
         tab_refs
     }
-
     pub fn tab_mut(&mut self, id: &Uuid) -> Option<&mut JoshutoTab> {
         self.tabs.get_mut(id)
     }
@@ -51,6 +49,7 @@ impl TabState {
         let id = &self.tab_order[self.index];
         self.tabs.get_mut(id).unwrap()
     }
+
     pub fn insert_tab(&mut self, id: Uuid, tab: JoshutoTab, last: bool) {
         self.tabs.insert(id, tab);
         if last {
