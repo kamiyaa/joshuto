@@ -88,7 +88,7 @@ impl PreviewState {
                         .and_then(|reader| reader.decode().map_err(Self::map_io_err))
                         .and_then(|dyn_img| {
                             picker
-                                .new_protocol(dyn_img, rect, Resize::Fit)
+                                .new_protocol(dyn_img, rect, Resize::Fit(None))
                                 .map_err(|err| {
                                     io::Error::new(io::ErrorKind::Other, format!("{err}"))
                                 })
