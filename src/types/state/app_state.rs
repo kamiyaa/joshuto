@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::sync::mpsc;
 
 use allmytoes::{AMTConfiguration, AMT};
+use ratatui::style::Color;
 use ratatui_image::picker::Picker;
 
 use crate::commands::quit::QuitAction;
@@ -12,7 +13,7 @@ use crate::types::state::{
     CommandLineState, MessageQueue, PreviewState, TabState, UiState, WorkerState,
 };
 
-use crate::Args;
+use crate::{Args, THEME_T};
 
 use super::{FileManagerState, ThreadPool};
 
@@ -30,6 +31,10 @@ impl AppState {
     pub fn new(config: AppConfig, args: Args) -> Self {
         let picker = if config.preview_options.preview_shown_hook_script.is_none() {
             Picker::from_termios().ok().and_then(|mut picker| {
+                picker.background_color = match THEME_T.preview_background {
+                    Color::Rgb(r, g, b) => Some(image::Rgb([r, g, b])),
+                    _ => None,
+                };
                 match config.preview_options.preview_protocol {
                     PreviewProtocol::Auto => {
                         picker.guess_protocol(); // Must run before Events::new() because it makes ioctl calls.
