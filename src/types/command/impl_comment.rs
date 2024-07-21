@@ -1,7 +1,7 @@
 use crate::commands::sub_process::SubprocessCallMode;
 use crate::traits::app_execute::CommandComment;
+use crate::types::io::FileOperationOptions;
 use crate::types::option::sort::SortMethod;
-use crate::workers::io::FileOperationOptions;
 
 use super::Command;
 

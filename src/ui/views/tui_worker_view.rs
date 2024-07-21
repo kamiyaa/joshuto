@@ -3,7 +3,7 @@ use ratatui::layout::Rect;
 use ratatui::widgets::Widget;
 
 use crate::types::state::AppState;
-use crate::ui::widgets::{TuiTopBar, TuiWorker};
+use crate::ui::widgets::{TuiIoTasks, TuiTopBar};
 
 pub struct TuiWorkerView<'a> {
     app_state: &'a AppState,
@@ -30,6 +30,6 @@ impl<'a> Widget for TuiWorkerView<'a> {
             width: area.width,
             height: area.height - 1,
         };
-        TuiWorker::new(self.app_state.state.worker_state_ref()).render(rect, buf);
+        TuiIoTasks::new(self.app_state.state.worker_state_ref()).render(rect, buf);
     }
 }

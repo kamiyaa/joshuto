@@ -7,11 +7,11 @@ use crate::commands::stdout::PostProcessor;
 use crate::commands::sub_process::SubprocessCallMode;
 use crate::error::{AppError, AppErrorKind};
 use crate::tab::NewTabMode;
+use crate::types::io::FileOperationOptions;
 use crate::types::option::line_mode::{LineMode, LineNumberStyle};
 use crate::types::option::search::CaseSensitivity;
 use crate::types::option::sort::SortMethod;
 use crate::utils::unix;
-use crate::workers::io::FileOperationOptions;
 
 use crate::HOME_DIR;
 

@@ -15,10 +15,10 @@ use crate::commands::select::SelectOption;
 use crate::commands::stdout::PostProcessor;
 use crate::commands::sub_process::SubprocessCallMode;
 use crate::tab::NewTabMode;
+use crate::types::io::FileOperationOptions;
 use crate::types::option::line_mode::{LineMode, LineNumberStyle};
 use crate::types::option::search::CaseSensitivity;
 use crate::types::option::sort::SortMethod;
-use crate::workers::io::FileOperationOptions;
 
 #[derive(Clone, Debug)]
 #[allow(clippy::enum_variant_names)]

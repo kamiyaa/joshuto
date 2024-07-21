@@ -1,30 +1,49 @@
 use std::path;
-use std::thread;
 
 use crate::utils::format;
-use crate::workers::io::FileOperationProgress;
 
-use super::IoWorkerProgressMessage;
+use super::{FileOperation, FileOperationOptions, FileOperationProgress};
+
+#[derive(Clone, Debug)]
+pub struct IoTask {
+    pub operation: FileOperation,
+    pub options: FileOperationOptions,
+    pub paths: Vec<path::PathBuf>,
+    pub dest: path::PathBuf,
+}
+
+impl IoTask {
+    pub fn new(
+        operation: FileOperation,
+        paths: Vec<path::PathBuf>,
+        dest: path::PathBuf,
+        options: FileOperationOptions,
+    ) -> Self {
+        Self {
+            operation,
+            options,
+            paths,
+            dest,
+        }
+    }
+
+    pub fn get_operation_type(&self) -> FileOperation {
+        self.operation
+    }
+}
 
 #[derive(Debug)]
-pub struct IoWorkerObserver {
-    pub handle: thread::JoinHandle<()>,
+pub struct IoTaskProgress {
     pub progress: FileOperationProgress,
     pub msg: String,
     pub src: path::PathBuf,
     pub dest: path::PathBuf,
 }
 
-impl IoWorkerObserver {
-    pub fn new(
-        handle: thread::JoinHandle<()>,
-        progress: FileOperationProgress,
-        src: path::PathBuf,
-        dest: path::PathBuf,
-    ) -> Self {
+impl IoTaskProgress {
+    pub fn new(progress: FileOperationProgress, src: path::PathBuf, dest: path::PathBuf) -> Self {
         let msg = generate_worker_msg(&progress);
         Self {
-            handle,
             progress,
             dest,
             src,
@@ -32,16 +51,12 @@ impl IoWorkerObserver {
         }
     }
 
-    pub fn join(self) -> bool {
-        self.handle.join().is_ok()
-    }
-
-    pub fn process_msg(&mut self, msg: IoWorkerProgressMessage) {
+    pub fn process_msg(&mut self, msg: IoTaskProgressMessage) {
         match msg {
-            IoWorkerProgressMessage::FileStart { file_path } => {
+            IoTaskProgressMessage::FileStart { file_path } => {
                 self.progress.current_file = file_path;
             }
-            IoWorkerProgressMessage::FileComplete { file_size } => {
+            IoTaskProgressMessage::FileComplete { file_size } => {
                 self.progress.bytes_processed += file_size;
                 self.progress.files_processed += 1;
             }
@@ -60,6 +75,12 @@ impl IoWorkerObserver {
     pub fn dest_path(&self) -> &path::Path {
         self.dest.as_path()
     }
+}
+
+#[derive(Clone, Debug)]
+pub enum IoTaskProgressMessage {
+    FileStart { file_path: path::PathBuf },
+    FileComplete { file_size: u64 },
 }
 
 pub fn generate_worker_msg(progress: &FileOperationProgress) -> String {

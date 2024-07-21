@@ -1,8 +1,8 @@
 use std::process::{Command, Stdio};
 
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::types::io::{FileOperation, FileOperationOptions, IoTask};
 use crate::types::state::{AppState, LocalStateState};
-use crate::workers::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
 fn new_local_state(app_state: &mut AppState, file_op: FileOperation) -> Option<()> {
     let list = app_state
@@ -49,11 +49,8 @@ pub fn paste(app_state: &mut AppState, options: FileOperationOptions) -> AppResu
                 .curr_tab_ref()
                 .get_cwd()
                 .to_path_buf();
-            let worker_thread = IoWorkerThread::new(state.file_op, state.paths, dest, options);
-            app_state
-                .state
-                .worker_state_mut()
-                .push_worker(worker_thread);
+            let worker_thread = IoTask::new(state.file_op, state.paths, dest, options);
+            app_state.state.worker_state_mut().push_task(worker_thread);
             Ok(())
         }
         _ => Err(AppError::new(

@@ -3,6 +3,7 @@ pub mod completion_kind;
 pub mod config_type;
 pub mod custom_command;
 pub mod event;
+pub mod io;
 pub mod keybind;
 pub mod keymap;
 pub mod mimetype;

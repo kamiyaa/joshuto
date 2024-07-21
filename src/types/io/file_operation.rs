@@ -59,12 +59,6 @@ impl std::fmt::Display for FileOperationOptions {
 }
 
 #[derive(Clone, Debug)]
-pub enum IoWorkerProgressMessage {
-    FileStart { file_path: path::PathBuf },
-    FileComplete { file_size: u64 },
-}
-
-#[derive(Clone, Debug)]
 pub struct FileOperationProgress {
     pub kind: FileOperation,
     pub current_file: path::PathBuf,
@@ -72,24 +66,4 @@ pub struct FileOperationProgress {
     pub total_files: usize,
     pub bytes_processed: u64,
     pub total_bytes: u64,
-}
-
-impl FileOperationProgress {
-    pub fn new(
-        kind: FileOperation,
-        current_file: path::PathBuf,
-        files_processed: usize,
-        total_files: usize,
-        bytes_processed: u64,
-        total_bytes: u64,
-    ) -> Self {
-        Self {
-            kind,
-            current_file,
-            files_processed,
-            total_files,
-            bytes_processed,
-            total_bytes,
-        }
-    }
 }

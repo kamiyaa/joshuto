@@ -17,7 +17,7 @@ use uuid::Uuid;
 use crate::error::AppResult;
 use crate::fs::JoshutoDirList;
 use crate::preview::preview_file::FilePreview;
-use crate::workers::io::IoWorkerProgressMessage;
+use crate::types::io::IoTaskProgressMessage;
 
 pub enum PreviewData {
     Script(Box<FilePreview>),
@@ -39,9 +39,9 @@ pub enum AppEvent {
     Termion(Event),
 
     // background IO worker events
-    IoWorkerCreate,
-    FileOperationProgress(IoWorkerProgressMessage),
-    IoWorkerResult(AppResult),
+    IoTaskStart,
+    IoTaskProgress(IoTaskProgressMessage),
+    IoTaskResult(AppResult),
 
     // forked process events
     ChildProcessComplete(u32),

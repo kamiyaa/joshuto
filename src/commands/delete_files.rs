@@ -4,10 +4,11 @@ use std::sync::mpsc;
 use termion::event::Key;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::run::process_io::process_io_task;
+use crate::types::io::{FileOperation, FileOperationOptions, IoTask};
 use crate::types::state::AppState;
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::AppBackend;
-use crate::workers::io::{FileOperation, FileOperationOptions, IoWorkerThread};
 
 use super::tab_ops;
 
@@ -50,15 +51,12 @@ fn delete_files(
     };
 
     let dest = path::PathBuf::new();
-    let worker_thread = IoWorkerThread::new(file_op, paths.clone(), dest, options);
+    let io_task = IoTask::new(file_op, paths.clone(), dest, options);
     if background {
-        app_state
-            .state
-            .worker_state_mut()
-            .push_worker(worker_thread);
+        app_state.state.worker_state_mut().push_task(io_task);
     } else {
         let (wtx, _) = mpsc::channel();
-        worker_thread.start(wtx)?;
+        process_io_task(&io_task, &wtx)?;
     }
 
     let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();

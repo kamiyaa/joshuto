@@ -3,21 +3,21 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
+use crate::types::io::IoTaskProgress;
 use crate::types::state::WorkerState;
 use crate::utils::format;
-use crate::workers::io::IoWorkerObserver;
 
-pub struct TuiWorker<'a> {
+pub struct TuiIoTasks<'a> {
     pub app_state: &'a WorkerState,
 }
 
-impl<'a> TuiWorker<'a> {
+impl<'a> TuiIoTasks<'a> {
     pub fn new(app_state: &'a WorkerState) -> Self {
         Self { app_state }
     }
 }
 
-impl<'a> Widget for TuiWorker<'a> {
+impl<'a> Widget for TuiIoTasks<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         if area.height < 7 {
             return;
@@ -55,11 +55,11 @@ impl<'a> Widget for TuiWorker<'a> {
 }
 
 pub struct TuiCurrentWorker<'a> {
-    pub observer: &'a IoWorkerObserver,
+    pub observer: &'a IoTaskProgress,
 }
 
 impl<'a> TuiCurrentWorker<'a> {
-    pub fn new(observer: &'a IoWorkerObserver) -> Self {
+    pub fn new(observer: &'a IoTaskProgress) -> Self {
         Self { observer }
     }
 }
