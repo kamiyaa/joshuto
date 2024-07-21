@@ -18,6 +18,7 @@ use crate::types::command::Command;
 use crate::types::event::AppEvent;
 use crate::types::event::PreviewData;
 use crate::types::io::IoTaskProgressMessage;
+use crate::types::io::IoTaskStat;
 use crate::types::keybind::CommandKeybind;
 use crate::types::keybind::KeyMapping;
 use crate::types::keymap::AppKeyMapping;
@@ -63,7 +64,8 @@ pub fn poll_event_until_simple_keybind<'a>(
 
 pub fn process_noninteractive(event: AppEvent, app_state: &mut AppState) {
     match event {
-        AppEvent::IoTaskStart => process_new_io_task(app_state),
+        AppEvent::NewIoTask => process_new_io_task(app_state),
+        AppEvent::IoTaskStart(stats) => process_io_task_start(app_state, stats),
         AppEvent::IoTaskProgress(res) => process_io_task_progress(app_state, res),
         AppEvent::IoTaskResult(res) => process_finished_io_task(app_state, res),
         AppEvent::PreviewDir { id, path, res } => process_dir_preview(app_state, id, path, *res),
@@ -82,11 +84,17 @@ fn process_filesystem_event(_event: notify::Event, app_state: &mut AppState) {
 }
 
 pub fn process_new_io_task(app_state: &mut AppState) {
-    if !app_state.state.worker_state_ref().is_busy()
-        && !app_state.state.worker_state_ref().is_empty()
-    {
-        let _ = app_state.state.worker_state_mut().start_next_job();
+    if app_state.state.worker_state_ref().is_busy() {
+        return;
     }
+    if app_state.state.worker_state_ref().is_empty() {
+        return;
+    }
+    let _ = app_state.state.worker_state_mut().start_next_job();
+}
+
+pub fn process_io_task_start(app_state: &mut AppState, stats: IoTaskStat) {
+    app_state.state.worker_state.progress = Some(stats);
 }
 
 pub fn process_io_task_progress(app_state: &mut AppState, res: IoTaskProgressMessage) {
@@ -132,12 +140,7 @@ pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
             app_state.state.message_queue_mut().push_error(msg);
         }
     }
-
-    if !app_state.state.worker_state_ref().is_busy()
-        && !app_state.state.worker_state_ref().is_empty()
-    {
-        let _ = app_state.state.worker_state_mut().start_next_job();
-    }
+    process_new_io_task(app_state);
 }
 
 pub fn process_dir_preview(

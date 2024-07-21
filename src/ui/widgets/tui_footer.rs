@@ -47,7 +47,10 @@ impl<'a> Widget for TuiFooter<'a> {
             Some(i) if i < self.dirlist.len() => {
                 let entry = &self.dirlist.contents[i];
 
-                let mode_str = unix::mode_to_string(entry.metadata.permissions_ref().mode());
+                let mode_str: String =
+                    unix::mode_to_char_array(entry.metadata.permissions_ref().mode())
+                        .iter()
+                        .collect();
 
                 let user_str = unix::uid_to_string(entry.metadata.uid).unwrap_or("unknown".into());
                 let group_str = unix::gid_to_string(entry.metadata.gid).unwrap_or("unknown".into());

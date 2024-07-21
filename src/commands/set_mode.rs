@@ -48,14 +48,15 @@ pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
     let user_input = match entry {
         Some(entry) => {
             let mode = entry.metadata.permissions_ref().mode();
-            let mode_string = unix::mode_to_string(mode);
+            let mode_arr = unix::mode_to_char_array(mode);
             let mut listener = DummyListener {};
 
+            let mode_str: String = mode_arr[1..].iter().collect();
             app_state.flush_event();
             TuiTextField::default()
                 .prompt(":")
                 .prefix(PREFIX)
-                .suffix(&mode_string.as_str()[1..])
+                .suffix(&mode_str)
                 .get_input(app_state, backend, &mut listener)
         }
         None => None,

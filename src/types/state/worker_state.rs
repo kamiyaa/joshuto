@@ -6,8 +6,7 @@ use std::thread::{self, JoinHandle};
 use crate::error::AppResult;
 use crate::run::process_io::process_io_tasks;
 use crate::types::event::AppEvent;
-use crate::types::io::{FileOperationProgress, IoTask, IoTaskProgress};
-use crate::utils::fs::query_number_of_items;
+use crate::types::io::{IoTask, IoTaskStat};
 
 pub struct WorkerState {
     // to send info
@@ -19,7 +18,7 @@ pub struct WorkerState {
     // worker thread
     pub _handle: JoinHandle<()>,
     // current worker
-    pub progress: Option<IoTaskProgress>,
+    pub progress: Option<IoTaskStat>,
 }
 
 impl WorkerState {
@@ -43,7 +42,7 @@ impl WorkerState {
     pub fn push_task(&mut self, thread: IoTask) {
         self.task_queue.push_back(thread);
         // error is ignored
-        let _ = self.event_tx.send(AppEvent::IoTaskStart);
+        let _ = self.event_tx.send(AppEvent::NewIoTask);
     }
     pub fn is_busy(&self) -> bool {
         self.progress.is_some()
@@ -55,7 +54,7 @@ impl WorkerState {
     pub fn iter(&self) -> Iter<IoTask> {
         self.task_queue.iter()
     }
-    pub fn worker_ref(&self) -> Option<&IoTaskProgress> {
+    pub fn worker_ref(&self) -> Option<&IoTaskStat> {
         self.progress.as_ref()
     }
 
@@ -66,29 +65,12 @@ impl WorkerState {
 
     pub fn start_next_job(&mut self) -> AppResult<()> {
         if let Some(task) = self.task_queue.pop_front() {
-            let (total_files, total_bytes) = query_number_of_items(task.paths.as_slice())?;
-
-            let src = task.paths[0].parent().unwrap().to_path_buf();
-            let dest = task.dest.clone();
-
-            let operation_progress = FileOperationProgress {
-                kind: task.operation,
-                current_file: task.paths[0].clone(),
-                total_files,
-                files_processed: 0,
-                total_bytes,
-                bytes_processed: 0,
-            };
-
-            let progress = IoTaskProgress::new(operation_progress, src, dest);
-            self.progress = Some(progress);
-
             let _ = self.task_tx.send(task);
         }
         Ok(())
     }
 
-    pub fn remove_worker(&mut self) -> Option<IoTaskProgress> {
+    pub fn remove_worker(&mut self) -> Option<IoTaskStat> {
         self.progress.take()
     }
 }

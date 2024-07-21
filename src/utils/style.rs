@@ -62,14 +62,31 @@ fn default_style(
     config: &AppConfig,
     entry: &JoshutoDirEntry,
     linktype: &LinkType,
-    filetype: &FileType,
+    filetype: FileType,
 ) -> Style {
     match linktype {
-        LinkType::Symlink { valid: true, .. } => symlink_valid_style(),
-        LinkType::Symlink { valid: false, .. } => symlink_invalid_style(),
+        LinkType::Symlink { valid: true, .. } => Style::default()
+            .fg(THEME_T.link.fg)
+            .bg(THEME_T.link.bg)
+            .add_modifier(THEME_T.link.modifier),
+        LinkType::Symlink { valid: false, .. } => Style::default()
+            .fg(THEME_T.link_invalid.fg)
+            .bg(THEME_T.link_invalid.bg)
+            .add_modifier(THEME_T.link_invalid.modifier),
         LinkType::Normal => match filetype {
-            FileType::Directory => directory_style(),
+            FileType::Directory => Style::default()
+                .fg(THEME_T.directory.fg)
+                .bg(THEME_T.directory.bg)
+                .add_modifier(THEME_T.directory.modifier),
             FileType::File => file_style(config, entry),
+            FileType::Link => Style::default()
+                .fg(THEME_T.link.fg)
+                .bg(THEME_T.link.bg)
+                .add_modifier(THEME_T.link.modifier),
+            _ => Style::default()
+                .fg(THEME_T.socket.fg)
+                .bg(THEME_T.socket.bg)
+                .add_modifier(THEME_T.socket.modifier),
         },
     }
 }
@@ -86,27 +103,6 @@ fn permanent_selected_style() -> Style {
         .fg(THEME_T.selection.fg)
         .bg(THEME_T.selection.bg)
         .add_modifier(THEME_T.selection.modifier)
-}
-
-fn symlink_valid_style() -> Style {
-    Style::default()
-        .fg(THEME_T.link.fg)
-        .bg(THEME_T.link.bg)
-        .add_modifier(THEME_T.link.modifier)
-}
-
-fn symlink_invalid_style() -> Style {
-    Style::default()
-        .fg(THEME_T.link_invalid.fg)
-        .bg(THEME_T.link_invalid.bg)
-        .add_modifier(THEME_T.link_invalid.modifier)
-}
-
-fn directory_style() -> Style {
-    Style::default()
-        .fg(THEME_T.directory.fg)
-        .bg(THEME_T.directory.bg)
-        .add_modifier(THEME_T.directory.modifier)
 }
 
 fn file_style(config: &AppConfig, entry: &JoshutoDirEntry) -> Style {

@@ -6,6 +6,7 @@ use ratatui::text::Span;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 use ratatui_image::Image;
 
+use crate::fs::FileType;
 use crate::preview::preview_dir::PreviewDirState;
 use crate::preview::preview_file::PreviewFileState;
 use crate::types::state::{AppState, PreviewState, TabState};
@@ -286,7 +287,7 @@ pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
             Some(_) => &display_options.default_layout,
             None => match curr_entry {
                 None => &display_options.no_preview_layout,
-                Some(entry) if entry.metadata.file_type().is_dir() => {
+                Some(entry) if entry.metadata.file_type() == FileType::Directory => {
                     &display_options.default_layout
                 }
                 Some(entry) => match preview_state.previews_ref().get(entry.file_path()) {

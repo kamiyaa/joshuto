@@ -18,6 +18,7 @@ use crate::error::AppResult;
 use crate::fs::JoshutoDirList;
 use crate::preview::preview_file::FilePreview;
 use crate::types::io::IoTaskProgressMessage;
+use crate::types::io::IoTaskStat;
 
 pub enum PreviewData {
     Script(Box<FilePreview>),
@@ -39,7 +40,8 @@ pub enum AppEvent {
     Termion(Event),
 
     // background IO worker events
-    IoTaskStart,
+    NewIoTask,
+    IoTaskStart(IoTaskStat),
     IoTaskProgress(IoTaskProgressMessage),
     IoTaskResult(AppResult),
 

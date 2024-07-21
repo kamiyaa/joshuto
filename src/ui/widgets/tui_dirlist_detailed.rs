@@ -129,7 +129,7 @@ fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
             .directory_size()
             .map(|n| n.to_string())
             .unwrap_or_default(),
-        FileType::File => format::file_size_to_string(entry.metadata.len()),
+        _ => format::file_size_to_string(entry.metadata.len()),
     }
 }
 
@@ -146,7 +146,7 @@ fn display_line_mode(mode: LineMode, entry: &JoshutoDirEntry) -> String {
             LineModeArgs::BirthTime => time_to_string(metadata.created()),
             LineModeArgs::User => unix::uid_to_string(metadata.uid).unwrap_or("unknown".into()),
             LineModeArgs::Group => unix::gid_to_string(metadata.gid).unwrap_or("unknown".into()),
-            LineModeArgs::Permission => unix::mode_to_string(metadata.mode),
+            LineModeArgs::Permission => unix::mode_to_char_array(metadata.mode).iter().collect(),
             LineModeArgs::Null => unreachable!(),
         })
         .collect::<Vec<String>>()

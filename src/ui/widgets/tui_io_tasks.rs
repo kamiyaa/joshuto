@@ -3,7 +3,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::types::io::IoTaskProgress;
+use crate::types::io::IoTaskStat;
 use crate::types::state::WorkerState;
 use crate::utils::format;
 
@@ -55,11 +55,11 @@ impl<'a> Widget for TuiIoTasks<'a> {
 }
 
 pub struct TuiCurrentWorker<'a> {
-    pub observer: &'a IoTaskProgress,
+    pub observer: &'a IoTaskStat,
 }
 
 impl<'a> TuiCurrentWorker<'a> {
-    pub fn new(observer: &'a IoTaskProgress) -> Self {
+    pub fn new(observer: &'a IoTaskStat) -> Self {
         Self { observer }
     }
 }

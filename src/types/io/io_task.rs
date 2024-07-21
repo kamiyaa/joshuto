@@ -33,14 +33,14 @@ impl IoTask {
 }
 
 #[derive(Debug)]
-pub struct IoTaskProgress {
+pub struct IoTaskStat {
     pub progress: FileOperationProgress,
     pub msg: String,
     pub src: path::PathBuf,
     pub dest: path::PathBuf,
 }
 
-impl IoTaskProgress {
+impl IoTaskStat {
     pub fn new(progress: FileOperationProgress, src: path::PathBuf, dest: path::PathBuf) -> Self {
         let msg = generate_worker_msg(&progress);
         Self {

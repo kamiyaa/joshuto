@@ -29,7 +29,6 @@ pub struct DisplayOption {
     pub show_hidden: bool,
     pub show_icons: bool,
     pub line_number_style: LineNumberStyle,
-    pub column_ratio: (usize, usize, usize),
     pub default_layout: [Constraint; 3],
     pub no_preview_layout: [Constraint; 3],
     pub default_tab_display_option: TabDisplayOption,
@@ -71,7 +70,6 @@ impl From<DisplayOptionRaw> for DisplayOption {
             show_icons: raw.show_icons,
             line_number_style: raw.line_number_style,
 
-            column_ratio,
             default_layout,
             no_preview_layout,
             default_tab_display_option: TabDisplayOption {
@@ -112,7 +110,6 @@ impl std::default::Default for DisplayOption {
             mode: DisplayMode::Default,
             automatically_count_files: false,
             collapse_preview: true,
-            column_ratio,
             scroll_offset: 4,
             show_borders: true,
             show_hidden: false,

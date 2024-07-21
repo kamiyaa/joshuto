@@ -11,7 +11,10 @@ use crate::error::AppError;
 use crate::error::AppErrorKind;
 use crate::error::AppResult;
 use crate::types::event::AppEvent;
+use crate::types::io::FileOperationProgress;
+use crate::types::io::IoTaskStat;
 use crate::types::io::{FileOperation, FileOperationOptions, IoTask, IoTaskProgressMessage};
+use crate::utils::fs::query_number_of_items;
 use crate::utils::name_resolution::rename_filename_conflict;
 
 pub fn process_io_tasks(
@@ -19,6 +22,24 @@ pub fn process_io_tasks(
     event_tx: mpsc::Sender<AppEvent>,
 ) -> AppResult<()> {
     while let Ok(io_task) = event_rx.recv() {
+        let (total_files, total_bytes) = query_number_of_items(io_task.paths.as_slice())?;
+
+        let src = io_task.paths[0].parent().unwrap().to_path_buf();
+        let dest = io_task.dest.clone();
+
+        let operation_progress = FileOperationProgress {
+            kind: io_task.operation,
+            current_file: io_task.paths[0].clone(),
+            total_files,
+            files_processed: 0,
+            total_bytes,
+            bytes_processed: 0,
+        };
+
+        let io_stat = IoTaskStat::new(operation_progress, src, dest);
+        let event = AppEvent::IoTaskStart(io_stat);
+        let _ = event_tx.send(event);
+
         let res = process_io_task(&io_task, &event_tx);
         let event = AppEvent::IoTaskResult(res);
         let _ = event_tx.send(event);
@@ -40,14 +61,14 @@ pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> A
 
 fn paste_copy(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
     for path in task.paths.iter() {
-        recursive_copy(&tx, path.as_path(), task.dest.as_path(), task.options)?;
+        recursive_copy(tx, path.as_path(), task.dest.as_path(), task.options)?;
     }
     Ok(())
 }
 
 fn paste_cut(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
     for path in task.paths.iter() {
-        recursive_cut(&tx, path.as_path(), task.dest.as_path(), task.options)?;
+        recursive_cut(tx, path.as_path(), task.dest.as_path(), task.options)?;
     }
     Ok(())
 }

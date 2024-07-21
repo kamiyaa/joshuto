@@ -2,6 +2,8 @@ use std::{fs, io, path};
 
 use crate::{fs::metadata::JoshutoMetadata, types::option::display::DisplayOption};
 
+use super::FileType;
+
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
     pub name: String,
@@ -38,7 +40,7 @@ impl JoshutoDirEntry {
 
         let mut metadata = JoshutoMetadata::from(&path)?;
 
-        if options.automatically_count_files && metadata.file_type().is_dir() {
+        if options.automatically_count_files && metadata.file_type() == FileType::Directory {
             if let Ok(size) = get_directory_size(path.as_path()) {
                 metadata.update_directory_size(size);
             }
