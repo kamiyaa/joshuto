@@ -22,24 +22,6 @@ pub fn process_io_tasks(
     event_tx: mpsc::Sender<AppEvent>,
 ) -> AppResult<()> {
     while let Ok(io_task) = event_rx.recv() {
-        let (total_files, total_bytes) = query_number_of_items(io_task.paths.as_slice())?;
-
-        let src = io_task.paths[0].parent().unwrap().to_path_buf();
-        let dest = io_task.dest.clone();
-
-        let operation_progress = FileOperationProgress {
-            kind: io_task.operation,
-            current_file: io_task.paths[0].clone(),
-            total_files,
-            files_processed: 0,
-            total_bytes,
-            bytes_processed: 0,
-        };
-
-        let io_stat = IoTaskStat::new(operation_progress, src, dest);
-        let event = AppEvent::IoTaskStart(io_stat);
-        let _ = event_tx.send(event);
-
         let res = process_io_task(&io_task, &event_tx);
         let event = AppEvent::IoTaskResult(res);
         let _ = event_tx.send(event);
@@ -48,6 +30,23 @@ pub fn process_io_tasks(
 }
 
 pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
+    let (total_files, total_bytes) = query_number_of_items(io_task.paths.as_slice())?;
+    let src = io_task.paths[0].parent().unwrap().to_path_buf();
+    let dest = io_task.dest.clone();
+
+    let operation_progress = FileOperationProgress {
+        kind: io_task.operation,
+        current_file: io_task.paths[0].clone(),
+        total_files,
+        files_processed: 0,
+        total_bytes,
+        bytes_processed: 0,
+    };
+
+    let io_stat = IoTaskStat::new(operation_progress, src, dest);
+    let event = AppEvent::IoTaskStart(io_stat);
+    let _ = event_tx.send(event);
+
     let res = match io_task.get_operation_type() {
         FileOperation::Cut => paste_cut(io_task, event_tx),
         FileOperation::Copy => paste_copy(io_task, event_tx),
@@ -221,6 +220,7 @@ pub fn recursive_cut(
     if !options.overwrite {
         rename_filename_conflict(&mut dest_buf);
     }
+
     let metadata = fs::symlink_metadata(src)?;
     let file_type = metadata.file_type();
 
@@ -231,10 +231,8 @@ pub fn recursive_cut(
                 file_size: bytes_processed,
             };
             let _ = tx.send(AppEvent::IoTaskProgress(event));
-
-            Ok(())
         }
-        Err(_e) => {
+        Err(_err) => {
             if file_type.is_dir() {
                 fs::create_dir(dest_buf.as_path())?;
                 for entry in fs::read_dir(src)? {
@@ -263,9 +261,9 @@ pub fn recursive_cut(
                 };
                 let _ = tx.send(AppEvent::IoTaskProgress(event));
             }
-            Ok(())
         }
     }
+    Ok(())
 }
 
 fn remove_files<P>(paths: &[P], tx: &mpsc::Sender<AppEvent>) -> std::io::Result<()>

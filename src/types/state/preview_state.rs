@@ -241,11 +241,12 @@ impl PreviewState {
     /// (As of now, it's called in each cycle of the main loop.)
 
     fn backend_rect(config: &AppConfig, backend: &AppBackend) -> io::Result<Rect> {
-        let area = backend.terminal_ref().size()?;
+        let size = backend.terminal_ref().size()?;
         let area = Rect {
-            y: area.top() + 1,
-            height: area.height - 2,
-            ..area
+            x: 0,
+            y: 1,
+            height: size.height - 2,
+            width: size.width,
         };
 
         let display_options = &config.display_options;

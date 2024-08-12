@@ -30,7 +30,13 @@ pub fn run_loop(
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
 
-    if let Ok(area) = backend.terminal_ref().size() {
+    if let Ok(size) = backend.terminal_ref().size() {
+        let area = Rect {
+            x: 0,
+            y: 0,
+            width: size.width,
+            height: size.height,
+        };
         // pre-calculate some ui attributes
         calculate_ui_state(app_state, area);
     }
@@ -62,7 +68,13 @@ pub fn run_loop(
 
     while app_state.quit == QuitAction::DoNot {
         // do the ui
-        if let Ok(area) = backend.terminal_ref().size() {
+        if let Ok(size) = backend.terminal_ref().size() {
+            let area = Rect {
+                x: 0,
+                y: 0,
+                width: size.width,
+                height: size.height,
+            };
             // pre-calculate some ui attributes
             calculate_ui_state(app_state, area);
 

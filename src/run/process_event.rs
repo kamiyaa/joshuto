@@ -2,6 +2,7 @@ use std::io;
 use std::path;
 
 use notify;
+use ratatui::layout::Rect;
 use ratatui::layout::{Constraint, Direction, Layout};
 use signal_hook::consts::signal;
 use termion::event::{Event, Key, MouseButton, MouseEvent};
@@ -135,11 +136,12 @@ pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
             );
             app_state.state.message_queue_mut().push_success(msg);
         }
-        Err(e) => {
-            let msg = format!("{}", e);
+        Err(err) => {
+            let msg = format!("{err}");
             app_state.state.message_queue_mut().push_error(msg);
         }
     }
+    app_state.state.worker_state_mut().progress = None;
     process_new_io_task(app_state);
 }
 
@@ -266,6 +268,13 @@ pub fn process_mouse(
 ) {
     let f_size = backend.terminal.as_ref().unwrap().size().unwrap();
 
+    let rect = Rect {
+        x: 0,
+        y: 0,
+        width: f_size.width,
+        height: f_size.height,
+    };
+
     let constraints: &[Constraint; 3] = &app_state.config.display_options.default_layout;
     let vertical_margin = if app_state.config.display_options.show_borders {
         2
@@ -277,7 +286,7 @@ pub fn process_mouse(
         .direction(Direction::Horizontal)
         .vertical_margin(vertical_margin)
         .constraints(constraints.as_ref())
-        .split(f_size);
+        .split(rect);
 
     match event {
         MouseEvent::Press(MouseButton::WheelUp, x, _) => {
