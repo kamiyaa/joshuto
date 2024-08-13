@@ -58,7 +58,7 @@ pub fn cursor_move(app_state: &mut AppState, new_index: usize) {
             if new_index >= dir_len {
                 new_index = dir_len - 1;
             }
-            curr_list.set_index(Some(new_index), &ui_state, &display_options);
+            curr_list.set_index(Some(new_index), &ui_state, display_options);
         }
     }
 }
