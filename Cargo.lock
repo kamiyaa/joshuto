@@ -46,7 +46,7 @@ dependencies = [
  "dynfmt",
  "flexi_logger",
  "hex",
- "image 0.25.1",
+ "image",
  "imagesize",
  "kamadak-exif",
  "log",
@@ -216,9 +216,9 @@ dependencies = [
 
 [[package]]
 name = "base64"
-version = "0.21.7"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
+checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bit_field"
@@ -888,24 +888,6 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.24.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5690139d2f55868e080017335e4b94cb7414274c74f1669c84fb5feba2c9f69d"
-dependencies = [
- "bytemuck",
- "byteorder",
- "color_quant",
- "exr",
- "gif",
- "jpeg-decoder",
- "num-traits",
- "png",
- "qoi",
- "tiff",
-]
-
-[[package]]
-name = "image"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd54d660e773627692c524beaad361aca785a4f9f5730ce91f42aabe5bce3d11"
@@ -1081,7 +1063,7 @@ dependencies = [
  "dirs-next",
  "filetime",
  "globset",
- "image 0.24.9",
+ "image",
  "lazy_static",
  "libc",
  "lscolors",
@@ -1114,9 +1096,6 @@ name = "jpeg-decoder"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5d4a7da358eff58addd2877a45865158f0d78c911d43a5784ceb7bbf52833b0"
-dependencies = [
- "rayon",
-]
 
 [[package]]
 name = "js-sys"
@@ -1765,14 +1744,14 @@ dependencies = [
 
 [[package]]
 name = "ratatui-image"
-version = "0.8.1"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b2b2c9623c63916694d56b7f27358ef81fd6232ffa4858444787ecbcda9f791"
+checksum = "de94276254cb20fb7431726875bd2ac6391a6ffc26f4b8e3d23f79d1286b491e"
 dependencies = [
  "base64",
  "dyn-clone",
  "icy_sixel",
- "image 0.24.9",
+ "image",
  "rand",
  "ratatui",
  "rustix",
