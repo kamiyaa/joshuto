@@ -68,7 +68,7 @@ impl From<AppConfigRaw> for AppConfig {
             display_options: DisplayOption::from(raw.display_options),
             preview_options: PreviewOption::from(raw.preview_options),
             search_options: raw.search_options,
-            tab_options: TabOption::from(raw.tab_options),
+            tab_options: raw.tab_options,
             custom_commands: raw.custom_commands,
         }
     }
