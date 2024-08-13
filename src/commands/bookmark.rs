@@ -100,7 +100,7 @@ fn poll_for_bookmark_key(app_state: &mut AppState, backend: &mut AppBackend) -> 
     let terminal = backend.terminal_mut();
     loop {
         let _ = terminal.draw(|frame| {
-            let area = frame.size();
+            let area = frame.area();
             if area.height < 5 {
                 return;
             }

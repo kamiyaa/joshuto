@@ -1,5 +1,5 @@
-use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::buffer::{Buffer, Cell};
+use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::style::{Color, Style};
 use ratatui::symbols::line::{HORIZONTAL_DOWN, HORIZONTAL_UP};
 use ratatui::text::Span;
@@ -254,15 +254,20 @@ struct Intersections {
 
 impl Intersections {
     fn render_left(&self, buf: &mut Buffer) {
-        buf.get_mut(self.left, self.top).set_symbol(HORIZONTAL_DOWN);
-        buf.get_mut(self.left, self.bottom)
-            .set_symbol(HORIZONTAL_UP);
+        if let Some(cell) = buf.cell_mut(Position::new(self.left, self.top)) {
+            *cell = Cell::new(HORIZONTAL_DOWN);
+        }
+        if let Some(cell) = buf.cell_mut(Position::new(self.left, self.bottom)) {
+            *cell = Cell::new(HORIZONTAL_UP);
+        }
     }
     fn render_right(&self, buf: &mut Buffer) {
-        buf.get_mut(self.right, self.top)
-            .set_symbol(HORIZONTAL_DOWN);
-        buf.get_mut(self.right, self.bottom)
-            .set_symbol(HORIZONTAL_UP);
+        if let Some(cell) = buf.cell_mut(Position::new(self.right, self.top)) {
+            *cell = Cell::new(HORIZONTAL_DOWN);
+        }
+        if let Some(cell) = buf.cell_mut(Position::new(self.right, self.bottom)) {
+            *cell = Cell::new(HORIZONTAL_UP);
+        }
     }
 }
 

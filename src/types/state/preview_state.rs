@@ -84,7 +84,7 @@ impl PreviewState {
                     } else {
                         path.clone()
                     };
-                    let proto = image::io::Reader::open(thumb_path.as_path())
+                    let proto = image::ImageReader::open(thumb_path.as_path())
                         .and_then(|reader| reader.decode().map_err(Self::map_io_err))
                         .and_then(|dyn_img| {
                             picker

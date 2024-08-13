@@ -25,7 +25,7 @@ impl<'a> TuiPrompt<'a> {
         app_state.flush_event();
         loop {
             let _ = terminal.draw(|frame| {
-                let f_size: Rect = frame.size();
+                let f_size: Rect = frame.area();
                 if f_size.height == 0 {
                     return;
                 }

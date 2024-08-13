@@ -9,7 +9,7 @@ use rustyline::line_buffer::{self, ChangeListener, DeleteListener, Direction, Li
 use rustyline::{At, Word};
 
 use lazy_static::lazy_static;
-use ratatui::layout::Rect;
+use ratatui::layout::{Position, Rect};
 use ratatui::widgets::Clear;
 use termion::event::{Event, Key};
 use unicode_width::UnicodeWidthStr;
@@ -158,7 +158,7 @@ impl<'a> TuiTextField<'a> {
         loop {
             terminal
                 .draw(|frame| {
-                    let area: Rect = frame.size();
+                    let area: Rect = frame.area();
                     if area.height == 0 {
                         return;
                     }
@@ -220,7 +220,10 @@ impl<'a> TuiTextField<'a> {
                     frame.render_widget(multiline, multiline_rect);
 
                     // render cursor
-                    frame.set_cursor(cursor_info.x as u16, cursor_info.y as u16);
+                    frame.set_cursor_position(Position::new(
+                        cursor_info.x as u16,
+                        cursor_info.y as u16,
+                    ));
                 })
                 .unwrap();
 
