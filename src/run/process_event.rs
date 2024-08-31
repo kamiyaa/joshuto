@@ -107,38 +107,38 @@ pub fn process_io_task_progress(app_state: &mut AppState, res: IoTaskProgressMes
 }
 
 pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
-    let worker_state = app_state.state.worker_state_mut();
-    let observer = worker_state.remove_worker().unwrap();
-
-    let observer_path = observer.dest_path();
-    if observer_path.exists() {
-        let _ = tab_ops::reload_all_tabs(app_state, observer_path);
-    } else {
-        tab_ops::remove_entry_from_all_tabs(app_state, observer_path);
-    }
-
-    let observer_path = observer.src_path();
-    if observer_path.exists() {
-        let _ = tab_ops::reload_all_tabs(app_state, observer_path);
-    } else {
-        tab_ops::remove_entry_from_all_tabs(app_state, observer_path);
-    }
-
-    let progress = observer.progress.clone();
     match res {
-        Ok(_) => {
-            let op = progress.kind.actioned_str();
-            let processed_size = format::file_size_to_string(progress.bytes_processed);
-            let total_size = format::file_size_to_string(progress.total_bytes);
-            let msg = format!(
-                "successfully {} {} items ({}/{})",
-                op, progress.total_files, processed_size, total_size,
-            );
-            app_state.state.message_queue_mut().push_success(msg);
-        }
         Err(err) => {
             let msg = format!("{err}");
             app_state.state.message_queue_mut().push_error(msg);
+        }
+        Ok(_) => {
+            let worker_state = app_state.state.worker_state_mut();
+            if let Some(io_stat) = worker_state.remove_io_stat() {
+                let io_path = io_stat.dest_path();
+                if io_path.exists() {
+                    let _ = tab_ops::reload_all_tabs(app_state, io_path);
+                } else {
+                    tab_ops::remove_entry_from_all_tabs(app_state, io_path);
+                }
+
+                let io_path = io_stat.src_path();
+                if io_path.exists() {
+                    let _ = tab_ops::reload_all_tabs(app_state, io_path);
+                } else {
+                    tab_ops::remove_entry_from_all_tabs(app_state, io_path);
+                }
+
+                let progress = io_stat.progress;
+                let op = progress.kind.actioned_str();
+                let processed_size = format::file_size_to_string(progress.bytes_processed);
+                let total_size = format::file_size_to_string(progress.total_bytes);
+                let msg = format!(
+                    "successfully {} {} items ({}/{})",
+                    op, progress.total_files, processed_size, total_size,
+                );
+                app_state.state.message_queue_mut().push_success(msg);
+            }
         }
     }
     app_state.state.worker_state_mut().progress = None;

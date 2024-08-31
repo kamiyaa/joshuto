@@ -70,7 +70,7 @@ impl WorkerState {
         Ok(())
     }
 
-    pub fn remove_worker(&mut self) -> Option<IoTaskStat> {
+    pub fn remove_io_stat(&mut self) -> Option<IoTaskStat> {
         self.progress.take()
     }
 }
