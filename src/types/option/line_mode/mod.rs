@@ -8,7 +8,7 @@ use crate::error::{AppError, AppErrorKind, AppResult};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct LineMode {
-    pub mode: [LineModeArgs; 8],
+    pub mode: [LineModeArgs; 7],
     pub size: usize,
 }
 
@@ -19,7 +19,6 @@ impl LineMode {
                 LineModeArgs::Size,
                 LineModeArgs::ModifyTime,
                 LineModeArgs::AccessTime,
-                LineModeArgs::BirthTime,
                 LineModeArgs::User,
                 LineModeArgs::Group,
                 LineModeArgs::Permission,
@@ -31,7 +30,7 @@ impl LineMode {
 
     pub const fn empty() -> Self {
         Self {
-            mode: [LineModeArgs::Null; 8],
+            mode: [LineModeArgs::Null; 7],
             size: 0,
         }
     }
@@ -48,7 +47,7 @@ impl LineMode {
 
 impl Default for LineMode {
     fn default() -> Self {
-        let mut mode = [Default::default(); 8];
+        let mut mode = [Default::default(); 7];
         mode[0] = LineModeArgs::Size;
 
         Self { size: 1, mode }
@@ -68,7 +67,6 @@ impl LineMode {
                         "size" => line_mode.add_mode(LineModeArgs::Size),
                         "mtime" => line_mode.add_mode(LineModeArgs::ModifyTime),
                         "atime" => line_mode.add_mode(LineModeArgs::AccessTime),
-                        "btime" => line_mode.add_mode(LineModeArgs::BirthTime),
                         "user" => line_mode.add_mode(LineModeArgs::User),
                         "group" => line_mode.add_mode(LineModeArgs::Group),
                         "perm" => line_mode.add_mode(LineModeArgs::Permission),
