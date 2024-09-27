@@ -50,7 +50,7 @@ pub fn _bulk_rename(app_state: &mut AppState) -> AppResult {
             let file_name = path.file_name();
             let file_name_as_bytes = file_name.as_bytes();
             file.write_all(file_name_as_bytes)?;
-            file.write_all(&[b'\n'])?;
+            file.write_all(b"\n")?;
         }
     }
 

@@ -9,7 +9,7 @@ pub fn rename_filename_conflict(path: &mut path::PathBuf) {
         path.pop();
 
         let mut file_name = file_name.clone();
-        file_name.push(&format!("_{}", i));
+        file_name.push(format!("_{i}"));
         path.push(file_name);
     }
 }
