@@ -1,35 +1,30 @@
 use std::path;
 
+use nix::sys::stat::Mode;
+
 use crate::fs::FileType;
 
-#[allow(clippy::unnecessary_cast)]
-const LIBC_PERMISSION_VALS: [(u32, char); 9] = [
-    (libc::S_IRUSR as u32, 'r'),
-    (libc::S_IWUSR as u32, 'w'),
-    (libc::S_IXUSR as u32, 'x'),
-    (libc::S_IRGRP as u32, 'r'),
-    (libc::S_IWGRP as u32, 'w'),
-    (libc::S_IXGRP as u32, 'x'),
-    (libc::S_IROTH as u32, 'r'),
-    (libc::S_IWOTH as u32, 'w'),
-    (libc::S_IXOTH as u32, 'x'),
+pub const LIBC_PERMISSION_VALS: [(Mode, char); 9] = [
+    (Mode::S_IRUSR, 'r'),
+    (Mode::S_IWUSR, 'w'),
+    (Mode::S_IXUSR, 'x'),
+    (Mode::S_IRGRP, 'r'),
+    (Mode::S_IWGRP, 'w'),
+    (Mode::S_IXGRP, 'x'),
+    (Mode::S_IROTH, 'r'),
+    (Mode::S_IWOTH, 'w'),
+    (Mode::S_IXOTH, 'x'),
 ];
 
-pub fn is_executable(mode: u32) -> bool {
-    #[allow(clippy::unnecessary_cast)]
-    const LIBC_PERMISSION_VALS: [u32; 3] = [
-        libc::S_IXUSR as u32,
-        libc::S_IXGRP as u32,
-        libc::S_IXOTH as u32,
-    ];
+const LIBC_EXECUTE_VALS: [Mode; 3] = [Mode::S_IXUSR, Mode::S_IXGRP, Mode::S_IXOTH];
 
-    LIBC_PERMISSION_VALS.iter().any(|val| mode & *val != 0)
+pub fn is_executable(mode: Mode) -> bool {
+    LIBC_EXECUTE_VALS.iter().any(|val| mode.intersects(*val))
 }
 
-pub fn mode_to_char_array(mode: u32) -> [char; 10] {
+pub fn mode_to_char_array(mode: Mode, file_type: FileType) -> [char; 10] {
     let mut mode_arr = ['-'; 10];
 
-    let file_type = FileType::from(mode);
     let ch = match file_type {
         FileType::File => '-',
         FileType::Directory => 'd',
@@ -42,7 +37,7 @@ pub fn mode_to_char_array(mode: u32) -> [char; 10] {
     mode_arr[0] = ch;
 
     for (i, (val, ch)) in LIBC_PERMISSION_VALS.iter().enumerate() {
-        if mode & *val != 0 {
+        if mode.intersects(*val) {
             mode_arr[i + 1] = *ch;
         }
     }

@@ -27,7 +27,6 @@ filetime = "^0"
 globset = "^0"
 image = "^0.25"
 lazy_static = "^1"
-libc = "^0"
 lscolors = { version = "0.17.0", features = ["nu-ansi-term"] }
 notify = "^6"
 open = "^5"
@@ -53,7 +52,7 @@ bytesize = "1.3.0"
 [dependencies.nix]
 version = "^0"
 default-features = false
-features = ["user"]
+features = ["fs", "signal", "user"]
 
 [dependencies.ratatui]
 version = "^0"

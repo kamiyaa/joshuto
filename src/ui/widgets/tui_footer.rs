@@ -26,9 +26,6 @@ impl<'a> TuiFooter<'a> {
 
 impl<'a> Widget for TuiFooter<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        #[cfg(unix)]
-        use std::os::unix::fs::PermissionsExt;
-
         let visual_mode_style = Style::default().fg(Color::Black).bg(Color::LightRed);
         let mode_style = Style::default().fg(Color::Cyan);
 
@@ -48,7 +45,7 @@ impl<'a> Widget for TuiFooter<'a> {
                 let entry = &self.dirlist.contents[i];
 
                 let mode_str: String =
-                    unix::mode_to_char_array(entry.metadata.permissions_ref().mode())
+                    unix::mode_to_char_array(entry.metadata.mode, entry.metadata.file_type)
                         .iter()
                         .collect();
 

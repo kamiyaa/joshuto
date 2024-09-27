@@ -1,5 +1,7 @@
 use std::{fs, io, path, time};
 
+use nix::sys::stat::{Mode, SFlag};
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum FileType {
     Directory,
@@ -12,32 +14,23 @@ pub enum FileType {
     Pipe,
 }
 
-#[allow(clippy::unnecessary_cast)]
-const LIBC_FILE_VALS: [(u32, FileType); 7] = [
-    (libc::S_IFREG as u32 >> 9, FileType::File),
-    (libc::S_IFDIR as u32 >> 9, FileType::Directory),
-    (libc::S_IFLNK as u32 >> 9, FileType::Link),
-    (libc::S_IFSOCK as u32 >> 9, FileType::Socket),
-    (libc::S_IFBLK as u32 >> 9, FileType::Block),
-    (libc::S_IFCHR as u32 >> 9, FileType::Character),
-    (libc::S_IFIFO as u32 >> 9, FileType::Pipe),
-];
-
-impl From<u32> for FileType {
-    fn from(value: u32) -> Self {
+impl From<SFlag> for FileType {
+    fn from(value: SFlag) -> Self {
         Self::from_mode(value)
     }
 }
 
 impl FileType {
-    pub fn from_mode(mode: u32) -> Self {
-        let mode_shifted = mode >> 9;
-        for (val, ch) in LIBC_FILE_VALS.iter() {
-            if mode_shifted & (u32::MAX - 1) == *val {
-                return *ch;
-            }
+    pub fn from_mode(mode: SFlag) -> Self {
+        match mode {
+            SFlag::S_IFBLK => FileType::Block,
+            SFlag::S_IFCHR => FileType::Character,
+            SFlag::S_IFDIR => FileType::Directory,
+            SFlag::S_IFIFO => FileType::Pipe,
+            SFlag::S_IFLNK => FileType::Link,
+            SFlag::S_IFSOCK => FileType::Socket,
+            _ => FileType::File,
         }
-        FileType::File
     }
 }
 
@@ -54,15 +47,13 @@ pub struct JoshutoMetadata {
     pub modified: time::SystemTime,
     pub accessed: time::SystemTime,
     pub created: time::SystemTime,
-    pub permissions: fs::Permissions,
+    pub mode: Mode,
     pub file_type: FileType,
     pub link_type: LinkType,
     #[cfg(unix)]
     pub uid: u32,
     #[cfg(unix)]
     pub gid: u32,
-    #[cfg(unix)]
-    pub mode: u32,
 }
 
 impl JoshutoMetadata {
@@ -72,27 +63,25 @@ impl JoshutoMetadata {
 
         let symlink_metadata = fs::symlink_metadata(path)?;
         let metadata = fs::metadata(path);
-        let (len, modified, accessed, created, permissions) = match metadata.as_ref() {
-            Ok(m) => (
-                m.len(),
-                m.modified()?,
-                m.accessed()?,
-                m.created()?,
-                m.permissions(),
-            ),
+        let (len, modified, accessed, created) = match metadata.as_ref() {
+            Ok(m) => (m.len(), m.modified()?, m.accessed()?, m.created()?),
             Err(_) => (
                 symlink_metadata.len(),
                 symlink_metadata.modified()?,
                 symlink_metadata.accessed()?,
                 symlink_metadata.created()?,
-                symlink_metadata.permissions(),
             ),
         };
 
         let directory_size = None;
-        let file_type = match metadata.as_ref() {
-            Ok(metadata) => FileType::from_mode(metadata.mode()),
-            _ => FileType::File,
+        let (file_type, mode) = match metadata.as_ref() {
+            Ok(metadata) => {
+                let metadata_mode = metadata.mode();
+                let sflag = SFlag::from_bits_truncate(metadata_mode);
+                let mode = Mode::from_bits_truncate(metadata_mode);
+                (FileType::from_mode(sflag), mode)
+            }
+            _ => (FileType::File, Mode::empty()),
         };
 
         let link_type = if symlink_metadata.file_type().is_symlink() {
@@ -117,8 +106,6 @@ impl JoshutoMetadata {
         let uid = symlink_metadata.uid();
         #[cfg(unix)]
         let gid = symlink_metadata.gid();
-        #[cfg(unix)]
-        let mode = symlink_metadata.mode();
 
         Ok(Self {
             len,
@@ -126,15 +113,13 @@ impl JoshutoMetadata {
             modified,
             accessed,
             created,
-            permissions,
+            mode,
             file_type,
             link_type,
             #[cfg(unix)]
             uid,
             #[cfg(unix)]
             gid,
-            #[cfg(unix)]
-            mode,
         })
     }
 
@@ -160,14 +145,6 @@ impl JoshutoMetadata {
 
     pub fn created(&self) -> time::SystemTime {
         self.created
-    }
-
-    pub fn permissions_ref(&self) -> &fs::Permissions {
-        &self.permissions
-    }
-
-    pub fn permissions_mut(&mut self) -> &mut fs::Permissions {
-        &mut self.permissions
     }
 
     pub fn file_type(&self) -> FileType {

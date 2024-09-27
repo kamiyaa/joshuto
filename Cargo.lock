@@ -1075,7 +1075,6 @@ dependencies = [
  "globset",
  "image",
  "lazy_static",
- "libc",
  "lscolors",
  "nix 0.29.0",
  "notify",

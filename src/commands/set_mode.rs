@@ -1,42 +1,25 @@
-use std::fs;
+use nix::sys::stat::{fchmodat, FchmodatFlags, Mode};
 
-use crate::error::AppResult;
+use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::state::AppState;
 use crate::ui::views::{DummyListener, TuiTextField};
 use crate::ui::AppBackend;
-use crate::utils::unix;
+use crate::utils::unix::{self, LIBC_PERMISSION_VALS};
 
 use super::cursor_move;
 
-#[allow(clippy::unnecessary_cast)]
-#[cfg(unix)]
-const LIBC_PERMISSION_VALS: [(u32, char); 9] = [
-    (libc::S_IRUSR as u32, 'r'),
-    (libc::S_IWUSR as u32, 'w'),
-    (libc::S_IXUSR as u32, 'x'),
-    (libc::S_IRGRP as u32, 'r'),
-    (libc::S_IWGRP as u32, 'w'),
-    (libc::S_IXGRP as u32, 'x'),
-    (libc::S_IROTH as u32, 'r'),
-    (libc::S_IWOTH as u32, 'w'),
-    (libc::S_IXOTH as u32, 'x'),
-];
-
-pub fn str_to_mode(s: &str) -> u32 {
-    let mut mode: u32 = 0;
+pub fn str_to_mode(s: &str) -> Mode {
+    let mut mode = Mode::empty();
     for (i, ch) in s.chars().enumerate().take(LIBC_PERMISSION_VALS.len()) {
         if ch == LIBC_PERMISSION_VALS[i].1 {
             let (val, _) = LIBC_PERMISSION_VALS[i];
-            mode |= val;
+            mode = mode.union(val);
         }
     }
     mode
 }
 
 pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
-    #[cfg(unix)]
-    use std::os::unix::fs::PermissionsExt;
-
     const PREFIX: &str = "set_mode ";
     let entry = app_state
         .state
@@ -47,8 +30,7 @@ pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
 
     let user_input = match entry {
         Some(entry) => {
-            let mode = entry.metadata.permissions_ref().mode();
-            let mode_arr = unix::mode_to_char_array(mode);
+            let mode_arr = unix::mode_to_char_array(entry.metadata.mode, entry.metadata.file_type);
             let mut listener = DummyListener {};
 
             let mode_str: String = mode_arr[1..].iter().collect();
@@ -73,21 +55,30 @@ pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
             {
                 if curr_list.selected_count() > 0 {
                     for entry in curr_list.iter_selected_mut() {
-                        let mut permissions = entry.metadata.permissions_ref().clone();
-                        let file_mode = (permissions.mode() >> 12) << 12 | mode;
-                        permissions.set_mode(file_mode);
-
-                        fs::set_permissions(entry.file_path(), permissions)?;
-                        entry.metadata.permissions_mut().set_mode(file_mode);
+                        fchmodat(
+                            None,
+                            entry.file_path(),
+                            mode,
+                            FchmodatFlags::NoFollowSymlink,
+                        )
+                        .map_err(|err| {
+                            let error_msg = format!("Failed to set file permissions: {err}");
+                            AppError::new(AppErrorKind::Io, error_msg)
+                        })?;
+                        entry.metadata.mode = mode;
                     }
                 } else if let Some(entry) = curr_list.curr_entry_mut() {
-                    let mut permissions = entry.metadata.permissions_ref().clone();
-                    let file_mode = (permissions.mode() >> 12) << 12 | mode;
-                    permissions.set_mode(file_mode);
-
-                    fs::set_permissions(entry.file_path(), permissions)?;
-                    entry.metadata.permissions_mut().set_mode(file_mode);
-
+                    fchmodat(
+                        None,
+                        entry.file_path(),
+                        mode,
+                        FchmodatFlags::NoFollowSymlink,
+                    )
+                    .map_err(|err| {
+                        let error_msg = format!("Failed to set file permissions: {err}");
+                        AppError::new(AppErrorKind::Io, error_msg)
+                    })?;
+                    entry.metadata.mode = mode;
                     cursor_move::down(app_state, 1)?;
                 }
             }
