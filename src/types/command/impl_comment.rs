@@ -103,6 +103,8 @@ impl CommandComment for Command {
             Self::StdOutPostProcess { .. } => "Post process stdout of last `shell` command",
             Self::ShowTasks => "Show running background tasks",
 
+            Self::SignalSuspend => "Suspend the current session",
+
             Self::ToggleHiddenFiles => "Toggle hidden files displaying",
 
             Self::SwitchLineNums(_) => "Switch line numbering",

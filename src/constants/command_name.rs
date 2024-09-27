@@ -97,4 +97,5 @@ cmd_constants![
     (CMD_BOOKMARK_CHANGE_DIRECTORY, "cd_bookmark"),
     (CMD_CUSTOM_SEARCH, "custom_search"),
     (CMD_CUSTOM_SEARCH_INTERACTIVE, "custom_search_interactive"),
+    (CMD_SIGNAL_SUSPEND, "suspend"),
 ];

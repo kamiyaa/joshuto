@@ -152,6 +152,7 @@ impl AppExecute for Command {
             } => sort::set_sort(app_state, *sort_method, *reverse),
             Self::SetLineMode(mode) => linemode::set_linemode(app_state, *mode),
             Self::SortReverse => sort::toggle_reverse(app_state),
+            Self::SignalSuspend => signal::signal_suspend(backend),
             Self::SubProcess { words, mode } => {
                 sub_process::sub_process(app_state, backend, words.as_slice(), mode.clone())
             }

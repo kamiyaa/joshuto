@@ -118,6 +118,8 @@ impl std::str::FromStr for Command {
             Self::ZoxideInteractive(arg.to_string())
         );
 
+        simple_command_conversion_case!(command, CMD_SIGNAL_SUSPEND, Self::SignalSuspend);
+
         if command == CMD_QUIT {
             match arg {
                 "--force" => Ok(Self::Quit(QuitAction::Force)),
