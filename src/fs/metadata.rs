@@ -86,7 +86,12 @@ impl JoshutoMetadata {
                 #[cfg(not(target_os = "macos"))]
                 let sflag = SFlag::from_bits_truncate(metadata_mode);
 
+                #[cfg(target_os = "macos")]
+                let mode = Mode::from_bits_truncate(metadata_mode as mode_t);
+
+                #[cfg(not(target_os = "macos"))]
                 let mode = Mode::from_bits_truncate(metadata_mode);
+
                 (FileType::from_mode(sflag), mode)
             }
             _ => (FileType::File, Mode::empty()),
