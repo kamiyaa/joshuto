@@ -49,7 +49,6 @@ pub struct JoshutoMetadata {
     pub directory_size: Option<usize>,
     pub modified: time::SystemTime,
     pub accessed: time::SystemTime,
-    pub created: time::SystemTime,
     pub mode: Mode,
     pub file_type: FileType,
     pub link_type: LinkType,
@@ -66,13 +65,12 @@ impl JoshutoMetadata {
 
         let symlink_metadata = fs::symlink_metadata(path)?;
         let metadata = fs::metadata(path);
-        let (len, modified, accessed, created) = match metadata.as_ref() {
-            Ok(m) => (m.len(), m.modified()?, m.accessed()?, m.created()?),
+        let (len, modified, accessed) = match metadata.as_ref() {
+            Ok(m) => (m.len(), m.modified()?, m.accessed()?),
             Err(_) => (
                 symlink_metadata.len(),
                 symlink_metadata.modified()?,
                 symlink_metadata.accessed()?,
-                symlink_metadata.created()?,
             ),
         };
 
@@ -125,7 +123,6 @@ impl JoshutoMetadata {
             directory_size,
             modified,
             accessed,
-            created,
             mode,
             file_type,
             link_type,
@@ -154,10 +151,6 @@ impl JoshutoMetadata {
 
     pub fn accessed(&self) -> time::SystemTime {
         self.accessed
-    }
-
-    pub fn created(&self) -> time::SystemTime {
-        self.created
     }
 
     pub fn file_type(&self) -> FileType {
