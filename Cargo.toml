@@ -11,6 +11,7 @@ keywords = ["ratatui", "ranger", "file_manager", "termion"]
 categories = ['command-line-interface', 'command-line-utilities']
 
 [profile.release]
+lto = true
 strip = true
 
 [dependencies]
