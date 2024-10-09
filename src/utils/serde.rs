@@ -31,7 +31,6 @@ where
             "size" => line_mode.add_mode(LineModeArgs::Size),
             "mtime" => line_mode.add_mode(LineModeArgs::ModifyTime),
             "atime" => line_mode.add_mode(LineModeArgs::AccessTime),
-            "btime" => line_mode.add_mode(LineModeArgs::BirthTime),
             "user" => line_mode.add_mode(LineModeArgs::User),
             "group" => line_mode.add_mode(LineModeArgs::Group),
             "perm" => line_mode.add_mode(LineModeArgs::Permission),
