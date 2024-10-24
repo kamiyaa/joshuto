@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use crate::error::AppResult;
 use crate::types::state::AppState;
+use crate::utils::cwd;
 
 pub fn parent_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResult {
     let mut path: Option<PathBuf> = None;
@@ -25,6 +26,7 @@ pub fn parent_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResu
             }
         }
         if let Some(path) = path.as_ref() {
+            cwd::set_current_dir(path)?;
             curr_tab.set_cwd(path);
         }
     }
