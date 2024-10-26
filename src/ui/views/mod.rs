@@ -1,6 +1,7 @@
 mod tui_command_menu;
 mod tui_folder_view;
 mod tui_hsplit_view;
+mod tui_minimal_view;
 mod tui_textfield;
 mod tui_view;
 mod tui_worker_view;
