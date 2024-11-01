@@ -43,9 +43,11 @@ fn execute_sub_process(
 ) -> std::io::Result<()> {
     let current_files = current_files(app_state);
     let command_base = if current_files.len() == 1 {
+        let (file_name, file_path) = current_files[0];
+
         words[0]
-            .replace("%s", current_files[0].0)
-            .replace("%p", &current_files[0].1.to_string_lossy())
+            .replace("%s", file_name)
+            .replace("%p", &file_path.to_string_lossy())
     } else {
         words[0].clone()
     };

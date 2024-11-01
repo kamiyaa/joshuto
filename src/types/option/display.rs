@@ -41,22 +41,22 @@ impl From<DisplayOptionRaw> for DisplayOption {
             _ => DisplayMode::Default,
         };
 
-        let column_ratio = match raw.column_ratio {
+        let (left, mid, right) = match raw.column_ratio {
             Some(s) if s.len() == 3 => (s[0], s[1], s[2]),
             Some(s) if s.len() == 2 => (0, s[0], s[1]),
             _ => default_column_ratio(),
         };
 
-        let total = (column_ratio.0 + column_ratio.1 + column_ratio.2) as u32;
+        let total = (left + mid + right) as u32;
 
         let default_layout = [
-            Constraint::Ratio(column_ratio.0 as u32, total),
-            Constraint::Ratio(column_ratio.1 as u32, total),
-            Constraint::Ratio(column_ratio.2 as u32, total),
+            Constraint::Ratio(left as u32, total),
+            Constraint::Ratio(mid as u32, total),
+            Constraint::Ratio(right as u32, total),
         ];
         let no_preview_layout = [
-            Constraint::Ratio(column_ratio.0 as u32, total),
-            Constraint::Ratio(column_ratio.1 as u32 + column_ratio.2 as u32, total),
+            Constraint::Ratio(left as u32, total),
+            Constraint::Ratio(mid as u32 + right as u32, total),
             Constraint::Ratio(0, total),
         ];
 
@@ -92,17 +92,17 @@ impl DisplayOption {
 
 impl std::default::Default for DisplayOption {
     fn default() -> Self {
-        let column_ratio = default_column_ratio();
+        let (left, mid, right) = default_column_ratio();
 
-        let total = (column_ratio.0 + column_ratio.1 + column_ratio.2) as u32;
+        let total = (left + mid + right) as u32;
         let default_layout = [
-            Constraint::Ratio(column_ratio.0 as u32, total),
-            Constraint::Ratio(column_ratio.1 as u32, total),
-            Constraint::Ratio(column_ratio.2 as u32, total),
+            Constraint::Ratio(left as u32, total),
+            Constraint::Ratio(mid as u32, total),
+            Constraint::Ratio(right as u32, total),
         ];
         let no_preview_layout = [
-            Constraint::Ratio(column_ratio.0 as u32, total),
-            Constraint::Ratio(column_ratio.1 as u32 + column_ratio.2 as u32, total),
+            Constraint::Ratio(left as u32, total),
+            Constraint::Ratio(mid as u32 + right as u32, total),
             Constraint::Ratio(0, total),
         ];
 
