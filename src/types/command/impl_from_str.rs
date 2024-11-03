@@ -8,6 +8,7 @@ use crate::commands::sub_process::SubprocessCallMode;
 use crate::error::{AppError, AppErrorKind};
 use crate::tab::NewTabMode;
 use crate::types::io::FileOperationOptions;
+use crate::types::option::display::DisplayMode;
 use crate::types::option::line_mode::{LineMode, LineNumberStyle};
 use crate::types::option::search::CaseSensitivity;
 use crate::types::option::sort::SortMethod;
@@ -550,6 +551,16 @@ impl std::str::FromStr for Command {
                         )),
                     }
                 }
+            }
+        } else if command == CMD_SET_DISPLAY_MODE {
+            match arg {
+                "default" => Ok(Self::SetDisplayMode(DisplayMode::Default)),
+                "minimal" => Ok(Self::SetDisplayMode(DisplayMode::Minimal)),
+                "hsplit" => Ok(Self::SetDisplayMode(DisplayMode::HSplit)),
+                _ => Err(AppError::new(
+                        AppErrorKind::InvalidParameters,
+                        format!("{}: Unknown option '{}'", command, arg),
+                ))
             }
         } else if command == CMD_SET_LINEMODE {
             Ok(Self::SetLineMode(LineMode::from_string(arg)?))

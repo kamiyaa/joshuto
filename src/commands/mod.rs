@@ -34,6 +34,7 @@ pub mod select_fzf;
 pub mod select_glob;
 pub mod select_regex;
 pub mod select_string;
+pub mod set_display_mode;
 pub mod set_mode;
 pub mod show_help;
 pub mod show_hidden;

@@ -45,6 +45,9 @@ impl CommandCompletion for Command {
                 "insensitive",
                 "sensitive",
             ]),
+            CMD_SET_DISPLAY_MODE => CompletionKind::Custom(vec![
+                "default", "minimal", "hsplit",
+            ]),
             CMD_SET_LINEMODE => CompletionKind::Custom(vec![
                 "all", "group", "mtime", "none", "perm", "size", "user",
             ]),

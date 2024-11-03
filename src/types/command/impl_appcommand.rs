@@ -102,6 +102,7 @@ impl AppCommand for Command {
             } => CMD_SUBPROCESS_CAPTURE,
             Self::StdOutPostProcess { .. } => CMD_STDOUT_POST_PROCESS,
             Self::SwitchLineNums(_) => CMD_SWITCH_LINE_NUMBERS,
+            Self::SetDisplayMode(_) => CMD_SET_DISPLAY_MODE,
             Self::SetLineMode(_) => CMD_SET_LINEMODE,
 
             Self::SignalSuspend => CMD_SIGNAL_SUSPEND,

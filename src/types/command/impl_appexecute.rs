@@ -156,6 +156,7 @@ impl AppExecute for Command {
                 sort_method,
                 reverse,
             } => sort::set_sort(app_state, *sort_method, *reverse),
+            Self::SetDisplayMode(mode) => set_display_mode::set_display_mode(app_state, *mode),
             Self::SetLineMode(mode) => linemode::set_linemode(app_state, *mode),
             Self::SortReverse => sort::toggle_reverse(app_state),
             Self::SignalSuspend => signal::signal_suspend(backend),
