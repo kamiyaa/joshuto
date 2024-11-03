@@ -62,7 +62,7 @@ impl CommandCompletion for Command {
             CMD_SYMLINK_FILES => {
                 CompletionKind::Custom(vec!["--relative=false", "--relative=true"])
             }
-            _ => return None,
+            _ => CompletionKind::File,
         })
     }
 }

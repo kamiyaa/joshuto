@@ -295,20 +295,26 @@ impl<'a> TuiTextField<'a> {
                             let _ = terminal.hide_cursor();
                             return None;
                         }
-                        Key::Char('\t') => autocomplete(
-                            &mut line_buffer,
-                            &mut completion_tracker,
-                            &completer,
-                            listener,
-                            false,
-                        ),
-                        Key::BackTab => autocomplete(
-                            &mut line_buffer,
-                            &mut completion_tracker,
-                            &completer,
-                            listener,
-                            true,
-                        ),
+                        Key::Char('\t') => {
+                            autocomplete(
+                                &mut line_buffer,
+                                &mut completion_tracker,
+                                &completer,
+                                listener,
+                                false,
+                            );
+                            false
+                        }
+                        Key::BackTab => {
+                            autocomplete(
+                                &mut line_buffer,
+                                &mut completion_tracker,
+                                &completer,
+                                listener,
+                                true,
+                            );
+                            false
+                        }
 
                         // Current `completion_tracker` should be dropped
                         // only if we moved to another word
@@ -379,50 +385,60 @@ fn autocomplete(
     completer: &FilenameCompleter,
     listener: &mut DummyListener,
     backwards: bool,
-) -> bool {
+) {
     // If we are in the middle of a word, move to the end of it,
     // so we don't split it with autocompletion.
     move_to_the_end(line_buffer);
 
-    if let Some(ct) = completion_tracker {
-        ct.index = if backwards {
-            ct.index.checked_sub(1).unwrap_or(ct.candidates.len() - 1)
-        } else if ct.index + 1 == ct.candidates.len() {
-            0
-        } else {
-            ct.index + 1
-        };
+    match completion_tracker {
+        Some(ct) => {
+            if backwards && ct.index == 0 {
+                return;
+            }
+            if !backwards && ct.index + 1 >= ct.candidates.len() {
+                return;
+            }
 
-        let pos = ct.pos;
-        let first = ct.candidates[ct.index].display();
+            ct.index = if backwards {
+                ct.index.checked_sub(1).unwrap_or(ct.candidates.len() - 1)
+            } else {
+                ct.index + 1
+            };
 
-        line_buffer.set_pos(pos);
-        line_buffer.kill_buffer(listener);
-        line_buffer.insert_str(pos, first, listener);
-        line_buffer.move_end();
-    } else if let Some((pos, mut candidates)) = get_candidates(completer, line_buffer) {
-        if !candidates.is_empty() {
-            candidates.sort_by(|x, y| {
-                x.display()
-                    .partial_cmp(y.display())
-                    .unwrap_or(std::cmp::Ordering::Less)
-            });
-
-            let index = if backwards { candidates.len() - 1 } else { 0 };
-            let pos = line_buffer.rfind('/').map(|p| p + 1).unwrap_or(pos);
-            let ct = CompletionTracker::new(index, pos, candidates, line_buffer.to_string());
-            let first = ct.candidates[index].display();
+            let pos = ct.pos;
+            let first = ct.candidates[ct.index].display();
 
             line_buffer.set_pos(pos);
             line_buffer.kill_buffer(listener);
             line_buffer.insert_str(pos, first, listener);
             line_buffer.move_end();
+        }
+        None => {
+            if let Some((pos, mut candidates)) = get_autocomplete_candidates(completer, line_buffer)
+            {
+                if !candidates.is_empty() {
+                    candidates.sort_by(|x, y| {
+                        x.display()
+                            .partial_cmp(y.display())
+                            .unwrap_or(std::cmp::Ordering::Less)
+                    });
 
-            *completion_tracker = Some(ct);
+                    let index = if backwards { candidates.len() - 1 } else { 0 };
+                    let pos = line_buffer.rfind('/').map(|p| p + 1).unwrap_or(pos);
+                    let ct =
+                        CompletionTracker::new(index, pos, candidates, line_buffer.to_string());
+                    let first = ct.candidates[index].display();
+
+                    line_buffer.set_pos(pos);
+                    line_buffer.kill_buffer(listener);
+                    line_buffer.insert_str(pos, first, listener);
+                    line_buffer.move_end();
+
+                    *completion_tracker = Some(ct);
+                }
+            }
         }
     }
-
-    false
 }
 
 fn moved_to_another_word<F, Any>(line_buffer: &mut LineBuffer, action: F) -> bool
@@ -487,7 +503,7 @@ fn complete_word(candidates: &[&str], partial: &str) -> Vec<Pair> {
         .collect()
 }
 
-fn get_candidates(
+fn get_autocomplete_candidates(
     completer: &FilenameCompleter,
     line_buffer: &mut LineBuffer,
 ) -> Option<(usize, Vec<Pair>)> {
@@ -500,7 +516,8 @@ fn get_candidates(
             if line_buffer.pos() <= command.len() {
                 return Some((0, complete_word(&COMMANDS, command)));
             }
-            match Command::completion_kind(command)? {
+            let completion_kind = Command::completion_kind(command)?;
+            match completion_kind {
                 CompletionKind::Bin => {
                     if !arg.starts_with("./") && !arg.starts_with('/') {
                         return Some((
