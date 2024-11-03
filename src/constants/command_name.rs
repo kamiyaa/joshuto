@@ -79,6 +79,7 @@ cmd_constants![
     (CMD_TOGGLE_HIDDEN, "toggle_hidden"),
     (CMD_TOGGLE_VISUAL, "toggle_visual"),
     (CMD_SWITCH_LINE_NUMBERS, "line_nums"),
+    (CMD_SET_DISPLAY_MODE, "set_display_mode"),
     (CMD_SET_LINEMODE, "linemode"),
     (CMD_TOUCH_FILE, "touch"),
     (CMD_HELP, "help"),

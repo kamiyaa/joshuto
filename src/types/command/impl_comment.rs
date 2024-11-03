@@ -9,6 +9,7 @@ impl CommandComment for Command {
     // These comments are displayed at the help page
     fn comment(&self) -> &'static str {
         match self {
+            Self::SetDisplayMode(_) => "Change the display mode",
             Self::SetLineMode(_) => "Show File's metadata in line",
             Self::Escape => "Escape from visual mode (cancel)",
             Self::BulkRename => "Bulk rename",
