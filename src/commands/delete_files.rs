@@ -42,12 +42,12 @@ fn delete_files(
     paths: Vec<path::PathBuf>,
     background: bool,
     permanently: bool,
-) -> AppResult<()> {
+) -> AppResult {
     let file_op = FileOperation::Delete;
-    let options = FileOperationOptions {
-        overwrite: false,
-        skip_exist: false,
-        permanently: !app_state.config.use_trash || permanently,
+    let options = {
+        let mut options = FileOperationOptions::default();
+        options.permanently = !app_state.config.use_trash || permanently;
+        options
     };
 
     let dest = path::PathBuf::new();

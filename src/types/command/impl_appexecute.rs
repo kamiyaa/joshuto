@@ -1,6 +1,7 @@
 use crate::commands::stdout::post_process_std_out;
 use crate::error::AppResult;
 use crate::traits::app_execute::AppExecute;
+use crate::types::io::{FileOperation, FileOperationOptions};
 use crate::types::keymap::AppKeyMapping;
 use crate::types::state::AppState;
 use crate::ui::AppBackend;
@@ -49,9 +50,14 @@ impl AppExecute for Command {
             } => file_ops::copy_filepath(app_state, false),
             Self::CopyFilePath { all_selected: true } => file_ops::copy_filepath(app_state, true),
             Self::CopyDirPath => file_ops::copy_dirpath(app_state),
-            Self::SymlinkFiles { relative: true } => file_ops::symlink_relative(app_state),
-            Self::SymlinkFiles { relative: false } => file_ops::symlink_absolute(app_state),
-            Self::PasteFiles { options } => file_ops::paste(app_state, *options),
+            Self::SymlinkFiles { relative } => {
+                let mut options = FileOperationOptions::default();
+                options.symlink = true;
+                options.symlink_relative = *relative;
+
+                file_ops::create_io_task(app_state, FileOperation::Symlink, options)
+            }
+            Self::PasteFiles { options } => file_ops::create_io_paste_task(app_state, *options),
 
             Self::DeleteFiles {
                 background,

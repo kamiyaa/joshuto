@@ -30,34 +30,56 @@ pub fn copy(app_state: &mut AppState) -> AppResult {
     Ok(())
 }
 
-pub fn symlink_absolute(app_state: &mut AppState) -> AppResult {
-    new_local_state(app_state, FileOperation::Symlink { relative: false });
-    Ok(())
-}
+pub fn create_io_task(
+    app_state: &mut AppState,
+    operation: FileOperation,
+    options: FileOperationOptions,
+) -> AppResult {
+    let local_state = app_state.state.take_local_state().ok_or_else(|| {
+        let err_msg = "No files selected";
+        AppError::new(AppErrorKind::InvalidParameters, err_msg.to_string())
+    })?;
 
-pub fn symlink_relative(app_state: &mut AppState) -> AppResult {
-    new_local_state(app_state, FileOperation::Symlink { relative: true });
-    Ok(())
-}
-
-pub fn paste(app_state: &mut AppState, options: FileOperationOptions) -> AppResult {
-    match app_state.state.take_local_state() {
-        Some(state) if !state.paths.is_empty() => {
-            let dest = app_state
-                .state
-                .tab_state_ref()
-                .curr_tab_ref()
-                .get_cwd()
-                .to_path_buf();
-            let worker_thread = IoTask::new(state.file_op, state.paths, dest, options);
-            app_state.state.worker_state_mut().push_task(worker_thread);
-            Ok(())
-        }
-        _ => Err(AppError::new(
-            AppErrorKind::Io,
-            "no files selected".to_string(),
-        )),
+    if local_state.paths.is_empty() {
+        let err_msg = "No files selected";
+        let err = AppError::new(AppErrorKind::InvalidParameters, err_msg.to_string());
+        return Err(err);
     }
+
+    let dest = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .get_cwd()
+        .to_path_buf();
+    let worker_thread = IoTask::new(operation, local_state.paths, dest, options);
+    app_state.state.worker_state_mut().push_task(worker_thread);
+
+    Ok(())
+}
+
+pub fn create_io_paste_task(app_state: &mut AppState, options: FileOperationOptions) -> AppResult {
+    let local_state = app_state.state.take_local_state().ok_or_else(|| {
+        let err_msg = "No files selected";
+        AppError::new(AppErrorKind::InvalidParameters, err_msg.to_string())
+    })?;
+
+    if local_state.paths.is_empty() {
+        let err_msg = "No files selected";
+        let err = AppError::new(AppErrorKind::InvalidParameters, err_msg.to_string());
+        return Err(err);
+    }
+
+    let dest = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .get_cwd()
+        .to_path_buf();
+    let worker_thread = IoTask::new(local_state.file_op, local_state.paths, dest, options);
+    app_state.state.worker_state_mut().push_task(worker_thread);
+
+    Ok(())
 }
 
 pub fn copy_filename(app_state: &mut AppState) -> AppResult {

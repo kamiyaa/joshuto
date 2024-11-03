@@ -4,42 +4,50 @@ use std::path;
 pub enum FileOperation {
     Cut,
     Copy,
-    Symlink { relative: bool },
     Delete,
+    Symlink,
 }
 
 impl FileOperation {
+    pub fn as_str(&self) -> &'static str {
+        match *self {
+            Self::Cut => "Cut",
+            Self::Copy => "Copy",
+            Self::Delete => "Delete",
+            Self::Symlink => "Symlink",
+        }
+    }
+
     pub fn actioning_str(&self) -> &'static str {
         match *self {
             Self::Cut => "Moving",
             Self::Copy => "Copying",
-            Self::Symlink { .. } => "Symlinking",
             Self::Delete => "Deleting",
+            Self::Symlink => "Symlinking",
         }
     }
     pub fn actioned_str(&self) -> &'static str {
         match *self {
             Self::Cut => "moved",
             Self::Copy => "copied",
-            Self::Symlink { .. } => "symlinked",
             Self::Delete => "deleted",
+            Self::Symlink => "symlinked",
         }
     }
 }
 
 impl std::fmt::Display for FileOperation {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Cut => write!(f, "Cut"),
-            Self::Copy => write!(f, "Copy"),
-            Self::Symlink { relative } => write!(f, "Symlink --relative={}", relative),
-            Self::Delete => write!(f, "Delete"),
-        }
+        write!(f, "{}", self.as_str())
     }
 }
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct FileOperationOptions {
+    // symlink
+    pub symlink: bool,
+    pub symlink_relative: bool,
+
     // cut, copy
     pub overwrite: bool,
     pub skip_exist: bool,

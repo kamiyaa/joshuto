@@ -63,7 +63,7 @@ impl WorkerState {
         Some(worker.get_msg())
     }
 
-    pub fn start_next_job(&mut self) -> AppResult<()> {
+    pub fn start_next_job(&mut self) -> AppResult {
         if let Some(task) = self.task_queue.pop_front() {
             let _ = self.task_tx.send(task);
         }

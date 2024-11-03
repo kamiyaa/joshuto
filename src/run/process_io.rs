@@ -20,7 +20,7 @@ use crate::utils::name_resolution::rename_filename_conflict;
 pub fn process_io_tasks(
     event_rx: mpsc::Receiver<IoTask>,
     event_tx: mpsc::Sender<AppEvent>,
-) -> AppResult<()> {
+) -> AppResult {
     while let Ok(io_task) = event_rx.recv() {
         let res = process_io_task(&io_task, &event_tx);
         let event = AppEvent::IoTaskResult(res);
@@ -29,7 +29,7 @@ pub fn process_io_tasks(
     Ok(())
 }
 
-pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
+pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> AppResult {
     let (total_files, total_bytes) = query_number_of_items(io_task.paths.as_slice())?;
     let src = io_task.paths[0].parent().unwrap().to_path_buf();
     let dest = io_task.dest.clone();
@@ -50,29 +50,35 @@ pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> A
     let res = match io_task.get_operation_type() {
         FileOperation::Cut => paste_cut(io_task, event_tx),
         FileOperation::Copy => paste_copy(io_task, event_tx),
-        FileOperation::Symlink { relative: false } => paste_link_absolute(io_task, event_tx),
-        FileOperation::Symlink { relative: true } => paste_link_relative(io_task, event_tx),
         FileOperation::Delete => delete(io_task, event_tx),
+        FileOperation::Symlink => paste_symlink(io_task, event_tx),
     };
     res?;
     Ok(())
 }
 
-fn paste_copy(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
+fn paste_copy(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
     for path in task.paths.iter() {
         recursive_copy(tx, path.as_path(), task.dest.as_path(), task.options)?;
     }
     Ok(())
 }
 
-fn paste_cut(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
+fn paste_cut(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
     for path in task.paths.iter() {
         recursive_cut(tx, path.as_path(), task.dest.as_path(), task.options)?;
     }
     Ok(())
 }
 
-fn paste_link_absolute(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
+fn paste_symlink(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
+    match task.options.symlink_relative {
+        true => paste_link_relative(task, tx),
+        false => paste_link_absolute(task, tx),
+    }
+}
+
+fn paste_link_absolute(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
     #[cfg(unix)]
     for src in task.paths.iter() {
         let event = IoTaskProgressMessage::FileStart {
@@ -93,7 +99,7 @@ fn paste_link_absolute(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<
     Ok(())
 }
 
-fn paste_link_relative(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
+fn paste_link_relative(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
     #[cfg(unix)]
     for src in task.paths.iter() {
         let event = IoTaskProgressMessage::FileStart {
@@ -135,7 +141,7 @@ fn paste_link_relative(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<
     Ok(())
 }
 
-fn delete(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult<()> {
+fn delete(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
     if task.options.permanently {
         remove_files(&task.paths, tx)?;
     } else {

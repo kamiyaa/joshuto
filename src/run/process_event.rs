@@ -40,25 +40,28 @@ pub fn poll_event_until_simple_keybind<'a>(
     loop {
         backend.render(TuiCommandMenu::new(app_state, keymap));
 
-        if let Ok(event) = app_state.poll_event() {
-            match event {
-                AppEvent::Termion(event) => {
-                    match event {
-                        Event::Key(Key::Esc) => return None,
-                        event => match keymap.get(&event) {
-                            Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
-                                return Some(commands);
-                            }
-                            Some(CommandKeybind::CompositeKeybind(m)) => {
-                                keymap = m;
-                            }
-                            None => return None,
-                        },
-                    }
-                    app_state.flush_event();
+        let event = match app_state.poll_event() {
+            Ok(event) => event,
+            _ => continue,
+        };
+
+        match event {
+            AppEvent::Termion(event) => {
+                match event {
+                    Event::Key(Key::Esc) => return None,
+                    event => match keymap.get(&event) {
+                        Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
+                            return Some(commands);
+                        }
+                        Some(CommandKeybind::CompositeKeybind(m)) => {
+                            keymap = m;
+                        }
+                        None => return None,
+                    },
                 }
-                event => process_noninteractive(event, app_state),
+                app_state.flush_event();
             }
+            event => process_noninteractive(event, app_state),
         }
     }
 }
