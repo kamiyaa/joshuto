@@ -26,7 +26,7 @@ pub fn custom_search(
         .command
         .clone();
 
-    let current_filenames: Vec<&str> = current_files(app_state).iter().map(|f| f.0).collect();
+    let current_filenames: Vec<&str> = current_files(app_state).iter().map(|(f, _)| *f).collect();
 
     let text = custom_command.replace("%s", &current_filenames.join(" "));
     let text = text.replace(
@@ -91,8 +91,8 @@ pub fn custom_search(
             let position = current_dir_items
                 .iter()
                 .enumerate()
-                .find(|x| x.1.file_name() == path.file_name().unwrap_or_default())
-                .map(|x| x.0)
+                .find(|(_, x)| x.file_name() == path.file_name().unwrap_or_default())
+                .map(|(x, _)| x)
                 .unwrap_or_default();
 
             cursor_move::cursor_move(app_state, position);
