@@ -4,7 +4,7 @@ use ratatui::widgets::Widget;
 
 use crate::types::option::display::DisplayMode;
 use crate::types::state::AppState;
-use crate::ui::views::{TuiFolderView, TuiHSplitView};
+use crate::ui::views::{tui_minimal_view::TuiMinimalView, TuiFolderView, TuiHSplitView};
 
 pub struct TuiView<'a> {
     pub app_state: &'a AppState,
@@ -26,6 +26,9 @@ impl<'a> Widget for TuiView<'a> {
         match display_options.mode {
             DisplayMode::Default => {
                 TuiFolderView::new(self.app_state).render(area, buf);
+            }
+            DisplayMode::Minimal => {
+                TuiMinimalView::new(self.app_state).render(area, buf);
             }
             DisplayMode::HSplit => {
                 TuiHSplitView::new(self.app_state).render(area, buf);

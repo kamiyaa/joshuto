@@ -11,6 +11,7 @@ use super::line_mode::LineNumberStyle;
 #[derive(Clone, Copy, Debug)]
 pub enum DisplayMode {
     Default,
+    Minimal,
     HSplit,
 }
 
@@ -38,6 +39,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
     fn from(raw: DisplayOptionRaw) -> Self {
         let mode = match raw.mode.as_str() {
             "hsplit" => DisplayMode::HSplit,
+            "minimal" => DisplayMode::Minimal,
             _ => DisplayMode::Default,
         };
 
