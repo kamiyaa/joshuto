@@ -133,12 +133,20 @@ handle_extension() {
         lynx -dump -- "${FILE_PATH}" && exit 0
         elinks -dump "${FILE_PATH}" && exit 0
         pandoc -s -t markdown -- "${FILE_PATH}" && exit 0
+        bat --color=always --paging=never \
+            --style=plain \
+            --terminal-width="${PREVIEW_WIDTH}" \
+            "${FILE_PATH}" && exit 0
         ;;
 
         ## JSON
     json | ipynb)
         jq --color-output . "${FILE_PATH}" && exit 0
         python -m json.tool -- "${FILE_PATH}" && exit 0
+        bat --color=always --paging=never \
+            --style=plain \
+            --terminal-width="${PREVIEW_WIDTH}" \
+            "${FILE_PATH}" && exit 0
         ;;
 
         ## Direct Stream Digital/Transfer (DSDIFF) and wavpack aren't detected
