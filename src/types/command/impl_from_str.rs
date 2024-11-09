@@ -558,9 +558,9 @@ impl std::str::FromStr for Command {
                 "minimal" => Ok(Self::SetDisplayMode(DisplayMode::Minimal)),
                 "hsplit" => Ok(Self::SetDisplayMode(DisplayMode::HSplit)),
                 _ => Err(AppError::new(
-                        AppErrorKind::InvalidParameters,
-                        format!("{}: Unknown option '{}'", command, arg),
-                ))
+                    AppErrorKind::InvalidParameters,
+                    format!("{}: Unknown option '{}'", command, arg),
+                )),
             }
         } else if command == CMD_SET_LINEMODE {
             Ok(Self::SetLineMode(LineMode::from_string(arg)?))

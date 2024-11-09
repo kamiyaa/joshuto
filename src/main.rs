@@ -79,12 +79,7 @@ lazy_static! {
     static ref HOSTNAME: String = whoami::fallible::hostname().unwrap_or("No Hostname".to_string());
 
     static ref TIMEZONE_STR: String = {
-        let offset = chrono::Local::now().offset().local_minus_utc() / 3600;
-        if offset.is_positive() {
-            format!(" UTC+{} ", offset.abs())
-        } else {
-            format!(" UTC-{} ", offset.abs())
-        }
+        format!(" UTC{:+} ", chrono::Local::now().offset().local_minus_utc() / 3600)
     };
 }
 
