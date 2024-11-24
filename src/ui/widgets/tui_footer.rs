@@ -103,7 +103,7 @@ impl<'a> Widget for TuiFooter<'a> {
                         if selected_count > 0 {
                             format!("{} selected", selected_count)
                         } else {
-                            " ".to_string()
+                            "".to_string()
                         },
                         selection_style,
                     ),
