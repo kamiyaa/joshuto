@@ -9,6 +9,7 @@ use crate::types::event::AppEvent;
 use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
+use crate::THEME_T;
 
 pub struct TuiPrompt<'a> {
     prompt: &'a str,
@@ -36,7 +37,10 @@ impl<'a> TuiPrompt<'a> {
                     frame.render_widget(view, f_size);
                 }
 
-                let prompt_style = Style::default().fg(Color::LightYellow);
+                let prompt_style = Style::default()
+                    .fg(THEME_T.prompt.fg)
+                    .bg(THEME_T.prompt.bg)
+                    .add_modifier(THEME_T.prompt.modifier);
 
                 let text = Span::styled(self.prompt, prompt_style);
 
