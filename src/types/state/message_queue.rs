@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 
 use ratatui::style::{Color, Style};
+use crate::{THEME_T};
 
 #[derive(Clone, Debug)]
 pub struct Message {
@@ -25,15 +26,30 @@ impl MessageQueue {
     }
 
     pub fn push_info(&mut self, msg: String) {
-        let message = Message::new(msg, Style::default().fg(Color::Yellow));
+        let style = Style::default()
+            .fg(THEME_T.msg_info.fg)
+            .bg(THEME_T.msg_info.bg)
+            .add_modifier(THEME_T.msg_info.modifier);
+
+        let message = Message::new(msg, style);
         self.push_msg(message);
     }
     pub fn push_success(&mut self, msg: String) {
-        let message = Message::new(msg, Style::default().fg(Color::Green));
+        let style = Style::default()
+            .fg(THEME_T.msg_success.fg)
+            .bg(THEME_T.msg_success.bg)
+            .add_modifier(THEME_T.msg_success.modifier);
+
+        let message = Message::new(msg, style);
         self.push_msg(message);
     }
     pub fn push_error(&mut self, msg: String) {
-        let message = Message::new(msg, Style::default().fg(Color::Red));
+        let style = Style::default()
+            .fg(THEME_T.msg_error.fg)
+            .bg(THEME_T.msg_error.bg)
+            .add_modifier(THEME_T.msg_error.modifier);
+
+        let message = Message::new(msg, style);
         self.push_msg(message);
     }
 

@@ -29,8 +29,9 @@ impl<'a> Widget for TuiTopBar<'a> {
             Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
         } else {
             Style::default()
-                .fg(Color::LightGreen)
-                .add_modifier(Modifier::BOLD)
+                .fg(THEME_T.username.fg)
+                .bg(THEME_T.username.bg)
+                .add_modifier(THEME_T.username.modifier)
         };
 
         let mut top_bar_spans = vec![

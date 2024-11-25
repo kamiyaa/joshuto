@@ -30,4 +30,12 @@ pub struct AppThemeRaw {
     pub lscolors_enabled: bool,
     #[serde(default)]
     pub preview_background: String,
+    #[serde(default)]
+    pub msg_info: AppStyleRaw,
+    #[serde(default)]
+    pub msg_success: AppStyleRaw,
+    #[serde(default)]
+    pub msg_error: AppStyleRaw,
+    #[serde(default)]
+    pub username: AppStyleRaw,
 }

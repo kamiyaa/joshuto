@@ -34,6 +34,11 @@ pub struct AppTheme {
     pub ext: HashMap<String, AppStyle>,
     pub lscolors: Option<LsColors>,
     pub preview_background: Color,
+
+    pub msg_info    : AppStyle,
+    pub msg_error   : AppStyle,
+    pub msg_success : AppStyle,
+    pub username   : AppStyle,
 }
 
 impl AppTheme {
@@ -87,6 +92,11 @@ impl From<AppThemeRaw> for AppTheme {
         };
         let preview_background = AppStyleRaw::str_to_color(&raw.preview_background);
 
+        let msg_info    = raw.msg_info.to_style_theme();
+        let msg_success = raw.msg_success.to_style_theme();
+        let msg_error   = raw.msg_error.to_style_theme();
+        let username    = raw.username.to_style_theme();
+
         Self {
             selection,
             visual_mode_selection,
@@ -100,6 +110,11 @@ impl From<AppThemeRaw> for AppTheme {
             tabs: TabTheme::from(tabs),
             lscolors,
             preview_background,
+
+            msg_info,
+            msg_error,
+            msg_success,
+            username,
         }
     }
 }
