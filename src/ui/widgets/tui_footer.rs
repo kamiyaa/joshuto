@@ -92,7 +92,9 @@ impl<'a> Widget for TuiFooter<'a> {
                     ),
                     Span::styled(
                         match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
-                            Some(opt) if !opt.filter_state_ref().is_none() => {
+                            // :filter (without filter text) will go back to normal
+                            // so, if filter_state is empty, we don't show the filter indicator
+                            Some(opt) if !opt.filter_state_ref().is_none() && !opt.filter_state_ref().is_empty() => {
                                 format!("filter:{} ", opt.filter_state_ref())
                             }
                             _ => "".to_owned(),

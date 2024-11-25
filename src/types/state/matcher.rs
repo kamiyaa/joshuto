@@ -130,6 +130,15 @@ impl MatchState {
     pub fn is_none(&self) -> bool {
         matches!(self, Self::None)
     }
+
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Glob(glob_matcher) => false, // todo
+            Self::Regex(regex) => regex.as_str().is_empty(),
+            Self::String { pattern, .. } => pattern.is_empty(),
+            Self::None => true,
+        }
+    }
 }
 
 impl Display for MatchState {
