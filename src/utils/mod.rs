@@ -9,3 +9,4 @@ pub mod serde;
 pub mod string;
 pub mod style;
 pub mod unix;
+pub mod title;
