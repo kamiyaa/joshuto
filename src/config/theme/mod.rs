@@ -40,6 +40,7 @@ pub struct AppTheme {
     pub msg_success : AppStyle,
     pub username    : AppStyle,
     pub prompt      : AppStyle,
+    pub indicator   : AppStyle,
 }
 
 impl AppTheme {
@@ -98,6 +99,7 @@ impl From<AppThemeRaw> for AppTheme {
         let msg_error   = raw.msg_error.to_style_theme();
         let username    = raw.username.to_style_theme();
         let prompt      = raw.prompt.to_style_theme();
+        let indicator   = raw.indicator.to_style_theme();
 
         Self {
             selection,
@@ -118,6 +120,7 @@ impl From<AppThemeRaw> for AppTheme {
             msg_success,
             username,
             prompt,
+            indicator,
         }
     }
 }

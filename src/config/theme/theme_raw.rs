@@ -40,4 +40,6 @@ pub struct AppThemeRaw {
     pub username: AppStyleRaw,
     #[serde(default)]
     pub prompt: AppStyleRaw,
+    #[serde(default)]
+    pub indicator: AppStyleRaw,
 }

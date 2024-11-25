@@ -31,8 +31,9 @@ impl<'a> Widget for TuiFooter<'a> {
 
         // flat and filter commands indicator style
         let indicator_style = Style::default()
-            .fg(Color::LightBlue)
-            .add_modifier(THEME_T.selection.modifier);
+            .fg(THEME_T.indicator.fg)
+            .bg(THEME_T.indicator.bg)
+            .add_modifier(THEME_T.indicator.modifier);
 
         let selection_style = Style::default()
             .fg(THEME_T.selection.fg)
