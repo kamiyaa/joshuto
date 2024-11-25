@@ -32,6 +32,7 @@ use traits::config::TomlConfigFile;
 use types::config_type::ConfigType;
 use types::keymap::AppKeyMapping;
 use utils::cwd;
+use utils::title;
 
 use crate::commands::quit::QuitAction;
 
@@ -143,6 +144,12 @@ fn run_main(args: Args) -> Result<i32, AppError> {
 
     if args.version {
         return print_version();
+    }
+
+    if let Ok(current_dir) = std::env::current_dir() {
+        if let Some(dir_str) = current_dir.to_str() {
+            title::set_title(dir_str);
+        }
     }
 
     if let Some(path) = args.rest.first() {
