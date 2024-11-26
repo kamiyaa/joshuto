@@ -133,9 +133,7 @@ impl<'a> Widget for TuiFooter<'a> {
                 let mut text = vec![
                     Span::styled(
                         match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
-                            // :filter (without filter text) will go back to normal
-                            // so, if filter_state is empty, we don't show the filter indicator
-                            Some(opt) if !opt.filter_state_ref().is_none() && !opt.filter_state_ref().is_empty() => {
+                            Some(opt) if !opt.filter_state_ref().is_none() => {
                                 format!("filter:{} ", opt.filter_state_ref())
                             }
                             _ => "".to_owned(),
