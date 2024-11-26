@@ -127,7 +127,25 @@ impl<'a> Widget for TuiFooter<'a> {
 
                 Paragraph::new(Line::from(text)).render(area, buf);
             }
-            _ => {}
+            _ => {
+
+                let path = self.dirlist.file_path();
+                let mut text = vec![
+                    Span::styled(
+                        match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
+                            // :filter (without filter text) will go back to normal
+                            // so, if filter_state is empty, we don't show the filter indicator
+                            Some(opt) if !opt.filter_state_ref().is_none() && !opt.filter_state_ref().is_empty() => {
+                                format!("filter:{} ", opt.filter_state_ref())
+                            }
+                            _ => "".to_owned(),
+                        },
+                        indicator_style,
+                    )
+                ];
+
+                Paragraph::new(Line::from(text)).render(area, buf);
+            }
         }
     }
 }
