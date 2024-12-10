@@ -56,7 +56,7 @@ prefix = "v "
 
 # Basic style, used for regular files (and also device files and FIFOs)
 [regular]
-fg = "white"
+fg = "default"
 
 # For directories
 [directory]
