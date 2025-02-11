@@ -45,7 +45,7 @@ impl std::fmt::Display for FileOperation {
 #[derive(Clone, Copy, Debug, Default)]
 pub struct FileOperationOptions {
     // symlink
-    pub symlink: bool,
+    pub _symlink: bool,
     pub symlink_relative: bool,
 
     // cut, copy

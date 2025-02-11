@@ -21,7 +21,7 @@ impl<'a> TuiTopBar<'a> {
     }
 }
 
-impl<'a> Widget for TuiTopBar<'a> {
+impl Widget for TuiTopBar<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let name_width = USERNAME.as_str().len() + HOSTNAME.as_str().len() + 2;
 

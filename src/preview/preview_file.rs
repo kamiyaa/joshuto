@@ -23,7 +23,7 @@ pub struct FilePreview {
     pub status: std::process::ExitStatus,
     pub output: String,
     pub index: usize,
-    pub modified: time::SystemTime,
+    pub _modified: time::SystemTime,
 }
 
 impl std::convert::From<Output> for FilePreview {
@@ -35,7 +35,7 @@ impl std::convert::From<Output> for FilePreview {
         Self {
             status,
             output: s2,
-            modified,
+            _modified: modified,
             index: 0,
         }
     }

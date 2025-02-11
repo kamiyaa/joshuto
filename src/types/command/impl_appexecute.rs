@@ -51,10 +51,11 @@ impl AppExecute for Command {
             Self::CopyFilePath { all_selected: true } => file_ops::copy_filepath(app_state, true),
             Self::CopyDirPath => file_ops::copy_dirpath(app_state),
             Self::SymlinkFiles { relative } => {
-                let mut options = FileOperationOptions::default();
-                options.symlink = true;
-                options.symlink_relative = *relative;
-
+                let options = FileOperationOptions {
+                    _symlink: true,
+                    symlink_relative: *relative,
+                    ..Default::default()
+                };
                 file_ops::create_io_task(app_state, FileOperation::Symlink, options)
             }
             Self::PasteFiles { options } => file_ops::create_io_paste_task(app_state, *options),

@@ -14,7 +14,7 @@ impl<'a> TuiMessage<'a> {
     }
 }
 
-impl<'a> Widget for TuiMessage<'a> {
+impl Widget for TuiMessage<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         if area.width < 4 || area.height < 1 {
             return;

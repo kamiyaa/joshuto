@@ -62,7 +62,7 @@ impl<'a> TuiFilePreview<'a> {
     }
 }
 
-impl<'a> Widget for TuiFilePreview<'a> {
+impl Widget for TuiFilePreview<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         self.render_text_preview(area, buf, self.preview.output.as_str());
     }

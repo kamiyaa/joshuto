@@ -47,7 +47,7 @@ impl<'a> TuiDirListDetailed<'a> {
     }
 }
 
-impl<'a> Widget for TuiDirListDetailed<'a> {
+impl Widget for TuiDirListDetailed<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         if area.width < 4 || area.height < 1 {
             return;

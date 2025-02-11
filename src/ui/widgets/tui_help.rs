@@ -38,7 +38,7 @@ impl<'a> TuiHelp<'a> {
     }
 }
 
-impl<'a> Widget for TuiHelp<'a> {
+impl Widget for TuiHelp<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // Subtracting 2 because we'll draw a title at the top and some
         // additional information at the bottom of the page

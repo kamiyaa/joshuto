@@ -15,7 +15,7 @@ impl<'a> TuiWorkerView<'a> {
     }
 }
 
-impl<'a> Widget for TuiWorkerView<'a> {
+impl Widget for TuiWorkerView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         if area.height == 0 {
             return;

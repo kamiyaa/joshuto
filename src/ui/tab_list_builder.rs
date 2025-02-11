@@ -235,11 +235,7 @@ fn factor_tab_bar_sequence(
     //##         (=> we need scrolling)
     //####################################################################
     let scroll_tags_width = config.inference.calc_scroll_tags_width(tab_num);
-    let scrollable_width = if scroll_tags_width > available_width {
-        0
-    } else {
-        available_width - scroll_tags_width
-    };
+    let scrollable_width = available_width.saturating_sub(scroll_tags_width);
 
     let carousel_labels = if all_labels_as_long[current_index].width()
         + config.inference.active_tab_extra_width

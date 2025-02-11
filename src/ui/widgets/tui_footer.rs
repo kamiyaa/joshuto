@@ -24,7 +24,7 @@ impl<'a> TuiFooter<'a> {
     }
 }
 
-impl<'a> Widget for TuiFooter<'a> {
+impl Widget for TuiFooter<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let visual_mode_style = Style::default().fg(Color::Black).bg(Color::LightRed);
         let mode_style = Style::default().fg(Color::Cyan);

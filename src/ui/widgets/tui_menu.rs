@@ -17,7 +17,7 @@ impl<'a> TuiMenu<'a> {
     }
 }
 
-impl<'a> Widget for TuiMenu<'a> {
+impl Widget for TuiMenu<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let style = Style::default().fg(Color::Reset).bg(Color::Reset);
 

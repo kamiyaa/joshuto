@@ -27,7 +27,7 @@ impl<'a> TuiFolderViewBorders<'a> {
     }
 }
 
-impl<'a> Widget for TuiFolderViewBorders<'a> {
+impl Widget for TuiFolderViewBorders<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let block = Block::default().borders(Borders::ALL);
         let inner = block.inner(area);
@@ -113,7 +113,7 @@ impl<'a> TuiFolderView<'a> {
     }
 }
 
-impl<'a> Widget for TuiFolderView<'a> {
+impl Widget for TuiFolderView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let display_options = &self.app_state.config.display_options;
 

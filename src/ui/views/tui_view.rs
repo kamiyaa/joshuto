@@ -20,7 +20,7 @@ impl<'a> TuiView<'a> {
     }
 }
 
-impl<'a> Widget for TuiView<'a> {
+impl Widget for TuiView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let display_options = &self.app_state.config.display_options;
         match display_options.mode {

@@ -17,7 +17,7 @@ impl<'a> TuiIoTasks<'a> {
     }
 }
 
-impl<'a> Widget for TuiIoTasks<'a> {
+impl Widget for TuiIoTasks<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         if area.height < 7 {
             return;
@@ -64,7 +64,7 @@ impl<'a> TuiCurrentWorker<'a> {
     }
 }
 
-impl<'a> Widget for TuiCurrentWorker<'a> {
+impl Widget for TuiCurrentWorker<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let top = area.top();
         let left = area.left();
@@ -121,7 +121,7 @@ impl<'a> TuiWorkerQueue<'a> {
     }
 }
 
-impl<'a> Widget for TuiWorkerQueue<'a> {
+impl Widget for TuiWorkerQueue<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let top = area.top();
         let left = area.left();

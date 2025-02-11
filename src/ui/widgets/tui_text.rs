@@ -94,7 +94,7 @@ impl<'a> TuiMultilineText<'a> {
     }
 }
 
-impl<'a> Widget for TuiMultilineText<'a> {
+impl Widget for TuiMultilineText<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let area_left = area.left();
         let area_top = area.top();

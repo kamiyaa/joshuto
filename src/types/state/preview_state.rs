@@ -239,7 +239,6 @@ impl PreviewState {
     ///
     /// This function shall be called each time a change of Joshuto's preview can be expected.
     /// (As of now, it's called in each cycle of the main loop.)
-
     fn backend_rect(config: &AppConfig, backend: &AppBackend) -> io::Result<Rect> {
         let size = backend.terminal_ref().size()?;
         let area = Rect {

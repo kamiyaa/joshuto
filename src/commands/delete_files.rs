@@ -44,10 +44,9 @@ fn delete_files(
     permanently: bool,
 ) -> AppResult {
     let file_op = FileOperation::Delete;
-    let options = {
-        let mut options = FileOperationOptions::default();
-        options.permanently = !app_state.config.use_trash || permanently;
-        options
+    let options = FileOperationOptions {
+        permanently: !app_state.config.use_trash || permanently,
+        ..Default::default()
     };
 
     let dest = path::PathBuf::new();

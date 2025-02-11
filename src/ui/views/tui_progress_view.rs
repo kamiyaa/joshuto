@@ -21,7 +21,7 @@ impl<'a> TuiProgressView<'a> {
     }
 }
 
-impl<'a> Widget for TuiProgressView<'a> {
+impl Widget for TuiProgressView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let f_size = area;
 

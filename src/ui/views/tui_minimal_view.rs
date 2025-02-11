@@ -21,7 +21,7 @@ impl<'a> TuiMinimalView<'a> {
     }
 }
 
-impl<'a> Widget for TuiMinimalView<'a> {
+impl Widget for TuiMinimalView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let tab_state = self.app_state.state.tab_state_ref();
 

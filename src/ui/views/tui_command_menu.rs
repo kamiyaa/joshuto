@@ -24,7 +24,7 @@ impl<'a> TuiCommandMenu<'a> {
     }
 }
 
-impl<'a> Widget for TuiCommandMenu<'a> {
+impl Widget for TuiCommandMenu<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         TuiView::new(self.app_state).render(area, buf);
 

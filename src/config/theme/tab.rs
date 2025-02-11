@@ -70,10 +70,10 @@ impl From<TabThemeCharsRaw> for TabThemeChars {
 #[derive(Clone, Debug)]
 pub struct TabThemeCharsInference {
     pub tab_divider_length: usize,
-    pub tab_prefix_i_length: usize,
-    pub tab_postfix_i_length: usize,
-    pub tab_prefix_a_length: usize,
-    pub tab_postfix_a_length: usize,
+    pub _tab_prefix_i_length: usize,
+    pub _tab_postfix_i_length: usize,
+    pub _tab_prefix_a_length: usize,
+    pub _tab_postfix_a_length: usize,
     pub scroll_front_static_length: usize,
     pub scroll_back_static_length: usize,
     pub active_tab_extra_width: usize,
@@ -84,10 +84,10 @@ impl TabThemeCharsInference {
     fn from_chars(chars: &TabThemeChars) -> Self {
         Self {
             tab_divider_length: chars.divider.width(),
-            tab_prefix_i_length: chars.prefix_i.width(),
-            tab_prefix_a_length: chars.prefix_a.width(),
-            tab_postfix_i_length: chars.postfix_i.width(),
-            tab_postfix_a_length: chars.postfix_a.width(),
+            _tab_prefix_i_length: chars.prefix_i.width(),
+            _tab_prefix_a_length: chars.prefix_a.width(),
+            _tab_postfix_i_length: chars.postfix_i.width(),
+            _tab_postfix_a_length: chars.postfix_a.width(),
             scroll_front_static_length: chars.scroll_front_prefix.width()
                 + chars.scroll_front_postfix.width()
                 + chars.scroll_front_prestring.width()

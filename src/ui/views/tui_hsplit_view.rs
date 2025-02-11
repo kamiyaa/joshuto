@@ -21,7 +21,7 @@ impl<'a> TuiHSplitView<'a> {
     }
 }
 
-impl<'a> Widget for TuiHSplitView<'a> {
+impl Widget for TuiHSplitView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let tab_state = self.app_state.state.tab_state_ref();
 
