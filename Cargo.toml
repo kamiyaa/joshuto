@@ -17,7 +17,7 @@ strip = true
 [dependencies]
 allmytoes = "^0.4"
 alphanumeric-sort = "^1"
-ansi-to-tui = { version = "^3.1.0", optional = true }
+ansi-to-tui = { version = "^7", optional = true }
 bitflags = { version = "^2", features = ["serde"] }
 chrono = "^0"
 clap = { version = "^4", features = ["derive"] }
@@ -28,20 +28,20 @@ filetime = "^0"
 globset = "^0"
 image = "^0.25"
 lazy_static = "^1"
-lscolors = { version = "0.17.0", features = ["nu-ansi-term"] }
-notify = "^6"
+lscolors = { version = "^0", features = ["nu-ansi-term"] }
+notify = "^8"
 open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
 rand = "^0"
-ratatui-image = { version = "1.0.5", default-features = false, features = ["termion", "rustix", "serde"] }
-regex = "1.9.3"
-rustyline = "^12"
+ratatui-image = { version = "^4", default-features = false, features = ["termion", "serde"] }
+regex = "^1"
+rustyline = "^15"
 serde = { version = "^1", features = ["derive"] }
 shadow-rs = "^0"
 shell-words = "^1"
 shellexpand = { version = "^3", features = ["full"] }
 signal-hook = "^0"
-termion = "^2"
+termion = "^4"
 toml = "^0"
 unicode-segmentation = "^1"
 unicode-width = "^0"

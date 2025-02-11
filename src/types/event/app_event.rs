@@ -22,7 +22,7 @@ use crate::types::io::IoTaskStat;
 
 pub enum PreviewData {
     Script(Box<FilePreview>),
-    Image(Box<dyn Protocol>),
+    Image(Box<Protocol>),
 }
 
 impl Debug for PreviewData {

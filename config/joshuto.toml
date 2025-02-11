@@ -40,6 +40,7 @@ reverse = false
 
 [preview]
 max_preview_size = "2MB"                           # 2MB
+preview_protocol = "sixel"
 preview_script = "~/.config/joshuto/preview_file.sh" # make sure it's marked as executable
 
 [search]

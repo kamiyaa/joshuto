@@ -113,6 +113,13 @@ reverse = false
 # Configurations related to preview
 [preview]
 
+# Available options
+# - halfblock
+# - sixel
+# - kitty
+# - iterm2
+preview_protocol = "sixel"
+
 # Maximum preview file size in bytes
 max_preview_size = 2097152
 

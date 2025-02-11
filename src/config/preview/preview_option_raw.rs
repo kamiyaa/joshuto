@@ -32,7 +32,7 @@ impl std::default::Default for PreviewOptionRaw {
     fn default() -> Self {
         Self {
             max_preview_size: default_max_preview_size(),
-            preview_protocol: PreviewProtocol::Auto,
+            preview_protocol: PreviewProtocol::Disabled,
             preview_script: None,
             use_xdg_thumbs: true,
             xdg_thumb_size: XDGThumbSizes::XLarge,

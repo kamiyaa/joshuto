@@ -206,8 +206,8 @@ impl Widget for TuiFolderView<'_> {
                     let image_offset = match preview_state.image_preview_ref(entry.file_path()) {
                         Some(protocol) => {
                             let area = layout_rect[2];
-                            Image::new(protocol).render(area, buf);
-                            protocol.rect().height
+                            Image::new(&mut protocol.clone()).render(area, buf);
+                            protocol.area().height
                         }
                         _ => 0,
                     };

@@ -26,7 +26,7 @@ impl std::default::Default for PreviewOption {
     fn default() -> Self {
         Self {
             max_preview_size: default_max_preview_size(),
-            preview_protocol: PreviewProtocol::Auto,
+            preview_protocol: PreviewProtocol::Disabled,
             use_xdg_thumbs: true,
             xdg_thumb_size: ThumbSize::XLarge,
             preview_script: None,

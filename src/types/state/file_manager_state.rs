@@ -10,6 +10,7 @@ use crate::types::state::{
 
 use super::ThreadPool;
 
+/// struct that holds all state related to file manager
 pub struct FileManagerState {
     // app_state related to tabs
     pub tab_state: TabState,

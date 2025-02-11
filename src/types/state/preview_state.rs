@@ -34,7 +34,7 @@ pub struct PreviewState {
     pub preview_area: Option<PreviewArea>,
     // hashmap of cached previews
     pub previews: FilePreviewMetadata,
-    pub image_preview: Option<(PathBuf, Box<dyn Protocol>)>,
+    pub image_preview: Option<(PathBuf, Box<Protocol>)>,
     pub sender_script: Sender<(PathBuf, Rect)>,
     pub sender_image: Option<Sender<(PathBuf, Rect)>>,
     // for telling main thread when previews are ready
@@ -65,7 +65,7 @@ impl PreviewState {
         });
 
         let (sender_image, receiver) = mpsc::channel::<(PathBuf, Rect)>();
-        let sender_image = picker.map(|mut picker| {
+        let sender_image = picker.map(|picker| {
             let thread_image_event_tx = event_tx.clone();
             thread::spawn(move || loop {
                 // Get last, or block for next.
@@ -96,7 +96,7 @@ impl PreviewState {
                     if let Ok(proto) = proto {
                         let ev = AppEvent::PreviewFile {
                             path,
-                            res: Ok(PreviewData::Image(proto)),
+                            res: Ok(PreviewData::Image(Box::new(proto))),
                         };
                         let _ = thread_image_event_tx.send(ev);
                     }
@@ -177,13 +177,13 @@ impl PreviewState {
     pub fn previews_mut(&mut self) -> &mut FilePreviewMetadata {
         &mut self.previews
     }
-    pub fn image_preview_ref(&self, other: &path::Path) -> Option<&dyn Protocol> {
+    pub fn image_preview_ref(&self, other: &path::Path) -> Option<&Protocol> {
         match &self.image_preview {
             Some((path, protocol)) if path == other => Some(protocol.as_ref()),
             _ => None,
         }
     }
-    pub fn set_image_preview(&mut self, preview: Option<(path::PathBuf, Box<dyn Protocol>)>) {
+    pub fn set_image_preview(&mut self, preview: Option<(path::PathBuf, Box<Protocol>)>) {
         self.image_preview = preview;
     }
 
