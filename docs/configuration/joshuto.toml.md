@@ -51,6 +51,7 @@ custom_commands = [
 # Options include
 # - default
 # - hsplit
+# - minimal
 mode = "default"
 
 # Collapse the preview window when there is no preview available
