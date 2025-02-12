@@ -23,7 +23,7 @@ use uuid::Uuid;
 use ratatui::layout::Rect;
 use termion::event::Event;
 
-pub fn run_loop(
+pub fn run_ui(
     backend: &mut ui::AppBackend,
     app_state: &mut AppState,
     keymap_t: AppKeyMapping,
@@ -38,7 +38,8 @@ pub fn run_loop(
             height: size.height,
         };
         // pre-calculate some ui attributes
-        calculate_ui_state(app_state, area);
+        let layout = calculate_ui_constraints(app_state, area);
+        app_state.state.ui_state_mut().layout = layout;
     }
 
     {
@@ -76,7 +77,7 @@ pub fn run_loop(
                 height: size.height,
             };
             // pre-calculate some ui attributes
-            calculate_ui_state(app_state, area);
+            calculate_ui_constraints(app_state, area);
 
             // render the ui
             backend.render(TuiView::new(app_state));
@@ -184,7 +185,7 @@ fn process_input(
     }
 }
 
-fn calculate_ui_state(app_state: &mut AppState, area: Rect) {
+fn calculate_ui_constraints(app_state: &AppState, area: Rect) -> Vec<Rect> {
     let area = Rect {
         y: area.top() + 1,
         height: area.height - 2,
@@ -192,10 +193,9 @@ fn calculate_ui_state(app_state: &mut AppState, area: Rect) {
     };
     let display_options = &app_state.config.display_options;
     let constraints = views::get_constraints(app_state);
-    let layout = if display_options.show_borders {
+    if display_options.show_borders {
         views::calculate_layout_with_borders(area, constraints)
     } else {
         views::calculate_layout(area, constraints)
-    };
-    app_state.state.ui_state_mut().layout = layout;
+    }
 }

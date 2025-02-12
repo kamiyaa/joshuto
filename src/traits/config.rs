@@ -16,21 +16,6 @@ pub trait TomlConfigFile: Sized + Default {
     }
 }
 
-// searches a list of folders for a given file in order of preference
-pub fn search_directories<P>(file_name: &str, directories: &[P]) -> Option<PathBuf>
-where
-    P: AsRef<Path>,
-{
-    directories
-        .iter()
-        .map(|path| path.as_ref().join(file_name))
-        .find(|path| path.exists())
-}
-
-pub fn search_config_directories(file_name: &str) -> Option<PathBuf> {
-    search_directories(file_name, &CONFIG_HIERARCHY)
-}
-
 fn parse_file_to_config<T, S>(file_path: &Path) -> AppResult<S>
 where
     T: DeserializeOwned + Into<S>,
@@ -55,4 +40,19 @@ where
         },
         None => S::default(),
     }
+}
+
+// searches a list of folders for a given file in order of preference
+pub fn search_directories<P>(file_name: &str, directories: &[P]) -> Option<PathBuf>
+where
+    P: AsRef<Path>,
+{
+    directories
+        .iter()
+        .map(|path| path.as_ref().join(file_name))
+        .find(|path| path.exists())
+}
+
+pub fn search_config_directories(file_name: &str) -> Option<PathBuf> {
+    search_directories(file_name, &CONFIG_HIERARCHY)
 }

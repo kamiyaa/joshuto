@@ -3,12 +3,13 @@ use std::path;
 
 use notify::{RecursiveMode, Watcher};
 
-use crate::types::state::{
-    CommandLineState, LocalStateState, MatchState, MessageQueue, PreviewState, TabState, UiState,
-    WorkerState,
+use crate::{
+    types::state::{
+        CommandLineState, LocalStateState, MatchState, MessageQueue, PreviewState, TabState,
+        UiState, WorkerState,
+    },
+    workers::thread_pool::ThreadPool,
 };
-
-use super::ThreadPool;
 
 /// struct that holds all state related to file manager
 pub struct FileManagerState {

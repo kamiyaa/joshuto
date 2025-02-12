@@ -12,6 +12,7 @@ mod traits;
 mod types;
 mod ui;
 mod utils;
+mod workers;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -167,7 +168,7 @@ fn run_main(args: Args) -> Result<i32, AppError> {
     let mut app_state = AppState::new(config, args.clone());
     {
         let mut backend: ui::AppBackend = ui::AppBackend::new(mouse_support)?;
-        run::process_run_loop::run_loop(&mut backend, &mut app_state, keymap)?;
+        run::run_ui::run_ui(&mut backend, &mut app_state, keymap)?;
     }
     run_quit(&args, &app_state)?;
     Ok(app_state.quit.exit_code())

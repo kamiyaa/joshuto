@@ -44,8 +44,7 @@ pub fn read_and_execute(
         }
 
         let command = Command::from_str(trimmed)?;
-        command.execute(app_state, backend, keymap_t)
-    } else {
-        Ok(())
+        command.execute(app_state, backend, keymap_t)?;
     }
+    Ok(())
 }

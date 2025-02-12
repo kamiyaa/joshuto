@@ -6,7 +6,7 @@ use ratatui::text::Span;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 use ratatui_image::Image;
 
-use crate::fs::FileType;
+use crate::fs::{FileType, JoshutoDirEntry};
 use crate::preview::preview_dir::PreviewDirState;
 use crate::preview::preview_file::PreviewFileState;
 use crate::types::state::{AppState, PreviewState, TabState};
@@ -85,65 +85,51 @@ impl<'a> TuiFolderView<'a> {
             show_bottom_status: true,
         }
     }
-
-    pub fn folder_area(area: &Rect) -> Rect {
-        Rect {
-            y: area.top() + 1,
-            height: area.bottom() - 2,
-            ..*area
-        }
-    }
-
-    pub fn header_area(area: &Rect) -> Rect {
-        Rect {
-            x: area.left(),
-            y: area.top(),
-            width: area.width,
-            height: 1,
-        }
-    }
-
-    pub fn footer_area(area: &Rect) -> Rect {
-        Rect {
-            x: area.x,
-            y: area.bottom() - 1,
-            width: area.width,
-            height: 1,
-        }
-    }
 }
 
 impl Widget for TuiFolderView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        let base_constraints = &[
+            Constraint::Length(1),
+            Constraint::Fill(1),
+            Constraint::Length(1),
+        ];
+        let base_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(base_constraints)
+            .split(area);
+
+        let topbar_area = base_layout[0];
+        let main_area = base_layout[1];
+        let footer_area = base_layout[2];
+
+        TuiTopBar::new(self.app_state).render(topbar_area, buf);
+
         let display_options = &self.app_state.config.display_options;
 
-        let preview_state = self.app_state.state.preview_state_ref();
         let curr_tab = self.app_state.state.tab_state_ref().curr_tab_ref();
-        let curr_tab_cwd = curr_tab.get_cwd();
-
         let curr_list = curr_tab.curr_list_ref();
         let child_list = curr_tab.child_list_ref();
 
-        let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
-
-        let constraints = get_constraints(self.app_state);
-
+        let main_constraints = get_constraints(self.app_state);
         let layout_rect = if display_options.show_borders {
-            let area = Self::folder_area(&area);
-            TuiFolderViewBorders::new(constraints).render(area, buf);
-
-            calculate_layout_with_borders(area, constraints)
+            TuiFolderViewBorders::new(main_constraints).render(main_area, buf);
+            calculate_layout_with_borders(main_area, main_constraints)
         } else {
-            let area = Self::folder_area(&area);
-            calculate_layout(area, constraints)
+            calculate_layout(main_area, main_constraints)
         };
 
+        let parent_list_area = layout_rect[0];
+        let curr_list_area = layout_rect[1];
+        let child_list_area = layout_rect[2];
+
         // render parent view
-        match constraints[0] {
+        match main_constraints[0] {
             Constraint::Ratio(0, _) => {}
             _ => {
                 if let Some(list) = curr_tab.parent_list_ref().as_ref() {
-                    TuiDirList::new(&self.app_state.config, list, true).render(layout_rect[0], buf);
+                    TuiDirList::new(&self.app_state.config, list, true)
+                        .render(parent_list_area, buf);
                 }
             }
         }
@@ -157,11 +143,10 @@ impl Widget for TuiFolderView<'_> {
                 curr_tab.option_ref(),
                 true,
             )
-            .render(layout_rect[1], buf);
+            .render(curr_list_area, buf);
 
-            let footer_area = Self::footer_area(&area);
+            // draw the bottom status bar
             if self.show_bottom_status {
-                /* draw the bottom status bar */
                 if let Some(msg) = self.app_state.state.worker_state_ref().get_msg() {
                     let message_style = Style::default().fg(Color::Yellow);
                     let text = Span::styled(msg, message_style);
@@ -179,69 +164,95 @@ impl Widget for TuiFolderView<'_> {
                 }
             }
         } else {
+            let curr_tab_cwd = curr_tab.get_cwd();
             match curr_tab.history_metadata_ref().get(curr_tab_cwd) {
                 Some(PreviewDirState::Loading) => {
-                    TuiDirListLoading::new().render(layout_rect[1], buf);
+                    TuiDirListLoading::new().render(curr_list_area, buf);
                 }
                 Some(PreviewDirState::Error { message }) => {
                     TuiMessage::new(message, Style::default().fg(Color::Red))
-                        .render(layout_rect[1], buf);
+                        .render(curr_list_area, buf);
                 }
                 None => {}
             }
         }
 
+        let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
         if let Some(list) = child_list.as_ref() {
-            TuiDirList::new(&self.app_state.config, list, true).render(layout_rect[2], buf);
+            TuiDirList::new(&self.app_state.config, list, true).render(child_list_area, buf);
         } else if let Some(entry) = curr_entry {
-            match curr_tab.history_metadata_ref().get(entry.file_path()) {
-                Some(PreviewDirState::Loading) => {
-                    TuiDirListLoading::new().render(layout_rect[2], buf);
-                }
-                Some(PreviewDirState::Error { message }) => {
-                    TuiMessage::new(message, Style::default().fg(Color::Red))
-                        .render(layout_rect[2], buf);
-                }
-                None => {
-                    let image_offset = match preview_state.image_preview_ref(entry.file_path()) {
-                        Some(protocol) => {
-                            let area = layout_rect[2];
-                            Image::new(&mut protocol.clone()).render(area, buf);
-                            protocol.area().height
-                        }
-                        _ => 0,
-                    };
-
-                    if let Some(PreviewFileState::Success(data)) =
-                        preview_state.previews_ref().get(entry.file_path())
-                    {
-                        let preview_area = calculate_preview(
-                            self.app_state.state.tab_state_ref(),
-                            self.app_state.state.preview_state_ref(),
-                            layout_rect[2],
-                        );
-                        if let Some(preview_area) = preview_area {
-                            let area = Rect {
-                                x: preview_area.preview_area.x,
-                                y: preview_area.preview_area.y + image_offset,
-                                width: preview_area.preview_area.width,
-                                height: preview_area
-                                    .preview_area
-                                    .height
-                                    .saturating_sub(image_offset),
-                            };
-                            TuiFilePreview::new(data).render(area, buf);
-                        }
-                    };
-                }
-            }
+            let preview_state = curr_tab.history_metadata_ref().get(entry.file_path());
+            TuiChildPreview::new(self.app_state, entry, &preview_state)
+                .render(child_list_area, buf);
         } else {
             TuiMessage::new("Error loading directory", Style::default().fg(Color::Red))
-                .render(layout_rect[2], buf);
+                .render(child_list_area, buf);
         }
+    }
+}
 
-        let topbar_area = Self::header_area(&area);
-        TuiTopBar::new(self.app_state).render(topbar_area, buf);
+pub struct TuiChildPreview<'a> {
+    pub app_state: &'a AppState,
+    pub entry: &'a JoshutoDirEntry,
+    pub preview_state: &'a Option<&'a PreviewDirState>,
+}
+
+impl<'a> TuiChildPreview<'a> {
+    pub fn new(
+        app_state: &'a AppState,
+        entry: &'a JoshutoDirEntry,
+        preview_state: &'a Option<&'a PreviewDirState>,
+    ) -> Self {
+        Self {
+            app_state,
+            entry,
+            preview_state,
+        }
+    }
+}
+
+impl Widget for TuiChildPreview<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        match self.preview_state {
+            Some(PreviewDirState::Loading) => {
+                TuiDirListLoading::new().render(area, buf);
+            }
+            Some(PreviewDirState::Error { message }) => {
+                TuiMessage::new(message, Style::default().fg(Color::Red)).render(area, buf);
+            }
+            None => {
+                let preview_state = self.app_state.state.preview_state_ref();
+                let image_offset = match preview_state.image_preview_ref(self.entry.file_path()) {
+                    Some(protocol) => {
+                        Image::new(&mut protocol.clone()).render(area, buf);
+                        protocol.area().height
+                    }
+                    _ => 0,
+                };
+
+                if let Some(PreviewFileState::Success(data)) =
+                    preview_state.previews_ref().get(self.entry.file_path())
+                {
+                    let preview_area = calculate_preview(
+                        self.app_state.state.tab_state_ref(),
+                        self.app_state.state.preview_state_ref(),
+                        area,
+                    );
+                    if let Some(preview_area) = preview_area {
+                        let area = Rect {
+                            x: preview_area.preview_area.x,
+                            y: preview_area.preview_area.y + image_offset,
+                            width: preview_area.preview_area.width,
+                            height: preview_area
+                                .preview_area
+                                .height
+                                .saturating_sub(image_offset),
+                        };
+                        TuiFilePreview::new(data).render(area, buf);
+                    }
+                };
+            }
+        }
     }
 }
 
@@ -286,40 +297,35 @@ pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
     let child_list = curr_tab.child_list_ref();
 
     if !display_options.collapse_preview {
-        &display_options.default_layout
-    } else {
-        match child_list {
-            Some(_) => &display_options.default_layout,
-            None => match curr_entry {
+        return &display_options.default_layout;
+    }
+    match child_list {
+        Some(_) => &display_options.default_layout,
+        None => match curr_entry {
+            None => &display_options.no_preview_layout,
+            Some(entry) if entry.metadata.file_type() == FileType::Directory => {
+                &display_options.default_layout
+            }
+            Some(entry) => match preview_state.previews_ref().get(entry.file_path()) {
                 None => &display_options.no_preview_layout,
-                Some(entry) if entry.metadata.file_type() == FileType::Directory => {
-                    &display_options.default_layout
-                }
-                Some(entry) => match preview_state.previews_ref().get(entry.file_path()) {
-                    None => &display_options.no_preview_layout,
-                    _ => &display_options.default_layout,
-                },
+                _ => &display_options.default_layout,
             },
-        }
+        },
     }
 }
 
 pub fn calculate_layout(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
-    let mut layout_rect = Layout::default()
+    let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(constraints.as_ref())
-        .split(area)
-        .to_vec();
+        .split(area);
 
-    layout_rect[0] = Rect {
-        width: layout_rect[0].width - 1,
-        ..layout_rect[0]
-    };
-    layout_rect[1] = Rect {
-        width: layout_rect[1].width - 1,
-        ..layout_rect[1]
-    };
-    layout_rect
+    let block = Block::default().borders(Borders::RIGHT);
+    let inner1 = block.inner(layout_rect[0]);
+    let block = Block::default().borders(Borders::LEFT);
+    let inner3 = block.inner(layout_rect[2]);
+
+    vec![inner1, layout_rect[1], inner3]
 }
 
 pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
@@ -333,7 +339,6 @@ pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) 
 
     let block = Block::default().borders(Borders::RIGHT);
     let inner1 = block.inner(layout_rect[0]);
-
     let block = Block::default().borders(Borders::LEFT);
     let inner3 = block.inner(layout_rect[2]);
 

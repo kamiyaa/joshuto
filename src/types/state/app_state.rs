@@ -1,21 +1,17 @@
 use std::collections::HashSet;
 use std::sync::mpsc;
 
-use allmytoes::{AMTConfiguration, AMT};
-use ratatui::style::Color;
-use ratatui_image::picker::Picker;
-
 use crate::commands::quit::QuitAction;
 use crate::config::app::AppConfig;
 use crate::types::event::{AppEvent, Events};
-use crate::types::option::preview::PreviewProtocol;
 use crate::types::state::{
     CommandLineState, MessageQueue, PreviewState, TabState, UiState, WorkerState,
 };
 
-use crate::{Args, THEME_T};
+use crate::workers::thread_pool::ThreadPool;
+use crate::Args;
 
-use super::{FileManagerState, ThreadPool};
+use super::FileManagerState;
 
 pub struct AppState {
     pub config: AppConfig,
@@ -29,23 +25,6 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(config: AppConfig, args: Args) -> Self {
-        let picker = if config.preview_options.preview_shown_hook_script.is_none() {
-            Picker::from_query_stdio().ok().and_then(|mut picker| {
-                if let Color::Rgb(r, g, b) = THEME_T.preview_background {
-                    picker.set_background_color([255, r, g, b]);
-                }
-                match config.preview_options.preview_protocol {
-                    PreviewProtocol::Disabled => None,
-                    PreviewProtocol::ProtocolType(protocol_type) => {
-                        picker.set_protocol_type(protocol_type);
-                        Some(picker)
-                    }
-                }
-            })
-        } else {
-            None
-        };
-
         let events = Events::new();
         let event_tx = events.event_tx.clone();
 
@@ -60,14 +39,7 @@ impl AppState {
         .unwrap();
         let watched_paths = HashSet::with_capacity(3);
 
-        let preview_script = config.preview_options.preview_script.clone();
-        let allmytoes = if config.preview_options.use_xdg_thumbs {
-            Some(AMT::new(&AMTConfiguration::default()))
-        } else {
-            None
-        };
-        let xdg_thumb_size = config.preview_options.xdg_thumb_size;
-
+        let preview_state = PreviewState::new(&config.preview_options, event_tx.clone());
         Self {
             config,
             quit: QuitAction::DoNot,
@@ -80,13 +52,7 @@ impl AppState {
                 message_queue: MessageQueue::new(),
                 worker_state: WorkerState::new(event_tx.clone()),
                 thread_pool: ThreadPool::new(),
-                preview_state: PreviewState::new(
-                    picker,
-                    preview_script,
-                    allmytoes,
-                    xdg_thumb_size,
-                    event_tx,
-                ),
+                preview_state,
                 ui_state: UiState { layout: vec![] },
                 commandline_state,
                 watcher,

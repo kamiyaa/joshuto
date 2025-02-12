@@ -1,24 +1,27 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::path::{self, PathBuf};
-use std::process::{self, Command, Stdio};
+use std::process;
 use std::sync::mpsc::{self, Sender};
 use std::sync::Mutex;
 use std::{io, thread};
 
-use allmytoes::{ThumbSize, AMT};
+use allmytoes::{AMTConfiguration, AMT};
 use lazy_static::lazy_static;
 use ratatui::layout::Rect;
+use ratatui::style::Color;
 use ratatui_image::picker::Picker;
 use ratatui_image::protocol::Protocol;
-use ratatui_image::Resize;
 
 use crate::config::app::AppConfig;
-use crate::preview::preview_file::{FilePreview, PreviewFileState};
-use crate::types::event::{AppEvent, PreviewData};
-use crate::types::option::preview::PreviewOption;
+use crate::error::AppResult;
+use crate::preview::preview_file::PreviewFileState;
+use crate::types::event::AppEvent;
+use crate::types::option::preview::{PreviewOption, PreviewProtocol};
 use crate::ui::{views, AppBackend, PreviewArea};
-use crate::AppState;
+use crate::workers::preview_image_worker::PreviewImageWorker;
+use crate::workers::preview_worker::{PreviewWorker, PreviewWorkerRequest};
+use crate::{AppState, THEME_T};
 
 use super::{TabState, UiState};
 
@@ -26,156 +29,105 @@ lazy_static! {
     static ref GUARD: Mutex<()> = Mutex::new(());
 }
 
-type FilePreviewMetadata = HashMap<path::PathBuf, PreviewFileState>;
+type FilePreviewMap = HashMap<path::PathBuf, PreviewFileState>;
 
 pub struct PreviewState {
-    // the last preview area (or None if now preview shown) to check if a preview hook script needs
+    pub previews_store: FilePreviewMap,
+    // the last preview area (or None if no preview shown) to check if a preview hook script needs
     // to be called
     pub preview_area: Option<PreviewArea>,
     // hashmap of cached previews
-    pub previews: FilePreviewMetadata,
     pub image_preview: Option<(PathBuf, Box<Protocol>)>,
-    pub sender_script: Sender<(PathBuf, Rect)>,
-    pub sender_image: Option<Sender<(PathBuf, Rect)>>,
+    pub preview_file_req_tx: Sender<PreviewWorkerRequest>,
+    pub preview_image_req_tx: Option<Sender<PreviewWorkerRequest>>,
     // for telling main thread when previews are ready
     pub event_tx: Sender<AppEvent>,
 }
 
 impl PreviewState {
-    pub fn new(
-        picker: Option<Picker>,
-        script: Option<PathBuf>,
-        allmytoes: Option<AMT>,
-        xdg_thumb_size: ThumbSize,
-        event_tx: Sender<AppEvent>,
-    ) -> PreviewState {
-        let (sender_script, receiver) = mpsc::channel::<(PathBuf, Rect)>();
-        let thread_script_event_tx = event_tx.clone();
-        thread::spawn(move || {
-            if let Some(ref script) = script {
-                for (path, rect) in receiver {
-                    PreviewState::spawn_command(
-                        path.clone(),
-                        script.to_path_buf(),
-                        rect,
-                        thread_script_event_tx.clone(),
-                    );
-                }
-            }
-        });
+    pub fn new(options: &PreviewOption, event_tx: Sender<AppEvent>) -> PreviewState {
+        // preview worker
+        let preview_script = options.preview_script.clone();
+        let (preview_file_req_tx, preview_file_req_rx) = mpsc::channel();
+        if let Some(preview_script) = preview_script {
+            let preview_worker = PreviewWorker {
+                preview_script,
+                response_tx: event_tx.clone(),
+                request_rx: preview_file_req_rx,
+            };
+            thread::spawn(move || preview_worker.listen_for_events());
+        }
 
-        let (sender_image, receiver) = mpsc::channel::<(PathBuf, Rect)>();
-        let sender_image = picker.map(|picker| {
-            let thread_image_event_tx = event_tx.clone();
-            thread::spawn(move || loop {
-                // Get last, or block for next.
-                if let Some((path, rect)) = receiver
-                    .try_iter()
-                    .last()
-                    .or_else(|| receiver.iter().next())
-                {
-                    let thumb_path = if let Some(amt) = &allmytoes {
-                        let thumb_result = amt.get(&path, xdg_thumb_size);
-                        if let Ok(thumb) = thumb_result {
-                            PathBuf::from(thumb.path)
-                        } else {
-                            path.clone()
-                        }
-                    } else {
-                        path.clone()
-                    };
-                    let proto = image::ImageReader::open(thumb_path.as_path())
-                        .and_then(|reader| reader.decode().map_err(Self::map_io_err))
-                        .and_then(|dyn_img| {
-                            picker
-                                .new_protocol(dyn_img, rect, Resize::Fit(None))
-                                .map_err(|err| {
-                                    io::Error::new(io::ErrorKind::Other, format!("{err}"))
-                                })
-                        });
-                    if let Ok(proto) = proto {
-                        let ev = AppEvent::PreviewFile {
-                            path,
-                            res: Ok(PreviewData::Image(Box::new(proto))),
-                        };
-                        let _ = thread_image_event_tx.send(ev);
+        // preview image worker
+        let preview_image_req_tx = if options.preview_shown_hook_script.is_none() {
+            let picker = Picker::from_query_stdio().ok().and_then(|mut picker| {
+                if let Color::Rgb(r, g, b) = THEME_T.preview_background {
+                    picker.set_background_color([255, r, g, b]);
+                }
+                match options.preview_protocol {
+                    PreviewProtocol::Disabled => None,
+                    PreviewProtocol::ProtocolType(protocol_type) => {
+                        picker.set_protocol_type(protocol_type);
+                        Some(picker)
                     }
-                } else {
-                    // Closed.
-                    return;
                 }
             });
-            sender_image
-        });
+            let allmytoes = if options.use_xdg_thumbs {
+                Some(AMT::new(&AMTConfiguration::default()))
+            } else {
+                None
+            };
+            let xdg_thumb_size = options.xdg_thumb_size;
+
+            let (preview_image_req_tx, preview_image_req_rx) =
+                mpsc::channel::<PreviewWorkerRequest>();
+            let preview_image_worker = PreviewImageWorker {
+                response_tx: event_tx.clone(),
+                request_rx: preview_image_req_rx,
+                picker,
+                allmytoes,
+                xdg_thumb_size,
+            };
+            thread::spawn(move || preview_image_worker.listen_for_events());
+            Some(preview_image_req_tx)
+        } else {
+            None
+        };
 
         PreviewState {
             preview_area: None,
-            previews: HashMap::new(),
+            previews_store: HashMap::new(),
             image_preview: None,
-            sender_script,
-            sender_image,
+            preview_file_req_tx,
+            preview_image_req_tx,
             event_tx,
         }
     }
 
-    pub fn load_preview(&mut self, config: &AppConfig, backend: &AppBackend, path: path::PathBuf) {
+    pub fn load_preview_lazy(
+        &mut self,
+        config: &AppConfig,
+        backend: &AppBackend,
+        path: path::PathBuf,
+    ) -> AppResult {
         // always load image without cache
         self.set_image_preview(None);
-        self.load_preview_image(config, backend, path.clone());
+        self.load_preview_image(config, backend, path.clone())?;
 
         let previews = self.previews_mut();
         if previews.get(path.as_path()).is_none() {
             // add to loading state
             previews.insert(path.clone(), PreviewFileState::Loading);
-            self.load_preview_script(config, backend, path);
+            self.load_preview_script(config, backend, path)?;
         }
+        Ok(())
     }
 
-    fn spawn_command(
-        path: PathBuf,
-        script: PathBuf,
-        rect: Rect,
-        thread_event_tx: Sender<AppEvent>,
-    ) {
-        let output = Command::new(script)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::null())
-            .arg("--path")
-            .arg(path.as_path())
-            .arg("--preview-width")
-            .arg(rect.width.to_string())
-            .arg("--preview-height")
-            .arg(rect.height.to_string())
-            .output();
-
-        let res = match output {
-            Ok(output) => {
-                if output.status.success() {
-                    let preview = FilePreview::from(output);
-                    AppEvent::PreviewFile {
-                        path,
-                        res: Ok(PreviewData::Script(Box::new(preview))),
-                    }
-                } else {
-                    AppEvent::PreviewFile {
-                        path,
-                        res: Err(io::Error::new(io::ErrorKind::Other, "nonzero status")),
-                    }
-                }
-            }
-            Err(err) => AppEvent::PreviewFile {
-                path,
-                res: Err(io::Error::new(io::ErrorKind::Other, format!("{err}"))),
-            },
-        };
-        let _ = thread_event_tx.send(res);
+    pub fn previews_ref(&self) -> &FilePreviewMap {
+        &self.previews_store
     }
-
-    pub fn previews_ref(&self) -> &FilePreviewMetadata {
-        &self.previews
-    }
-    pub fn previews_mut(&mut self) -> &mut FilePreviewMetadata {
-        &mut self.previews
+    pub fn previews_mut(&mut self) -> &mut FilePreviewMap {
+        &mut self.previews_store
     }
     pub fn image_preview_ref(&self, other: &path::Path) -> Option<&Protocol> {
         match &self.image_preview {
@@ -192,18 +144,23 @@ impl PreviewState {
         config: &AppConfig,
         backend: &AppBackend,
         path: path::PathBuf,
-    ) {
-        if let Err(err) = Self::backend_rect(config, backend).and_then(|rect| {
-            self.sender_script
-                .send((path.clone(), rect))
-                .map_err(Self::map_io_err)
-        }) {
-            let ev = AppEvent::PreviewFile {
+    ) -> AppResult {
+        let rect = Self::backend_rect(config, backend)?;
+        let res = self
+            .preview_file_req_tx
+            .send(PreviewWorkerRequest {
+                path: path.clone(),
+                area: rect,
+            })
+            .map_err(Self::map_io_err);
+        if let Err(err) = res {
+            let app_event = AppEvent::PreviewFile {
                 path,
                 res: Err(err),
             };
-            let _ = self.event_tx.send(ev);
+            let _ = self.event_tx.send(app_event);
         }
+        Ok(())
     }
 
     pub fn load_preview_image(
@@ -211,18 +168,24 @@ impl PreviewState {
         config: &AppConfig,
         backend: &AppBackend,
         path: path::PathBuf,
-    ) {
-        if let Some(sender) = &self.sender_image {
-            if let Err(err) = Self::backend_rect(config, backend)
-                .and_then(|rect| sender.send((path.clone(), rect)).map_err(Self::map_io_err))
-            {
-                let ev = AppEvent::PreviewFile {
+    ) -> AppResult {
+        if let Some(sender) = &self.preview_image_req_tx {
+            let area = Self::backend_rect(config, backend)?;
+            let res = sender
+                .send(PreviewWorkerRequest {
+                    path: path.clone(),
+                    area,
+                })
+                .map_err(Self::map_io_err);
+            if let Err(err) = res {
+                let app_event = AppEvent::PreviewFile {
                     path,
                     res: Err(err),
                 };
-                let _ = self.event_tx.send(ev);
+                let _ = self.event_tx.send(app_event);
             }
         }
+        Ok(())
     }
 
     pub fn update_external_preview(&mut self, preview_area: Option<PreviewArea>) {

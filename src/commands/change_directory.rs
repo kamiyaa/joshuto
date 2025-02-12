@@ -17,18 +17,11 @@ pub fn cd(path: &path::Path, app_state: &mut AppState) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn change_directory(app_state: &mut AppState, mut path: &path::Path) -> AppResult {
+pub fn change_directory(app_state: &mut AppState, path: &path::Path) -> AppResult {
     let new_cwd = if path.is_absolute() {
         path.to_path_buf()
     } else {
-        while let Ok(p) = path.strip_prefix("../") {
-            parent_directory(app_state)?;
-            path = p;
-        }
-
-        let mut new_cwd = std::env::current_dir()?;
-        new_cwd.push(path);
-        new_cwd
+        path.canonicalize()?
     };
 
     cd(new_cwd.as_path(), app_state)?;
