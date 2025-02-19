@@ -1,7 +1,7 @@
 use std::iter::Iterator;
 use std::path;
 
-use crate::types::io::FileOperation;
+use crate::io::FileOperation;
 
 #[derive(Clone, Debug)]
 pub struct LocalStateState {

@@ -10,10 +10,11 @@ use std::os::unix;
 use crate::error::AppError;
 use crate::error::AppErrorKind;
 use crate::error::AppResult;
+use crate::io::{
+    FileOperation, FileOperationOptions, FileOperationProgress, IoTask, IoTaskProgressMessage,
+    IoTaskStat,
+};
 use crate::types::event::AppEvent;
-use crate::types::io::FileOperationProgress;
-use crate::types::io::IoTaskStat;
-use crate::types::io::{FileOperation, FileOperationOptions, IoTask, IoTaskProgressMessage};
 use crate::utils::fs::query_number_of_items;
 use crate::utils::name_resolution::rename_filename_conflict;
 
@@ -23,7 +24,7 @@ pub fn process_io_tasks(
 ) -> AppResult {
     while let Ok(io_task) = event_rx.recv() {
         let res = process_io_task(&io_task, &event_tx);
-        let event = AppEvent::IoTaskResult(res);
+        let event = AppEvent::IoTaskResult { task: io_task, res };
         let _ = event_tx.send(event);
     }
     Ok(())
@@ -44,7 +45,7 @@ pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> A
     };
 
     let io_stat = IoTaskStat::new(operation_progress, src, dest);
-    let event = AppEvent::IoTaskStart(io_stat);
+    let event = AppEvent::IoTaskStart { stats: io_stat };
     let _ = event_tx.send(event);
 
     let res = match io_task.get_operation_type() {
@@ -84,7 +85,7 @@ fn paste_link_absolute(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult 
         let event = IoTaskProgressMessage::FileStart {
             file_path: src.to_path_buf(),
         };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
         let mut dest_buf = task.dest.to_path_buf();
         if let Some(s) = src.file_name() {
             dest_buf.push(s);
@@ -94,7 +95,7 @@ fn paste_link_absolute(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult 
         }
         unix::fs::symlink(src, &dest_buf)?;
         let event = IoTaskProgressMessage::FileComplete { file_size: 1 };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
     }
     Ok(())
 }
@@ -105,7 +106,7 @@ fn paste_link_relative(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult 
         let event = IoTaskProgressMessage::FileStart {
             file_path: src.to_path_buf(),
         };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
         let mut dest_buf = task.dest.to_path_buf();
         if let Some(s) = src.file_name() {
             dest_buf.push(s);
@@ -136,7 +137,7 @@ fn paste_link_relative(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult 
         unix::fs::symlink(relative_path, &dest_buf)?;
 
         let event = IoTaskProgressMessage::FileComplete { file_size: 1 };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
     }
     Ok(())
 }
@@ -159,7 +160,7 @@ pub fn recursive_copy(
     let event = IoTaskProgressMessage::FileStart {
         file_path: src.to_path_buf(),
     };
-    let _ = tx.send(AppEvent::IoTaskProgress(event));
+    let _ = tx.send(AppEvent::IoTaskProgress { message: event });
 
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
@@ -185,7 +186,7 @@ pub fn recursive_copy(
             recursive_copy(tx, entry_path.as_path(), dest_buf.as_path(), options)?;
         }
         let event = IoTaskProgressMessage::FileComplete { file_size: 1 };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
 
         Ok(())
     } else if file_type.is_file() {
@@ -193,14 +194,14 @@ pub fn recursive_copy(
         let event = IoTaskProgressMessage::FileComplete {
             file_size: bytes_processed,
         };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
 
         Ok(())
     } else if file_type.is_symlink() {
         let link_path = fs::read_link(src)?;
         std::os::unix::fs::symlink(link_path, dest_buf)?;
         let event = IoTaskProgressMessage::FileComplete { file_size: 1 };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
 
         Ok(())
     } else {
@@ -217,7 +218,7 @@ pub fn recursive_cut(
     let event = IoTaskProgressMessage::FileStart {
         file_path: src.to_path_buf(),
     };
-    let _ = tx.send(AppEvent::IoTaskProgress(event));
+    let _ = tx.send(AppEvent::IoTaskProgress { message: event });
 
     let mut dest_buf = dest.to_path_buf();
     if let Some(s) = src.file_name() {
@@ -236,7 +237,7 @@ pub fn recursive_cut(
             let event = IoTaskProgressMessage::FileComplete {
                 file_size: bytes_processed,
             };
-            let _ = tx.send(AppEvent::IoTaskProgress(event));
+            let _ = tx.send(AppEvent::IoTaskProgress { message: event });
         }
         Err(_err) => {
             if file_type.is_dir() {
@@ -247,7 +248,7 @@ pub fn recursive_cut(
                 }
                 fs::remove_dir(src)?;
                 let event = IoTaskProgressMessage::FileComplete { file_size: 1 };
-                let _ = tx.send(AppEvent::IoTaskProgress(event));
+                let _ = tx.send(AppEvent::IoTaskProgress { message: event });
             } else if file_type.is_symlink() {
                 let link_path = fs::read_link(src)?;
                 std::os::unix::fs::symlink(link_path, dest_buf)?;
@@ -257,7 +258,7 @@ pub fn recursive_cut(
                 let event = IoTaskProgressMessage::FileComplete {
                     file_size: bytes_processed,
                 };
-                let _ = tx.send(AppEvent::IoTaskProgress(event));
+                let _ = tx.send(AppEvent::IoTaskProgress { message: event });
             } else {
                 let bytes_processed = fs::copy(src, dest_buf.as_path())?;
                 fs::remove_file(src)?;
@@ -265,7 +266,7 @@ pub fn recursive_cut(
                 let event = IoTaskProgressMessage::FileComplete {
                     file_size: bytes_processed,
                 };
-                let _ = tx.send(AppEvent::IoTaskProgress(event));
+                let _ = tx.send(AppEvent::IoTaskProgress { message: event });
             }
         }
     }
@@ -281,7 +282,7 @@ where
             let event = IoTaskProgressMessage::FileStart {
                 file_path: path.as_ref().to_path_buf(),
             };
-            let _ = tx.send(AppEvent::IoTaskProgress(event));
+            let _ = tx.send(AppEvent::IoTaskProgress { message: event });
 
             if metadata.is_dir() {
                 fs::remove_dir_all(path)?;
@@ -292,7 +293,7 @@ where
             let event = IoTaskProgressMessage::FileComplete {
                 file_size: bytes_processed,
             };
-            let _ = tx.send(AppEvent::IoTaskProgress(event));
+            let _ = tx.send(AppEvent::IoTaskProgress { message: event });
         }
     }
     Ok(())
@@ -306,11 +307,11 @@ where
         let event = IoTaskProgressMessage::FileStart {
             file_path: path.as_ref().to_path_buf(),
         };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
 
         trash_file(path)?;
         let event = IoTaskProgressMessage::FileComplete { file_size: 1 };
-        let _ = tx.send(AppEvent::IoTaskProgress(event));
+        let _ = tx.send(AppEvent::IoTaskProgress { message: event });
     }
     Ok(())
 }

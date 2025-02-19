@@ -12,14 +12,15 @@ use crate::commands::tab_ops;
 use crate::commands::{cursor_move, parent_cursor_move, reload};
 use crate::error::AppResult;
 use crate::fs::JoshutoDirList;
+use crate::io::IoTask;
+use crate::io::IoTaskProgressMessage;
+use crate::io::IoTaskStat;
 use crate::preview::preview_dir::PreviewDirState;
 use crate::preview::preview_file::PreviewFileState;
 use crate::traits::app_execute::AppExecute;
 use crate::types::command::Command;
 use crate::types::event::AppEvent;
 use crate::types::event::PreviewData;
-use crate::types::io::IoTaskProgressMessage;
-use crate::types::io::IoTaskStat;
 use crate::types::keybind::CommandKeybind;
 use crate::types::keybind::KeyMapping;
 use crate::types::keymap::AppKeyMapping;
@@ -69,15 +70,17 @@ pub fn poll_event_until_simple_keybind<'a>(
 pub fn process_noninteractive(event: AppEvent, app_state: &mut AppState) {
     match event {
         AppEvent::NewIoTask => process_new_io_task(app_state),
-        AppEvent::IoTaskStart(stats) => process_io_task_start(app_state, stats),
-        AppEvent::IoTaskProgress(res) => process_io_task_progress(app_state, res),
-        AppEvent::IoTaskResult(res) => process_finished_io_task(app_state, res),
+        AppEvent::IoTaskStart { stats } => process_io_task_start(app_state, stats),
+        AppEvent::IoTaskProgress { message: progress } => {
+            process_io_task_progress(app_state, progress)
+        }
+        AppEvent::IoTaskResult { task, res } => process_finished_io_task(app_state, task, res),
         AppEvent::PreviewDir { id, path, res } => process_dir_preview(app_state, id, path, *res),
         AppEvent::PreviewFile { path, res } => process_file_preview(app_state, path, res),
         AppEvent::Signal(signal::SIGWINCH) => {}
         AppEvent::Filesystem(e) => process_filesystem_event(e, app_state),
-        AppEvent::ChildProcessComplete(child_id) => {
-            app_state.state.thread_pool.join_child(child_id);
+        AppEvent::ChildProcessComplete { id } => {
+            app_state.state.thread_pool.join_child(id);
         }
         _ => {}
     }
@@ -109,29 +112,29 @@ pub fn process_io_task_progress(app_state: &mut AppState, res: IoTaskProgressMes
     }
 }
 
-pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
+pub fn process_finished_io_task(app_state: &mut AppState, task: IoTask, res: AppResult) {
+    // Remove io stats and update history entries
+    let io_stats = app_state.state.worker_state_mut().remove_io_stat();
+    if task.dest.exists() {
+        let _ = tab_ops::reload_all_tabs(app_state, &task.dest);
+    } else {
+        tab_ops::remove_entry_from_all_tabs(app_state, &task.dest);
+    }
+    if let Some(parent) = task.paths.first().and_then(|p| p.parent()) {
+        if parent.exists() {
+            let _ = tab_ops::reload_all_tabs(app_state, parent);
+        } else {
+            tab_ops::remove_entry_from_all_tabs(app_state, parent);
+        }
+    }
+
     match res {
         Err(err) => {
             let msg = format!("{err}");
             app_state.state.message_queue_mut().push_error(msg);
         }
         Ok(_) => {
-            let worker_state = app_state.state.worker_state_mut();
-            if let Some(io_stat) = worker_state.remove_io_stat() {
-                let io_path = io_stat.dest_path();
-                if io_path.exists() {
-                    let _ = tab_ops::reload_all_tabs(app_state, io_path);
-                } else {
-                    tab_ops::remove_entry_from_all_tabs(app_state, io_path);
-                }
-
-                let io_path = io_stat.src_path();
-                if io_path.exists() {
-                    let _ = tab_ops::reload_all_tabs(app_state, io_path);
-                } else {
-                    tab_ops::remove_entry_from_all_tabs(app_state, io_path);
-                }
-
+            if let Some(io_stat) = io_stats {
                 let progress = io_stat.progress;
                 let op = progress.kind.actioned_str();
                 let processed_size = format::file_size_to_string(progress.bytes_processed);
@@ -144,7 +147,6 @@ pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
             }
         }
     }
-    app_state.state.worker_state_mut().progress = None;
     process_new_io_task(app_state);
 }
 

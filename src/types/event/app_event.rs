@@ -16,9 +16,10 @@ use uuid::Uuid;
 
 use crate::error::AppResult;
 use crate::fs::JoshutoDirList;
+use crate::io::IoTask;
+use crate::io::IoTaskProgressMessage;
+use crate::io::IoTaskStat;
 use crate::preview::preview_file::FilePreview;
-use crate::types::io::IoTaskProgressMessage;
-use crate::types::io::IoTaskStat;
 
 pub enum PreviewData {
     Script(Box<FilePreview>),
@@ -41,12 +42,21 @@ pub enum AppEvent {
 
     // background IO worker events
     NewIoTask,
-    IoTaskStart(IoTaskStat),
-    IoTaskProgress(IoTaskProgressMessage),
-    IoTaskResult(AppResult),
+    IoTaskStart {
+        stats: IoTaskStat,
+    },
+    IoTaskProgress {
+        message: IoTaskProgressMessage,
+    },
+    IoTaskResult {
+        task: IoTask,
+        res: AppResult,
+    },
 
     // forked process events
-    ChildProcessComplete(u32),
+    ChildProcessComplete {
+        id: u32,
+    },
 
     // preview thread events
     PreviewDir {

@@ -1,7 +1,7 @@
 use std::process::{Command, Stdio};
 
 use crate::error::{AppError, AppErrorKind, AppResult};
-use crate::types::io::{FileOperation, FileOperationOptions, IoTask};
+use crate::io::{FileOperation, FileOperationOptions, IoTask};
 use crate::types::state::{AppState, LocalStateState};
 
 fn new_local_state(app_state: &mut AppState, file_op: FileOperation) -> Option<()> {

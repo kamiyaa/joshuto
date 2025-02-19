@@ -3,7 +3,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::types::io::IoTaskStat;
+use crate::io::IoTaskStat;
 use crate::types::state::WorkerState;
 use crate::utils::format;
 

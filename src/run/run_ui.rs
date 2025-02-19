@@ -77,7 +77,7 @@ pub fn run_ui(
                 height: size.height,
             };
             // pre-calculate some ui attributes
-            calculate_ui_constraints(app_state, area);
+            app_state.state.ui_state_mut().layout = calculate_ui_constraints(app_state, area);
 
             // render the ui
             backend.render(TuiView::new(app_state));

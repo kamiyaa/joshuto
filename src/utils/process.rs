@@ -34,7 +34,7 @@ where
     let handle = thread::spawn(move || {
         let child_id = child.id();
         let _ = child.wait();
-        let _ = event_tx.send(AppEvent::ChildProcessComplete(child_id));
+        let _ = event_tx.send(AppEvent::ChildProcessComplete { id: child_id });
     });
 
     Ok((child_id, handle))

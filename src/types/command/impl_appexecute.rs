@@ -1,7 +1,7 @@
 use crate::commands::stdout::post_process_std_out;
 use crate::error::AppResult;
+use crate::io::{FileOperation, FileOperationOptions};
 use crate::traits::app_execute::AppExecute;
-use crate::types::io::{FileOperation, FileOperationOptions};
 use crate::types::keymap::AppKeyMapping;
 use crate::types::state::AppState;
 use crate::ui::AppBackend;

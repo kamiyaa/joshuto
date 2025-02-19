@@ -4,9 +4,9 @@ use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 
 use crate::error::AppResult;
+use crate::io::{IoTask, IoTaskStat};
 use crate::run::process_io::process_io_tasks;
 use crate::types::event::AppEvent;
-use crate::types::io::{IoTask, IoTaskStat};
 
 pub struct WorkerState {
     // to send info

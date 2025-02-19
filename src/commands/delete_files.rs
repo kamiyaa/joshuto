@@ -4,8 +4,8 @@ use std::sync::mpsc;
 use termion::event::Key;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::io::{FileOperation, FileOperationOptions, IoTask};
 use crate::run::process_io::process_io_task;
-use crate::types::io::{FileOperation, FileOperationOptions, IoTask};
 use crate::types::state::AppState;
 use crate::ui::widgets::TuiPrompt;
 use crate::ui::AppBackend;
