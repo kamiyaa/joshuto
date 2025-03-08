@@ -32,7 +32,7 @@ lscolors = { version = "0.17.0", features = ["nu-ansi-term"] }
 notify = "^6"
 open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
-rand = "^0"
+rand = "^0.9"
 ratatui-image = { version = "1.0.5", default-features = false, features = ["termion", "rustix", "serde"] }
 regex = "1.9.3"
 rustyline = "^12"

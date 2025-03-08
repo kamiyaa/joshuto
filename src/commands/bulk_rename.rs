@@ -27,8 +27,8 @@ pub fn _bulk_rename(app_state: &mut AppState) -> AppResult {
     /* generate a random file name to write to */
     let mut rand_str = String::with_capacity(FILE_PREFIX.len() + RAND_STR_LEN);
     rand_str.push_str(FILE_PREFIX);
-    rand::thread_rng()
-        .sample_iter(&rand::distributions::Alphanumeric)
+    rand::rng()
+        .sample_iter(&rand::distr::Alphanumeric)
         .take(RAND_STR_LEN)
         .for_each(|ch| rand_str.push(ch as char));
 
