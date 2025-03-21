@@ -56,3 +56,5 @@ fzf_case_sensitivity = "insensitive"
 [tab]
 # inherit, home, root
 home_page = "home"
+# full_path, folder_name
+style = "full_path"

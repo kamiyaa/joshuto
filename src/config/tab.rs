@@ -2,20 +2,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::tab::TabHomePage;
 
-fn default_home_page() -> TabHomePage {
-    TabHomePage::default()
-}
+use super::theme::tab_raw::TabStyle;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TabOption {
-    #[serde(default = "default_home_page")]
+    #[serde(default)]
+    pub style: TabStyle,
+    #[serde(default)]
     pub home_page: TabHomePage,
-}
-
-impl std::default::Default for TabOption {
-    fn default() -> Self {
-        Self {
-            home_page: default_home_page(),
-        }
-    }
 }

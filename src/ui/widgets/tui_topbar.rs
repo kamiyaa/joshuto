@@ -4,12 +4,10 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
-use tab_list_builder::factor_tab_bar_spans;
-
 use crate::types::state::AppState;
-use crate::ui::tab_list_builder;
-use crate::THEME_T;
 use crate::{HOSTNAME, USERNAME};
+
+use super::tui_tab_bar::TuiTabBar;
 
 pub struct TuiTopBar<'a> {
     pub app_state: &'a AppState,
@@ -33,26 +31,26 @@ impl Widget for TuiTopBar<'_> {
                 .add_modifier(Modifier::BOLD)
         };
 
-        let mut top_bar_spans = vec![
+        let top_bar_spans = vec![
             Span::styled(USERNAME.as_str(), username_style),
             Span::styled("@", username_style),
             Span::styled(HOSTNAME.as_str(), username_style),
             Span::styled(" ", username_style),
         ];
+        Paragraph::new(Line::from(top_bar_spans)).render(area, buf);
 
         let available_tab_width = area.width as usize - name_width;
-        let mut paths = Vec::new();
-        let tabs = self.app_state.state.tab_state_ref().tab_refs_in_order();
-        for tab in tabs {
-            paths.push(tab.get_cwd());
-        }
-        let tab_bar_spans = factor_tab_bar_spans(
-            available_tab_width,
-            &paths,
+        let tab_area = Rect {
+            x: name_width as u16,
+            width: available_tab_width as u16,
+            ..area
+        };
+
+        let tab_bar = TuiTabBar::new(
+            &self.app_state.config,
+            self.app_state.state.tab_state_ref().tab_refs_in_order(),
             self.app_state.state.tab_state_ref().index,
-            &THEME_T.tabs,
         );
-        top_bar_spans.extend(tab_bar_spans);
-        Paragraph::new(Line::from(top_bar_spans)).render(area, buf);
+        tab_bar.render(tab_area, buf);
     }
 }

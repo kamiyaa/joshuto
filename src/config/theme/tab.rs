@@ -14,10 +14,10 @@ pub struct TabTheme {
 }
 
 impl From<TabThemeRaw> for TabTheme {
-    fn from(crude: TabThemeRaw) -> Self {
-        let chars = TabThemeChars::from(crude.chars);
+    fn from(raw: TabThemeRaw) -> Self {
+        let chars = TabThemeChars::from(raw.chars);
         Self {
-            styles: TabThemeColors::from(crude.styles),
+            styles: TabThemeColors::from(raw.styles),
             inference: TabThemeCharsInference::from_chars(&chars),
             chars,
         }

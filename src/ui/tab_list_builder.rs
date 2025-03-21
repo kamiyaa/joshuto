@@ -30,12 +30,12 @@ use crate::HOME_DIR;
 //               and further shortened with ellipsis
 
 pub struct TabLabel {
-    long: String,
-    short: String,
+    pub long: String,
+    pub short: String,
 }
 
 impl TabLabel {
-    fn from_path(path: &Path) -> TabLabel {
+    pub fn from_path(path: &Path) -> TabLabel {
         let mut full_path_str = path.as_os_str().to_str().unwrap_or_default().to_string();
         if let Some(home_dir) = HOME_DIR.as_ref() {
             let home_dir_str = home_dir.to_string_lossy().into_owned();
@@ -43,8 +43,7 @@ impl TabLabel {
                 full_path_str = full_path_str.replacen(&home_dir_str, "~", 1);
             }
         }
-        // eprintln!("full_path_str: {:?}", full_path_str);
-        let last = Path::new(&full_path_str)
+        let last = path
             .file_name()
             .unwrap_or_default()
             .to_str()
@@ -53,6 +52,18 @@ impl TabLabel {
         TabLabel {
             long: full_path_str,
             short: last,
+        }
+    }
+
+    pub fn from_file_name(path: &Path) -> Self {
+        let file_name = path
+            .file_name()
+            .and_then(|p| p.to_str())
+            .unwrap_or_default()
+            .to_string();
+        Self {
+            short: file_name.clone(),
+            long: file_name,
         }
     }
 }
@@ -125,7 +136,7 @@ fn check_fit_and_build_sequence(
 
 fn factor_tab_bar_sequence(
     available_width: usize,
-    tab_records: &[&TabLabel],
+    tab_records: &[TabLabel],
     current_index: usize,
     config: &TabTheme,
 ) -> Vec<TabBarElement> {
@@ -146,9 +157,9 @@ fn factor_tab_bar_sequence(
     let all_labels_as_long: Vec<_> = tab_records
         .iter()
         .enumerate()
-        .map(|(ix, &r)| {
+        .map(|(ix, r)| {
             if labels_are_indexed {
-                format!("{}: {}", ix + 1, &r.long)
+                format!("{}: {}", ix + 1, r.long)
             } else {
                 String::from(&r.long)
             }
@@ -195,9 +206,9 @@ fn factor_tab_bar_sequence(
     let all_labels_as_short: Vec<_> = tab_records
         .iter()
         .enumerate()
-        .map(|(ix, &r)| {
+        .map(|(ix, r)| {
             if labels_are_indexed {
-                format!("{}: {}", ix + 1, &r.short)
+                format!("{}: {}", ix + 1, r.short)
             } else {
                 String::from(&r.short)
             }
@@ -500,15 +511,13 @@ fn factor_tab_bar_spans_from_sequence<'a>(
 }
 
 pub fn factor_tab_bar_spans<'a>(
+    tab_labels: &'a [TabLabel],
     available_width: usize,
-    tab_paths: &[&'a Path],
     current_index: usize,
     config: &TabTheme,
 ) -> Vec<Span<'a>> {
-    let reps: Vec<TabLabel> = tab_paths.iter().map(|p| TabLabel::from_path(p)).collect();
-    let rep_refs: Vec<&TabLabel> = reps.iter().collect();
     let tab_bar_elements =
-        factor_tab_bar_sequence(available_width, &rep_refs, current_index, config);
+        factor_tab_bar_sequence(available_width, tab_labels, current_index, config);
     let tab_bar = factor_tab_bar_spans_from_sequence(tab_bar_elements, config);
     tab_bar
 }
@@ -531,7 +540,7 @@ mod tests_facator_tab_bar_sequence {
     /// an empty tab line is returned.
     fn too_little_available_width_for_anything() {
         // Given
-        let tabs = [&TabLabel {
+        let tabs = [TabLabel {
             long: "/foo/a".to_string(),
             short: "a".to_string(),
         }];
@@ -547,7 +556,7 @@ mod tests_facator_tab_bar_sequence {
     /// (`[/foo/a]` is exactly a width of 8).
     fn one_tab_that_fits() {
         // Given
-        let tabs = [&TabLabel {
+        let tabs = [TabLabel {
             long: "/foo/a".to_string(),
             short: "a".to_string(),
         }];
@@ -572,7 +581,7 @@ mod tests_facator_tab_bar_sequence {
     /// (`[a]`).
     fn one_tab_that_fits_only_in_short_form() {
         // Given
-        let tabs = [&TabLabel {
+        let tabs = [TabLabel {
             long: "/foo/a".to_string(),
             short: "a".to_string(),
         }];
@@ -598,7 +607,7 @@ mod tests_facator_tab_bar_sequence {
     /// (`aaaaaaa`).
     fn one_tab_that_fits_only_in_short_form_without_prepostfixes() {
         // Given
-        let tabs = [&TabLabel {
+        let tabs = [TabLabel {
             long: "/foo/a".to_string(),
             short: "aaaaaaa".to_string(),
         }];
@@ -620,7 +629,7 @@ mod tests_facator_tab_bar_sequence {
     /// (`aaaaa…`).
     fn case_2c_one_tab_that_does_not_fit_unless_further_shortened() {
         // Given
-        let tabs = [&TabLabel {
+        let tabs = [TabLabel {
             long: "/foo/a".to_string(),
             short: "aaaaaaa".to_string(),
         }];
@@ -642,11 +651,11 @@ mod tests_facator_tab_bar_sequence {
     fn case_1_two_tabs_that_fit() {
         // Given
         let tabs = [
-            &TabLabel {
+            TabLabel {
                 long: "/foo/a".to_string(),
                 short: "a".to_string(),
             },
-            &TabLabel {
+            TabLabel {
                 long: "/foo/b".to_string(),
                 short: "b".to_string(),
             },
@@ -677,11 +686,11 @@ mod tests_facator_tab_bar_sequence {
     fn case_3_two_tabs_fit_shortened() {
         // Given
         let tabs = [
-            &TabLabel {
+            TabLabel {
                 long: "/foo/a".to_string(),
                 short: "a".to_string(),
             },
-            &TabLabel {
+            TabLabel {
                 long: "/foo/b".to_string(),
                 short: "b".to_string(),
             },
@@ -713,11 +722,11 @@ mod tests_facator_tab_bar_sequence {
     fn multiple_tabs_but_active_one_does_only_fit_in_short_form_with_scroll_tags() {
         // Given
         let tabs = [
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
@@ -759,11 +768,11 @@ mod tests_facator_tab_bar_sequence {
     fn multiple_tabs_but_active_one_does_not_fit_in_short_form_with_scroll_tags() {
         // Given
         let tabs = [
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
@@ -792,11 +801,11 @@ mod tests_facator_tab_bar_sequence {
     fn multiple_tabs_but_active_one_does_not_fit_in_short_even_without_scroll_tags() {
         // Given
         let tabs = [
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
@@ -823,15 +832,15 @@ mod tests_facator_tab_bar_sequence {
     ) {
         // Given
         let tabs = [
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_a".to_string(),
                 short: "long_name_a".to_string(),
             },
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_b".to_string(),
                 short: "long_name_b".to_string(),
             },
-            &TabLabel {
+            TabLabel {
                 long: "/foo/long_name_c".to_string(),
                 short: "long_name_c".to_string(),
             },

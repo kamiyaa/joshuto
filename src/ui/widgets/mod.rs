@@ -8,6 +8,7 @@ mod tui_io_tasks;
 mod tui_menu;
 mod tui_message;
 mod tui_prompt;
+mod tui_tab_bar;
 mod tui_text;
 mod tui_topbar;
 

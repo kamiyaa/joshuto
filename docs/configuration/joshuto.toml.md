@@ -164,5 +164,8 @@ fzf_case_sensitivity = "insensitive"
 [tab]
 # inherit, home, root
 home_page = "home"
-
+# full_path, folder_name
+# - full_path: when space is available, try to expand the full path of the tab
+# - folder_name: just show the folder name of the tab
+style = "full_path"
 ```

@@ -1,6 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 use super::style_raw::AppStyleOptionsRaw;
+#[derive(Clone, Debug, Deserialize, Serialize, Default)]
+pub enum TabStyle {
+    #[default]
+    #[serde(rename = "full_path")]
+    FullPath,
+    #[serde(rename = "folder_name")]
+    FolderName,
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct TabThemeRaw {

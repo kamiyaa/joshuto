@@ -1,1 +1,2 @@
 msrv = "1.67"
+large-error-threshold = 64
