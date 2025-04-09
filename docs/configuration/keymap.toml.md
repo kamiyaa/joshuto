@@ -120,6 +120,7 @@ function joshuto() {
 ### `shell`: runs a shell command
 
 - `%s` and `%p` are substituted by a list of all selected files or by the file under the cursor, if none is selected
+- `%d` is substituted with the current directory's absolute path
 - When running the external program, the directory shown in Joshuto is set as “working directory”,
   the file names substituted for `%s` are given without path. If you want the absolute path, use `%p`.
 - Example: `:shell touch file.txt` will create a file called `file.txt`
@@ -138,12 +139,18 @@ function joshuto() {
 
 ### `spawn`: runs a shell command in the background
 
-- Supports `%s`and `%p`, just like the `shell` command.
+- Supports `%s`, `%p` and `%d`, just like the `shell` command.
 - Example for `keymap.toml`: To open all selected files or directories with `sxiv`,
   one can add a keybinding like this:
   ```toml
   keymap = [ //..
      { keys = [ "i" ], commands = ["spawn sxiv -t %s"] }
+  ]
+  ```
+- To open a new alacritty terminal in the current folder:
+  ```toml
+  keymap = [ // ..
+    { keys = [ "O" ], commands = ["spawn alacritty --working-directory %d"] }
   ]
   ```
 
