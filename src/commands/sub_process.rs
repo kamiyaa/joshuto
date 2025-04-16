@@ -36,6 +36,10 @@ pub fn current_files(app_state: &AppState) -> Vec<(&str, &Path)> {
     result
 }
 
+fn current_dir(app_state: &AppState) -> &Path {
+    app_state.state.tab_state_ref().curr_tab_ref().get_cwd()
+}
+
 fn execute_sub_process(
     app_state: &mut AppState,
     words: &[String],
@@ -64,6 +68,9 @@ fn execute_sub_process(
                 for (_, file_path) in &current_files {
                     command.arg(file_path);
                 }
+            }
+            "%d" => {
+                command.arg(current_dir(app_state));
             }
             s => {
                 command.arg(s);
