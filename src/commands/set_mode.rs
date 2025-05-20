@@ -1,3 +1,4 @@
+use nix::fcntl::AT_FDCWD;
 use nix::sys::stat::{fchmodat, FchmodatFlags, Mode};
 
 use crate::error::{AppError, AppErrorKind, AppResult};
@@ -56,7 +57,7 @@ pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
                 if curr_list.selected_count() > 0 {
                     for entry in curr_list.iter_selected_mut() {
                         fchmodat(
-                            None,
+                            AT_FDCWD,
                             entry.file_path(),
                             mode,
                             FchmodatFlags::NoFollowSymlink,
@@ -69,7 +70,7 @@ pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
                     }
                 } else if let Some(entry) = curr_list.curr_entry_mut() {
                     fchmodat(
-                        None,
+                        AT_FDCWD,
                         entry.file_path(),
                         mode,
                         FchmodatFlags::NoFollowSymlink,
