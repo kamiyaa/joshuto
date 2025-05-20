@@ -343,6 +343,7 @@ impl<'a> TuiTextField<'a> {
 
                         Key::Ctrl('w') => line_buffer.delete_prev_word(Word::Vi, 1, listener),
                         Key::Ctrl('u') => line_buffer.discard_line(listener),
+                        Key::Ctrl('h') => line_buffer.backspace(1, listener),
                         Key::Ctrl('d') => line_buffer.delete(1, listener).is_some(),
                         Key::Char('\n') => {
                             break;
