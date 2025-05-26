@@ -89,9 +89,7 @@ impl PreviewState {
                         .and_then(|dyn_img| {
                             picker
                                 .new_protocol(dyn_img, rect, Resize::Fit(None))
-                                .map_err(|err| {
-                                    io::Error::new(io::ErrorKind::Other, format!("{err}"))
-                                })
+                                .map_err(|err| io::Error::other(format!("{err}")))
                         });
                     if let Ok(proto) = proto {
                         let ev = AppEvent::PreviewFile {
@@ -159,13 +157,13 @@ impl PreviewState {
                 } else {
                     AppEvent::PreviewFile {
                         path,
-                        res: Err(io::Error::new(io::ErrorKind::Other, "nonzero status")),
+                        res: Err(io::Error::other("nonzero status")),
                     }
                 }
             }
             Err(err) => AppEvent::PreviewFile {
                 path,
-                res: Err(io::Error::new(io::ErrorKind::Other, format!("{err}"))),
+                res: Err(io::Error::other(format!("{err}"))),
             },
         };
         let _ = thread_event_tx.send(res);
@@ -260,7 +258,7 @@ impl PreviewState {
 
     #[inline]
     fn map_io_err(err: impl Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, format!("{err}"))
+        io::Error::other(format!("{err}"))
     }
 }
 

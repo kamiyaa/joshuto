@@ -85,16 +85,16 @@ fn execute_sub_process(
                     if status.code() == Some(0) {
                         Ok(())
                     } else {
-                        Err(std::io::Error::new(
-                            std::io::ErrorKind::Other,
-                            format!("Command failed with {}", status),
-                        ))
+                        Err(std::io::Error::other(format!(
+                            "Command failed with {}",
+                            status
+                        )))
                     }
                 }
-                Err(err) => Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("Shell execution failed: {}", err),
-                )),
+                Err(err) => Err(std::io::Error::other(format!(
+                    "Shell execution failed: {}",
+                    err
+                ))),
             }
         }
         SubprocessCallMode::Spawn => {
@@ -114,10 +114,10 @@ fn execute_sub_process(
                     Some(String::from_utf8_lossy(&output.stdout).to_string());
                 Ok(())
             } else {
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("Command failed with {}", output.status),
-                ))
+                Err(std::io::Error::other(format!(
+                    "Command failed with {}",
+                    output.status
+                )))
             }
         }
     }
