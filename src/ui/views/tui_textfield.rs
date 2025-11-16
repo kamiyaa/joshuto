@@ -107,6 +107,8 @@ pub struct TuiTextField<'a> {
     _prefix: &'a str,
     _suffix: &'a str,
     _menu_items: Vec<&'a str>,
+    menu_mode: bool,
+    current_menu_index: Option<usize>,
 }
 
 impl<'a> TuiTextField<'a> {
@@ -115,6 +117,18 @@ impl<'a> TuiTextField<'a> {
         I: Iterator<Item = &'a str>,
     {
         self._menu_items = items.collect();
+        self.menu_mode = !self._menu_items.is_empty();
+        if self.menu_mode {
+            self.current_menu_index = Some(0);
+        }
+        self
+    }
+
+    pub fn menu_mode(&mut self, menu_mode: bool) -> &mut Self {
+        self.menu_mode = menu_mode;
+        if menu_mode && !self._menu_items.is_empty() {
+            self.current_menu_index = Some(0);
+        }
         self
     }
 
@@ -150,6 +164,11 @@ impl<'a> TuiTextField<'a> {
         line_buffer.insert_str(line_buffer.len(), self._suffix, listener);
         line_buffer.set_pos(char_idx);
 
+        if self.menu_mode && !self._menu_items.is_empty() {
+            line_buffer.insert_str(char_idx, "0", listener);
+            line_buffer.move_end();
+        }
+
         let terminal = backend.terminal_mut();
         let _ = terminal.show_cursor();
 
@@ -179,7 +198,8 @@ impl<'a> TuiTextField<'a> {
 
                     // render menu
                     if !self._menu_items.is_empty() {
-                        let menu_widget = TuiMenu::new(self._menu_items.as_slice());
+                        let menu_widget = TuiMenu::new(self._menu_items.as_slice())
+                            .highlighted_index(self.current_menu_index);
                         let menu_len = menu_widget.len();
                         let menu_y = if menu_len + 1 > area.height as usize {
                             0
@@ -256,40 +276,81 @@ impl<'a> TuiTextField<'a> {
                         Key::Home => line_buffer.move_home(),
                         Key::End => line_buffer.move_end(),
                         Key::Up => {
-                            curr_history_index = curr_history_index.saturating_sub(1);
-                            line_buffer.move_home();
-                            line_buffer.kill_line(listener);
-                            if let Ok(Some(s)) = app_state
-                                .state
-                                .commandline_state_ref()
-                                .history_ref()
-                                .get(curr_history_index, SearchDirection::Forward)
-                            {
-                                line_buffer.insert_str(0, &s.entry, listener);
-                                line_buffer.move_end();
+                            if self.menu_mode {
+                                // menu mode: select previous menu item
+                                if let Some(ref mut index) = self.current_menu_index {
+                                    *index = index.saturating_sub(1);
+                                    // update input box content to selected menu item
+                                    if let Some(menu_index) = self.current_menu_index {
+                                        let new_input = format!("{}", menu_index);
+                                        let prefix_len = self._prefix.len();
+                                        line_buffer.set_pos(prefix_len);
+                                        line_buffer.kill_buffer(listener);
+                                        line_buffer.insert_str(prefix_len, &new_input, listener);
+                                        line_buffer.move_end();
+                                    }
+                                }
+                                true
+                            } else {
+                                // history mode: select previous history item
+                                curr_history_index = curr_history_index.saturating_sub(1);
+                                line_buffer.move_home();
+                                line_buffer.kill_line(listener);
+                                if let Ok(Some(s)) = app_state
+                                    .state
+                                    .commandline_state_ref()
+                                    .history_ref()
+                                    .get(curr_history_index, SearchDirection::Forward)
+                                {
+                                    line_buffer.insert_str(0, &s.entry, listener);
+                                    line_buffer.move_end();
+                                }
+                                true
                             }
-                            true
                         }
                         Key::Down => {
-                            curr_history_index = if curr_history_index
-                                < app_state.state.commandline_state_ref().history_ref().len()
-                            {
-                                curr_history_index + 1
+                            if self.menu_mode {
+                                // menu mode: select next menu item
+                                if let Some(ref mut index) = self.current_menu_index {
+                                    let max_index = self._menu_items.len().saturating_sub(1);
+                                    *index = if *index >= max_index {
+                                        max_index
+                                    } else {
+                                        *index + 1
+                                    };
+                                    // update input box content to selected menu item
+                                    if let Some(menu_index) = self.current_menu_index {
+                                        let new_input = format!("{}", menu_index);
+                                        let prefix_len = self._prefix.len();
+                                        line_buffer.set_pos(prefix_len);
+                                        line_buffer.kill_buffer(listener);
+                                        line_buffer.insert_str(prefix_len, &new_input, listener);
+                                        line_buffer.move_end();
+                                    }
+                                }
+                                true
                             } else {
-                                curr_history_index
-                            };
-                            line_buffer.move_home();
-                            line_buffer.kill_line(listener);
-                            if let Ok(Some(s)) = app_state
-                                .state
-                                .commandline_state_ref()
-                                .history_ref()
-                                .get(curr_history_index, SearchDirection::Reverse)
-                            {
-                                line_buffer.insert_str(0, &s.entry, listener);
-                                line_buffer.move_end();
+                                // history mode: select next history item
+                                curr_history_index = if curr_history_index
+                                    < app_state.state.commandline_state_ref().history_ref().len()
+                                {
+                                    curr_history_index + 1
+                                } else {
+                                    curr_history_index
+                                };
+                                line_buffer.move_home();
+                                line_buffer.kill_line(listener);
+                                if let Ok(Some(s)) = app_state
+                                    .state
+                                    .commandline_state_ref()
+                                    .history_ref()
+                                    .get(curr_history_index, SearchDirection::Reverse)
+                                {
+                                    line_buffer.insert_str(0, &s.entry, listener);
+                                    line_buffer.move_end();
+                                }
+                                true
                             }
-                            true
                         }
                         Key::Esc => {
                             let _ = terminal.hide_cursor();

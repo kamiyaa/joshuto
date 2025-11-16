@@ -116,6 +116,7 @@ where
             .prompt(":")
             .prefix(PROMPT)
             .menu_items(menu_options.iter().map(|s| s.as_str()))
+            .menu_mode(true)
             .get_input(app_state, backend, &mut listener)
     };
     match user_input.as_ref() {
