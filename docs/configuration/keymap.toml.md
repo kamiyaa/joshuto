@@ -83,34 +83,65 @@ f12
 - `quit --output-selected-files`: if `--output-file` argument is set, output the selected files to it
   - exit code 102
 
-The following is a bash snippet on how to integrate with `quit`
+To exit into the current directory you need to add a snippet to your preferred shell's init script to integrate with `quit`.
 
-```bash
-function joshuto() {
-	ID="$$"
-	mkdir -p /tmp/$USER
-	OUTPUT_FILE="/tmp/$USER/joshuto-cwd-$ID"
-	env joshuto --output-file "$OUTPUT_FILE" $@
-	exit_code=$?
+<details open>
+<summary>POSIX-compliant shells (bash, zsh, dash, ...)</summary>
 
-	case "$exit_code" in
-		# regular exit
-		0)
-			;;
-		# output contains current directory
-		101)
-			JOSHUTO_CWD=$(cat "$OUTPUT_FILE")
-			cd "$JOSHUTO_CWD"
-			;;
-		# output selected files
-		102)
-			;;
-		*)
-			echo "Exit code: $exit_code"
-			;;
-	esac
+```shell
+joshuto() {
+    ID="$$"
+    mkdir -p "/tmp/$USER"
+    OUTPUT_FILE="/tmp/$USER/joshuto-cwd-$ID"
+    env joshuto --output-file "$OUTPUT_FILE" "$@"
+    exit_code="$?"
+
+    case "$exit_code" in
+        # regular exit
+        0)
+            ;;
+        # output contains current directory
+        101)
+            JOSHUTO_CWD=$(cat "$OUTPUT_FILE")
+            cd "$JOSHUTO_CWD" || return
+            ;;
+        # output selected files
+        102)
+            ;;
+        *)
+            echo "Exit code: $exit_code"
+            ;;
+    esac
 }
 ```
+</details>
+
+<details>
+<summary>Fish</summary>
+
+```fish
+function joshuto
+    set ID %self
+    set -l output_file /tmp/$USER/joshuto-cwd-$ID
+
+    mkdir -p /tmp/$USER
+    env joshuto --output-file "$output_file" $argv
+    set exit_code $status
+
+    switch $exit_code
+        case 0
+            # Regular exit, do nothing
+        case 101
+            set JOSHUTO_CWD (cat "$output_file")
+            cd "$JOSHUTO_CWD" || return
+        case 102
+            # Output selected files, no action
+        case '*'
+            echo "Exit code: $exit_code"
+    end
+end
+```
+</details>
 
 ### `:`: opens the command prompt
 
