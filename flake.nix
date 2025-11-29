@@ -67,7 +67,7 @@
         devenv.shells.my-shell = {
           languages.rust = {
             enable = true;
-            version = "latest";
+            channel = "stable";
           };
           packages = [
           ];
