@@ -30,6 +30,9 @@ impl AppExecute for Command {
             Self::ParentDirectory => change_directory::parent_directory(app_state),
             Self::PreviousDirectory => change_directory::previous_directory(app_state),
 
+            Self::HistoryNext => history::next(app_state),
+            Self::HistoryPrev => history::prev(app_state),
+
             Self::NewTab { mode, last } => tab_ops::new_tab(app_state, mode, *last),
             Self::CloseTab => tab_ops::close_tab(app_state),
             Self::CommandLine { prefix, suffix } => command_line::read_and_execute(

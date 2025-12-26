@@ -265,6 +265,10 @@ All methods (except `reverse`) support the `--reverse` flag:
 - `cd ~`: go to home directory
 - `cd -`: go to previous directory in history (If it exists)
 
+### `history_next`: go to next dir in navigation history
+
+### `history_prev`: go to previous dir in navigation history
+
 ### `open`: open file or directory
 
 - if joshuto does not know how to open the file format (via extension currently),
