@@ -292,8 +292,16 @@ pub fn process_mouse(
         .split(rect);
 
     match event {
-        MouseEvent::Press(MouseButton::WheelUp, x, _) => {
-            if x < layout_rect[1].x {
+        MouseEvent::Press(MouseButton::WheelUp, x, y) => {
+            if y == 1 {
+                let command = Command::TabSwitch { offset: -1 };
+                if let Err(e) = command.execute(app_state, backend, keymap_t) {
+                    app_state
+                        .state
+                        .message_queue_mut()
+                        .push_error(e.to_string());
+                }
+            } else if x < layout_rect[1].x {
                 let command = Command::ParentCursorMoveUp { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
                     app_state
@@ -319,8 +327,16 @@ pub fn process_mouse(
                 }
             }
         }
-        MouseEvent::Press(MouseButton::WheelDown, x, _) => {
-            if x < layout_rect[1].x {
+        MouseEvent::Press(MouseButton::WheelDown, x, y) => {
+            if y == 1 {
+                let command = Command::TabSwitch { offset: 1 };
+                if let Err(e) = command.execute(app_state, backend, keymap_t) {
+                    app_state
+                        .state
+                        .message_queue_mut()
+                        .push_error(e.to_string());
+                }
+            } else if x < layout_rect[1].x {
                 let command = Command::ParentCursorMoveDown { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
                     app_state
