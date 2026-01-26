@@ -36,5 +36,5 @@ pub trait CommandComment {
 }
 
 pub trait CommandCompletion {
-    fn completion_kind(cmd: &str) -> Option<CompletionKind>;
+    fn completion_kind<'a>(cmd: &'a str) -> Option<CompletionKind<'a>>;
 }

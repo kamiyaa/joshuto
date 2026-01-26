@@ -5,7 +5,7 @@ use crate::types::completion_kind::CompletionKind;
 use super::Command;
 
 impl CommandCompletion for Command {
-    fn completion_kind(cmd: &str) -> Option<CompletionKind> {
+    fn completion_kind<'a>(cmd: &'a str) -> Option<CompletionKind<'a>> {
         Some(match cmd {
             CMD_CHANGE_DIRECTORY => CompletionKind::Dir(None),
             CMD_DELETE_FILES => CompletionKind::Custom(vec![

@@ -67,7 +67,7 @@ impl Widget for TuiHSplitView<'_> {
         if let Some(curr_tab) = tab_state.tab_ref(&tab_id) {
             let curr_list = curr_tab.curr_list_ref();
 
-            let layout_rect = if tab_index % 2 == 0 {
+            let layout_rect = if tab_index.is_multiple_of(2) {
                 layout_rect[0]
             } else {
                 layout_rect[1]
@@ -121,7 +121,7 @@ impl Widget for TuiHSplitView<'_> {
             TuiTopBar::new(self.app_state).render(rect, buf);
         }
 
-        let other_tab_index = if tab_index % 2 == 0 {
+        let other_tab_index = if tab_index.is_multiple_of(2) {
             tab_index + 1
         } else {
             tab_index - 1
@@ -132,7 +132,7 @@ impl Widget for TuiHSplitView<'_> {
             if let Some(curr_tab) = tab_state.tab_ref(&other_tab_id) {
                 let curr_list = curr_tab.curr_list_ref();
 
-                let layout_rect = if other_tab_index % 2 == 0 {
+                let layout_rect = if other_tab_index.is_multiple_of(2) {
                     layout_rect[0]
                 } else {
                     layout_rect[1]

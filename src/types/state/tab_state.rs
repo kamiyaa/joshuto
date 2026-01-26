@@ -69,10 +69,10 @@ impl TabState {
         tab
     }
 
-    pub fn iter(&self) -> Iter<Uuid, JoshutoTab> {
+    pub fn iter<'a>(&'a self) -> Iter<'a, Uuid, JoshutoTab> {
         self.tabs.iter()
     }
-    pub fn iter_mut(&mut self) -> IterMut<Uuid, JoshutoTab> {
+    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, Uuid, JoshutoTab> {
         self.tabs.iter_mut()
     }
 }
