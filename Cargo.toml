@@ -15,7 +15,7 @@ lto = true
 strip = true
 
 [dependencies]
-allmytoes = "^0.4"
+allmytoes = "^0.5"
 alphanumeric-sort = "^1"
 ansi-to-tui = { version = "^3.1.0", optional = true }
 bitflags = { version = "^2", features = ["serde"] }
