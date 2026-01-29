@@ -1,12 +1,13 @@
 use std::io::{self, stdout, Write};
 
 use ratatui::backend::TermionBackend;
+use ratatui::termion::input::MouseTerminal;
+use ratatui::termion::raw::{IntoRawMode, RawTerminal};
+use ratatui::termion::screen::AlternateScreen;
+use ratatui::termion::screen::IntoAlternateScreen;
 use ratatui::widgets::Widget;
-use termion::raw::{IntoRawMode, RawTerminal};
-use termion::screen::AlternateScreen;
-use termion::screen::IntoAlternateScreen;
 
-use termion::input::MouseTerminal;
+use crate::utils::format::clear_screen;
 
 pub enum Screen {
     WithMouse(MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>),
@@ -53,9 +54,9 @@ pub struct AppBackend {
 
 impl AppBackend {
     pub fn new(mouse_support: bool) -> io::Result<Self> {
-        let mut alt_screen = Screen::new(mouse_support)?;
+        let alt_screen = Screen::new(mouse_support)?;
         // clears the screen of artifacts
-        write!(alt_screen, "{}", termion::clear::All)?;
+        clear_screen();
 
         let backend = TermionBackend::new(alt_screen);
         let mut terminal = ratatui::Terminal::new(backend)?;
@@ -84,11 +85,13 @@ impl AppBackend {
         self.terminal.as_mut().unwrap()
     }
 
+    // For when we need to launch a terminal application
     pub fn terminal_drop(&mut self) {
         let _ = self.terminal.take();
         let _ = stdout().flush();
     }
 
+    // For when we need to restore joshuto
     pub fn terminal_restore(&mut self) -> io::Result<()> {
         let mut new_backend = Self::new(self.mouse_support)?;
         std::mem::swap(&mut self.terminal, &mut new_backend.terminal);

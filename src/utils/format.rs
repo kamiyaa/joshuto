@@ -26,3 +26,7 @@ pub fn time_to_string(time: time::SystemTime) -> String {
     let datetime: chrono::DateTime<chrono::offset::Local> = time.into();
     datetime.format(TIME_FORMATTING).to_string()
 }
+
+pub fn clear_screen() {
+    println!("{}", ratatui::termion::clear::All);
+}

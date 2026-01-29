@@ -21,7 +21,7 @@ use crate::ui::AppBackend;
 use uuid::Uuid;
 
 use ratatui::layout::Rect;
-use termion::event::Event;
+use ratatui::termion::event::Event;
 
 pub fn run_loop(
     backend: &mut ui::AppBackend,
@@ -122,11 +122,11 @@ fn process_input(
 ) {
     // handle the event
     match event {
-        AppEvent::Termion(Event::Mouse(event)) => {
+        AppEvent::TerminalEvent(Event::Mouse(event)) => {
             process_event::process_mouse(app_state, backend, keymap_t, event);
             preview_default::load_previews(app_state, backend);
         }
-        AppEvent::Termion(key) => {
+        AppEvent::TerminalEvent(key) => {
             if app_state
                 .state
                 .message_queue_ref()

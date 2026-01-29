@@ -4,21 +4,21 @@ use std::path;
 use std::sync::mpsc;
 use std::thread;
 
+use ratatui::termion::event::Event;
 use ratatui_image::protocol::Protocol;
-use signal_hook::consts::signal;
-use signal_hook::iterator::exfiltrator::SignalOnly;
-use signal_hook::iterator::SignalsInfo;
-
-use termion::event::Event;
-use termion::input::TermRead;
 
 use uuid::Uuid;
 
 use crate::error::AppResult;
 use crate::fs::JoshutoDirList;
 use crate::preview::preview_file::FilePreview;
+use crate::types::event::input_listener::TerminalInputListener;
+use crate::types::event::signal_listener::SignalListener;
 use crate::types::io::IoTaskProgressMessage;
 use crate::types::io::IoTaskStat;
+
+pub type AppEventSender = mpsc::Sender<AppEvent>;
+pub type AppEventReceiver = mpsc::Receiver<AppEvent>;
 
 pub enum PreviewData {
     Script(Box<FilePreview>),
@@ -37,7 +37,7 @@ impl Debug for PreviewData {
 #[derive(Debug)]
 pub enum AppEvent {
     // User input events
-    Termion(Event),
+    TerminalEvent(Event),
 
     // background IO worker events
     NewIoTask,
@@ -66,13 +66,13 @@ pub enum AppEvent {
 
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
-pub struct Events {
-    pub event_tx: mpsc::Sender<AppEvent>,
-    event_rx: mpsc::Receiver<AppEvent>,
+pub struct AppEventListener {
+    pub event_tx: AppEventSender,
+    event_rx: AppEventReceiver,
     pub input_tx: mpsc::Sender<()>,
 }
 
-impl Events {
+impl AppEventListener {
     pub fn new() -> Self {
         Self::default()
     }
@@ -94,7 +94,7 @@ impl Events {
     }
 }
 
-impl std::default::Default for Events {
+impl std::default::Default for AppEventListener {
     fn default() -> Self {
         let (input_tx, input_rx) = mpsc::channel();
         let (event_tx, event_rx) = mpsc::channel();
@@ -103,33 +103,20 @@ impl std::default::Default for Events {
         let _ = input_tx.send(());
 
         // signal thread
-        let event_tx2 = event_tx.clone();
+        let signal_listener = SignalListener::new(event_tx.clone());
         let _ = thread::spawn(move || {
-            let sigs = vec![signal::SIGWINCH];
-            let mut signals = SignalsInfo::<SignalOnly>::new(sigs).unwrap();
-            for signal in &mut signals {
-                if let Err(e) = event_tx2.send(AppEvent::Signal(signal)) {
-                    eprintln!("Signal thread send err: {:#?}", e);
-                    return;
-                }
-            }
+            signal_listener.run();
         });
 
+        // edge case that starts off the input thread
+        let _ = input_tx.send(());
         // input thread
-        let event_tx2 = event_tx.clone();
+        let input_listener = TerminalInputListener::new(event_tx.clone(), input_rx);
         let _ = thread::spawn(move || {
-            let stdin = io::stdin();
-            let mut events = stdin.events();
-
-            loop {
-                let _ = input_rx.recv();
-                if let Some(Ok(event)) = events.next() {
-                    let _ = event_tx2.send(AppEvent::Termion(event));
-                }
-            }
+            input_listener.run();
         });
 
-        Events {
+        AppEventListener {
             event_tx,
             event_rx,
             input_tx,

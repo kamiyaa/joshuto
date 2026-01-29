@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 
-use termion::event::{Event, Key};
+use ratatui::termion::event::{Event, Key};
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Rect};

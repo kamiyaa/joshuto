@@ -7,7 +7,7 @@ use ratatui_image::picker::Picker;
 
 use crate::commands::quit::QuitAction;
 use crate::config::app::AppConfig;
-use crate::types::event::{AppEvent, Events};
+use crate::types::event::{AppEvent, AppEventListener};
 use crate::types::option::preview::PreviewProtocol;
 use crate::types::state::{
     CommandLineState, MessageQueue, PreviewState, TabState, UiState, WorkerState,
@@ -21,7 +21,7 @@ pub struct AppState {
     pub config: AppConfig,
     pub quit: QuitAction,
     // event loop querying
-    pub events: Events,
+    pub events: AppEventListener,
     // args from the command line
     pub args: Args,
     pub state: FileManagerState,
@@ -51,7 +51,7 @@ impl AppState {
             None
         };
 
-        let events = Events::new();
+        let events = AppEventListener::new();
         let event_tx = events.event_tx.clone();
 
         let commandline_state = CommandLineState::new();

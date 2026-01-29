@@ -10,6 +10,7 @@ use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::state::remove_external_preview;
 use crate::types::state::AppState;
 use crate::ui::AppBackend;
+use crate::utils::format::clear_screen;
 use crate::utils::process::wait_for_enter;
 
 use super::reload;
@@ -95,7 +96,7 @@ pub fn _bulk_rename(app_state: &mut AppState) -> AppResult {
         ));
     }
 
-    println!("{}", termion::clear::All);
+    clear_screen();
     for (p, q) in entries.iter().zip(paths_renamed.iter()) {
         println!("{:?} -> {:?}", p.file_name(), q);
     }

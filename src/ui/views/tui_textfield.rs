@@ -10,8 +10,8 @@ use rustyline::{At, Word};
 
 use lazy_static::lazy_static;
 use ratatui::layout::{Position, Rect};
+use ratatui::termion::event::{Event, Key};
 use ratatui::widgets::Clear;
-use termion::event::{Event, Key};
 use unicode_width::UnicodeWidthStr;
 
 use crate::constants::command_name::COMMANDS;
@@ -232,7 +232,7 @@ impl<'a> TuiTextField<'a> {
                 Err(_) => continue,
             };
             match event {
-                AppEvent::Termion(Event::Key(key)) => {
+                AppEvent::TerminalEvent(Event::Key(key)) => {
                     let dirty = match key {
                         Key::Backspace => {
                             if line_buffer.is_empty() {
@@ -363,7 +363,7 @@ impl<'a> TuiTextField<'a> {
                     }
                     app_state.flush_event();
                 }
-                AppEvent::Termion(_) => {
+                AppEvent::TerminalEvent(_) => {
                     app_state.flush_event();
                 }
                 event => process_event::process_noninteractive(event, app_state),

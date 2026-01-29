@@ -4,8 +4,8 @@ use std::path;
 use notify;
 use ratatui::layout::Rect;
 use ratatui::layout::{Constraint, Direction, Layout};
+use ratatui::termion::event::{Event, Key, MouseButton, MouseEvent};
 use signal_hook::consts::signal;
-use termion::event::{Event, Key, MouseButton, MouseEvent};
 use uuid::Uuid;
 
 use crate::commands::tab_ops;
@@ -46,7 +46,7 @@ pub fn poll_event_until_simple_keybind<'a>(
         };
 
         match event {
-            AppEvent::Termion(event) => {
+            AppEvent::TerminalEvent(event) => {
                 match event {
                     Event::Key(Key::Esc) => return None,
                     event => match keymap.get(&event) {

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use termion::event::Event;
+use ratatui::termion::event::Event;
 
 use crate::types::command::Command;
 

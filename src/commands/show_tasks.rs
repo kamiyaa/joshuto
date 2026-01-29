@@ -25,7 +25,7 @@ pub fn show_tasks(
 
         if let Ok(event) = app_state.poll_event() {
             match event {
-                AppEvent::Termion(key) => {
+                AppEvent::TerminalEvent(key) => {
                     match keymap_t.task_view.get(&key) {
                         None => {
                             app_state

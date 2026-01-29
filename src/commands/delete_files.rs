@@ -1,7 +1,7 @@
 use std::path;
 use std::sync::mpsc;
 
-use termion::event::Key;
+use ratatui::termion::event::Key;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::run::process_io::process_io_task;

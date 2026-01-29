@@ -2,7 +2,7 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::convert::From;
 use std::str::FromStr;
 
-use termion::event::Event;
+use ratatui::termion::event::Event;
 
 use crate::config::keymap_raw::{AppKeyMappingRaw, CommandKeymapRaw};
 use crate::constants::config::KEYMAP_CONFIG;

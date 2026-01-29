@@ -1,4 +1,4 @@
-use termion::event::{Event, Key, MouseEvent};
+use ratatui::termion::event::{Event, Key, MouseEvent};
 
 pub trait ToString {
     fn to_string(&self) -> String;

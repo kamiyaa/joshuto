@@ -1,4 +1,4 @@
-use termion::event::{Event, Key, MouseButton, MouseEvent};
+use ratatui::termion::event::{Event, Key, MouseButton, MouseEvent};
 
 pub fn str_to_event(s: &str) -> Option<Event> {
     if let Some(k) = str_to_key(s) {

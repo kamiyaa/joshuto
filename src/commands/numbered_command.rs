@@ -1,4 +1,4 @@
-use termion::event::{Event, Key};
+use ratatui::termion::event::{Event, Key};
 
 use crate::commands::cursor_move;
 use crate::error::{AppError, AppErrorKind, AppResult};
@@ -45,7 +45,7 @@ pub fn numbered_command(
         };
 
         match event {
-            AppEvent::Termion(event) => {
+            AppEvent::TerminalEvent(event) => {
                 match event {
                     Event::Key(Key::Esc) => return Ok(()),
                     Event::Key(Key::Char('g')) => {

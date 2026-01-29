@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use termion::event::{Event, Key};
+use ratatui::termion::event::{Event, Key};
 
 use crate::error::AppResult;
 use crate::run::process_event;
@@ -41,7 +41,7 @@ pub fn help_loop(
         };
 
         match event {
-            AppEvent::Termion(event) => {
+            AppEvent::TerminalEvent(event) => {
                 if search_query.is_empty() {
                     match event {
                         Event::Key(Key::Esc) => break,

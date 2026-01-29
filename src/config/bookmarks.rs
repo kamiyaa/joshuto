@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
+use ratatui::termion::event::Event;
 use serde::{Deserialize, Serialize};
-use termion::event::Event;
 
 use crate::{traits::config::TomlConfigFile, types::config_type::ConfigType, utils::keyparse};
 

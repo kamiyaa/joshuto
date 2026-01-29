@@ -3,8 +3,8 @@ use std::io::Write;
 use std::path;
 
 use ratatui::layout::Rect;
+use ratatui::termion::event::Event;
 use ratatui::widgets::Clear;
-use termion::event::Event;
 
 use crate::config::bookmarks::{BookmarkRaw, BookmarksRaw};
 use crate::error::AppResult;
@@ -132,7 +132,7 @@ fn poll_for_bookmark_key(app_state: &mut AppState, backend: &mut AppBackend) -> 
 
         if let Ok(event) = app_state.poll_event() {
             match event {
-                AppEvent::Termion(key) => return Some(key),
+                AppEvent::TerminalEvent(key) => return Some(key),
                 event => process_event::process_noninteractive(event, app_state),
             };
         }
