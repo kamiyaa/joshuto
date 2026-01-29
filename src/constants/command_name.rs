@@ -20,6 +20,8 @@ cmd_constants![
     (CMD_CHANGE_DIRECTORY, "cd"),
     (CMD_PARENT_DIRECTORY, "cd .."),
     (CMD_PREVIOUS_DIRECTORY, "cd -"),
+    (CMD_HISTORY_NEXT, "history_next"),
+    (CMD_HISTORY_PREV, "history_prev"),
     (CMD_NEW_TAB, "new_tab"),
     (CMD_CLOSE_TAB, "close_tab"),
     (CMD_CUT_FILES, "cut_files"),

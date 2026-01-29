@@ -34,6 +34,9 @@ pub enum Command {
     ParentDirectory,
     PreviousDirectory,
 
+    HistoryNext,
+    HistoryPrev,
+
     CommandLine {
         prefix: String,
         suffix: String,

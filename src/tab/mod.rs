@@ -1,10 +1,13 @@
 mod homepage;
+mod nav_history;
 mod new_tab_mode;
 mod options;
 
 pub use homepage::*;
 pub use new_tab_mode::*;
 pub use options::*;
+
+use nav_history::NavigationHistory;
 
 use std::collections::HashMap;
 use std::path;
@@ -22,6 +25,7 @@ pub struct JoshutoTab {
     pub history: JoshutoHistory,
     pub history_metadata: HistoryMetadata,
     pub options: TabDisplayOption,
+    pub navigation_history: NavigationHistory,
 }
 
 impl JoshutoTab {
@@ -30,11 +34,13 @@ impl JoshutoTab {
         history: JoshutoHistory,
         tab_options: TabDisplayOption,
     ) -> std::io::Result<Self> {
+        let navigation_history = NavigationHistory::from(&cwd);
         let new_tab = Self {
             cwd,
             previous_dir: None,
             history,
             history_metadata: HashMap::new(),
+            navigation_history,
             options: tab_options,
         };
 
@@ -52,9 +58,13 @@ impl JoshutoTab {
     pub fn get_cwd(&self) -> &path::Path {
         self.cwd.as_path()
     }
-    pub fn set_cwd(&mut self, cwd: &path::Path) {
+    pub fn set_cwd(&mut self, cwd: &path::Path, history_update: bool) {
         self.previous_dir = Some(self.cwd.to_path_buf());
         self.cwd = cwd.to_path_buf();
+
+        if history_update {
+            self.navigation_history.push(cwd);
+        }
 
         // OSC 7: Escape sequence to set the working directory
         // print!("\x1b]7;file://{}{}\x1b\\", HOSTNAME.as_str(), cwd.display());
@@ -76,6 +86,14 @@ impl JoshutoTab {
     }
     pub fn history_metadata_mut(&mut self) -> &mut HistoryMetadata {
         &mut self.history_metadata
+    }
+
+    #[allow(dead_code)]
+    pub fn navigation_history_ref(&self) -> &NavigationHistory {
+        &self.navigation_history
+    }
+    pub fn navigation_history_mut(&mut self) -> &mut NavigationHistory {
+        &mut self.navigation_history
     }
 
     pub fn curr_list_ref(&self) -> Option<&JoshutoDirList> {

@@ -14,6 +14,7 @@ pub mod filter_regex;
 pub mod filter_string;
 pub mod flat;
 pub mod fzf;
+pub mod history;
 pub mod line_nums;
 pub mod linemode;
 pub mod new_directory;
