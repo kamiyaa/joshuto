@@ -99,9 +99,6 @@ impl std::default::Default for AppEventListener {
         let (input_tx, input_rx) = mpsc::channel();
         let (event_tx, event_rx) = mpsc::channel();
 
-        // edge case that starts off the input thread
-        let _ = input_tx.send(());
-
         // signal thread
         let signal_listener = SignalListener::new(event_tx.clone());
         let _ = thread::spawn(move || {
