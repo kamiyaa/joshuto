@@ -1,4 +1,4 @@
-use std::path;
+use std::path::Path;
 
 use crate::commands::{reload, zoxide};
 use crate::error::AppResult;
@@ -7,9 +7,13 @@ use crate::types::state::AppState;
 use crate::utils::cwd;
 
 // ChangeDirectory command
-pub fn cd(path: &path::Path, app_state: &mut AppState) -> std::io::Result<()> {
+pub fn cd(path: &Path, app_state: &mut AppState, history_update: bool) -> std::io::Result<()> {
     cwd::set_current_dir(path)?;
-    app_state.state.tab_state_mut().curr_tab_mut().set_cwd(path);
+    app_state
+        .state
+        .tab_state_mut()
+        .curr_tab_mut()
+        .set_cwd(path, history_update);
     if app_state.config.zoxide_update {
         debug_assert!(path.is_absolute());
         zoxide::zoxide_add(path.to_str().expect("cannot convert path to string"))?;
@@ -17,7 +21,7 @@ pub fn cd(path: &path::Path, app_state: &mut AppState) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn change_directory(app_state: &mut AppState, mut path: &path::Path) -> AppResult {
+pub fn change_directory(app_state: &mut AppState, mut path: &Path) -> AppResult {
     let new_cwd = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -31,7 +35,7 @@ pub fn change_directory(app_state: &mut AppState, mut path: &path::Path) -> AppR
         new_cwd
     };
 
-    cd(new_cwd.as_path(), app_state)?;
+    cd(new_cwd.as_path(), app_state, true)?;
     let dirlists = generate_entries_to_root(
         new_cwd.as_path(),
         app_state.state.tab_state_ref().curr_tab_ref().history_ref(),
@@ -58,12 +62,7 @@ pub fn parent_directory(app_state: &mut AppState) -> AppResult {
         .parent()
         .map(|p| p.to_path_buf())
     {
-        cwd::set_current_dir(&parent)?;
-        app_state
-            .state
-            .tab_state_mut()
-            .curr_tab_mut()
-            .set_cwd(parent.as_path());
+        cd(&parent, app_state, true)?;
         reload::soft_reload_curr_tab(app_state)?;
     }
     Ok(())
@@ -78,12 +77,7 @@ pub fn previous_directory(app_state: &mut AppState) -> AppResult {
         .previous_dir()
     {
         let path = path.to_path_buf();
-        cwd::set_current_dir(&path)?;
-        app_state
-            .state
-            .tab_state_mut()
-            .curr_tab_mut()
-            .set_cwd(path.as_path());
+        cd(&path, app_state, true)?;
         reload::soft_reload_curr_tab(app_state)?;
     }
     Ok(())

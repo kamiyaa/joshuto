@@ -51,6 +51,9 @@ impl std::str::FromStr for Command {
 
         simple_command_conversion_case!(command, CMD_HELP, Self::Help);
 
+        simple_command_conversion_case!(command, CMD_HISTORY_NEXT, Self::HistoryNext);
+        simple_command_conversion_case!(command, CMD_HISTORY_PREV, Self::HistoryPrev);
+
         simple_command_conversion_case!(command, CMD_BOOKMARK_ADD, Self::BookmarkAdd);
         simple_command_conversion_case!(
             command,
