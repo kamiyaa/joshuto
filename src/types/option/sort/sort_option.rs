@@ -1,6 +1,4 @@
 use std::cmp;
-use std::fs;
-use std::time;
 
 use serde::{Deserialize, Serialize};
 
@@ -105,18 +103,7 @@ impl From<SortOptionRaw> for SortOption {
 }
 
 fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
-    fn compare(
-        file1: &JoshutoDirEntry,
-        file2: &JoshutoDirEntry,
-    ) -> Result<cmp::Ordering, std::io::Error> {
-        let f1_meta: fs::Metadata = std::fs::metadata(file1.file_path())?;
-        let f2_meta: fs::Metadata = std::fs::metadata(file2.file_path())?;
-
-        let f1_mtime: time::SystemTime = f1_meta.modified()?;
-        let f2_mtime: time::SystemTime = f2_meta.modified()?;
-        Ok(f1_mtime.cmp(&f2_mtime))
-    }
-    compare(file1, file2).unwrap_or(cmp::Ordering::Equal)
+    file1.metadata.modified.cmp(&file2.metadata.modified)
 }
 
 fn size_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
