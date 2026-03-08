@@ -20,6 +20,9 @@ impl AppCommand for Command {
             Self::ParentDirectory => CMD_PARENT_DIRECTORY,
             Self::PreviousDirectory => CMD_PREVIOUS_DIRECTORY,
 
+            Self::HistoryNext => CMD_HISTORY_NEXT,
+            Self::HistoryPrev => CMD_HISTORY_PREV,
+
             Self::NewTab { .. } => CMD_NEW_TAB,
             Self::CloseTab => CMD_CLOSE_TAB,
             Self::CommandLine { .. } => CMD_COMMAND_LINE,
