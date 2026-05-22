@@ -3,6 +3,7 @@ pub mod bulk_rename;
 pub mod case_sensitivity;
 pub mod change_directory;
 pub mod command_line;
+pub mod cumulative_size;
 pub mod cursor_move;
 pub mod custom_search;
 pub mod delete_files;

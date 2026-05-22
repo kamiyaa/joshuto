@@ -79,6 +79,7 @@ keymap = [
 
   { keys = ["delete"], commands = ["delete_files"] },
   { keys = ["d", "D"], commands = ["delete_files"] },
+  { keys = ["d", "c"], commands = ["calculate_cumulative_size"] },
 
   { keys = ["p", "p"], commands = ["paste_files"] },
   { keys = ["p", "o"], commands = ["paste_files --overwrite=true"] },

@@ -124,6 +124,12 @@ impl std::str::FromStr for Command {
 
         simple_command_conversion_case!(command, CMD_SIGNAL_SUSPEND, Self::SignalSuspend);
 
+        simple_command_conversion_case!(
+            command,
+            CMD_CALCULATE_CUMULATIVE_SIZE,
+            Self::CalculateCumulativeSize
+        );
+
         if command == CMD_QUIT {
             match arg {
                 "--force" => Ok(Self::Quit(QuitAction::Force)),

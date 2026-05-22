@@ -213,4 +213,6 @@ pub enum Command {
 
     BookmarkAdd,
     BookmarkChangeDirectory,
+
+    CalculateCumulativeSize,
 }

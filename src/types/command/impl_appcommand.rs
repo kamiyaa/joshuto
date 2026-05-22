@@ -126,6 +126,8 @@ impl AppCommand for Command {
 
             Self::BookmarkAdd => CMD_BOOKMARK_ADD,
             Self::BookmarkChangeDirectory => CMD_BOOKMARK_CHANGE_DIRECTORY,
+
+            Self::CalculateCumulativeSize => CMD_CALCULATE_CUMULATIVE_SIZE,
         }
     }
 }

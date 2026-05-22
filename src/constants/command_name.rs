@@ -101,4 +101,5 @@ cmd_constants![
     (CMD_CUSTOM_SEARCH, "custom_search"),
     (CMD_CUSTOM_SEARCH_INTERACTIVE, "custom_search_interactive"),
     (CMD_SIGNAL_SUSPEND, "suspend"),
+    (CMD_CALCULATE_CUMULATIVE_SIZE, "calculate_cumulative_size"),
 ];

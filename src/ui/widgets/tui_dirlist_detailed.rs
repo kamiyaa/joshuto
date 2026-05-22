@@ -123,6 +123,9 @@ impl Widget for TuiDirListDetailed<'_> {
 }
 
 fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
+    if let Some(size) = entry.metadata.cumulative_size() {
+        return format::file_size_to_string(size);
+    }
     match entry.metadata.file_type() {
         FileType::Directory => entry
             .metadata

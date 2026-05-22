@@ -47,6 +47,7 @@ pub enum LinkType {
 pub struct JoshutoMetadata {
     pub len: u64,
     pub directory_size: Option<usize>,
+    pub cumulative_size: Option<u64>,
     pub modified: time::SystemTime,
     pub accessed: time::SystemTime,
     pub mode: Mode,
@@ -75,6 +76,7 @@ impl JoshutoMetadata {
         };
 
         let directory_size = None;
+        let cumulative_size = None;
         let (file_type, mode) = match metadata.as_ref() {
             Ok(metadata) => {
                 let metadata_mode = metadata.mode();
@@ -121,6 +123,7 @@ impl JoshutoMetadata {
         Ok(Self {
             len,
             directory_size,
+            cumulative_size,
             modified,
             accessed,
             mode,
@@ -143,6 +146,14 @@ impl JoshutoMetadata {
 
     pub fn update_directory_size(&mut self, size: usize) {
         self.directory_size = Some(size);
+    }
+
+    pub fn cumulative_size(&self) -> Option<u64> {
+        self.cumulative_size
+    }
+
+    pub fn update_cumulative_size(&mut self, size: u64) {
+        self.cumulative_size = Some(size);
     }
 
     pub fn modified(&self) -> time::SystemTime {
