@@ -107,7 +107,8 @@ fn mtime_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering
 }
 
 fn size_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
-    file1.metadata.len().cmp(&file2.metadata.len())
+    let size = |e: &JoshutoDirEntry| e.metadata.cumulative_size().unwrap_or(e.metadata.len());
+    size(file1).cmp(&size(file2))
 }
 
 fn ext_sort(file1: &JoshutoDirEntry, file2: &JoshutoDirEntry) -> cmp::Ordering {
