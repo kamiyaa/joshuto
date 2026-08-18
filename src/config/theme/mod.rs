@@ -31,6 +31,7 @@ pub struct AppTheme {
     pub link: AppStyle,
     pub link_invalid: AppStyle,
     pub socket: AppStyle,
+    pub border: AppStyle,
     pub ext: HashMap<String, AppStyle>,
     pub lscolors: Option<LsColors>,
     pub preview_background: Color,
@@ -70,6 +71,7 @@ impl From<AppThemeRaw> for AppTheme {
         let link = raw.link.to_style_theme();
         let link_invalid = raw.link_invalid.to_style_theme();
         let socket = raw.socket.to_style_theme();
+        let border = raw.border.to_style_theme();
         let ext: HashMap<String, AppStyle> = raw
             .ext
             .iter()
@@ -96,10 +98,37 @@ impl From<AppThemeRaw> for AppTheme {
             link,
             link_invalid,
             socket,
+            border,
             ext,
             tabs: TabTheme::from(tabs),
             lscolors,
             preview_background,
         }
+    }
+}
+
+#[cfg(test)]
+mod test_border_theme {
+    use ratatui::style::Color;
+
+    use super::{AppTheme, AppThemeRaw};
+
+    fn theme_from_str(s: &str) -> AppTheme {
+        let raw: AppThemeRaw = toml::from_str(s).unwrap();
+        AppTheme::from(raw)
+    }
+
+    #[test]
+    fn border_style_defaults_to_reset_when_unset() {
+        let theme = theme_from_str("");
+        assert_eq!(theme.border.fg, Color::Reset);
+        assert_eq!(theme.border.bg, Color::Reset);
+    }
+
+    #[test]
+    fn border_style_reads_configured_color() {
+        let theme = theme_from_str("[border]\nfg = \"red\"\nbg = \"black\"\n");
+        assert_eq!(theme.border.fg, Color::Red);
+        assert_eq!(theme.border.bg, Color::Black);
     }
 }

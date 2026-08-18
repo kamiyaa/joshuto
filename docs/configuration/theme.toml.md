@@ -52,6 +52,14 @@ values and short explanations as comment in
 In general, `theme.toml` allows to specify the style of a few UI "widgets",
 and the file entries in the file lists.
 
+The borders drawn between and around the file list panes can be styled with the
+`border` item:
+```toml
+[border]
+fg = "dark_gray"
+```
+When omitted, the borders use the terminal's default foreground color.
+
 The file entries can be styled by their basic system file type and by their extension.
 The extension-specific style overrides the basic style.
 

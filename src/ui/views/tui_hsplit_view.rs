@@ -6,6 +6,7 @@ use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 
 use crate::types::state::AppState;
 use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTopBar};
+use crate::THEME_T;
 
 pub struct TuiHSplitView<'a> {
     pub app_state: &'a AppState,
@@ -37,7 +38,11 @@ impl Widget for TuiHSplitView<'_> {
 
             let layout = calculate_layout_with_borders(area, constraints);
 
-            let block = Block::default().borders(Borders::ALL);
+            let border_style = THEME_T.border.as_style();
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .border_style(border_style);
             let inner = block.inner(area);
             block.render(area, buf);
 
@@ -46,10 +51,14 @@ impl Widget for TuiHSplitView<'_> {
                 .constraints(constraints.as_ref())
                 .split(inner);
 
-            let block = Block::default().borders(Borders::RIGHT);
+            let block = Block::default()
+                .borders(Borders::RIGHT)
+                .border_style(border_style);
             block.render(layout_rect[0], buf);
 
-            let block = Block::default().borders(Borders::LEFT);
+            let block = Block::default()
+                .borders(Borders::LEFT)
+                .border_style(border_style);
             block.render(layout_rect[1], buf);
 
             layout

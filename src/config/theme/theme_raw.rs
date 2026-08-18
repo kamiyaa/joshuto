@@ -25,6 +25,8 @@ pub struct AppThemeRaw {
     #[serde(default)]
     pub socket: AppStyleRaw,
     #[serde(default)]
+    pub border: AppStyleRaw,
+    #[serde(default)]
     pub ext: HashMap<String, AppStyleRaw>,
     #[serde(default)]
     pub lscolors_enabled: bool,

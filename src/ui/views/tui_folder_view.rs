@@ -16,6 +16,7 @@ use crate::ui::widgets::{
     TuiTopBar,
 };
 use crate::ui::PreviewArea;
+use crate::THEME_T;
 
 struct TuiFolderViewBorders<'a> {
     pub constraints: &'a [Constraint; 3],
@@ -29,7 +30,11 @@ impl<'a> TuiFolderViewBorders<'a> {
 
 impl Widget for TuiFolderViewBorders<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let block = Block::default().borders(Borders::ALL);
+        let border_style = THEME_T.border.as_style();
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style);
         let inner = block.inner(area);
         block.render(area, buf);
 
@@ -42,11 +47,15 @@ impl Widget for TuiFolderViewBorders<'_> {
         match self.constraints[0] {
             Constraint::Ratio(0, _) => {}
             _ => {
-                let block = Block::default().borders(Borders::RIGHT);
+                let block = Block::default()
+                    .borders(Borders::RIGHT)
+                    .border_style(border_style);
                 block.render(layout_rect[0], buf);
             }
         }
-        let block = Block::default().borders(Borders::LEFT);
+        let block = Block::default()
+            .borders(Borders::LEFT)
+            .border_style(border_style);
         block.render(layout_rect[2], buf);
 
         let top = area.top();
@@ -254,19 +263,25 @@ struct Intersections {
 
 impl Intersections {
     fn render_left(&self, buf: &mut Buffer) {
+        let border_style = THEME_T.border.as_style();
         if let Some(cell) = buf.cell_mut(Position::new(self.left, self.top)) {
             *cell = Cell::new(HORIZONTAL_DOWN);
+            cell.set_style(border_style);
         }
         if let Some(cell) = buf.cell_mut(Position::new(self.left, self.bottom)) {
             *cell = Cell::new(HORIZONTAL_UP);
+            cell.set_style(border_style);
         }
     }
     fn render_right(&self, buf: &mut Buffer) {
+        let border_style = THEME_T.border.as_style();
         if let Some(cell) = buf.cell_mut(Position::new(self.right, self.top)) {
             *cell = Cell::new(HORIZONTAL_DOWN);
+            cell.set_style(border_style);
         }
         if let Some(cell) = buf.cell_mut(Position::new(self.right, self.bottom)) {
             *cell = Cell::new(HORIZONTAL_UP);
+            cell.set_style(border_style);
         }
     }
 }
