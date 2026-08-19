@@ -1,4 +1,5 @@
 use serde::{Deserialize, Deserializer};
+use std::path;
 
 use crate::types::option::line_mode::{LineMode, LineModeArgs};
 
@@ -16,6 +17,10 @@ pub const fn default_true() -> bool {
 
 pub const fn default_scroll_offset() -> usize {
     4
+}
+
+pub fn default_shell() -> path::PathBuf {
+    path::PathBuf::from("/bin/sh")
 }
 
 pub fn deserialize_line_mode<'de, D>(deserializer: D) -> Result<LineMode, D::Error>

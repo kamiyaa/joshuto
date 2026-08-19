@@ -8,6 +8,7 @@ xdg_open = false
 xdg_open_fork = false
 case_insensitive_ext = false
 zoxide_update = false
+#shell = "bash"
 
 custom_commands = []
 

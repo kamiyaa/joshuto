@@ -39,6 +39,14 @@ max_preview_size = "2 MB"
 # Update the zoxide database with every navigation type instead of only with the z command
 zoxide_update = false
 
+# Set the preferred shell to use when running the shell command. Can be an Executable
+# in $PATH or an absolute path to the executable.
+# E.g.:
+# - "bash"
+# - "/bin/sh"
+# - "/usr/bin/zsh"
+shell = "bash"
+
 # Define custom commands (using shell) with parameters like %text, %s etc.
 custom_commands = [
    { name = "rgfzf", command = "/home/<USER>/.config/joshuto/rgfzf '%text' %s" },
