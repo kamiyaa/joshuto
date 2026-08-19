@@ -4,6 +4,7 @@ use crate::types::state::{AppState, MatchState};
 use super::cursor_move;
 use super::search;
 
+/// Implements `search_regex`: moves the cursor to the next entry matching a regex pattern.
 pub fn search_regex(app_state: &mut AppState, pattern: &str) -> AppResult {
     let case_sensitivity = app_state.config.search_options.regex_case_sensitivity;
 

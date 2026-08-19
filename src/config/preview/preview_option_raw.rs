@@ -6,6 +6,7 @@ use crate::types::option::preview::{PreviewProtocol, XDGThumbSizes};
 
 use crate::utils::serde::{default_max_preview_size, default_true};
 
+/// TOML-deserializable form of [`PreviewOption`](crate::types::option::preview::PreviewOption).
 #[derive(Clone, Debug, Deserialize)]
 pub struct PreviewOptionRaw {
     #[serde(

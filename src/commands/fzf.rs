@@ -8,6 +8,7 @@ use crate::types::state::remove_external_preview;
 use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
+/// Runs `fzf` as a single-select picker over `items`, returning the selected line.
 pub fn fzf(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -26,6 +27,8 @@ pub fn fzf(
     fzf_impl(app_state, backend, items, args)
 }
 
+/// Runs `fzf` as a multi-select picker over `items`, returning the selected lines joined by
+/// newlines.
 pub fn fzf_multi(
     app_state: &mut AppState,
     backend: &mut AppBackend,

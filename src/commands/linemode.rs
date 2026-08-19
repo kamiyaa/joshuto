@@ -4,6 +4,8 @@ use crate::history::DirectoryHistory;
 use crate::types::option::line_mode::LineMode;
 use crate::types::state::AppState;
 
+/// Implements `linemode`: sets which metadata columns are shown and invalidates cached listings
+/// so they re-render with the new columns.
 pub fn set_linemode(app_state: &mut AppState, linemode: LineMode) -> AppResult {
     let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
     curr_tab.option_mut().linemode = linemode;

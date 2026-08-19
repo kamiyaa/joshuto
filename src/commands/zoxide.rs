@@ -7,6 +7,8 @@ use crate::error::AppResult;
 use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
+/// Implements `z`: changes to `args` directly if it's a valid path, otherwise queries `zoxide`
+/// for the best-matching directory and changes into that.
 pub fn zoxide_query(app_state: &mut AppState, args: &str) -> AppResult {
     let cwd = std::env::current_dir()?;
 
@@ -56,6 +58,7 @@ pub fn zoxide_query(app_state: &mut AppState, args: &str) -> AppResult {
     Ok(())
 }
 
+/// Implements `zi`: runs `zoxide query -i` interactively and changes into the chosen directory.
 pub fn zoxide_query_interactive(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -98,6 +101,7 @@ pub fn zoxide_query_interactive(
     Ok(())
 }
 
+/// Records path `s` in zoxide's database.
 pub fn zoxide_add(s: &str) -> io::Result<()> {
     Command::new("zoxide").arg("add").arg(s).output()?;
     Ok(())

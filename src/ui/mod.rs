@@ -1,3 +1,5 @@
+//! Terminal backend setup and the widgets/views that render joshuto's TUI.
+
 mod backend;
 mod preview_area;
 mod rect;

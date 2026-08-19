@@ -3,12 +3,14 @@ use ratatui::layout::Rect;
 use ratatui::style::Style;
 use ratatui::widgets::Widget;
 
+/// A single styled status-bar message widget.
 pub struct TuiMessage<'a> {
     message: &'a str,
     style: Style,
 }
 
 impl<'a> TuiMessage<'a> {
+    /// Creates a message widget with the given text and style.
     pub fn new(message: &'a str, style: Style) -> Self {
         Self { message, style }
     }

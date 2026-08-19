@@ -12,6 +12,8 @@ use crate::ui::AppBackend;
 
 use super::tab_ops;
 
+/// Prompts for confirmation before deleting `paths_len` files, with an extra confirmation for
+/// more than one file.
 fn prompt(app_state: &mut AppState, backend: &mut AppBackend, paths_len: usize) -> bool {
     let ch = {
         let prompt_str = format!("Delete {} files? (Y/n)", paths_len);
@@ -37,6 +39,8 @@ fn prompt(app_state: &mut AppState, backend: &mut AppBackend, paths_len: usize) 
     }
 }
 
+/// Queues or immediately runs a delete operation on `paths`, purging any deleted directories
+/// from the listing cache.
 fn delete_files(
     app_state: &mut AppState,
     paths: Vec<path::PathBuf>,
@@ -66,6 +70,8 @@ fn delete_files(
     Ok(())
 }
 
+/// Implements `delete_files`: deletes the selected entries (prompting unless `noconfirm`) and
+/// reloads affected tabs.
 pub fn delete_selected_files(
     app_state: &mut AppState,
     backend: &mut AppBackend,

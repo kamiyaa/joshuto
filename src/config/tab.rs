@@ -6,6 +6,7 @@ fn default_home_page() -> TabHomePage {
     TabHomePage::default()
 }
 
+/// Config-level defaults applied to new tabs.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct TabOption {
     #[serde(default = "default_home_page")]

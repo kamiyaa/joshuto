@@ -8,12 +8,15 @@ use crate::types::state::AppState;
 use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTopBar};
 use crate::THEME_T;
 
+/// A two-pane layout showing the current and next tab's listings side by side (paired by even
+/// and odd tab index).
 pub struct TuiHSplitView<'a> {
     pub app_state: &'a AppState,
     pub show_bottom_status: bool,
 }
 
 impl<'a> TuiHSplitView<'a> {
+    /// Creates the horizontal-split view for `app_state`.
     pub fn new(app_state: &'a AppState) -> Self {
         Self {
             app_state,

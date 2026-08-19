@@ -1,5 +1,7 @@
 use ratatui::termion::event::{Event, Key, MouseButton, MouseEvent};
 
+/// Parses a config-file key or mouse-action string (e.g. `"ctrl+c"`, `"scroll_up"`) into an
+/// [`Event`].
 pub fn str_to_event(s: &str) -> Option<Event> {
     if let Some(k) = str_to_key(s) {
         Some(Event::Key(k))
@@ -8,6 +10,8 @@ pub fn str_to_event(s: &str) -> Option<Event> {
     }
 }
 
+/// Parses a config-file key string (named key, `ctrl+`/`alt+` prefixed, or single char) into a
+/// [`Key`].
 pub fn str_to_key(s: &str) -> Option<Key> {
     if s.is_empty() {
         return None;
@@ -62,6 +66,7 @@ pub fn str_to_key(s: &str) -> Option<Key> {
     None
 }
 
+/// Parses a config-file mouse-action string (`"scroll_up"`/`"scroll_down"`) into a [`MouseEvent`].
 pub fn str_to_mouse(s: &str) -> Option<MouseEvent> {
     match s {
         "scroll_up" => Some(MouseEvent::Press(MouseButton::WheelUp, 0, 0)),

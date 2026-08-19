@@ -4,6 +4,8 @@ use nix::sys::signal::Signal;
 use crate::error::AppResult;
 use crate::ui::AppBackend;
 
+/// Implements `suspend`: releases the terminal, raises `SIGTSTP` to suspend joshuto, and
+/// restores the terminal once resumed.
 pub fn signal_suspend(backend: &mut AppBackend) -> AppResult {
     backend.terminal_drop();
     unsafe {

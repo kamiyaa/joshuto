@@ -26,8 +26,11 @@ lazy_static! {
     static ref GUARD: Mutex<()> = Mutex::new(());
 }
 
+/// Cached/in-progress file preview state, keyed by path.
 type FilePreviewMetadata = HashMap<path::PathBuf, PreviewFileState>;
 
+/// Manages background threads that generate script- and image-based file previews, plus the
+/// cache of their results and the external preview hook state.
 pub struct PreviewState {
     // the last preview area (or None if now preview shown) to check if a preview hook script needs
     // to be called
@@ -42,6 +45,8 @@ pub struct PreviewState {
 }
 
 impl PreviewState {
+    /// Spawns the script- and (if `picker` is set) image-preview worker threads and returns
+    /// the resulting `PreviewState`.
     pub fn new(
         picker: Option<Picker>,
         script: Option<PathBuf>,
@@ -116,6 +121,8 @@ impl PreviewState {
         }
     }
 
+    /// Kicks off loading both the image and script preview for `path`, skipping the script
+    /// preview if one is already cached or loading.
     pub fn load_preview(&mut self, config: &AppConfig, backend: &AppBackend, path: path::PathBuf) {
         // always load image without cache
         self.set_image_preview(None);
@@ -169,22 +176,27 @@ impl PreviewState {
         let _ = thread_event_tx.send(res);
     }
 
+    /// Returns the cache of script-based file preview state.
     pub fn previews_ref(&self) -> &FilePreviewMetadata {
         &self.previews
     }
+    /// Returns a mutable reference to the cache of script-based file preview state.
     pub fn previews_mut(&mut self) -> &mut FilePreviewMetadata {
         &mut self.previews
     }
+    /// Returns the cached rendered image preview for `other`, if it's the currently-loaded one.
     pub fn image_preview_ref(&self, other: &path::Path) -> Option<&Protocol> {
         match &self.image_preview {
             Some((path, protocol)) if path == other => Some(protocol.as_ref()),
             _ => None,
         }
     }
+    /// Sets (or clears) the currently-loaded image preview.
     pub fn set_image_preview(&mut self, preview: Option<(path::PathBuf, Box<Protocol>)>) {
         self.image_preview = preview;
     }
 
+    /// Requests a script-generated preview for `path`, sizing it to the current preview pane.
     pub fn load_preview_script(
         &self,
         config: &AppConfig,
@@ -204,6 +216,8 @@ impl PreviewState {
         }
     }
 
+    /// Requests an image preview for `path`, sizing it to the current preview pane, if an
+    /// image picker is configured.
     pub fn load_preview_image(
         &self,
         config: &AppConfig,
@@ -223,20 +237,12 @@ impl PreviewState {
         }
     }
 
+    /// Records `preview_area` as the last preview communicated to external preview hook scripts.
     pub fn update_external_preview(&mut self, preview_area: Option<PreviewArea>) {
         self.preview_area = preview_area;
     }
 
-    /// Updates the external preview to the current preview in Joshuto.
-    ///
-    /// The function checks if the current preview content is the same as the preview content which
-    /// has been last communicated to an external preview logic with the preview hook scripts.
-    /// If the preview content has changed, one of the hook scripts is called. Either the "preview
-    /// shown hook", if a preview is shown in Joshuto, or the "preview removed hook", if Joshuto has
-    /// changed from an entry with preview to an entry without a preview.
-    ///
-    /// This function shall be called each time a change of Joshuto's preview can be expected.
-    /// (As of now, it's called in each cycle of the main loop.)
+    /// Computes the rectangle the preview pane occupies within `backend`'s current terminal size.
     fn backend_rect(config: &AppConfig, backend: &AppBackend) -> io::Result<Rect> {
         let size = backend.terminal_ref().size()?;
         let area = Rect {
@@ -273,6 +279,16 @@ pub fn call_preview_removed_hook(preview_options: &PreviewOption) {
     }
 }
 
+/// Updates the external preview to the current preview in Joshuto.
+///
+/// The function checks if the current preview content is the same as the preview content which
+/// has been last communicated to an external preview logic with the preview hook scripts.
+/// If the preview content has changed, one of the hook scripts is called. Either the "preview
+/// shown hook", if a preview is shown in Joshuto, or the "preview removed hook", if Joshuto has
+/// changed from an entry with preview to an entry without a preview.
+///
+/// This function shall be called each time a change of Joshuto's preview can be expected.
+/// (As of now, it's called in each cycle of the main loop.)
 pub fn calculate_external_preview(
     tab_state: &TabState,
     preview_state: &PreviewState,

@@ -17,6 +17,8 @@ use crate::types::io::{FileOperation, FileOperationOptions, IoTask, IoTaskProgre
 use crate::utils::fs::query_number_of_items;
 use crate::utils::name_resolution::rename_filename_conflict;
 
+/// Runs on the dedicated IO worker thread: processes queued [`IoTask`]s one at a time,
+/// reporting each result back over `event_tx`.
 pub fn process_io_tasks(
     event_rx: mpsc::Receiver<IoTask>,
     event_tx: mpsc::Sender<AppEvent>,
@@ -29,6 +31,8 @@ pub fn process_io_tasks(
     Ok(())
 }
 
+/// Runs a single [`IoTask`] to completion, reporting start progress before dispatching to the
+/// operation-specific implementation (cut/copy/delete/symlink).
 pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> AppResult {
     let (total_files, total_bytes) = query_number_of_items(io_task.paths.as_slice())?;
     let src = io_task.paths[0].parent().unwrap().to_path_buf();
@@ -150,6 +154,8 @@ fn delete(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
     Ok(())
 }
 
+/// Recursively copies `src` into `dest`, renaming on conflict unless `options.overwrite`,
+/// reporting per-file progress over `tx`.
 pub fn recursive_copy(
     tx: &mpsc::Sender<AppEvent>,
     src: &path::Path,
@@ -208,6 +214,8 @@ pub fn recursive_copy(
     }
 }
 
+/// Recursively moves `src` into `dest`, falling back to copy-then-delete across filesystems,
+/// renaming on conflict unless `options.overwrite`, reporting per-file progress over `tx`.
 pub fn recursive_cut(
     tx: &mpsc::Sender<AppEvent>,
     src: &path::Path,

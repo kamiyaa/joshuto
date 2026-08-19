@@ -4,6 +4,7 @@ use crate::{fs::metadata::JoshutoMetadata, types::option::display::DisplayOption
 
 use super::FileType;
 
+/// A single file or directory entry as shown in a joshuto directory listing.
 #[derive(Clone, Debug)]
 pub struct JoshutoDirEntry {
     pub name: String,
@@ -18,6 +19,8 @@ pub struct JoshutoDirEntry {
 }
 
 impl JoshutoDirEntry {
+    /// Builds a `JoshutoDirEntry` from a `walkdir` entry, resolving metadata and, if enabled,
+    /// counting a directory's contents for display.
     pub fn from(
         direntry: &walkdir::DirEntry,
         base: &path::Path,
@@ -57,38 +60,47 @@ impl JoshutoDirEntry {
         })
     }
 
+    /// Returns the entry's file name (not the full path).
     pub fn file_name(&self) -> &str {
         self.name.as_str()
     }
 
+    /// Returns the entry's file extension, if any.
     pub fn ext(&self) -> Option<&str> {
         self.ext.as_deref()
     }
 
+    /// Returns the entry's full path.
     pub fn file_path(&self) -> &path::Path {
         self.path.as_path()
     }
 
+    /// Returns an owned copy of the entry's full path.
     pub fn file_path_buf(&self) -> path::PathBuf {
         self.path.clone()
     }
 
+    /// Returns `true` if the entry is selected, either permanently or via visual mode.
     pub fn is_selected(&self) -> bool {
         self.permanent_selected || self.visual_mode_selected
     }
 
+    /// Returns `true` if the entry was explicitly selected by the user (not via visual mode).
     pub fn is_permanent_selected(&self) -> bool {
         self.permanent_selected
     }
 
+    /// Returns `true` if the entry is selected as part of the current visual-mode range.
     pub fn is_visual_mode_selected(&self) -> bool {
         self.visual_mode_selected
     }
 
+    /// Sets whether the entry is permanently (explicitly) selected.
     pub fn set_permanent_selected(&mut self, selected: bool) {
         self.permanent_selected = selected;
     }
 
+    /// Sets whether the entry is selected as part of the current visual-mode range.
     pub fn set_visual_mode_selected(&mut self, visual_mode_selected: bool) {
         self.visual_mode_selected = visual_mode_selected;
     }

@@ -5,15 +5,18 @@ use ratatui::widgets::{Block, Borders, Widget};
 
 use crate::THEME_T;
 
+/// A simple bordered list-of-strings popup menu (used for bookmark selection).
 pub struct TuiMenu<'a> {
     options: &'a [&'a str],
 }
 
 impl<'a> TuiMenu<'a> {
+    /// Creates a menu widget listing `options`.
     pub fn new(options: &'a [&'a str]) -> Self {
         Self { options }
     }
 
+    /// Returns the number of options in the menu.
     pub fn len(&self) -> usize {
         self.options.len()
     }

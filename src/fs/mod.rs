@@ -1,3 +1,5 @@
+//! Filesystem entry, directory listing, and metadata types shared across joshuto.
+
 mod dirlist;
 mod entry;
 mod metadata;

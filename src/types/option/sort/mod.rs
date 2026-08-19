@@ -1,3 +1,5 @@
+//! Directory-listing sort methods and their configured priority order.
+
 mod sort_method;
 mod sort_option;
 

@@ -6,13 +6,19 @@ use std::process::{Command, Stdio};
 
 use super::reload;
 
+/// How a subprocess command should be run.
 #[derive(Debug, Clone)]
 pub enum SubprocessCallMode {
+    /// `shell`: run via the configured shell, taking over the terminal.
     Interactive,
+    /// `spawn`: run detached, without taking over the terminal.
     Spawn,
+    /// `capture`: run and capture its stdout for later use (e.g. by `stdout`).
     Capture,
 }
 
+/// Returns the selected entries (or just the current entry, if none selected) as
+/// `(name, path)` pairs.
 pub fn current_files(app_state: &AppState) -> Vec<(&str, &Path)> {
     let mut result = Vec::new();
     if let Some(curr_list) = app_state
@@ -44,6 +50,8 @@ fn shell_quote(val: &str) -> String {
     format!("'{}'", val.replace('\'', "'\\''"))
 }
 
+/// Builds and runs the subprocess for `words`, expanding `%s`/`%p`/`%d` placeholders (shell-quoted
+/// in `Interactive` mode, as separate args otherwise), per `mode`.
 fn execute_sub_process(
     app_state: &mut AppState,
     words: &[String],

@@ -10,6 +10,8 @@ use crate::fs::{JoshutoDirEntry, JoshutoDirList};
 use crate::ui::widgets::trim_file_label;
 use crate::utils::style;
 
+/// Renders a simple (non-detailed) directory listing: one entry name per line, current entry
+/// reverse-highlighted when `focused`. Used for the parent and preview panes.
 pub struct TuiDirList<'a> {
     pub config: &'a AppConfig,
     pub dirlist: &'a JoshutoDirList,
@@ -17,6 +19,7 @@ pub struct TuiDirList<'a> {
 }
 
 impl<'a> TuiDirList<'a> {
+    /// Creates a directory-list widget for `dirlist`.
     pub fn new(config: &'a AppConfig, dirlist: &'a JoshutoDirList, focused: bool) -> Self {
         Self {
             config,
@@ -114,6 +117,8 @@ fn print_entry(
 }
 
 #[cfg(feature = "devicons")]
+/// Looks up the icon glyph for an entry: exact-name match, falling back to extension, falling
+/// back to the configured default file/directory icon.
 pub fn get_entry_icon(
     config: &AppConfig,
     name: &str,

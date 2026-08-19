@@ -1,3 +1,6 @@
+//! Implementations of every built-in [`Command`](crate::types::command::Command) variant, one
+//! module per command family, dispatched from `types::command::impl_appexecute`.
+
 pub mod bookmark;
 pub mod bulk_rename;
 pub mod case_sensitivity;

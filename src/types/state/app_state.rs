@@ -17,6 +17,7 @@ use crate::{Args, THEME_T};
 
 use super::{FileManagerState, ThreadPool};
 
+/// The top-level application state: config, the event loop, CLI args, and all file-manager state.
 pub struct AppState {
     pub config: AppConfig,
     pub quit: QuitAction,
@@ -28,6 +29,8 @@ pub struct AppState {
 }
 
 impl AppState {
+    /// Builds the initial application state: sets up the event loop, filesystem watcher, image
+    /// preview picker, and XDG thumbnailer according to `config`.
     pub fn new(config: AppConfig, args: Args) -> Self {
         let picker = if config.preview_options.preview_shown_hook_script.is_none() {
             Picker::from_query_stdio().ok().and_then(|mut picker| {
@@ -100,12 +103,15 @@ impl AppState {
     }
 
     // event related
+    /// Blocks until the next application event arrives.
     pub fn poll_event(&self) -> Result<AppEvent, mpsc::RecvError> {
         self.events.next()
     }
+    /// Signals the input thread to poll for the next terminal input event.
     pub fn flush_event(&self) {
         self.events.flush();
     }
+    /// Returns a cloned sender for posting events onto the app event channel.
     pub fn clone_event_tx(&self) -> mpsc::Sender<AppEvent> {
         self.events.event_tx.clone()
     }

@@ -34,6 +34,8 @@ fn compute_size(path: &path::Path) -> u64 {
     total
 }
 
+/// Implements `calculate_cumulative_size`: computes and displays the total recursive size of
+/// the selected entries (or the current entry, if none selected).
 pub fn calculate_cumulative_size(app_state: &mut AppState) -> AppResult {
     let targets: Vec<(path::PathBuf, String)> = match app_state
         .state

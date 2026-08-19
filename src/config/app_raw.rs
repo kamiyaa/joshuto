@@ -11,6 +11,7 @@ use crate::types::custom_command::CustomCommand;
 use crate::types::option::search::SearchOption;
 use crate::utils::serde::{default_shell, default_true};
 
+/// TOML-deserializable form of [`AppConfig`](super::app::AppConfig).
 #[derive(Clone, Debug, Deserialize)]
 pub struct AppConfigRaw {
     #[serde(default = "default_true")]

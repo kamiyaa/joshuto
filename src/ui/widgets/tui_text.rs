@@ -4,6 +4,7 @@ use ratatui::style::{Color, Style};
 use ratatui::widgets::Widget;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
+/// The byte range and display width of one wrapped line within a [`TuiMultilineText`].
 #[derive(Clone, Debug)]
 pub struct LineInfo {
     pub start: usize,
@@ -11,6 +12,8 @@ pub struct LineInfo {
     pub width: usize,
 }
 
+/// A string pre-wrapped to a fixed width, word-agnostic (wraps mid-character-boundary), for
+/// rendering as multiple lines.
 pub struct TuiMultilineText<'a> {
     _s: &'a str,
     _width: usize,
@@ -19,6 +22,7 @@ pub struct TuiMultilineText<'a> {
 }
 
 impl<'a> TuiMultilineText<'a> {
+    /// Wraps `s` to `area_width` display columns.
     pub fn new(s: &'a str, area_width: usize) -> Self {
         // TODO: This is a very hacky way of doing it and I would like
         // to clean this up more
@@ -75,20 +79,25 @@ impl<'a> TuiMultilineText<'a> {
         }
     }
 
+    /// Returns the width this text was wrapped to.
     pub fn width(&self) -> usize {
         self._width
     }
 
+    /// Returns the number of rows needed to display this text, accounting for a trailing full
+    /// line needing an extra row.
     pub fn height(&self) -> usize {
         if self._lines[self._lines.len() - 1].width >= self.width() {
             return self.len() + 1;
         }
         self.len()
     }
+    /// Returns the number of wrapped lines.
     pub fn len(&self) -> usize {
         self._lines.len()
     }
 
+    /// Returns an iterator over the wrapped lines.
     pub fn iter(&self) -> impl Iterator<Item = &LineInfo> {
         self._lines.iter()
     }

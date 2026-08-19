@@ -11,6 +11,7 @@ use crate::{
 
 use super::PreviewProtocol;
 
+/// Resolved settings controlling how file previews are generated and displayed.
 #[derive(Clone, Debug)]
 pub struct PreviewOption {
     pub max_preview_size: u64,

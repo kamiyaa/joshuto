@@ -14,10 +14,13 @@ use crate::types::config_type::ConfigType;
 use crate::types::keybind::{CommandKeybind, KeyMapping};
 use crate::utils::keyparse::str_to_event;
 
+/// Errors that can occur while building the keymap from config.
 pub enum KeymapError {
+    /// Two different key sequences (or a prefix/full sequence) map to the same key event.
     Conflict,
 }
 
+/// The full set of keybindings for every UI mode, loaded from `keymap.toml`.
 #[derive(Debug)]
 pub struct AppKeyMapping {
     pub default_view: KeyMapping,
@@ -26,6 +29,7 @@ pub struct AppKeyMapping {
 }
 
 impl AppKeyMapping {
+    /// Creates an empty keymap with no bindings in any view.
     pub fn new() -> Self {
         Self {
             default_view: KeyMapping::new(),
@@ -34,6 +38,7 @@ impl AppKeyMapping {
         }
     }
 
+    /// Parses the built-in default `keymap.toml`, returning an error only if it's malformed.
     pub fn default_res() -> AppResult<Self> {
         let crude: AppKeyMappingRaw = toml::from_str(KEYMAP_CONFIG)?;
         let keymapping: Self = Self::from(crude);

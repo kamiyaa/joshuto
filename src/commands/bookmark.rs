@@ -23,6 +23,8 @@ use crate::{BOOKMARKS_T, CONFIG_HIERARCHY};
 
 use super::change_directory::change_directory;
 
+/// Returns the first config-hierarchy directory that already exists, as a fallback location to
+/// write a new `bookmarks.toml` when none is found.
 fn find_bookmark_file() -> Option<path::PathBuf> {
     for p in CONFIG_HIERARCHY.iter() {
         if p.exists() {
@@ -32,6 +34,8 @@ fn find_bookmark_file() -> Option<path::PathBuf> {
     None
 }
 
+/// Implements `add_bookmark`: prompts for a key, binds it to the current directory, and
+/// persists the updated bookmark list to `bookmarks.toml`.
 pub fn add_bookmark(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let cwd = std::env::current_dir()?;
 
@@ -71,6 +75,7 @@ pub fn add_bookmark(app_state: &mut AppState, backend: &mut AppBackend) -> AppRe
     Ok(())
 }
 
+/// Implements `cd_bookmark`: prompts for a bookmark key and changes into its bound directory.
 pub fn change_directory_bookmark(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let key = poll_for_bookmark_key(app_state, backend);
 
@@ -85,6 +90,7 @@ pub fn change_directory_bookmark(app_state: &mut AppState, backend: &mut AppBack
     Ok(())
 }
 
+/// Renders a menu of existing bookmarks and blocks until the user presses a key, returning it.
 fn poll_for_bookmark_key(app_state: &mut AppState, backend: &mut AppBackend) -> Option<Event> {
     app_state.flush_event();
 

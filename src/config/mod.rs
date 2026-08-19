@@ -1,3 +1,5 @@
+//! Loading and parsing of joshuto's TOML config files (app, theme, keymap, icons, mimetypes, ...).
+
 pub mod app;
 pub mod app_raw;
 pub mod bookmarks;

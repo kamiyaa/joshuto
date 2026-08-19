@@ -1,3 +1,5 @@
+//! Fits the tab bar (tab paths, dividers, scroll tags) into the available terminal width.
+
 use std::path::Path;
 
 use ratatui::text::Span;
@@ -29,6 +31,8 @@ use crate::HOME_DIR;
 //     * Case 4d: The active tab fits only without scroll tags and pre- and postfix
 //               and further shortened with ellipsis
 
+/// A tab's directory path in both long (full path, `~`-abbreviated) and short (base name) form,
+/// used to fit the tab bar into however much width is available.
 pub struct TabLabel {
     long: String,
     short: String,
@@ -494,6 +498,8 @@ fn factor_tab_bar_spans_from_sequence<'a>(
         .collect()
 }
 
+/// Builds the styled tab-bar spans for `tab_paths`, choosing long/short labels, scroll tags,
+/// and dividers to best fit `available_width` (see the module-level case breakdown above).
 pub fn factor_tab_bar_spans<'a>(
     available_width: usize,
     tab_paths: &[&'a Path],

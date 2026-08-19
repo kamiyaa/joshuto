@@ -2,6 +2,7 @@ use crate::error::AppResult;
 use crate::types::option::search::CaseSensitivity;
 use crate::types::state::AppState;
 
+/// Which search mode's case-sensitivity setting the `set_case_sensitivity` command should change.
 #[derive(Clone, Copy, Debug)]
 pub enum SetType {
     String,
@@ -10,6 +11,7 @@ pub enum SetType {
     Fzf,
 }
 
+/// Implements `set_case_sensitivity`: sets the default case sensitivity for one search mode.
 pub fn set_case_sensitivity(
     app_state: &mut AppState,
     case_sensitivity: CaseSensitivity,

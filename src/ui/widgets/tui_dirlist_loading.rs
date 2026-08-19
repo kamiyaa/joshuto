@@ -3,9 +3,11 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::widgets::Widget;
 
+/// Placeholder widget shown in place of a directory pane while its listing is still loading.
 pub struct TuiDirListLoading;
 
 impl TuiDirListLoading {
+    /// Creates the loading-placeholder widget.
     pub fn new() -> Self {
         Self {}
     }

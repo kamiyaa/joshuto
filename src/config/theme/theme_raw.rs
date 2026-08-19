@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{style_raw::AppStyleRaw, tab_raw::TabThemeRaw};
 
+/// TOML-deserializable form of [`AppTheme`](super::AppTheme).
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct AppThemeRaw {
     #[serde(default)]

@@ -7,6 +7,8 @@ use crate::types::event::AppEvent;
 use crate::types::mimetype::ProgramEntry;
 use crate::utils::format::clear_screen;
 
+/// Spawns `entry` detached (not blocking joshuto), returning its pid and a thread handle that
+/// posts an [`AppEvent::ChildProcessComplete`] once it exits.
 pub fn fork_execute<I, S>(
     entry: &ProgramEntry,
     paths: I,
@@ -41,6 +43,8 @@ where
     Ok((child_id, handle))
 }
 
+/// Runs `entry` and blocks until it exits, piping through `$PAGER` if `entry.get_pager()`, and
+/// waiting for Enter afterward if `entry.get_confirm_exit()`.
 pub fn execute_and_wait<I, S>(entry: &ProgramEntry, paths: I) -> std::io::Result<()>
 where
     I: IntoIterator<Item = S>,
@@ -85,6 +89,7 @@ where
     Ok(())
 }
 
+/// Prints a prompt and blocks until the user presses Enter.
 pub fn wait_for_enter() -> io::Result<()> {
     print!("===============\nPress ENTER to continue... ");
     std::io::stdout().flush()?;

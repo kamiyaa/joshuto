@@ -1,3 +1,5 @@
+//! Color and style theme, loaded from `theme.toml`.
+
 pub mod style;
 pub mod style_raw;
 pub mod tab;
@@ -20,6 +22,7 @@ use theme_raw::AppThemeRaw;
 
 use self::style_raw::AppStyleRaw;
 
+/// Resolved color/style theme for the whole UI, loaded from `theme.toml`.
 #[derive(Clone, Debug)]
 pub struct AppTheme {
     pub tabs: TabTheme,
@@ -38,6 +41,7 @@ pub struct AppTheme {
 }
 
 impl AppTheme {
+    /// Parses the built-in default `theme.toml`, returning an error only if it's malformed.
     pub fn default_res() -> AppResult<Self> {
         let raw: AppThemeRaw = toml::from_str(THEME_CONFIG)?;
         Ok(Self::from(raw))

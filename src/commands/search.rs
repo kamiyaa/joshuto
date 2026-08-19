@@ -4,6 +4,8 @@ use crate::types::state::{AppState, MatchState};
 
 use super::cursor_move;
 
+/// Implements `search_next`: moves the cursor to the next entry matching the active search
+/// pattern.
 pub fn search_next(app_state: &mut AppState) -> AppResult {
     if let Some(search_state) = app_state.state.get_search_state() {
         if search_state.is_none() {
@@ -26,6 +28,8 @@ pub fn search_next(app_state: &mut AppState) -> AppResult {
     Ok(())
 }
 
+/// Returns the index of the next entry (searching forward, wrapping around) matching
+/// `match_state`, starting at `offset`.
 pub(super) fn search_next_impl(
     curr_tab: &JoshutoTab,
     match_state: &MatchState,
@@ -45,6 +49,8 @@ pub(super) fn search_next_impl(
     None
 }
 
+/// Implements `search_prev`: moves the cursor to the previous entry matching the active search
+/// pattern.
 pub fn search_prev(app_state: &mut AppState) -> AppResult {
     if let Some(search_state) = app_state.state.get_search_state() {
         if search_state.is_none() {

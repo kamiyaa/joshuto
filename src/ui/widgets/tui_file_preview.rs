@@ -5,11 +5,14 @@ use ratatui::widgets::Widget;
 
 use crate::preview::preview_file::FilePreview;
 
+/// Renders a script-generated text file preview, scrolled to `preview.index`, with ANSI colors
+/// interpreted when the `syntax_highlight` feature is enabled.
 pub struct TuiFilePreview<'a> {
     preview: &'a FilePreview,
 }
 
 impl<'a> TuiFilePreview<'a> {
+    /// Creates a file-preview widget for `preview`.
     pub fn new(preview: &'a FilePreview) -> Self {
         Self { preview }
     }

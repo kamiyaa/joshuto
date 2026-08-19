@@ -1,5 +1,7 @@
 use std::path;
 
+/// If `path` already exists, appends `_0`, `_1`, ... to its file name until a free name is
+/// found, mutating `path` in place.
 pub fn rename_filename_conflict(path: &mut path::PathBuf) {
     let file_name = path.file_name().unwrap().to_os_string();
     for i in 0.. {

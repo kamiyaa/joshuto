@@ -3,6 +3,7 @@ use crate::types::state::{AppState, MatchState};
 
 use super::cursor_move;
 
+/// Flags shared by all `select_*` commands, controlling how the selection is applied.
 #[derive(Clone, Copy, Debug)]
 pub struct SelectOption {
     pub toggle: bool,
@@ -30,6 +31,8 @@ impl std::fmt::Display for SelectOption {
     }
 }
 
+/// Applies `options` to entries matching `pattern`, or to the current entry/selection if
+/// `pattern` is `None`. Shared by all `select_*` commands.
 pub fn select_files(
     app_state: &mut AppState,
     pattern: &MatchState,
@@ -42,6 +45,8 @@ pub fn select_files(
     }
 }
 
+/// Applies `options` to every entry (`options.all`) or just the current entry, advancing the
+/// cursor in the latter case.
 fn select_without_pattern(app_state: &mut AppState, options: &SelectOption) -> AppResult {
     if options.all {
         if let Some(curr_list) = app_state
@@ -79,6 +84,7 @@ fn select_without_pattern(app_state: &mut AppState, options: &SelectOption) -> A
     Ok(())
 }
 
+/// Applies `options` to every entry matching `pattern`.
 fn select_with_pattern(
     app_state: &mut AppState,
     pattern: &MatchState,

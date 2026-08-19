@@ -4,6 +4,7 @@ const fn default_color() -> style::Color {
     style::Color::Reset
 }
 
+/// A resolved fg/bg color, text prefix, and modifier set for one themed UI element.
 #[derive(Clone, Debug)]
 pub struct AppStyle {
     pub fg: style::Color,
@@ -13,24 +14,29 @@ pub struct AppStyle {
 }
 
 impl AppStyle {
+    /// Returns `self` with the background color set, for builder-style construction.
     pub fn set_bg(mut self, bg: style::Color) -> Self {
         self.bg = bg;
         self
     }
+    /// Returns `self` with the foreground color set, for builder-style construction.
     pub fn set_fg(mut self, fg: style::Color) -> Self {
         self.fg = fg;
         self
     }
+    /// Returns `self` with the text prefix set, for builder-style construction.
     pub fn set_prefix(mut self, prefix: String) -> Self {
         self.prefix = prefix;
         self
     }
 
+    /// Returns `self` with `modifier` added to the existing modifiers.
     pub fn insert(mut self, modifier: style::Modifier) -> Self {
         self.modifier.insert(modifier);
         self
     }
 
+    /// Converts to a ratatui [`Style`] for rendering.
     pub fn as_style(&self) -> Style {
         Style::from(self)
     }

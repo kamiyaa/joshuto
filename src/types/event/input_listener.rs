@@ -4,6 +4,7 @@ use ratatui::termion::input::TermRead;
 
 use crate::types::event::{AppEvent, AppEventSender};
 
+/// Signals the terminal-input thread to poll for the next input event.
 pub type InputEventReceiver = Receiver<()>;
 
 /// Listens for terminal inputs
@@ -15,10 +16,13 @@ pub struct TerminalInputListener {
 }
 
 impl TerminalInputListener {
+    /// Builds a listener that sends terminal input events to `event_tx` on request.
     pub fn new(event_tx: AppEventSender, input_rx: InputEventReceiver) -> Self {
         Self { event_tx, input_rx }
     }
 
+    /// Runs the listener loop: waits for a poll request, then reads and forwards one terminal
+    /// input event. Intended to be run on its own thread.
     pub fn run(self) {
         let stdin = io::stdin();
         let mut events = stdin.events();

@@ -3,6 +3,7 @@ use crate::types::state::AppState;
 
 use super::reload;
 
+/// Implements `flat`: sets how many levels deep the current directory listing is flattened.
 pub fn flatten(app_state: &mut AppState, depth: usize) -> AppResult {
     let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
     let path = curr_tab.get_cwd().to_path_buf();

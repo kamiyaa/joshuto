@@ -5,6 +5,7 @@ use crate::types::state::AppState;
 
 use super::reload;
 
+/// Implements `sort`: sets the primary sort method (and optionally reverse) for the current tab.
 pub fn set_sort(app_state: &mut AppState, method: SortMethod, reverse: Option<bool>) -> AppResult {
     let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
     curr_tab
@@ -20,6 +21,7 @@ pub fn set_sort(app_state: &mut AppState, method: SortMethod, reverse: Option<bo
     refresh(app_state)
 }
 
+/// Implements `sort reverse`: toggles reverse sort order for the current tab.
 pub fn toggle_reverse(app_state: &mut AppState) -> AppResult {
     let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
     let reversed = !curr_tab.option_mut().sort_options_ref().reverse;

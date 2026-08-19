@@ -13,6 +13,7 @@ use crate::{
     },
 };
 
+/// Top-level application settings, loaded from `joshuto.toml`.
 #[derive(Debug, Clone)]
 pub struct AppConfig {
     pub use_trash: bool,
@@ -33,6 +34,7 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
+    /// Parses the built-in default `joshuto.toml`, returning an error only if it's malformed.
     pub fn default_res() -> AppResult<Self> {
         let raw: AppConfigRaw = toml::from_str(APP_CONFIG)?;
         Ok(Self::from(raw))

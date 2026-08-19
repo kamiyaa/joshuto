@@ -9,11 +9,15 @@ use crate::tab::TabDisplayOption;
 use crate::types::option::display::DisplayOption;
 use crate::types::state::UiState;
 
+/// Operations on a cache of previously-visited directory listings, keyed by path.
 pub trait DirectoryHistory {
+    /// Inserts or replaces cached listings, keyed by each listing's own path.
     fn insert_entries(&mut self, entries: Vec<JoshutoDirList>);
+    /// Marks every cached listing as stale, forcing a re-read on next access.
     fn depreciate_all_entries(&mut self);
 }
 
+/// Cache of previously-read directory listings, keyed by directory path.
 pub type JoshutoHistory = HashMap<PathBuf, JoshutoDirList>;
 
 impl DirectoryHistory for JoshutoHistory {
@@ -38,6 +42,8 @@ fn get_index_of_value(arr: &[JoshutoDirEntry], val: &Path) -> Option<usize> {
     })
 }
 
+/// Re-reads `path` from disk, but reuses cached directory sizes and preserves selection state
+/// and cursor position from `history` where the underlying entries still match.
 pub fn create_dirlist_with_history(
     history: &JoshutoHistory,
     path: &Path,
@@ -132,6 +138,8 @@ pub fn create_dirlist_with_history(
     Ok(dirlist)
 }
 
+/// Reads the immediate (or, if flattened, nested) contents of `path` from disk, keeping only
+/// entries that pass `filter_func`.
 pub fn read_directory<F>(
     path: &Path,
     filter_func: F,
@@ -169,6 +177,9 @@ where
     Ok(results)
 }
 
+/// Builds a directory listing for `path` and each of its ancestors up to the filesystem root,
+/// with each listing's cursor set to the child it descended through, reusing `history` where
+/// possible.
 pub fn generate_entries_to_root(
     path: &Path,
     history: &JoshutoHistory,

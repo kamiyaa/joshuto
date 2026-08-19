@@ -6,6 +6,7 @@ use crate::utils::style::PathStyleIfSome;
 
 use super::tab_raw::{TabThemeCharsRaw, TabThemeColorRaw, TabThemeRaw};
 
+/// Resolved styling for the tab bar: colors, decoration characters, and their inferred widths.
 #[derive(Clone, Debug)]
 pub struct TabTheme {
     pub styles: TabThemeColors,
@@ -24,6 +25,7 @@ impl From<TabThemeRaw> for TabTheme {
     }
 }
 
+/// Resolved decoration characters/strings for the tab bar (dividers, prefixes, scroll markers).
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct TabThemeChars {
     pub divider: String,
@@ -67,6 +69,7 @@ impl From<TabThemeCharsRaw> for TabThemeChars {
     }
 }
 
+/// Display widths derived from [`TabThemeChars`], precomputed to avoid recalculating per frame.
 #[derive(Clone, Debug)]
 pub struct TabThemeCharsInference {
     pub tab_divider_length: usize,
@@ -101,12 +104,16 @@ impl TabThemeCharsInference {
         }
     }
 
+    /// Returns the total display width of the scroll-position tags shown when there are more
+    /// tabs than fit on screen, given `num_tabs` total tabs.
     pub fn calc_scroll_tags_width(&self, num_tabs: usize) -> usize {
         let max_num_width = num_tabs.checked_ilog10().unwrap_or(0) as usize + 1;
         2 * max_num_width + self.scroll_front_static_length + self.scroll_back_static_length
     }
 }
 
+/// Resolved styles for every element of the tab bar, with per-element overrides already
+/// patched onto their base active/inactive/divider/scroll styles.
 #[derive(Clone, Debug)]
 pub struct TabThemeColors {
     pub prefix_a: Style,

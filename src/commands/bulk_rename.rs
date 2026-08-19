@@ -20,6 +20,8 @@ const ENV_EDITOR: &str = "EDITOR";
 const FILE_PREFIX: &str = "joshuto-";
 const RAND_STR_LEN: usize = 10;
 
+/// Writes the selected entries' names to a temp file, opens `$EDITOR` on it, and applies any
+/// line-for-line renames the user made, after a confirmation prompt.
 pub fn _bulk_rename(app_state: &mut AppState) -> AppResult {
     let tmp_directory = env::var(ENV_TMP_DIR).unwrap_or_else(|_| "/tmp".to_string());
 
@@ -127,6 +129,8 @@ pub fn _bulk_rename(app_state: &mut AppState) -> AppResult {
     Ok(())
 }
 
+/// Implements `bulk_rename`: releases the terminal for `$EDITOR`, runs the bulk rename, then
+/// restores the terminal and reloads the current tab.
 pub fn bulk_rename(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     remove_external_preview(app_state);
     backend.terminal_drop();

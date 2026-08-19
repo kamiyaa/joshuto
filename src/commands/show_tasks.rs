@@ -10,6 +10,8 @@ use crate::types::state::AppState;
 use crate::ui::views::TuiWorkerView;
 use crate::ui::AppBackend;
 
+/// Implements `show_tasks`: runs a nested event loop showing the background-task view until
+/// the user presses the key bound back to `show_tasks`.
 pub fn show_tasks(
     app_state: &mut AppState,
     backend: &mut AppBackend,

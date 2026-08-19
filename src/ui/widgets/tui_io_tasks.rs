@@ -7,11 +7,13 @@ use crate::types::io::IoTaskStat;
 use crate::types::state::WorkerState;
 use crate::utils::format;
 
+/// The background-task view: the currently running IO task's progress, plus the queue behind it.
 pub struct TuiIoTasks<'a> {
     pub app_state: &'a WorkerState,
 }
 
 impl<'a> TuiIoTasks<'a> {
+    /// Creates the task-view widget for `app_state`'s current worker state.
     pub fn new(app_state: &'a WorkerState) -> Self {
         Self { app_state }
     }
@@ -54,11 +56,13 @@ impl Widget for TuiIoTasks<'_> {
     }
 }
 
+/// The currently running IO task's progress: status line, current file, and a progress bar.
 pub struct TuiCurrentWorker<'a> {
     pub observer: &'a IoTaskStat,
 }
 
 impl<'a> TuiCurrentWorker<'a> {
+    /// Creates the current-worker widget for `observer`'s progress.
     pub fn new(observer: &'a IoTaskStat) -> Self {
         Self { observer }
     }
@@ -111,11 +115,13 @@ impl Widget for TuiCurrentWorker<'_> {
     }
 }
 
+/// The list of queued (not-yet-started) background IO tasks.
 pub struct TuiWorkerQueue<'a> {
     pub app_state: &'a WorkerState,
 }
 
 impl<'a> TuiWorkerQueue<'a> {
+    /// Creates the worker-queue widget for `app_state`'s pending tasks.
     pub fn new(app_state: &'a WorkerState) -> Self {
         Self { app_state }
     }

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{traits::config::TomlConfigFile, types::config_type::ConfigType, utils::keyparse};
 
+/// Directory bookmarks: a key event mapped to the path it jumps to.
 pub type Bookmarks = HashMap<Event, String>;
 
 impl TomlConfigFile for Bookmarks {
@@ -15,12 +16,14 @@ impl TomlConfigFile for Bookmarks {
     }
 }
 
+/// A single bookmark entry as stored in `bookmarks.toml`, before its key string is parsed.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BookmarkRaw {
     pub key: String,
     pub path: String,
 }
 
+/// TOML-deserializable form of [`Bookmarks`].
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BookmarksRaw {
     #[serde(default)]

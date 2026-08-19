@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{AppError, AppErrorKind, AppResult};
 
+/// Default case-sensitivity for each search mode (plain string, glob, regex, fzf).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchOption {
     #[serde(default = "default_string_case_sensitivity")]
@@ -16,6 +17,7 @@ pub struct SearchOption {
     pub fzf_case_sensitivity: CaseSensitivity,
 }
 
+/// How a search or filter should treat letter case when matching.
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
 pub enum CaseSensitivity {
     #[default]

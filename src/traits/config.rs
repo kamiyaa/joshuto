@@ -6,17 +6,22 @@ use crate::error::AppResult;
 use crate::types::config_type::ConfigType;
 use crate::CONFIG_HIERARCHY;
 
+/// Implemented by types that are loaded from a TOML config file, with a `Raw` deserialization
+/// form and a default used when no file is found or parsing fails.
 pub trait TomlConfigFile: Sized + Default {
+    /// The `serde`-deserializable form read from disk, convertible into `Self`.
     type Raw: Into<Self> + DeserializeOwned;
 
+    /// Returns which config file this type is loaded from.
     fn get_type() -> ConfigType;
 
+    /// Loads and parses this config, falling back to `Self::default()` if not found or invalid.
     fn get_config() -> Self {
         parse_config_or_default::<Self::Raw, Self>(Self::get_type().as_filename())
     }
 }
 
-// searches a list of folders for a given file in order of preference
+/// Searches `directories` in order for a file named `file_name`, returning the first match.
 pub fn search_directories<P>(file_name: &str, directories: &[P]) -> Option<PathBuf>
 where
     P: AsRef<Path>,
@@ -27,6 +32,7 @@ where
         .find(|path| path.exists())
 }
 
+/// Searches joshuto's config directory hierarchy for a file named `file_name`.
 pub fn search_config_directories(file_name: &str) -> Option<PathBuf> {
     search_directories(file_name, &CONFIG_HIERARCHY)
 }
@@ -40,6 +46,8 @@ where
     Ok(config.into())
 }
 
+/// Finds, reads, and parses `file_name` from the config directory hierarchy, returning
+/// `S::default()` (and printing a warning) if it's missing or fails to parse.
 pub fn parse_config_or_default<T, S>(file_name: &str) -> S
 where
     T: DeserializeOwned + Into<S>,

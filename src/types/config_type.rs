@@ -1,3 +1,4 @@
+/// Which joshuto config file a given piece of config data corresponds to.
 #[derive(Copy, Clone, Debug)]
 pub enum ConfigType {
     App,
@@ -26,6 +27,7 @@ impl clap::ValueEnum for ConfigType {
 }
 
 impl ConfigType {
+    /// Returns every config type, used for CLI argument enumeration.
     pub const fn enumerate() -> &'static [Self] {
         &[
             Self::App,
@@ -38,6 +40,7 @@ impl ConfigType {
         ]
     }
 
+    /// Returns the config type's short name, as used in CLI flags and display output.
     pub const fn as_str(&self) -> &'static str {
         match self {
             Self::App => "joshuto",
@@ -50,6 +53,7 @@ impl ConfigType {
         }
     }
 
+    /// Returns the config type's file name (e.g. `joshuto.toml`).
     pub const fn as_filename(&self) -> &'static str {
         match self {
             Self::App => "joshuto.toml",
@@ -62,6 +66,7 @@ impl ConfigType {
         }
     }
 
+    /// Returns this config type's built-in default file contents, if it has one.
     pub const fn embedded_config(&self) -> Option<&'static str> {
         use crate::constants::config::*;
         match self {

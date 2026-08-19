@@ -26,6 +26,8 @@ impl PathStyleIfSome for Style {
     }
 }
 
+/// Returns the display style for `entry`: selection highlight takes priority, then LS_COLORS
+/// (if enabled), then the theme's built-in per-type/per-extension styles.
 pub fn entry_style(config: &AppConfig, entry: &JoshutoDirEntry) -> Style {
     let metadata = &entry.metadata;
     let filetype = metadata.file_type();
@@ -48,6 +50,7 @@ pub fn entry_style(config: &AppConfig, entry: &JoshutoDirEntry) -> Style {
     }
 }
 
+/// Returns the themed prefix string to display before `entry`'s name, based on its selection state.
 pub fn entry_prefix(entry: &JoshutoDirEntry) -> &str {
     if entry.is_visual_mode_selected() {
         &THEME_T.visual_mode_selection.prefix

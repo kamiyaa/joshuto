@@ -1,3 +1,6 @@
+//! Individual ratatui widgets (directory lists, previews, prompts, menus, ...) composed by
+//! `ui::views` into full-screen layouts.
+
 mod tui_dirlist;
 mod tui_dirlist_detailed;
 mod tui_dirlist_loading;

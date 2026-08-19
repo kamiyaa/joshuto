@@ -4,12 +4,15 @@ use crate::types::state::AppState;
 use crate::utils::unix::expand_shell_string;
 use std::path::PathBuf;
 
+/// What to do with the captured output of the last `shell`/`capture` command.
 #[derive(Debug, Clone)]
 pub enum PostProcessor {
+    /// Treat the output as a path and change into it (or its parent, if a file).
     ChangeDirectory,
 }
 
 impl PostProcessor {
+    /// Parses a `stdout` command argument (e.g. `"cd"`) into a `PostProcessor`.
     pub fn from_str(args: &str) -> Option<Self> {
         match args {
             "cd" => Some(PostProcessor::ChangeDirectory),
@@ -46,6 +49,8 @@ fn as_one_existing_directory(stdout: &str) -> AppResult<PathBuf> {
     }
 }
 
+/// Implements `stdout`: applies `processor` to the captured output of the last `shell`/`capture`
+/// command.
 pub fn post_process_std_out(processor: &PostProcessor, app_state: &mut AppState) -> AppResult {
     let last_stdout = &app_state.state.last_stdout;
     if let Some(stdout) = last_stdout {

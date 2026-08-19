@@ -5,6 +5,8 @@ use crate::ui::AppBackend;
 use super::fzf;
 use super::select::SelectOption;
 
+/// Implements `select_fzf`: opens a multi-select fzf picker over the current directory's
+/// entries and applies the selection (or deselection/toggle, per `options`).
 pub fn select_fzf(
     app_state: &mut AppState,
     backend: &mut AppBackend,

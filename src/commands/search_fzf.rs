@@ -3,6 +3,8 @@ use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
+/// Implements `search_fzf`: opens an fzf picker over the current directory's entries and moves
+/// the cursor to the chosen one.
 pub fn search_fzf(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let items = app_state
         .state

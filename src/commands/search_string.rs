@@ -3,6 +3,8 @@ use crate::types::state::{AppState, MatchState};
 use super::cursor_move;
 use super::search;
 
+/// Implements `search`/`search_inc`: moves the cursor to the next entry matching a plain
+/// substring, searching from the cursor itself when `incremental` (live-typing) is set.
 pub fn search_string(app_state: &mut AppState, pattern: &str, incremental: bool) {
     let case_sensitivity = app_state.config.search_options.string_case_sensitivity;
 

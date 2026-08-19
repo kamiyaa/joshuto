@@ -8,6 +8,8 @@ use crate::types::state::AppState;
 use crate::ui::views::{DummyListener, TuiTextField};
 use crate::ui::AppBackend;
 
+/// Implements the `:` command line: prompts for input (pre/post-filled with `prefix`/`suffix`),
+/// records it in history, expands any matching alias, and parses and executes the result.
 pub fn read_and_execute(
     app_state: &mut AppState,
     backend: &mut AppBackend,

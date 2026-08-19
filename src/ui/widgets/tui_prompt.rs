@@ -10,15 +10,18 @@ use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
 
+/// A single-key confirmation prompt shown at the bottom of the screen (e.g. "Delete N files?").
 pub struct TuiPrompt<'a> {
     prompt: &'a str,
 }
 
 impl<'a> TuiPrompt<'a> {
+    /// Creates a prompt widget with the given message.
     pub fn new(prompt: &'a str) -> Self {
         Self { prompt }
     }
 
+    /// Renders the prompt and blocks until the user presses a key, returning it.
     pub fn get_key(&mut self, app_state: &mut AppState, backend: &mut AppBackend) -> Key {
         let terminal = backend.terminal_mut();
 

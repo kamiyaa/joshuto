@@ -4,6 +4,7 @@ use crate::types::state::AppState;
 
 use super::reload;
 
+/// Flips the show-hidden-files setting and invalidates all cached listings, without reloading.
 pub fn _toggle_hidden(app_state: &mut AppState) {
     let opposite = !app_state.config.display_options.show_hidden;
     app_state.config.display_options.show_hidden = opposite;
@@ -16,6 +17,7 @@ pub fn _toggle_hidden(app_state: &mut AppState) {
     }
 }
 
+/// Implements `toggle_hidden`: toggles whether hidden files are shown and reloads the current tab.
 pub fn toggle_hidden(app_state: &mut AppState) -> AppResult {
     _toggle_hidden(app_state);
     reload::soft_reload_curr_tab(app_state)?;

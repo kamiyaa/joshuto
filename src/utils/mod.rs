@@ -1,3 +1,6 @@
+//! Small standalone helpers: formatting, filesystem queries, key/mimetype parsing, and
+//! process/shell utilities used across joshuto.
+
 pub mod cwd;
 pub mod format;
 pub mod fs;

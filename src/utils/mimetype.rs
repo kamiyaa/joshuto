@@ -3,12 +3,14 @@ use std::process::Command;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
 
+/// A detected MIME type, split into its type and subtype (e.g. `"text"` / `"plain"`).
 pub struct Mimetype {
     _type: String,
     _subtype: String,
 }
 
 impl Mimetype {
+    /// Builds a `Mimetype` from its type and subtype strings.
     pub fn new(ttype: String, subtype: String) -> Self {
         Self {
             _type: ttype,
@@ -16,15 +18,18 @@ impl Mimetype {
         }
     }
 
+    /// Returns the MIME type (e.g. `"text"`).
     pub fn get_type(&self) -> &str {
         &self._type
     }
 
+    /// Returns the MIME subtype (e.g. `"plain"`).
     pub fn get_subtype(&self) -> &str {
         &self._subtype
     }
 }
 
+/// Detects the MIME type of file `p` by shelling out to `file --mime-type`.
 pub fn get_mimetype(p: &Path) -> AppResult<Mimetype> {
     let res = Command::new("file")
         .arg("--mime-type")

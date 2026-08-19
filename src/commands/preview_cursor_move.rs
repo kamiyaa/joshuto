@@ -4,6 +4,7 @@ use crate::error::AppResult;
 use crate::preview::preview_file::PreviewFileState;
 use crate::types::state::AppState;
 
+/// Sets the scroll index of the current entry's cached script preview.
 fn preview_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResult {
     let file_path: Option<PathBuf> = app_state
         .state
@@ -24,6 +25,7 @@ fn preview_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResult 
     Ok(())
 }
 
+/// Implements `preview_cursor_move_up`: scrolls the current entry's preview pane up by `u`.
 pub fn preview_up(app_state: &mut AppState, u: usize) -> AppResult {
     let new_index = {
         let file_path = app_state
@@ -57,6 +59,8 @@ pub fn preview_up(app_state: &mut AppState, u: usize) -> AppResult {
     Ok(())
 }
 
+/// Implements `preview_cursor_move_down`: scrolls the current entry's preview pane down by `u`,
+/// stopping short of the end.
 pub fn preview_down(app_state: &mut AppState, u: usize) -> AppResult {
     let new_index = {
         let file_path = app_state

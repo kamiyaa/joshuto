@@ -15,6 +15,8 @@ use super::change_directory;
 
 use crate::MIMETYPE_T;
 
+/// Looks up configured `open_with` programs for `path`, by extension first, falling back to
+/// detected MIME type (and subtype).
 fn _get_options<'a>(path: &path::Path, config: &AppConfig) -> Vec<&'a ProgramEntry> {
     let mut options: Vec<&ProgramEntry> = Vec::new();
 
@@ -51,6 +53,8 @@ fn _get_options<'a>(path: &path::Path, config: &AppConfig) -> Vec<&'a ProgramEnt
     options
 }
 
+/// Runs `option` on `files`, forking detached if configured, or blocking with the terminal
+/// released otherwise.
 fn _open_with_entry<S>(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -72,6 +76,7 @@ where
     Ok(())
 }
 
+/// Opens `path` via the system's `xdg-open` equivalent, optionally forking detached.
 fn _open_with_xdg(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -91,6 +96,8 @@ fn _open_with_xdg(
     Ok(())
 }
 
+/// Implements `open_with` (with no explicit index): prompts for a program, either picking a
+/// listed option by number or running an arbitrary typed command.
 fn _open_with_helper<S>(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -151,6 +158,9 @@ where
     Ok(())
 }
 
+/// Implements `open`: changes into the current entry if it's a directory, otherwise opens it
+/// (and any other selected files) with the first working configured program, `xdg-open`, or an
+/// interactive prompt, in that order of preference.
 pub fn open(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let curr_list = app_state
         .state
@@ -195,6 +205,8 @@ pub fn open(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     Ok(())
 }
 
+/// Implements `open_with` with an explicit index: opens the selected files with the
+/// `index`-th configured program for their type.
 pub fn open_with_index(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -228,6 +240,8 @@ pub fn open_with_index(
     Ok(())
 }
 
+/// Implements `open_with` in interactive mode: always prompts for which program to open the
+/// selected files with, regardless of any working configured default.
 pub fn open_with_interactive(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let mut paths = app_state
         .state

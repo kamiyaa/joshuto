@@ -1,3 +1,6 @@
+//! joshuto's runtime state: the top-level [`AppState`] and the tab, UI, worker, preview, and
+//! command-line sub-states it owns.
+
 mod app_state;
 mod commandline_state;
 mod file_manager_state;

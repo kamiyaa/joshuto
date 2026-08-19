@@ -1,3 +1,7 @@
+//! The [`Command`] enum: every built-in joshuto command, parsed from config/command-line strings
+//! and dispatched via the [`AppExecute`](crate::traits::app_execute::AppExecute) trait family.
+//! See `impl_comment.rs` for each variant's human-readable description.
+
 mod impl_appcommand;
 mod impl_appexecute;
 mod impl_comment;
@@ -21,6 +25,10 @@ use crate::types::option::line_mode::{LineMode, LineNumberStyle};
 use crate::types::option::search::CaseSensitivity;
 use crate::types::option::sort::SortMethod;
 
+/// Every built-in joshuto command, with any arguments it takes. Parsed from config/command-line
+/// strings via `FromStr` and dispatched via [`AppExecute`](crate::traits::app_execute::AppExecute).
+/// See [`CommandComment::comment`](crate::traits::app_execute::CommandComment::comment) for a
+/// human-readable description of each variant.
 #[derive(Clone, Debug)]
 #[allow(clippy::enum_variant_names)]
 pub enum Command {

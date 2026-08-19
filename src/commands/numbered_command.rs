@@ -11,6 +11,8 @@ use crate::types::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
 
+/// Implements `numbered_command`: reads further digits to build a count prefix, then dispatches
+/// the next bound command via [`NumberedExecute`] (or jumps to that line number on `g`).
 pub fn numbered_command(
     app_state: &mut AppState,
     backend: &mut AppBackend,

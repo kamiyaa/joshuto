@@ -5,6 +5,8 @@ use crate::fs::FileType;
 use crate::types::state::AppState;
 use crate::ui::AppBackend;
 
+/// Updates the current entry's cached directory size from the listing cache, if it has since
+/// been computed or changed there. Called before every cursor move.
 pub fn lazy_load_directory_size(app_state: &mut AppState) {
     let directory_size = match app_state
         .state
@@ -43,6 +45,8 @@ pub fn lazy_load_directory_size(app_state: &mut AppState) {
     }
 }
 
+/// Moves the cursor in the current directory listing to `new_index`, clamped to the last entry.
+/// The shared primitive underlying every cursor-movement command.
 pub fn cursor_move(app_state: &mut AppState, new_index: usize) {
     lazy_load_directory_size(app_state);
     let mut new_index = new_index;
@@ -64,6 +68,8 @@ pub fn cursor_move(app_state: &mut AppState, new_index: usize) {
     }
 }
 
+/// Moves the cursor onto the entry named by the first component of `path`, if present in the
+/// current directory listing.
 pub fn to_path(app_state: &mut AppState, path: &path::Path) -> AppResult {
     // This error should never happen
     let err = || AppError::new(AppErrorKind::UnknownError, String::from("Unexpected error"));
@@ -84,6 +90,7 @@ pub fn to_path(app_state: &mut AppState, path: &path::Path) -> AppResult {
     Ok(())
 }
 
+/// Implements `cursor_move_up`: moves the cursor up by `u`.
 pub fn up(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state
@@ -98,6 +105,7 @@ pub fn up(app_state: &mut AppState, u: usize) -> AppResult {
     Ok(())
 }
 
+/// Implements `cursor_move_down`: moves the cursor down by `u`.
 pub fn down(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state
@@ -112,6 +120,7 @@ pub fn down(app_state: &mut AppState, u: usize) -> AppResult {
     Ok(())
 }
 
+/// Implements `cursor_move_home`: moves the cursor to the first entry.
 pub fn home(app_state: &mut AppState) -> AppResult {
     let movement = app_state
         .state
@@ -133,6 +142,7 @@ pub fn home(app_state: &mut AppState) -> AppResult {
     Ok(())
 }
 
+/// Implements `cursor_move_end`: moves the cursor to the last entry.
 pub fn end(app_state: &mut AppState) -> AppResult {
     let movement = app_state
         .state
@@ -154,6 +164,7 @@ pub fn end(app_state: &mut AppState) -> AppResult {
     Ok(())
 }
 
+/// Returns how many entries make up one page, based on the terminal size and border settings.
 fn get_page_size(app_state: &AppState, backend: &AppBackend) -> Option<usize> {
     let rect = backend.terminal.as_ref().map(|t| t.size())?.ok()?;
 
@@ -171,6 +182,7 @@ fn get_page_size(app_state: &AppState, backend: &AppBackend) -> Option<usize> {
     }
 }
 
+/// Implements `cursor_move_page_up`: moves the cursor up by `proportion` of a page.
 pub fn page_up(app_state: &mut AppState, backend: &mut AppBackend, proportion: f64) -> AppResult {
     let page_size = get_page_size(app_state, backend).unwrap_or(10) as f64 * proportion;
     let page_size = page_size as usize;
@@ -188,6 +200,7 @@ pub fn page_up(app_state: &mut AppState, backend: &mut AppBackend, proportion: f
     Ok(())
 }
 
+/// Implements `cursor_move_page_down`: moves the cursor down by `proportion` of a page.
 pub fn page_down(app_state: &mut AppState, backend: &mut AppBackend, proportion: f64) -> AppResult {
     let page_size = get_page_size(app_state, backend).unwrap_or(10) as f64 * proportion;
     let page_size = page_size as usize;
@@ -205,6 +218,7 @@ pub fn page_down(app_state: &mut AppState, backend: &mut AppBackend, proportion:
     Ok(())
 }
 
+/// Implements `cursor_move_page_home`: moves the cursor to the top of the current viewport.
 pub fn page_home(app_state: &mut AppState, _: &mut AppBackend) -> AppResult {
     let new_index = app_state
         .state
@@ -218,6 +232,7 @@ pub fn page_home(app_state: &mut AppState, _: &mut AppBackend) -> AppResult {
     Ok(())
 }
 
+/// Implements `cursor_move_page_middle`: moves the cursor to the middle of the current viewport.
 pub fn page_middle(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let movement = get_page_size(app_state, backend).unwrap_or(10) / 2;
 
@@ -233,6 +248,7 @@ pub fn page_middle(app_state: &mut AppState, backend: &mut AppBackend) -> AppRes
     Ok(())
 }
 
+/// Implements `cursor_move_page_end`: moves the cursor to the bottom of the current viewport.
 pub fn page_end(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let movement = get_page_size(app_state, backend).unwrap_or(10) - 1;
 

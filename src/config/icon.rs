@@ -7,6 +7,7 @@ use crate::{
 
 use super::icon_raw::IconsRaw;
 
+/// Icon glyphs used in the file list, keyed by exact name/extension with configurable fallbacks.
 #[derive(Debug)]
 pub struct AppIcons {
     pub directory_exact: HashMap<String, String>,
@@ -17,6 +18,7 @@ pub struct AppIcons {
 }
 
 impl AppIcons {
+    /// Parses the built-in default `icons.toml`, returning an error only if it's malformed.
     pub fn default_icons() -> AppResult<Self> {
         let icons: IconsRaw = toml::from_str(ICON_CONFIG)?;
         Ok(Self::from(icons))

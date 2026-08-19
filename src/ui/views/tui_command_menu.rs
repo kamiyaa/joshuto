@@ -13,12 +13,15 @@ use crate::ui::widgets::TuiMenu;
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;
 
+/// The main view with a popup menu of `keymap`'s bindings overlaid, shown while resolving a
+/// composite (multi-key) keybind.
 pub struct TuiCommandMenu<'a> {
     app_state: &'a AppState,
     keymap: &'a KeyMapping,
 }
 
 impl<'a> TuiCommandMenu<'a> {
+    /// Creates the command-menu overlay listing `keymap`'s bindings.
     pub fn new(app_state: &'a AppState, keymap: &'a KeyMapping) -> Self {
         Self { app_state, keymap }
     }

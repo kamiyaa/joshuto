@@ -2,6 +2,8 @@ use std::path;
 
 use crate::HOSTNAME;
 
+/// Sets the process's current directory to `path` and notifies the terminal via an OSC 7
+/// escape sequence, so external tools (e.g. new terminal tabs) can pick up the cwd.
 pub fn set_current_dir(path: &path::Path) -> std::io::Result<()> {
     std::env::set_current_dir(path)?;
     // OSC 7:

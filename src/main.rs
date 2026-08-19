@@ -1,3 +1,6 @@
+//! joshuto: a ranger-inspired terminal file manager. This is the binary entry point: CLI
+//! argument parsing, global config statics, and the top-level run/quit flow.
+
 mod commands;
 mod config;
 mod constants;
@@ -84,24 +87,30 @@ lazy_static! {
     };
 }
 
+/// joshuto's command-line arguments.
 #[derive(Clone, Debug, Parser)]
 #[command(author, about)]
 pub struct Args {
     #[command(subcommand)]
     commands: Option<Commands>,
 
+    /// Print joshuto's build version.
     #[arg(short = 'v', long = "version")]
     version: bool,
 
+    /// On quit, print the current working directory (for shell `cd` integration).
     #[arg(long = "change-directory")]
     change_directory: bool,
 
+    /// On opening a file, print the selected file(s) instead of launching a program.
     #[arg(long = "file-chooser")]
     file_chooser: bool,
 
+    /// Write the `--change-directory`/`--file-chooser` output to this file instead of stderr.
     #[arg(long = "output-file")]
     output_file: Option<PathBuf>,
 
+    /// Directory to start in, if given.
     #[arg(name = "ARGUMENTS")]
     rest: Vec<PathBuf>,
 }

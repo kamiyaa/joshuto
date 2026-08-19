@@ -1,3 +1,4 @@
+/// A single metadata column that can be shown per file entry in a [`LineMode`](super::LineMode).
 #[derive(Default, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum LineModeArgs {
     Size,

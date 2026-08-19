@@ -5,11 +5,13 @@ use ratatui::widgets::Widget;
 use crate::types::state::AppState;
 use crate::ui::widgets::{TuiIoTasks, TuiTopBar};
 
+/// The `show_tasks` screen: top bar plus the background-task view.
 pub struct TuiWorkerView<'a> {
     app_state: &'a AppState,
 }
 
 impl<'a> TuiWorkerView<'a> {
+    /// Creates the task-view screen for `app_state`.
     pub fn new(app_state: &'a AppState) -> Self {
         Self { app_state }
     }

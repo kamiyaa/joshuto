@@ -1,5 +1,6 @@
 use std::time;
 
+/// Formats a byte count as a human-readable size (e.g. `"1.23 M"`).
 pub fn file_size_to_string(file_size: u64) -> String {
     const FILE_UNITS: [&str; 6] = ["B", "K", "M", "G", "T", "P"];
     const CONV_RATE: f64 = 1024.0;
@@ -20,6 +21,7 @@ pub fn file_size_to_string(file_size: u64) -> String {
     }
 }
 
+/// Formats a timestamp as `"YYYY-MM-DD HH:MM"` in the local timezone.
 pub fn time_to_string(time: time::SystemTime) -> String {
     const TIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
 
@@ -27,6 +29,7 @@ pub fn time_to_string(time: time::SystemTime) -> String {
     datetime.format(TIME_FORMATTING).to_string()
 }
 
+/// Clears the terminal screen.
 pub fn clear_screen() {
     println!("{}", ratatui::termion::clear::All);
 }

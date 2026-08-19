@@ -1,3 +1,4 @@
+/// A screen-space rectangle, independent of any particular rendering backend's `Rect` type.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Rect {
     pub x: u16,

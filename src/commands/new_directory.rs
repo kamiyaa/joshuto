@@ -6,6 +6,8 @@ use crate::types::state::AppState;
 
 use super::tab_ops;
 
+/// Implements `mkdir`: creates directory `p` (and any missing parents), reloads affected tabs,
+/// and optionally moves the cursor onto it.
 pub fn new_directory(app_state: &mut AppState, p: &path::Path) -> AppResult {
     std::fs::create_dir_all(p)?;
 

@@ -63,6 +63,7 @@ lazy_static! {
 }
 
 // Might need to be implemented in the future
+/// No-op `rustyline` edit listener; joshuto doesn't need to react to individual buffer edits.
 #[derive(Clone, Debug)]
 pub struct DummyListener {}
 
@@ -96,11 +97,14 @@ impl CompletionTracker {
     }
 }
 
+/// The on-screen row/column where the text-field cursor should be drawn.
 pub struct CursorInfo {
     pub x: usize,
     pub y: usize,
 }
 
+/// The interactive `:` command-line text input: history, tab-completion, and readline-style
+/// editing, built with `prompt`/`prefix`/`suffix`/`menu_items` before calling [`get_input`](Self::get_input).
 #[derive(Default)]
 pub struct TuiTextField<'a> {
     _prompt: &'a str,
@@ -110,6 +114,7 @@ pub struct TuiTextField<'a> {
 }
 
 impl<'a> TuiTextField<'a> {
+    /// Sets the completion-candidate menu items to show above the input.
     pub fn menu_items<I>(&mut self, items: I) -> &mut Self
     where
         I: Iterator<Item = &'a str>,
@@ -118,21 +123,27 @@ impl<'a> TuiTextField<'a> {
         self
     }
 
+    /// Sets the static prompt string shown before the input.
     pub fn prompt(&mut self, prompt: &'a str) -> &mut Self {
         self._prompt = prompt;
         self
     }
 
+    /// Sets text to pre-fill before the cursor.
     pub fn prefix(&mut self, prefix: &'a str) -> &mut Self {
         self._prefix = prefix;
         self
     }
 
+    /// Sets text to pre-fill after the cursor.
     pub fn suffix(&mut self, suffix: &'a str) -> &mut Self {
         self._suffix = suffix;
         self
     }
 
+    /// Runs the input loop until Enter (returning the entered text), Esc, or Backspace/Delete
+    /// on an empty field (returning `None`). Live-executes interactive commands (e.g.
+    /// incremental search) as the buffer changes.
     pub fn get_input(
         &mut self,
         app_state: &mut AppState,

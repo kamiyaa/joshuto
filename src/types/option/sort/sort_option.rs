@@ -7,6 +7,8 @@ use crate::fs::JoshutoDirEntry;
 
 use crate::types::option::sort::{SortMethod, SortMethodList};
 
+/// Resolved sort configuration: directories-first, case sensitivity, reverse, and the priority
+/// order of sort methods used to compare entries.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SortOption {
     pub directories_first: bool,
@@ -16,10 +18,13 @@ pub struct SortOption {
 }
 
 impl SortOption {
+    /// Promotes `method` to the primary sort criterion.
     pub fn set_sort_method(&mut self, method: SortMethod) {
         self.sort_methods.reorganize(method);
     }
 
+    /// Compares two entries according to `directories_first` and the configured sort-method
+    /// priority order, applying `reverse` to each comparison.
     pub fn compare(&self, f1: &JoshutoDirEntry, f2: &JoshutoDirEntry) -> cmp::Ordering {
         if self.directories_first {
             let f1_isdir = f1.file_path().is_dir();

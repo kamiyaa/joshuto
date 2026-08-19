@@ -7,6 +7,7 @@ use crate::{
 
 use super::sort_option_raw::SortOptionRaw;
 
+/// TOML-deserializable form of [`DisplayOption`](crate::types::option::display::DisplayOption).
 #[derive(Clone, Debug, Deserialize)]
 pub struct DisplayOptionRaw {
     #[serde(default = "default_mode")]

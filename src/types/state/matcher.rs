@@ -5,6 +5,7 @@ use regex::{Regex, RegexBuilder};
 
 use crate::{error::AppResult, types::option::search::CaseSensitivity};
 
+/// An active search/filter pattern: a compiled glob, regex, plain substring, or none.
 #[derive(Clone, Debug, Default)]
 pub enum MatchState {
     Glob(GlobMatcher),
@@ -18,6 +19,8 @@ pub enum MatchState {
 }
 
 impl MatchState {
+    /// Compiles `pattern` as a glob, resolving `Smart` case sensitivity by whether the pattern
+    /// contains an uppercase letter.
     pub fn new_glob(pattern: &str, case_sensitivity: CaseSensitivity) -> AppResult<Self> {
         let pattern_lower = pattern.to_lowercase();
 
@@ -45,6 +48,8 @@ impl MatchState {
         Ok(Self::Glob(glob))
     }
 
+    /// Compiles `pattern` as a regex, resolving `Smart` case sensitivity by whether the pattern
+    /// contains an uppercase letter.
     pub fn new_regex(pattern: &str, case_sensitivity: CaseSensitivity) -> AppResult<Self> {
         let pattern_lower = pattern.to_lowercase();
 
@@ -71,6 +76,8 @@ impl MatchState {
         Ok(Self::Regex(re))
     }
 
+    /// Builds a plain substring matcher, resolving `Smart` case sensitivity by whether the
+    /// pattern contains an uppercase letter.
     pub fn new_string(pattern: &str, case_sensitivity: CaseSensitivity) -> Self {
         let (pattern, actual_case_sensitivity) = match case_sensitivity {
             CaseSensitivity::Insensitive => (pattern.to_lowercase(), CaseSensitivity::Insensitive),
@@ -92,6 +99,7 @@ impl MatchState {
         }
     }
 
+    /// Returns `true` if `main` matches this pattern (always `true` for `None`).
     pub fn is_match(&self, main: &str) -> bool {
         match self {
             Self::Glob(glob_matcher) => Self::is_match_glob(main, glob_matcher),
@@ -127,6 +135,7 @@ impl MatchState {
         }
     }
 
+    /// Returns `true` if no pattern is set.
     pub fn is_none(&self) -> bool {
         matches!(self, Self::None)
     }

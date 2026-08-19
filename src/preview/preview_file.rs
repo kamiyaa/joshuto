@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::{process::Output, time};
 
+/// Status of a file preview: still being generated, failed, or ready to display.
 #[derive(Clone)]
 pub enum PreviewFileState {
     Loading,
@@ -18,6 +19,7 @@ impl Debug for PreviewFileState {
     }
 }
 
+/// The rendered output of a successfully-generated file preview.
 #[derive(Clone, Debug)]
 pub struct FilePreview {
     pub status: std::process::ExitStatus,

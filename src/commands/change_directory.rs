@@ -6,7 +6,8 @@ use crate::history::{generate_entries_to_root, DirectoryHistory};
 use crate::types::state::AppState;
 use crate::utils::cwd;
 
-// ChangeDirectory command
+/// Sets the process and tab working directory to `path`, updating zoxide's database if enabled.
+/// Lower-level than [`change_directory`]: doesn't touch the directory-listing cache.
 pub fn cd(path: &Path, app_state: &mut AppState, history_update: bool) -> std::io::Result<()> {
     cwd::set_current_dir(path)?;
     app_state
@@ -21,6 +22,8 @@ pub fn cd(path: &Path, app_state: &mut AppState, history_update: bool) -> std::i
     Ok(())
 }
 
+/// Implements `cd`: resolves `path` (relative, absolute, or a run of `../`) against the current
+/// directory, changes into it, and loads listings for it and all its ancestors.
 pub fn change_directory(app_state: &mut AppState, mut path: &Path) -> AppResult {
     let new_cwd = if path.is_absolute() {
         path.to_path_buf()
@@ -52,7 +55,7 @@ pub fn change_directory(app_state: &mut AppState, mut path: &Path) -> AppResult 
     Ok(())
 }
 
-// ParentDirectory command
+/// Implements `cd ..`: changes into the parent of the current directory.
 pub fn parent_directory(app_state: &mut AppState) -> AppResult {
     if let Some(parent) = app_state
         .state
@@ -68,7 +71,7 @@ pub fn parent_directory(app_state: &mut AppState) -> AppResult {
     Ok(())
 }
 
-// PreviousDirectory command
+/// Implements `cd -`: changes back to the directory this tab was in previously.
 pub fn previous_directory(app_state: &mut AppState) -> AppResult {
     if let Some(path) = app_state
         .state

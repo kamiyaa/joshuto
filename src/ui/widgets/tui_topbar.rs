@@ -11,11 +11,13 @@ use crate::ui::tab_list_builder;
 use crate::THEME_T;
 use crate::{HOSTNAME, USERNAME};
 
+/// The top status bar: username@hostname (if enabled) followed by the tab bar.
 pub struct TuiTopBar<'a> {
     pub app_state: &'a AppState,
 }
 
 impl<'a> TuiTopBar<'a> {
+    /// Creates the top bar widget for the current `app_state`.
     pub fn new(app_state: &'a AppState) -> Self {
         Self { app_state }
     }

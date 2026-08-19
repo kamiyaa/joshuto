@@ -1,5 +1,6 @@
 use std::path;
 
+/// The kind of background file operation being performed.
 #[derive(Clone, Copy, Debug)]
 pub enum FileOperation {
     Cut,
@@ -9,6 +10,7 @@ pub enum FileOperation {
 }
 
 impl FileOperation {
+    /// Returns the operation's name in imperative form (e.g. `"Cut"`).
     pub fn as_str(&self) -> &'static str {
         match *self {
             Self::Cut => "Cut",
@@ -18,6 +20,8 @@ impl FileOperation {
         }
     }
 
+    /// Returns the operation's name in present-progressive form (e.g. `"Moving"`), for progress
+    /// messages.
     pub fn actioning_str(&self) -> &'static str {
         match *self {
             Self::Cut => "Moving",
@@ -26,6 +30,7 @@ impl FileOperation {
             Self::Symlink => "Symlinking",
         }
     }
+    /// Returns the operation's name in past-tense form (e.g. `"moved"`), for completion messages.
     pub fn actioned_str(&self) -> &'static str {
         match *self {
             Self::Cut => "moved",
@@ -42,6 +47,7 @@ impl std::fmt::Display for FileOperation {
     }
 }
 
+/// Flags controlling how a file operation behaves, applicable subset depending on `kind`.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct FileOperationOptions {
     // symlink
@@ -66,6 +72,7 @@ impl std::fmt::Display for FileOperationOptions {
     }
 }
 
+/// Running progress of a background file operation, used to render the task/progress views.
 #[derive(Clone, Debug)]
 pub struct FileOperationProgress {
     pub kind: FileOperation,

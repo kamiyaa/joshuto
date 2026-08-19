@@ -2,6 +2,7 @@ use serde::Deserialize;
 use std::env;
 use std::fmt;
 
+/// A configured program to open a file with, plus how to run it (fork, silent, pager, etc.).
 #[derive(Clone, Debug, Deserialize)]
 pub struct ProgramEntry {
     #[serde(rename = "command")]
@@ -19,6 +20,7 @@ pub struct ProgramEntry {
 }
 
 impl ProgramEntry {
+    /// Creates a program entry that runs `command` with no arguments or special flags.
     pub fn new(command: String) -> Self {
         Self {
             _command: command,
@@ -30,12 +32,14 @@ impl ProgramEntry {
         }
     }
 
+    /// Appends a single argument, for builder-style construction.
     #[allow(dead_code)]
     pub fn arg<S: std::convert::Into<String>>(&mut self, arg: S) -> &mut Self {
         self._args.push(arg.into());
         self
     }
 
+    /// Appends multiple arguments, for builder-style construction.
     pub fn args<I, S>(&mut self, args: I) -> &mut Self
     where
         I: Iterator<Item = S>,
@@ -45,43 +49,53 @@ impl ProgramEntry {
         self
     }
 
+    /// Sets whether the program should be run detached (forked) instead of blocking joshuto.
     #[allow(dead_code)]
     pub fn fork(&mut self, fork: bool) -> &mut Self {
         self._fork = fork;
         self
     }
 
+    /// Sets whether the program's output should be suppressed.
     #[allow(dead_code)]
     pub fn silent(&mut self, silent: bool) -> &mut Self {
         self._silent = silent;
         self
     }
 
+    /// Returns the command to run.
     pub fn get_command(&self) -> &str {
         self._command.as_str()
     }
 
+    /// Returns the configured arguments.
     pub fn get_args(&self) -> &[String] {
         &self._args
     }
 
+    /// Returns `true` if the program should be run detached (forked).
     pub fn get_fork(&self) -> bool {
         self._fork
     }
 
+    /// Returns `true` if the program's output should be suppressed.
     pub fn get_silent(&self) -> bool {
         self._silent
     }
 
+    /// Returns `true` if joshuto should wait for a keypress before returning after this program
+    /// exits.
     pub fn get_confirm_exit(&self) -> bool {
         self._confirm_exit
     }
 
+    /// Returns `true` if this program is a pager and should be run accordingly.
     pub fn get_pager(&self) -> bool {
         self._pager
     }
 
     // TODO: Windows support
+    /// Returns `true` if this program's command is found on `$PATH`.
     pub fn program_exists(&self) -> bool {
         let program = self.get_command();
         env::var_os("PATH")

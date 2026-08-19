@@ -22,6 +22,8 @@ const MIN_LEFT_LABEL_WIDTH: i32 = 15;
 
 const ELLIPSIS: &str = "…";
 
+/// Renders the main directory listing pane: entry names with icons, line numbers, and
+/// per-entry linemode metadata (size, times, owner, permissions) right-aligned.
 pub struct TuiDirListDetailed<'a> {
     pub config: &'a AppConfig,
     pub dirlist: &'a JoshutoDirList,
@@ -30,6 +32,7 @@ pub struct TuiDirListDetailed<'a> {
     pub focused: bool,
 }
 impl<'a> TuiDirListDetailed<'a> {
+    /// Creates a detailed directory-list widget for `dirlist`.
     pub fn new(
         config: &'a AppConfig,
         dirlist: &'a JoshutoDirList,
@@ -248,6 +251,8 @@ fn factor_labels_for_entry(
     }
 }
 
+/// Truncates `name` to `drawing_width` display columns, inserting an ellipsis and preserving
+/// the file extension where it fits.
 pub fn trim_file_label(name: &str, drawing_width: usize) -> String {
     // pre-condition: string name is longer than width
     let (stem, extension) = match name.rfind('.') {

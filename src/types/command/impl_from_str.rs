@@ -19,6 +19,8 @@ use crate::HOME_DIR;
 use super::Command;
 use crate::constants::command_name::*;
 
+/// Returns `$enum_name` if `$command` (the parsed command name) equals `$command_match`, for
+/// commands that take no arguments.
 macro_rules! simple_command_conversion_case {
     ($command: ident, $command_match: ident, $enum_name: expr) => {
         if $command == $command_match {
@@ -30,6 +32,8 @@ macro_rules! simple_command_conversion_case {
 impl std::str::FromStr for Command {
     type Err = AppError;
 
+    /// Parses a config/command-line string (e.g. `"cursor_move_up 5"`) into a [`Command`],
+    /// splitting off the command name and delegating argument parsing to each variant.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some(stripped) = s.strip_prefix(':') {
             return Ok(Self::CommandLine {

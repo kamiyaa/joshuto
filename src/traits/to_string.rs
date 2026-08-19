@@ -1,6 +1,9 @@
 use ratatui::termion::event::{Event, Key, MouseEvent};
 
+/// Converts a value into its config-file string representation (e.g. `ctrl+c`, `arrow_left`),
+/// distinct from `std::string::ToString` which most termion types don't implement usefully.
 pub trait ToString {
+    /// Returns the config-file string representation of this value.
     fn to_string(&self) -> String;
 }
 

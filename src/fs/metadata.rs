@@ -2,6 +2,7 @@ use std::{fs, io, path, time};
 
 use nix::sys::stat::{mode_t, Mode, SFlag};
 
+/// The kind of filesystem object an entry represents.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum FileType {
     Directory,
@@ -21,6 +22,7 @@ impl From<SFlag> for FileType {
 }
 
 impl FileType {
+    /// Maps a Unix `st_mode` file-type flag to a [`FileType`].
     pub fn from_mode(mode: SFlag) -> Self {
         match mode {
             SFlag::S_IFBLK => FileType::Block,
@@ -34,12 +36,14 @@ impl FileType {
     }
 }
 
+/// Whether an entry is a plain file/directory or a symlink, and if a symlink, its target.
 #[derive(Clone, Debug)]
 pub enum LinkType {
     Normal,
     Symlink { target: String, valid: bool },
 }
 
+/// Filesystem metadata for a [`JoshutoDirEntry`](super::JoshutoDirEntry).
 #[derive(Clone, Debug)]
 pub struct JoshutoMetadata {
     pub len: u64,
@@ -57,6 +61,8 @@ pub struct JoshutoMetadata {
 }
 
 impl JoshutoMetadata {
+    /// Reads metadata for `path`, following symlinks where possible and falling back to
+    /// symlink metadata if the target is broken.
     pub fn from(path: &path::Path) -> io::Result<Self> {
         #[cfg(unix)]
         use std::os::unix::fs::MetadataExt;
@@ -124,42 +130,53 @@ impl JoshutoMetadata {
         })
     }
 
+    /// Returns the entry's size in bytes, as reported by the filesystem.
     pub fn len(&self) -> u64 {
         self.len
     }
 
+    /// Returns the number of entries in this directory, if it is a directory and the count has
+    /// been computed.
     pub fn directory_size(&self) -> Option<usize> {
         self.directory_size
     }
 
+    /// Records the number of entries in this directory.
     pub fn update_directory_size(&mut self, size: usize) {
         self.directory_size = Some(size);
     }
 
+    /// Returns the total recursive size of this directory in bytes, if it has been computed.
     pub fn cumulative_size(&self) -> Option<u64> {
         self.cumulative_size
     }
 
+    /// Records the total recursive size of this directory in bytes.
     pub fn update_cumulative_size(&mut self, size: u64) {
         self.cumulative_size = Some(size);
     }
 
+    /// Returns the entry's last-modified time.
     pub fn modified(&self) -> time::SystemTime {
         self.modified
     }
 
+    /// Returns the entry's last-accessed time.
     pub fn accessed(&self) -> time::SystemTime {
         self.accessed
     }
 
+    /// Returns the kind of filesystem object this entry is.
     pub fn file_type(&self) -> FileType {
         self.file_type
     }
 
+    /// Returns whether this entry is a symlink, and its target if so.
     pub fn link_type(&self) -> &LinkType {
         &self.link_type
     }
 
+    /// Returns `true` if this entry is a directory.
     pub fn is_dir(&self) -> bool {
         self.file_type == FileType::Directory
     }

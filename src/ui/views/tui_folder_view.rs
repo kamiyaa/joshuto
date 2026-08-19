@@ -18,11 +18,13 @@ use crate::ui::widgets::{
 use crate::ui::PreviewArea;
 use crate::THEME_T;
 
+/// Draws the borders and T-junction intersections around the parent/current/preview panes.
 struct TuiFolderViewBorders<'a> {
     pub constraints: &'a [Constraint; 3],
 }
 
 impl<'a> TuiFolderViewBorders<'a> {
+    /// Creates the border-drawing widget for the given pane width `constraints`.
     pub fn new(constraints: &'a [Constraint; 3]) -> Self {
         Self { constraints }
     }
@@ -82,12 +84,15 @@ impl Widget for TuiFolderViewBorders<'_> {
     }
 }
 
+/// The default three-pane layout: parent directory, current directory (detailed), and a
+/// preview pane, with top bar and bottom status line.
 pub struct TuiFolderView<'a> {
     pub app_state: &'a AppState,
     pub show_bottom_status: bool,
 }
 
 impl<'a> TuiFolderView<'a> {
+    /// Creates the folder view for `app_state`.
     pub fn new(app_state: &'a AppState) -> Self {
         Self {
             app_state,
@@ -95,6 +100,8 @@ impl<'a> TuiFolderView<'a> {
         }
     }
 
+    /// Returns the area available for the parent/current/preview panes, excluding the top bar
+    /// and bottom status line.
     pub fn folder_area(area: &Rect) -> Rect {
         Rect {
             y: area.top() + 1,
@@ -103,6 +110,7 @@ impl<'a> TuiFolderView<'a> {
         }
     }
 
+    /// Returns the single-row area for the top bar.
     pub fn header_area(area: &Rect) -> Rect {
         Rect {
             x: area.left(),
@@ -112,6 +120,7 @@ impl<'a> TuiFolderView<'a> {
         }
     }
 
+    /// Returns the single-row area for the bottom status line.
     pub fn footer_area(area: &Rect) -> Rect {
         Rect {
             x: area.x,
@@ -254,6 +263,8 @@ impl Widget for TuiFolderView<'_> {
     }
 }
 
+/// The screen positions of the border T-junctions where the parent/current/preview pane
+/// dividers meet the outer border.
 struct Intersections {
     top: u16,
     bottom: u16,
@@ -286,6 +297,9 @@ impl Intersections {
     }
 }
 
+/// Returns the pane-width constraints to use: the configured default, or (if
+/// `collapse_preview` is set and there's nothing to preview) the no-preview layout that gives
+/// the current pane the preview pane's space.
 pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
     let display_options = &app_state.config.display_options;
     if app_state.state.tab_state_ref().len() == 0 {
@@ -319,6 +333,7 @@ pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
     }
 }
 
+/// Splits `area` into parent/current/preview pane rectangles per `constraints`, without borders.
 pub fn calculate_layout(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
     let mut layout_rect = Layout::default()
         .direction(Direction::Horizontal)
@@ -337,6 +352,8 @@ pub fn calculate_layout(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> 
     layout_rect
 }
 
+/// Splits `area` into parent/current/preview pane rectangles per `constraints`, accounting for
+/// the outer border and inter-pane dividers.
 pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
     let block = Block::default().borders(Borders::ALL);
     let inner = block.inner(area);
@@ -355,6 +372,8 @@ pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) 
     vec![inner1, layout_rect[1], inner3]
 }
 
+/// Returns the file path and screen area of the currently shown preview, if any file preview
+/// (not a directory preview or a still-loading/errored one) is being shown in `rect`.
 pub fn calculate_preview(
     tab_state: &TabState,
     preview_state: &PreviewState,

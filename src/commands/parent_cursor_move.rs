@@ -4,6 +4,8 @@ use crate::error::AppResult;
 use crate::types::state::AppState;
 use crate::utils::cwd;
 
+/// Moves the cursor in the parent-directory pane to `new_index` and, if it lands on a
+/// directory, changes into it.
 pub fn parent_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResult {
     let mut path: Option<PathBuf> = None;
     let mut new_index = new_index;
@@ -33,6 +35,7 @@ pub fn parent_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResu
     Ok(())
 }
 
+/// Implements `parent_cursor_move_up`: moves the parent-pane cursor up by `u`.
 pub fn parent_up(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state
@@ -48,6 +51,7 @@ pub fn parent_up(app_state: &mut AppState, u: usize) -> AppResult {
     Ok(())
 }
 
+/// Implements `parent_cursor_move_down`: moves the parent-pane cursor down by `u`.
 pub fn parent_down(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state

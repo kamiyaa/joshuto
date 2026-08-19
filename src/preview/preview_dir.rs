@@ -5,6 +5,7 @@ use crate::fs::JoshutoDirList;
 use crate::types::event::AppEvent;
 use crate::types::state::AppState;
 
+/// Status of a directory preview being generated on a background thread.
 #[derive(Debug, Clone)]
 pub enum PreviewDirState {
     Loading,
@@ -12,14 +13,18 @@ pub enum PreviewDirState {
 }
 
 impl PreviewDirState {
+    /// Returns `true` if the preview is still being generated.
     pub fn is_loading(&self) -> bool {
         matches!(*self, Self::Loading)
     }
 }
 
+/// Namespace for spawning background directory-preview loads.
 pub struct Background {}
 
 impl Background {
+    /// Spawns a background thread that reads `dir_path` and posts an [`AppEvent::PreviewDir`]
+    /// with the result when done.
     pub fn load_preview(
         app_state: &mut AppState,
         dir_path: path::PathBuf,

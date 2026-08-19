@@ -7,6 +7,8 @@ use crate::tab::TabDisplayOption;
 use crate::types::option::display::DisplayOption;
 use crate::types::state::UiState;
 
+/// The contents of a single directory as displayed in a joshuto tab, along with cursor,
+/// viewport, and visual-mode-selection state.
 #[derive(Clone, Debug)]
 pub struct JoshutoDirList {
     pub path: path::PathBuf,
@@ -22,6 +24,7 @@ pub struct JoshutoDirList {
 }
 
 impl JoshutoDirList {
+    /// Builds a `JoshutoDirList` from already-read contents and metadata.
     pub fn new(
         path: path::PathBuf,
         contents: Vec<JoshutoDirEntry>,
@@ -41,6 +44,7 @@ impl JoshutoDirList {
         }
     }
 
+    /// Reads and sorts the contents of `path` from disk into a new `JoshutoDirList`.
     pub fn from_path(
         path: path::PathBuf,
         display_options: &DisplayOption,
@@ -66,10 +70,12 @@ impl JoshutoDirList {
         })
     }
 
+    /// Returns the current cursor position, if any.
     pub fn get_index(&self) -> Option<usize> {
         self.index
     }
 
+    /// Returns the index of the entry with the given file name, if present.
     pub fn get_index_from_name(&self, name: &str) -> Option<usize> {
         for (index, entry) in self.iter().enumerate() {
             if name == entry.file_name() {
@@ -79,6 +85,7 @@ impl JoshutoDirList {
         None
     }
 
+    /// Returns the index where the current visual-mode selection started, if in visual mode.
     pub fn get_visual_mode_anchor_index(&self) -> Option<usize> {
         self.visual_mode_anchor_index
     }
@@ -122,11 +129,13 @@ impl JoshutoDirList {
         self.update_visual_mode_selection();
     }
 
+    /// Cancels visual mode without keeping the in-progress selection.
     pub fn visual_mode_cancel(&mut self) {
         self.visual_mode_anchor_index = None;
         self.update_visual_mode_selection();
     }
 
+    /// Enables visual mode if inactive, or commits and disables it if active.
     pub fn toggle_visual_mode(&mut self) {
         if self.get_visual_mode_anchor_index().is_none() {
             self.visual_mode_enable()
@@ -135,6 +144,8 @@ impl JoshutoDirList {
         }
     }
 
+    /// Recomputes the scroll viewport so the cursor stays within the visible area, honoring
+    /// `options.scroll_offset`.
     pub fn update_viewport(&mut self, ui_state: &UiState, options: &DisplayOption) {
         if let Some(ix) = self.index {
             let height = ui_state.layout[0].height as usize;
@@ -166,6 +177,7 @@ impl JoshutoDirList {
         }
     }
 
+    /// Moves the cursor to `index`, updating the viewport and visual-mode selection to match.
     pub fn set_index(&mut self, index: Option<usize>, ui_state: &UiState, options: &DisplayOption) {
         if index == self.index {
             return;
@@ -177,22 +189,28 @@ impl JoshutoDirList {
         self.update_visual_mode_selection();
     }
 
+    /// Returns an iterator over the entries in this directory.
     pub fn iter<'a>(&'a self) -> Iter<'a, JoshutoDirEntry> {
         self.contents.iter()
     }
 
+    /// Returns a mutable iterator over the entries in this directory.
     pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, JoshutoDirEntry> {
         self.contents.iter_mut()
     }
 
+    /// Returns the number of entries in this directory.
     pub fn len(&self) -> usize {
         self.contents.len()
     }
 
+    /// Returns `true` if this directory has no entries.
     pub fn is_empty(&self) -> bool {
         self.contents.is_empty()
     }
 
+    /// Returns `true` if the directory on disk has been modified more recently than this
+    /// listing's cached metadata.
     pub fn modified(&self) -> bool {
         let metadata = std::fs::symlink_metadata(self.file_path());
         metadata
@@ -201,30 +219,39 @@ impl JoshutoDirList {
             .unwrap_or(false)
     }
 
+    /// Marks this listing as stale, forcing a re-read on next access.
     pub fn depreciate(&mut self) {
         self.need_update = true;
     }
 
+    /// Returns `true` if this listing should be re-read, either because it was marked stale or
+    /// the directory changed on disk.
     pub fn need_update(&self) -> bool {
         self.need_update || self.modified()
     }
 
+    /// Returns the path of the directory this listing represents.
     pub fn file_path(&self) -> &path::Path {
         self.path.as_path()
     }
 
+    /// Returns the number of currently selected entries.
     pub fn selected_count(&self) -> usize {
         self.contents.iter().filter(|e| e.is_selected()).count()
     }
 
+    /// Returns an iterator over the currently selected entries.
     pub fn iter_selected(&self) -> impl Iterator<Item = &JoshutoDirEntry> {
         self.contents.iter().filter(|entry| entry.is_selected())
     }
 
+    /// Returns a mutable iterator over the currently selected entries.
     pub fn iter_selected_mut(&mut self) -> impl Iterator<Item = &mut JoshutoDirEntry> {
         self.contents.iter_mut().filter(|entry| entry.is_selected())
     }
 
+    /// Returns the full paths of all selected entries, or the current entry's path if none are
+    /// selected.
     pub fn get_selected_paths(&self) -> Vec<path::PathBuf> {
         let vec: Vec<path::PathBuf> = self
             .iter_selected()
@@ -240,10 +267,12 @@ impl JoshutoDirList {
         }
     }
 
+    /// Returns the entry under the cursor, if any.
     pub fn curr_entry_ref(&self) -> Option<&JoshutoDirEntry> {
         self.contents.get(self.index?)
     }
 
+    /// Returns a mutable reference to the entry under the cursor, if any.
     pub fn curr_entry_mut(&mut self) -> Option<&mut JoshutoDirEntry> {
         self.contents.get_mut(self.index?)
     }

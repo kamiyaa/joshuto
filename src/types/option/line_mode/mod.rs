@@ -1,3 +1,5 @@
+//! Which columns of metadata (size, times, owner, permissions) are shown per file entry.
+
 mod args;
 mod line_number;
 
@@ -6,6 +8,7 @@ pub use line_number::*;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
 
+/// An ordered, deduplicated set of up to 7 [`LineModeArgs`] columns to display per entry.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct LineMode {
     pub mode: [LineModeArgs; 7],
@@ -13,6 +16,7 @@ pub struct LineMode {
 }
 
 impl LineMode {
+    /// Returns a `LineMode` showing every available column.
     pub const fn all() -> Self {
         Self {
             mode: [
@@ -28,6 +32,7 @@ impl LineMode {
         }
     }
 
+    /// Returns a `LineMode` showing no columns.
     pub const fn empty() -> Self {
         Self {
             mode: [LineModeArgs::Null; 7],
@@ -35,6 +40,7 @@ impl LineMode {
         }
     }
 
+    /// Appends `mode` if it isn't already present.
     pub fn add_mode(&mut self, mode: LineModeArgs) {
         if self.mode.contains(&mode) {
             return;
@@ -55,6 +61,8 @@ impl Default for LineMode {
 }
 
 impl LineMode {
+    /// Parses a `|`-separated linemode spec (or `"all"`/`"none"`) from the `linemode` command
+    /// or config file.
     pub fn from_string(name: &str) -> AppResult<LineMode> {
         match name {
             "all" => Ok(LineMode::all()),
@@ -84,6 +92,7 @@ impl LineMode {
         }
     }
 
+    /// Formats the active columns as a `" | "`-joined string.
     pub fn as_string(&self) -> String {
         let modes: Vec<&str> = self
             .mode

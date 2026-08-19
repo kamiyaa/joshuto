@@ -16,6 +16,8 @@ use crate::HOME_DIR;
 
 use super::quit::{quit_with_action, QuitAction};
 
+/// Makes the tab at `new_index` active: syncs the process cwd to it and loads listings for its
+/// current, parent, and cursor-entry directories.
 fn _tab_switch(new_index: usize, app_state: &mut AppState) -> std::io::Result<()> {
     app_state.state.tab_state_mut().index = new_index;
     let cwd = app_state
@@ -88,6 +90,7 @@ fn _tab_switch(new_index: usize, app_state: &mut AppState) -> std::io::Result<()
     Ok(())
 }
 
+/// Implements `tab_switch`: switches to the tab `offset` positions away, wrapping around.
 pub fn tab_switch(app_state: &mut AppState, offset: i32) -> std::io::Result<()> {
     let index = app_state.state.tab_state_ref().index;
     let num_tabs = app_state.state.tab_state_ref().len();
@@ -96,6 +99,8 @@ pub fn tab_switch(app_state: &mut AppState, offset: i32) -> std::io::Result<()> 
     _tab_switch(new_index, app_state)
 }
 
+/// Implements `tab_switch_index`: switches to the 1-indexed tab `new_index`, creating new
+/// default tabs to fill the gap if it doesn't exist yet.
 pub fn tab_switch_index(app_state: &mut AppState, new_index: usize) -> AppResult {
     let num_tabs = app_state.state.tab_state_ref().len();
     if new_index <= num_tabs {
@@ -109,6 +114,7 @@ pub fn tab_switch_index(app_state: &mut AppState, new_index: usize) -> AppResult
     Ok(())
 }
 
+/// Resolves the configured [`TabHomePage`] to a concrete path for a new tab.
 pub fn new_tab_home_path(app_state: &AppState) -> path::PathBuf {
     match app_state.config.tab_options.home_page {
         TabHomePage::Home => match HOME_DIR.as_ref() {
@@ -125,6 +131,8 @@ pub fn new_tab_home_path(app_state: &AppState) -> path::PathBuf {
     }
 }
 
+/// Implements `new_tab`: opens a new tab at the directory specified by `mode`, placing it last
+/// or right after the current tab.
 pub fn new_tab(app_state: &mut AppState, mode: &NewTabMode, last: bool) -> AppResult {
     let new_tab_path = match mode {
         NewTabMode::Default => Ok(new_tab_home_path(app_state)),
@@ -209,6 +217,7 @@ pub fn new_tab(app_state: &mut AppState, mode: &NewTabMode, last: bool) -> AppRe
     }
 }
 
+/// Implements `close_tab`: closes the current tab, or quits joshuto if it's the last tab.
 pub fn close_tab(app_state: &mut AppState) -> AppResult {
     if app_state.state.tab_state_ref().len() <= 1 {
         let action = if app_state.args.change_directory {
@@ -230,6 +239,7 @@ pub fn close_tab(app_state: &mut AppState) -> AppResult {
     Ok(())
 }
 
+/// Re-reads `curr_path` from disk into every open tab's listing cache.
 pub fn reload_all_tabs(app_state: &mut AppState, curr_path: &Path) -> io::Result<()> {
     let mut map = HashMap::new();
     {
@@ -252,6 +262,7 @@ pub fn reload_all_tabs(app_state: &mut AppState, curr_path: &Path) -> io::Result
     Ok(())
 }
 
+/// Removes `curr_path` from every open tab's listing cache (e.g. after it's deleted).
 pub fn remove_entry_from_all_tabs(app_state: &mut AppState, curr_path: &Path) {
     for (_, tab) in app_state.state.tab_state_mut().iter_mut() {
         tab.history_mut().remove(curr_path);

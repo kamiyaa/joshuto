@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 
+/// Fallback icon glyphs used when no exact-name or extension match is found.
 #[derive(Debug, Clone, Deserialize)]
 pub struct DefaultIcons {
     #[serde(default)]
@@ -9,6 +10,7 @@ pub struct DefaultIcons {
     pub directory: String,
 }
 
+/// TOML-deserializable form of [`AppIcons`](super::icon::AppIcons).
 #[derive(Debug, Clone, Deserialize)]
 pub struct IconsRaw {
     #[serde(default)]

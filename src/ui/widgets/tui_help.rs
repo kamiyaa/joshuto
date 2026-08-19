@@ -21,6 +21,7 @@ lazy_static! {
 const TITLE: &str = "Keybindings";
 const FOOTER: &str = "Press <ESC> to return, / to search, 1,2,3 to sort";
 
+/// The searchable, sortable keybinding help table.
 pub struct TuiHelp<'a> {
     // This keymap is constructed with get_keymap_table function
     keymap: &'a [Row<'a>],
@@ -29,6 +30,7 @@ pub struct TuiHelp<'a> {
 }
 
 impl<'a> TuiHelp<'a> {
+    /// Creates the help widget, scrolled to `offset` and filtered by `search_query`.
     pub fn new(keymap: &'a [Row], offset: &'a mut u8, search_query: &'a str) -> TuiHelp<'a> {
         TuiHelp {
             keymap,
@@ -93,6 +95,8 @@ impl Widget for TuiHelp<'_> {
 
 // Translates output from 'get_raw_keymap_table' into format,
 // readable by TUI table widget
+/// Builds the styled table rows for the help view: key, command, and description, filtered by
+/// `search_query` and sorted by column `sort_by`.
 pub fn get_keymap_table<'a>(
     keymap: &'a KeyMapping,
     search_query: &'a str,
@@ -112,6 +116,8 @@ pub fn get_keymap_table<'a>(
 
 // This function is needed because we cannot access Row items, which
 // means that we won't be able to sort binds if we create Rows directly
+/// Flattens `keymap` (recursing into composite keybinds, prefixing their key labels) into
+/// `[key, command, description]` rows matching `search_query`, sorted by column `sort_by`.
 pub fn get_raw_keymap_table<'a>(
     keymap: &'a KeyMapping,
     search_query: &'a str,

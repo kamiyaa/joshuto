@@ -4,16 +4,20 @@ use signal_hook::iterator::SignalsInfo;
 
 use crate::types::event::{AppEvent, AppEventSender};
 
+/// Listens for OS signals (currently `SIGWINCH`) and forwards them as [`AppEvent`]s.
 #[derive(Clone, Debug)]
 pub struct SignalListener {
     pub event_tx: AppEventSender,
 }
 
 impl SignalListener {
+    /// Builds a listener that sends signal events to `event_tx`.
     pub fn new(event_tx: AppEventSender) -> Self {
         Self { event_tx }
     }
 
+    /// Runs the listener loop, forwarding each received signal until the channel closes.
+    /// Intended to be run on its own thread.
     pub fn run(self) {
         let sigs = vec![signal::SIGWINCH];
         let mut signals = SignalsInfo::<SignalOnly>::new(&sigs).unwrap();

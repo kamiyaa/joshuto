@@ -9,6 +9,7 @@ use crate::utils::unix::{self, UNIX_PERMISSION_VALS};
 
 use super::cursor_move;
 
+/// Parses a `rwxrwxrwx`-style permission string into a Unix [`Mode`].
 pub fn str_to_mode(s: &str) -> Mode {
     let mut mode = Mode::empty();
     for (i, ch) in s.chars().enumerate().take(UNIX_PERMISSION_VALS.len()) {
@@ -20,6 +21,8 @@ pub fn str_to_mode(s: &str) -> Mode {
     mode
 }
 
+/// Implements `set_mode`: prompts for a new permission string and applies it to the selected
+/// entries (or the current entry, if none selected).
 pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     const PREFIX: &str = "set_mode ";
     let entry = app_state

@@ -1,3 +1,5 @@
+//! Core data types: commands, config/state models, key handling, and mimetype/option types.
+
 pub mod command;
 pub mod completion_kind;
 pub mod config_type;

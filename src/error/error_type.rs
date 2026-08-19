@@ -3,6 +3,7 @@ use std::io;
 
 use super::AppErrorKind;
 
+/// joshuto's catch-all error type: an [`AppErrorKind`] category plus a human-readable cause.
 #[derive(Clone, Debug)]
 pub struct AppError {
     _kind: AppErrorKind,
@@ -10,18 +11,22 @@ pub struct AppError {
 }
 
 impl AppError {
+    /// Builds an `AppError` from an explicit kind and cause message.
     pub fn new(_kind: AppErrorKind, _cause: String) -> Self {
         Self { _kind, _cause }
     }
 
+    /// Builds an `AppError` with kind [`AppErrorKind::UnknownError`] from any displayable cause.
     pub fn error(cause: impl ToString) -> Self {
         Self::new(AppErrorKind::UnknownError, cause.to_string())
     }
 
+    /// Shorthand for returning `Err(AppError::error(cause))` from a fallible function.
     pub fn fail<T>(cause: impl ToString) -> Result<T, AppError> {
         Err(Self::error(cause))
     }
 
+    /// Returns this error's category.
     #[allow(dead_code)]
     pub fn kind(&self) -> &AppErrorKind {
         &self._kind

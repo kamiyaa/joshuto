@@ -3,6 +3,7 @@ use crate::types::state::{AppState, MatchState};
 
 use super::select::{self, SelectOption};
 
+/// Implements `select_glob`: selects entries in the current directory matching a glob pattern.
 pub fn select_glob(app_state: &mut AppState, pattern: &str, options: &SelectOption) -> AppResult {
     let case_sensitivity = app_state.config.search_options.glob_case_sensitivity;
 

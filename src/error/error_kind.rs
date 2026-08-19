@@ -1,33 +1,46 @@
 use std::convert::From;
 use std::io;
 
+/// Category of an [`AppError`](super::AppError), used to distinguish error causes without
+/// carrying a full error object.
 #[derive(Clone, Debug)]
 pub enum AppErrorKind {
-    // io related
+    /// An underlying `std::io` operation failed.
     Io,
 
-    // environment variable not found
+    /// A required environment variable was not found.
     EnvVar,
 
-    // parse error
+    /// A value failed to parse.
     Parse,
+    /// The system clipboard could not be read or written.
     Clipboard,
+    /// A config file failed to parse or load.
     Config,
 
+    /// A trash/recycle-bin operation failed.
     Trash,
 
+    /// A glob pattern was invalid or failed to match.
     Glob,
 
+    /// A regex pattern was invalid or failed to match.
     Regex,
 
+    /// A command or option was given invalid parameters.
     InvalidParameters,
+    /// joshuto's internal state was inconsistent or unexpected.
     StateError,
 
+    /// A command argument was not recognized.
     UnrecognizedArgument,
+    /// A command name was not recognized.
     UnrecognizedCommand,
 
+    /// An error occurred that doesn't fit any other category.
     UnknownError,
 
+    /// An internal invariant was violated; indicates a bug in joshuto itself.
     InternalError,
 }
 

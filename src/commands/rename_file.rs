@@ -8,6 +8,8 @@ use crate::ui::AppBackend;
 
 use super::command_line;
 
+/// Renames `src` to `dest` on disk (failing if `dest` already exists) and refreshes the current
+/// directory's cached listing.
 pub fn _rename_file(
     app_state: &mut AppState,
     src: &path::Path,
@@ -39,6 +41,7 @@ pub fn _rename_file(
     Ok(())
 }
 
+/// Implements `rename`: renames the current entry to `dest`.
 pub fn rename_file(app_state: &mut AppState, dest: &path::Path) -> AppResult {
     let path: Option<path::PathBuf> = app_state
         .state
@@ -54,6 +57,7 @@ pub fn rename_file(app_state: &mut AppState, dest: &path::Path) -> AppResult {
     Ok(())
 }
 
+/// Returns the file name of the entry under the cursor, if any.
 fn _get_current_file_name(app_state: &mut AppState) -> Option<String> {
     app_state
         .state
@@ -63,6 +67,8 @@ fn _get_current_file_name(app_state: &mut AppState) -> Option<String> {
         .and_then(|list| list.curr_entry_ref().map(|s| s.file_name().to_string()))
 }
 
+/// Implements `rename_append`: opens the command line pre-filled with `rename <current name>`,
+/// cursor at the end, for appending to the file name.
 pub fn rename_file_append(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -75,6 +81,8 @@ pub fn rename_file_append(
     Ok(())
 }
 
+/// Implements `rename_append_base`: opens the command line with the cursor placed right after
+/// the file's base name (before its extension), for appending before the extension.
 pub fn rename_file_append_base(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -93,6 +101,8 @@ pub fn rename_file_append_base(
     Ok(())
 }
 
+/// Implements `rename_prepend`: opens the command line with the cursor before the current file
+/// name, for prepending text.
 pub fn rename_file_prepend(
     app_state: &mut AppState,
     backend: &mut AppBackend,
@@ -105,6 +115,8 @@ pub fn rename_file_prepend(
     Ok(())
 }
 
+/// Implements `rename_keep_ext`: opens the command line with the base name cleared but the
+/// extension preserved as suffix text.
 pub fn rename_file_keep_ext(
     app_state: &mut AppState,
     backend: &mut AppBackend,

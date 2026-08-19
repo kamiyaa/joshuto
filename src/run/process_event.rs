@@ -28,6 +28,9 @@ use crate::ui;
 use crate::ui::views::TuiCommandMenu;
 use crate::utils::format;
 
+/// Renders the pending-keybind menu and blocks, following composite (multi-key) keybinds until
+/// a simple keybind resolves (returning its commands), `Esc` is pressed, or an unbound key is
+/// hit (returning `None`).
 pub fn poll_event_until_simple_keybind<'a>(
     app_state: &mut AppState,
     backend: &mut ui::AppBackend,
@@ -66,6 +69,8 @@ pub fn poll_event_until_simple_keybind<'a>(
     }
 }
 
+/// Handles every [`AppEvent`] that isn't direct terminal input: IO task lifecycle, preview
+/// results, filesystem changes, and forked-process completion.
 pub fn process_noninteractive(event: AppEvent, app_state: &mut AppState) {
     match event {
         AppEvent::NewIoTask => process_new_io_task(app_state),
@@ -87,6 +92,7 @@ fn process_filesystem_event(_event: notify::Event, app_state: &mut AppState) {
     let _ = reload::soft_reload_curr_tab(app_state);
 }
 
+/// Starts the next queued IO task, if the worker is idle and a task is waiting.
 pub fn process_new_io_task(app_state: &mut AppState) {
     if app_state.state.worker_state_ref().is_busy() {
         return;
@@ -97,10 +103,12 @@ pub fn process_new_io_task(app_state: &mut AppState) {
     let _ = app_state.state.worker_state_mut().start_next_job();
 }
 
+/// Records `stats` as the currently in-progress IO task.
 pub fn process_io_task_start(app_state: &mut AppState, stats: IoTaskStat) {
     app_state.state.worker_state.progress = Some(stats);
 }
 
+/// Applies a progress update to the in-progress IO task, if any.
 pub fn process_io_task_progress(app_state: &mut AppState, res: IoTaskProgressMessage) {
     let worker_state = app_state.state.worker_state_mut();
     if let Some(observer) = worker_state.progress.as_mut() {
@@ -109,6 +117,8 @@ pub fn process_io_task_progress(app_state: &mut AppState, res: IoTaskProgressMes
     }
 }
 
+/// Handles a completed IO task: reports the error, or on success, reloads/purges the affected
+/// source and destination paths in every tab and starts the next queued task.
 pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
     match res {
         Err(err) => {
@@ -148,6 +158,7 @@ pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
     process_new_io_task(app_state);
 }
 
+/// Applies a completed background directory-preview read to the tab that requested it.
 pub fn process_dir_preview(
     app_state: &mut AppState,
     id: Uuid,
@@ -180,6 +191,7 @@ pub fn process_dir_preview(
     }
 }
 
+/// Applies a completed file preview (script output or rendered image) to the preview cache.
 pub fn process_file_preview(
     app_state: &mut AppState,
     path: path::PathBuf,
@@ -208,6 +220,8 @@ pub fn process_file_preview(
     };
 }
 
+/// Handles raw terminal escape sequences not otherwise recognized (currently arrow-key scroll
+/// sequences on terminals without full mouse support).
 pub fn process_unsupported(
     app_state: &mut AppState,
     backend: &mut ui::AppBackend,
@@ -263,6 +277,9 @@ fn children_cursor_move(app_state: &mut AppState, new_index: usize) {
     }
 }
 
+/// Translates a mouse event into the equivalent command based on which pane/row it targets:
+/// scroll wheel moves the relevant pane's cursor (or switches tabs on the tab bar), and
+/// click/right-click moves the cursor and optionally opens the entry or changes directory.
 pub fn process_mouse(
     app_state: &mut AppState,
     backend: &mut ui::AppBackend,

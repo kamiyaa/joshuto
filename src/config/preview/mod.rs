@@ -11,6 +11,7 @@ use crate::{
 
 use serde::{Deserialize, Serialize};
 
+/// Per-extension and per-mimetype external preview program overrides.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct FileEntryPreview {
     #[serde(default)]
@@ -20,11 +21,13 @@ pub struct FileEntryPreview {
 }
 
 impl FileEntryPreview {
+    /// Parses a `FileEntryPreview` from TOML source text.
     pub fn from_toml_str(s: &str) -> AppResult<Self> {
         let res = toml::from_str(s)?;
         Ok(res)
     }
 
+    /// Loads and parses this config from the config directory hierarchy.
     pub fn get_config() -> AppResult<Self> {
         let file_path = search_config_directories(ConfigType::Preview.as_filename())
             .ok_or_else(|| AppError::new(AppErrorKind::Config, "Cannot find config".to_string()))?;
@@ -32,6 +35,7 @@ impl FileEntryPreview {
         Self::from_toml_str(&file_contents)
     }
 
+    /// Loads this config, falling back to the default (empty) config if not found or invalid.
     pub fn get_config_or_default() -> Self {
         Self::get_config().unwrap_or_default()
     }

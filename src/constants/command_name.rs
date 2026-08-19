@@ -1,7 +1,11 @@
+//! String names of every built-in joshuto command, used for keymap/config parsing and lookup.
+
 use lazy_static::lazy_static;
 
+/// Command prefix used to enter the `:` command line.
 pub const CMD_COMMAND_LINE: &str = ":";
 
+/// Declares a `pub const` for each `(name, value)` pair, plus a `COMMANDS` list of all values.
 macro_rules! cmd_constants {
     ($( ($cmd_name:ident, $cmd_value:literal), )*) => {
         $(
@@ -9,6 +13,7 @@ macro_rules! cmd_constants {
         )*
 
         lazy_static! {
+            /// All built-in command name strings, used to validate commands referenced in config files.
             pub static ref COMMANDS: Vec<&'static str> = vec![$($cmd_name,)*];
         }
     };

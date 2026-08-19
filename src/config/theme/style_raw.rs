@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use super::style::AppStyle;
 
+/// A style override where every field is optional, so it can be patched onto a base style
+/// (used for tab-theme prefix/postfix overrides).
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AppStyleOptionsRaw {
     pub fg: Option<String>,
@@ -14,6 +16,7 @@ pub struct AppStyleOptionsRaw {
 }
 
 impl AppStyleOptionsRaw {
+    /// Converts to a ratatui [`Style`], leaving unset fields as no-ops.
     pub fn as_style(&self) -> Style {
         let mut add_modifier = style::Modifier::empty();
         let mut sub_modifier = style::Modifier::empty();
@@ -48,6 +51,7 @@ impl AppStyleOptionsRaw {
     }
 }
 
+/// TOML-deserializable form of [`AppStyle`](super::style::AppStyle).
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AppStyleRaw {
     #[serde(default)]
@@ -65,6 +69,7 @@ pub struct AppStyleRaw {
 }
 
 impl AppStyleRaw {
+    /// Converts to a resolved [`AppStyle`].
     pub fn to_style_theme(&self) -> AppStyle {
         let bg = Self::str_to_color(self.bg.as_str());
         let fg = Self::str_to_color(self.fg.as_str());
@@ -87,6 +92,7 @@ impl AppStyleRaw {
             .insert(modifier)
     }
 
+    /// Parses a color name, hex code (`#rrggbb`), or CSS-style RGB string into a ratatui color.
     pub fn str_to_color(s: &str) -> style::Color {
         str_to_color(s)
     }

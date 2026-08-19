@@ -8,6 +8,8 @@ use crate::{
 
 use super::line_mode::LineNumberStyle;
 
+/// The overall UI layout: the standard multi-pane view, a minimal single-pane view, or a
+/// horizontally-split view.
 #[derive(Clone, Copy, Debug)]
 pub enum DisplayMode {
     Default,
@@ -15,6 +17,7 @@ pub enum DisplayMode {
     HSplit,
 }
 
+/// Returns the default parent/current/preview column width ratio.
 pub const fn default_column_ratio() -> (usize, usize, usize) {
     (1, 3, 4)
 }
@@ -87,6 +90,8 @@ impl From<DisplayOptionRaw> for DisplayOption {
 }
 
 impl DisplayOption {
+    /// Returns the function used to decide whether a directory entry should be shown, based on
+    /// hidden-file and filter/search settings.
     pub fn filter_func(
         &self,
     ) -> fn(&walkdir::DirEntry, &DisplayOption, &DirListDisplayOptions) -> bool {

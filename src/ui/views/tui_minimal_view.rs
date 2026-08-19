@@ -7,12 +7,14 @@ use ratatui::widgets::{Paragraph, Widget, Wrap};
 use crate::types::state::AppState;
 use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTopBar};
 
+/// A single-pane layout: just the current directory listing, top bar, and status line.
 pub struct TuiMinimalView<'a> {
     pub app_state: &'a AppState,
     pub show_bottom_status: bool,
 }
 
 impl<'a> TuiMinimalView<'a> {
+    /// Creates the minimal-mode view for `app_state`.
     pub fn new(app_state: &'a AppState) -> Self {
         Self {
             app_state,

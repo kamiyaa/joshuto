@@ -17,9 +17,12 @@ use crate::types::event::signal_listener::SignalListener;
 use crate::types::io::IoTaskProgressMessage;
 use crate::types::io::IoTaskStat;
 
+/// Sending half of the app event channel.
 pub type AppEventSender = mpsc::Sender<AppEvent>;
+/// Receiving half of the app event channel.
 pub type AppEventReceiver = mpsc::Receiver<AppEvent>;
 
+/// A successfully-generated file preview: either script/text output or a rendered image.
 pub enum PreviewData {
     Script(Box<FilePreview>),
     Image(Box<Protocol>),
@@ -34,6 +37,9 @@ impl Debug for PreviewData {
     }
 }
 
+/// Every kind of asynchronous event the main loop can receive: terminal input, background IO
+/// task updates, forked-process completion, preview results, terminal resize, and filesystem
+/// changes.
 #[derive(Debug)]
 pub enum AppEvent {
     // User input events
@@ -73,6 +79,7 @@ pub struct AppEventListener {
 }
 
 impl AppEventListener {
+    /// Spawns the signal and terminal-input listener threads and returns the event channel.
     pub fn new() -> Self {
         Self::default()
     }
@@ -80,11 +87,13 @@ impl AppEventListener {
     // We need a next() and a flush() so we don't continuously consume
     // input from the console. Sometimes, other applications need to
     // read terminal inputs while joshuto is in the background
+    /// Blocks until the next `AppEvent` arrives.
     pub fn next(&self) -> Result<AppEvent, mpsc::RecvError> {
         let event = self.event_rx.recv()?;
         Ok(event)
     }
 
+    /// Signals the input thread to poll for the next terminal input event.
     pub fn flush(&self) {
         loop {
             if self.input_tx.send(()).is_ok() {

@@ -7,6 +7,9 @@ use crate::ui::AppBackend;
 use shell_words::split;
 use std::process::{Command, Stdio};
 
+/// Implements `custom_search`/`custom_search_interactive`: runs the named user-configured
+/// command (substituting `%s` with selected files and `%text` with extra args), then changes
+/// into the directory of the path it prints to stdout.
 pub fn custom_search(
     app_state: &mut AppState,
     backend: &mut AppBackend,

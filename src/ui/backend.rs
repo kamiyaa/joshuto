@@ -9,6 +9,7 @@ use ratatui::widgets::Widget;
 
 use crate::utils::format::clear_screen;
 
+/// The raw-mode alternate-screen terminal, with or without mouse event capture enabled.
 pub enum Screen {
     WithMouse(MouseTerminal<AlternateScreen<RawTerminal<std::io::Stdout>>>),
     WithoutMouse(AlternateScreen<RawTerminal<std::io::Stdout>>),
@@ -45,14 +46,18 @@ impl Write for Screen {
 }
 
 // pub type TuiBackend = TermionBackend<Screen>;
+/// The concrete ratatui terminal type joshuto renders to.
 pub type TuiTerminal = ratatui::Terminal<TermionBackend<Screen>>;
 
+/// Owns the terminal, which can be temporarily released (e.g. to hand control to a subprocess)
+/// and restored.
 pub struct AppBackend {
     pub terminal: Option<TuiTerminal>,
     pub mouse_support: bool,
 }
 
 impl AppBackend {
+    /// Enters raw/alternate-screen mode and constructs the terminal backend.
     pub fn new(mouse_support: bool) -> io::Result<Self> {
         let alt_screen = Screen::new(mouse_support)?;
         // clears the screen of artifacts
@@ -67,6 +72,7 @@ impl AppBackend {
         })
     }
 
+    /// Renders `widget` to fill the full terminal area for one frame.
     pub fn render<W>(&mut self, widget: W)
     where
         W: Widget,
@@ -77,21 +83,28 @@ impl AppBackend {
         });
     }
 
+    /// Returns the underlying terminal. Panics if the terminal has been dropped via
+    /// [`terminal_drop`](Self::terminal_drop) and not yet restored.
     pub fn terminal_ref(&self) -> &TuiTerminal {
         self.terminal.as_ref().unwrap()
     }
 
+    /// Returns a mutable reference to the underlying terminal. Panics if the terminal has been
+    /// dropped via [`terminal_drop`](Self::terminal_drop) and not yet restored.
     pub fn terminal_mut(&mut self) -> &mut TuiTerminal {
         self.terminal.as_mut().unwrap()
     }
 
     // For when we need to launch a terminal application
+    /// Releases the terminal (exiting raw/alternate-screen mode), e.g. to hand control to a
+    /// subprocess. Call [`terminal_restore`](Self::terminal_restore) afterward.
     pub fn terminal_drop(&mut self) {
         let _ = self.terminal.take();
         let _ = stdout().flush();
     }
 
     // For when we need to restore joshuto
+    /// Re-enters raw/alternate-screen mode after a [`terminal_drop`](Self::terminal_drop).
     pub fn terminal_restore(&mut self) -> io::Result<()> {
         let mut new_backend = Self::new(self.mouse_support)?;
         std::mem::swap(&mut self.terminal, &mut new_backend.terminal);

@@ -14,6 +14,7 @@ use crate::ui::widgets;
 use crate::ui::widgets::TuiHelp;
 use crate::ui::AppBackend;
 
+/// Implements `help`: runs a nested event loop showing the searchable keybind help screen.
 pub fn help_loop(
     app_state: &mut AppState,
     backend: &mut AppBackend,

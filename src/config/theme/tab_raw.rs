@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::style_raw::AppStyleOptionsRaw;
 
+/// TOML-deserializable form of [`TabTheme`](super::tab::TabTheme).
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct TabThemeRaw {
     #[serde(default)]
@@ -10,6 +11,7 @@ pub struct TabThemeRaw {
     pub chars: TabThemeCharsRaw,
 }
 
+/// Optional per-element style overrides for the tab bar; unset fields fall back to defaults.
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct TabThemeColorRaw {
     pub active_prefix: Option<AppStyleOptionsRaw>,
@@ -32,6 +34,7 @@ pub struct TabThemeColorRaw {
     pub padding_fill: Option<AppStyleOptionsRaw>,
 }
 
+/// Optional per-element character overrides for the tab bar; unset fields fall back to defaults.
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct TabThemeCharsRaw {
     pub active_prefix: Option<String>,

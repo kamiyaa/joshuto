@@ -1,6 +1,7 @@
 use crate::error::AppResult;
 use crate::types::state::AppState;
 
+/// Implements `escape`: cancels the current visual-mode selection, if any.
 pub fn escape(app_state: &mut AppState) -> AppResult {
     if let Some(curr_dir_list) = app_state
         .state

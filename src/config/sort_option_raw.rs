@@ -2,6 +2,7 @@ use serde::Deserialize;
 
 use crate::utils::serde::default_true;
 
+/// TOML-deserializable form of [`SortOption`](crate::types::option::sort::SortOption).
 #[derive(Clone, Debug, Deserialize)]
 pub struct SortOptionRaw {
     #[serde(default = "default_true")]

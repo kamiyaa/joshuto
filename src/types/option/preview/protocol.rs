@@ -2,6 +2,8 @@ use allmytoes::ThumbSize;
 use ratatui_image::picker::ProtocolType;
 use serde::{Deserialize, Serialize};
 
+/// How image previews are rendered in the terminal: auto-detected, disabled, or a specific
+/// graphics protocol.
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum PreviewProtocol {
@@ -12,6 +14,7 @@ pub enum PreviewProtocol {
     ProtocolType(ProtocolType),
 }
 
+/// Requested size for XDG thumbnail previews.
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum XDGThumbSizes {
@@ -23,6 +26,7 @@ pub enum XDGThumbSizes {
 }
 
 impl XDGThumbSizes {
+    /// Converts to the `allmytoes` crate's equivalent thumbnail size.
     pub fn to_amt_size(&self) -> ThumbSize {
         match &self {
             XDGThumbSizes::Normal => ThumbSize::Normal,

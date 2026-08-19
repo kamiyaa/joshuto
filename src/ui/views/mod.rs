@@ -1,3 +1,6 @@
+//! Full-screen view widgets (default/minimal/hsplit folder views, help, task view, command
+//! line) that compose the smaller widgets in `ui::widgets` and drive joshuto's layout math.
+
 mod tui_command_menu;
 mod tui_folder_view;
 mod tui_hsplit_view;
