@@ -2,7 +2,7 @@ use std::path;
 
 use nix::sys::stat::Mode;
 
-use crate::fs::FileType;
+use crate::{fs::FileType, HOME_DIR};
 
 pub const UNIX_PERMISSION_VALS: [(Mode, char); 9] = [
     (Mode::S_IRUSR, 'r'),
@@ -45,8 +45,7 @@ pub fn mode_to_char_array(mode: Mode, file_type: FileType) -> [char; 10] {
 }
 
 pub fn expand_shell_string_cow(s: &str) -> std::borrow::Cow<'_, str> {
-    let dir = dirs_next::home_dir();
-    let os_str = dir.map(|s| s.as_os_str().to_owned());
+    let os_str = HOME_DIR.clone().map(|s| s.as_os_str().to_owned());
     let app_state_func = || {
         let cow_str = os_str.as_ref().map(|s| s.to_string_lossy());
         cow_str
@@ -55,8 +54,7 @@ pub fn expand_shell_string_cow(s: &str) -> std::borrow::Cow<'_, str> {
 }
 
 pub fn expand_shell_string(s: &str) -> path::PathBuf {
-    let dir = dirs_next::home_dir();
-    let os_str = dir.map(|s| s.as_os_str().to_owned());
+    let os_str = HOME_DIR.clone().map(|s| s.as_os_str().to_owned());
     let app_state_func = || {
         let cow_str = os_str.as_ref().map(|s| s.to_string_lossy());
         cow_str

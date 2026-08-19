@@ -1,8 +1,6 @@
-use std::fs::File;
+use std::fs::{File, FileTimes};
 use std::path;
 use std::time::SystemTime;
-
-use filetime::FileTime;
 
 use crate::commands::cursor_move;
 use crate::error::AppResult;
@@ -10,8 +8,13 @@ use crate::history::create_dirlist_with_history;
 use crate::types::state::AppState;
 
 fn _update_actime(file: &path::Path) -> std::io::Result<()> {
-    let file_time = FileTime::from_system_time(SystemTime::now());
-    filetime::set_file_times(file, file_time, file_time)
+    let now = SystemTime::now();
+
+    // Update both atime and mtime
+    let times = FileTimes::new().set_accessed(now).set_modified(now);
+
+    let fhandle = std::fs::File::open(file)?;
+    fhandle.set_times(times)
 }
 
 fn _create_file(file: &path::Path) -> std::io::Result<()> {

@@ -53,8 +53,8 @@ lazy_static! {
             }
         }
 
-        let xdg_dirs = xdg::BaseDirectories::with_prefix(PROGRAM_NAME);
-        if let Some(config_home) = xdg_dirs.config_home {
+        if let Some(mut config_home) = dirs::config_dir() {
+            config_home.push(PROGRAM_NAME);
             config_dirs.push(config_home);
         }
 
@@ -74,7 +74,7 @@ lazy_static! {
     static ref BOOKMARKS_T: Mutex<Bookmarks> = Mutex::new(Bookmarks::get_config());
     static ref ICONS_T: AppIcons = AppIcons::get_config();
 
-    static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
+    static ref HOME_DIR: Option<PathBuf> = dirs::home_dir();
 
     static ref USERNAME: String = whoami::username().unwrap_or("No Username".to_string());
     static ref HOSTNAME: String = whoami::hostname().unwrap_or("No Hostname".to_string());

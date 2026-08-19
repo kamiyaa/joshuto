@@ -822,16 +822,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "filetime"
-version = "0.2.29"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c287a33c7f0a620c38e641e7f60827713987b3c0f26e8ddc9462cc69cf75759"
-dependencies = [
- "cfg-if",
- "libc",
-]
-
-[[package]]
 name = "find-msvc-tools"
 version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1419,8 +1409,7 @@ dependencies = [
  "clap",
  "clap_complete",
  "colors-transform",
- "dirs-next",
- "filetime",
+ "dirs",
  "globset",
  "image",
  "lazy_static",
@@ -1445,7 +1434,6 @@ dependencies = [
  "uuid",
  "walkdir",
  "whoami",
- "xdg",
 ]
 
 [[package]]
@@ -3611,12 +3599,6 @@ checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
 ]
-
-[[package]]
-name = "xdg"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fb433233f2df9344722454bc7e96465c9d03bff9d77c248f9e7523fe79585b5"
 
 [[package]]
 name = "xdg-mime"
