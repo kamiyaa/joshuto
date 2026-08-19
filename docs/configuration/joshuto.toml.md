@@ -72,6 +72,9 @@ column_ratio = [1, 3, 4]
 # Show borders around different views
 show_borders = true
 
+# Show "username@hostname" in the top bar
+show_hostname = true
+
 # Show hidden files
 show_hidden = false
 

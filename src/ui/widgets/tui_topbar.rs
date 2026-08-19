@@ -23,22 +23,29 @@ impl<'a> TuiTopBar<'a> {
 
 impl Widget for TuiTopBar<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let name_width = USERNAME.as_str().len() + HOSTNAME.as_str().len() + 2;
+        let show_hostname = self.app_state.config.display_options.show_hostname;
 
-        let username_style = if USERNAME.as_str() == "root" {
-            Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
+        let name_width = if show_hostname {
+            USERNAME.as_str().len() + HOSTNAME.as_str().len() + 2
         } else {
-            Style::default()
-                .fg(Color::LightGreen)
-                .add_modifier(Modifier::BOLD)
+            0
         };
 
-        let mut top_bar_spans = vec![
-            Span::styled(USERNAME.as_str(), username_style),
-            Span::styled("@", username_style),
-            Span::styled(HOSTNAME.as_str(), username_style),
-            Span::styled(" ", username_style),
-        ];
+        let mut top_bar_spans = Vec::new();
+        if show_hostname {
+            let username_style = if USERNAME.as_str() == "root" {
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
+            } else {
+                Style::default()
+                    .fg(Color::LightGreen)
+                    .add_modifier(Modifier::BOLD)
+            };
+
+            top_bar_spans.push(Span::styled(USERNAME.as_str(), username_style));
+            top_bar_spans.push(Span::styled("@", username_style));
+            top_bar_spans.push(Span::styled(HOSTNAME.as_str(), username_style));
+            top_bar_spans.push(Span::styled(" ", username_style));
+        }
 
         let available_tab_width = area.width as usize - name_width;
         let mut paths = Vec::new();
