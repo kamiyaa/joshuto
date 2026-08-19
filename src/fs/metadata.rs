@@ -1,9 +1,6 @@
 use std::{fs, io, path, time};
 
-use nix::sys::stat::{Mode, SFlag};
-
-#[cfg(target_os = "macos")]
-use nix::sys::stat::mode_t;
+use nix::sys::stat::{mode_t, Mode, SFlag};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum FileType {
@@ -79,17 +76,8 @@ impl JoshutoMetadata {
         let cumulative_size = None;
         let (file_type, mode) = match metadata.as_ref() {
             Ok(metadata) => {
-                let metadata_mode = metadata.mode();
-                #[cfg(target_os = "macos")]
-                let sflag = SFlag::from_bits_truncate(metadata_mode as mode_t);
-
-                #[cfg(not(target_os = "macos"))]
+                let metadata_mode = metadata.mode() as mode_t;
                 let sflag = SFlag::from_bits_truncate(metadata_mode);
-
-                #[cfg(target_os = "macos")]
-                let mode = Mode::from_bits_truncate(metadata_mode as mode_t);
-
-                #[cfg(not(target_os = "macos"))]
                 let mode = Mode::from_bits_truncate(metadata_mode);
 
                 (FileType::from_mode(sflag), mode)
