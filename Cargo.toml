@@ -34,7 +34,7 @@ image = "^0.25"
 lazy_static = "^1"
 lscolors = { version = "^0", features = ["nu-ansi-term"] }
 nix = { version = "^0", default-features = false, features = ["fs", "signal", "user"] }
-notify = "^6"
+notify = "^8"
 open = "^5"
 phf = { version = "^0", features = ["macros"], optional = true }
 rand = "^0"
