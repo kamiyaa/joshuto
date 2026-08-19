@@ -88,6 +88,15 @@ fg = "red"
 bold = true
 
 ##########################################
+## Borders
+##########################################
+
+# Style of the borders drawn between/around the file list panes.
+# When omitted, the borders use the terminal's default foreground color.
+# [border]
+# fg = "dark_gray"
+
+##########################################
 ## File list - Override style by extension
 ##########################################
 # This sections allows to override the basic

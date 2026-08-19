@@ -3,6 +3,8 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::widgets::{Block, Borders, Widget};
 
+use crate::THEME_T;
+
 pub struct TuiMenu<'a> {
     options: &'a [&'a str],
 }
@@ -24,6 +26,7 @@ impl Widget for TuiMenu<'_> {
         Block::default()
             .style(style)
             .borders(Borders::TOP)
+            .border_style(THEME_T.border.as_style())
             .render(area, buf);
 
         let text_iter = self.options.iter().chain(&[" "]);
