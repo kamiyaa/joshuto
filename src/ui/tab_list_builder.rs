@@ -148,7 +148,7 @@ fn factor_tab_bar_sequence(
         .enumerate()
         .map(|(ix, &r)| {
             if labels_are_indexed {
-                format!("{}: {}", ix + 1, &r.long)
+                format!("{}: {}", ix + 1, r.long)
             } else {
                 String::from(&r.long)
             }
@@ -197,7 +197,7 @@ fn factor_tab_bar_sequence(
         .enumerate()
         .map(|(ix, &r)| {
             if labels_are_indexed {
-                format!("{}: {}", ix + 1, &r.short)
+                format!("{}: {}", ix + 1, r.short)
             } else {
                 String::from(&r.short)
             }
@@ -260,7 +260,7 @@ fn factor_tab_bar_sequence(
             current_index,
             format!(
                 "{}…",
-                &all_labels_as_short[current_index].trunc(available_width - 1)
+                all_labels_as_short[current_index].trunc(available_width - 1)
             ),
         )];
     };
@@ -426,73 +426,68 @@ fn factor_tab_bar_spans_from_sequence<'a>(
         .into_iter()
         .map(|e| match e {
             TabBarElement::PrefixA => {
-                Span::styled(String::from(&config.chars.prefix_a), config.styles.prefix_a)
+                Span::styled(config.chars.prefix_a.clone(), config.styles.prefix_a)
             }
-            TabBarElement::PostfixA => Span::styled(
-                String::from(&config.chars.postfix_a),
-                config.styles.postfix_a,
-            ),
+            TabBarElement::PostfixA => {
+                Span::styled(config.chars.postfix_a.clone(), config.styles.postfix_a)
+            }
             TabBarElement::TabA(_ix, s) => Span::styled(s, config.styles.tab_a),
             TabBarElement::PrefixI => {
-                Span::styled(String::from(&config.chars.prefix_i), config.styles.prefix_i)
+                Span::styled(config.chars.prefix_i.clone(), config.styles.prefix_i)
             }
-            TabBarElement::PostfixI => Span::styled(
-                String::from(&config.chars.postfix_i),
-                config.styles.postfix_i,
-            ),
+            TabBarElement::PostfixI => {
+                Span::styled(config.chars.postfix_i.clone(), config.styles.postfix_i)
+            }
             TabBarElement::TabI(_ix, s) => Span::styled(s, config.styles.tab_i),
-            TabBarElement::DividerII => Span::styled(
-                String::from(&config.chars.divider),
-                config.styles.divider_ii,
-            ),
-            TabBarElement::DividerAI => Span::styled(
-                String::from(&config.chars.divider),
-                config.styles.divider_ai,
-            ),
-            TabBarElement::DividerIA => Span::styled(
-                String::from(&config.chars.divider),
-                config.styles.divider_ia,
-            ),
+            TabBarElement::DividerII => {
+                Span::styled(config.chars.divider.clone(), config.styles.divider_ii)
+            }
+            TabBarElement::DividerAI => {
+                Span::styled(config.chars.divider.clone(), config.styles.divider_ai)
+            }
+            TabBarElement::DividerIA => {
+                Span::styled(config.chars.divider.clone(), config.styles.divider_ia)
+            }
             TabBarElement::ScrollFront(s) => Span::styled(
                 format!(
                     "{}{}{}",
-                    &config.chars.scroll_front_prestring, s, &config.chars.scroll_front_poststring,
+                    config.chars.scroll_front_prestring, s, config.chars.scroll_front_poststring,
                 ),
                 config.styles.scroll_front,
             ),
             TabBarElement::ScrollFrontPrefix => Span::styled(
-                String::from(&config.chars.scroll_front_prefix),
+                config.chars.scroll_front_prefix.clone(),
                 config.styles.scroll_front_prefix,
             ),
             TabBarElement::ScrollFrontPostfix => Span::styled(
-                String::from(&config.chars.scroll_front_postfix),
+                config.chars.scroll_front_postfix.clone(),
                 config.styles.scroll_front_postfix,
             ),
             TabBarElement::ScrollBack(s) => Span::styled(
                 format!(
                     "{}{}{}",
-                    &config.chars.scroll_back_prestring, s, &config.chars.scroll_back_poststring,
+                    config.chars.scroll_back_prestring, s, config.chars.scroll_back_poststring,
                 ),
                 config.styles.scroll_back,
             ),
             TabBarElement::ScrollBackPrefix => Span::styled(
-                String::from(&config.chars.scroll_back_prefix),
+                config.chars.scroll_back_prefix.clone(),
                 config.styles.scroll_back_prefix,
             ),
             TabBarElement::ScrollBackPostfix => Span::styled(
-                String::from(&config.chars.scroll_back_postfix),
+                config.chars.scroll_back_postfix.clone(),
                 config.styles.scroll_back_postfix,
             ),
             TabBarElement::PaddingPrefix => Span::styled(
-                String::from(config.chars.padding_prefix),
+                config.chars.padding_prefix.to_string(),
                 config.styles.padding_prefix,
             ),
             TabBarElement::PaddingPostfix => Span::styled(
-                String::from(config.chars.padding_postfix),
+                config.chars.padding_postfix.to_string(),
                 config.styles.padding_postfix,
             ),
             TabBarElement::PaddingFill(n) => Span::styled(
-                String::from(config.chars.padding_fill).repeat(n),
+                config.chars.padding_fill.to_string().repeat(n),
                 config.styles.padding_fill,
             ),
         })
