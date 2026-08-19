@@ -16,6 +16,7 @@ pub fn read_and_execute(
     suffix: &str,
 ) -> AppResult {
     app_state.flush_event();
+
     let mut listener = DummyListener {};
     let user_input: Option<String> = TuiTextField::default()
         .prompt(":")

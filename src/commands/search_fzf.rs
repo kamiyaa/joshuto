@@ -13,7 +13,7 @@ pub fn search_fzf(app_state: &mut AppState, backend: &mut AppBackend) -> AppResu
             let v: Vec<String> = list
                 .iter()
                 .enumerate()
-                .map(|(i, entry)| format!("{} {}\n", i, entry.file_name()))
+                .map(|(i, entry)| format!("{:04} \u{02503} {}\n", i, entry.file_name()))
                 .collect();
             v
         })
