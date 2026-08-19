@@ -96,7 +96,7 @@ impl Widget for TuiMinimalView<'_> {
 fn calculate_layout(area: Rect, constraints: &[Constraint; 1]) -> Vec<Rect> {
     let mut layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(area)
         .to_vec();
 

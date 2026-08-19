@@ -4,7 +4,7 @@ use std::io::{BufRead, Write};
 use std::path;
 use std::process;
 
-use rand::Rng;
+use rand::RngExt;
 
 use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::state::remove_external_preview;

@@ -53,8 +53,9 @@ lazy_static! {
             }
         }
 
-        if let Ok(dirs) = xdg::BaseDirectories::with_prefix(PROGRAM_NAME) {
-            config_dirs.push(dirs.get_config_home());
+        let xdg_dirs = xdg::BaseDirectories::with_prefix(PROGRAM_NAME);
+        if let Some(config_home) = xdg_dirs.config_home {
+            config_dirs.push(config_home);
         }
 
         if let Ok(p) = std::env::var("HOME") {
@@ -75,8 +76,8 @@ lazy_static! {
 
     static ref HOME_DIR: Option<PathBuf> = dirs_next::home_dir();
 
-    static ref USERNAME: String = whoami::fallible::username().unwrap_or("No Username".to_string());
-    static ref HOSTNAME: String = whoami::fallible::hostname().unwrap_or("No Hostname".to_string());
+    static ref USERNAME: String = whoami::username().unwrap_or("No Username".to_string());
+    static ref HOSTNAME: String = whoami::hostname().unwrap_or("No Hostname".to_string());
 
     static ref TIMEZONE_STR: String = {
         format!(" UTC{:+} ", chrono::Local::now().offset().local_minus_utc() / 3600)

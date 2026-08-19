@@ -48,7 +48,7 @@ impl Widget for TuiHSplitView<'_> {
 
             let layout_rect = Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints(constraints.as_ref())
+                .constraints(constraints)
                 .split(inner);
 
             let block = Block::default()
@@ -165,7 +165,7 @@ impl Widget for TuiHSplitView<'_> {
 fn calculate_layout(area: Rect, constraints: &[Constraint; 2]) -> Vec<Rect> {
     let mut layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(area)
         .to_vec();
 
@@ -186,7 +186,7 @@ fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 2]) -> V
 
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(inner);
 
     let block = Block::default().borders(Borders::RIGHT);

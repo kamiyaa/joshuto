@@ -30,19 +30,17 @@ pub struct AppState {
 impl AppState {
     pub fn new(config: AppConfig, args: Args) -> Self {
         let picker = if config.preview_options.preview_shown_hook_script.is_none() {
-            Picker::from_termios().ok().and_then(|mut picker| {
-                picker.background_color = match THEME_T.preview_background {
-                    Color::Rgb(r, g, b) => Some(image::Rgb([r, g, b])),
+            Picker::from_query_stdio().ok().and_then(|mut picker| {
+                let bg = match THEME_T.preview_background {
+                    Color::Rgb(r, g, b) => Some(image::Rgba([r, g, b, 255])),
                     _ => None,
                 };
+                picker.set_background_color(bg);
                 match config.preview_options.preview_protocol {
-                    PreviewProtocol::Auto => {
-                        picker.guess_protocol(); // Must run before Events::new() because it makes ioctl calls.
-                        Some(picker)
-                    }
                     PreviewProtocol::Disabled => None,
+                    PreviewProtocol::Auto => Some(picker),
                     PreviewProtocol::ProtocolType(protocol_type) => {
-                        picker.protocol_type = protocol_type;
+                        picker.set_protocol_type(protocol_type);
                         Some(picker)
                     }
                 }

@@ -4,7 +4,7 @@ use nix::sys::stat::Mode;
 
 use crate::fs::FileType;
 
-pub const LIBC_PERMISSION_VALS: [(Mode, char); 9] = [
+pub const UNIX_PERMISSION_VALS: [(Mode, char); 9] = [
     (Mode::S_IRUSR, 'r'),
     (Mode::S_IWUSR, 'w'),
     (Mode::S_IXUSR, 'x'),
@@ -16,10 +16,10 @@ pub const LIBC_PERMISSION_VALS: [(Mode, char); 9] = [
     (Mode::S_IXOTH, 'x'),
 ];
 
-const LIBC_EXECUTE_VALS: [Mode; 3] = [Mode::S_IXUSR, Mode::S_IXGRP, Mode::S_IXOTH];
+const UNIX_EXECUTE_VALS: [Mode; 3] = [Mode::S_IXUSR, Mode::S_IXGRP, Mode::S_IXOTH];
 
 pub fn is_executable(mode: Mode) -> bool {
-    LIBC_EXECUTE_VALS.iter().any(|val| mode.intersects(*val))
+    UNIX_EXECUTE_VALS.iter().any(|val| mode.intersects(*val))
 }
 
 pub fn mode_to_char_array(mode: Mode, file_type: FileType) -> [char; 10] {
@@ -36,7 +36,7 @@ pub fn mode_to_char_array(mode: Mode, file_type: FileType) -> [char; 10] {
     };
     mode_arr[0] = ch;
 
-    for (i, (val, ch)) in LIBC_PERMISSION_VALS.iter().enumerate() {
+    for (i, (val, ch)) in UNIX_PERMISSION_VALS.iter().enumerate() {
         if mode.intersects(*val) {
             mode_arr[i + 1] = *ch;
         }

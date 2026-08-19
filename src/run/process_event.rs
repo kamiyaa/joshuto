@@ -288,7 +288,7 @@ pub fn process_mouse(
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
         .vertical_margin(vertical_margin)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(rect);
 
     match event {

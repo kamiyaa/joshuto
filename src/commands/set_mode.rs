@@ -5,15 +5,15 @@ use crate::error::{AppError, AppErrorKind, AppResult};
 use crate::types::state::AppState;
 use crate::ui::views::{DummyListener, TuiTextField};
 use crate::ui::AppBackend;
-use crate::utils::unix::{self, LIBC_PERMISSION_VALS};
+use crate::utils::unix::{self, UNIX_PERMISSION_VALS};
 
 use super::cursor_move;
 
 pub fn str_to_mode(s: &str) -> Mode {
     let mut mode = Mode::empty();
-    for (i, ch) in s.chars().enumerate().take(LIBC_PERMISSION_VALS.len()) {
-        if ch == LIBC_PERMISSION_VALS[i].1 {
-            let (val, _) = LIBC_PERMISSION_VALS[i];
+    for (i, ch) in s.chars().enumerate().take(UNIX_PERMISSION_VALS.len()) {
+        if ch == UNIX_PERMISSION_VALS[i].1 {
+            let (val, _) = UNIX_PERMISSION_VALS[i];
             mode = mode.union(val);
         }
     }

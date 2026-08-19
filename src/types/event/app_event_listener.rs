@@ -22,7 +22,7 @@ pub type AppEventReceiver = mpsc::Receiver<AppEvent>;
 
 pub enum PreviewData {
     Script(Box<FilePreview>),
-    Image(Box<dyn Protocol>),
+    Image(Box<Protocol>),
 }
 
 impl Debug for PreviewData {

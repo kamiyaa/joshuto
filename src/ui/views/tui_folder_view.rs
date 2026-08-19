@@ -40,7 +40,7 @@ impl Widget for TuiFolderViewBorders<'_> {
 
         let layout_rect = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints(self.constraints.as_ref())
+            .constraints(self.constraints)
             .split(inner);
 
         // Won't render intersections if parent view is turned off
@@ -216,7 +216,7 @@ impl Widget for TuiFolderView<'_> {
                         Some(protocol) => {
                             let area = layout_rect[2];
                             Image::new(protocol).render(area, buf);
-                            protocol.rect().height
+                            protocol.size().height
                         }
                         _ => 0,
                     };
@@ -322,7 +322,7 @@ pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
 pub fn calculate_layout(area: Rect, constraints: &[Constraint; 3]) -> Vec<Rect> {
     let mut layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(area)
         .to_vec();
 
@@ -343,7 +343,7 @@ pub fn calculate_layout_with_borders(area: Rect, constraints: &[Constraint; 3]) 
 
     let layout_rect = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(inner);
 
     let block = Block::default().borders(Borders::RIGHT);
