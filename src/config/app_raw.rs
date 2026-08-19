@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use serde::Deserialize;
 
@@ -8,7 +9,7 @@ use super::tab::TabOption;
 
 use crate::types::custom_command::CustomCommand;
 use crate::types::option::search::SearchOption;
-use crate::utils::serde::default_true;
+use crate::utils::serde::{default_shell, default_true};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AppConfigRaw {
@@ -40,4 +41,6 @@ pub struct AppConfigRaw {
     pub tab_options: TabOption,
     #[serde(default)]
     pub custom_commands: Vec<CustomCommand>,
+    #[serde(default = "default_shell")]
+    pub shell: PathBuf,
 }

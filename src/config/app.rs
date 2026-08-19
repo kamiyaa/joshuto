@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use super::{app_raw::AppConfigRaw, tab::TabOption};
 use crate::{
@@ -28,6 +29,7 @@ pub struct AppConfig {
     pub preview_options: PreviewOption,
     pub search_options: SearchOption,
     pub tab_options: TabOption,
+    pub shell: PathBuf,
 }
 
 impl AppConfig {
@@ -70,6 +72,7 @@ impl From<AppConfigRaw> for AppConfig {
             search_options: raw.search_options,
             tab_options: raw.tab_options,
             custom_commands: raw.custom_commands,
+            shell: raw.shell,
         }
     }
 }
