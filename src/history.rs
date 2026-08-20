@@ -88,15 +88,20 @@ pub fn create_dirlist_with_history(
         match history.get(path) {
             Some(dirlist) => match dirlist.get_index() {
                 Some(i) if i >= contents_len => Some(contents_len - 1),
-                Some(i) => {
-                    let entry = &dirlist.contents[i];
-                    contents
-                        .iter()
-                        .enumerate()
-                        .find(|(_, e)| e.file_name() == entry.file_name())
-                        .map(|(i, _)| i)
-                        .or(Some(i))
-                }
+                // `i` indexes the PREVIOUS listing, and nothing keeps a stored
+                // index in step with its own contents (`set_index` does not
+                // bound it), so read it rather than index into it. The name
+                // lookup is only a hint anyway; without it `i` still lands in
+                // range, having passed the arm above.
+                Some(i) => dirlist
+                    .contents
+                    .get(i)
+                    .and_then(|entry| {
+                        contents
+                            .iter()
+                            .position(|e| e.file_name() == entry.file_name())
+                    })
+                    .or(Some(i)),
                 None => Some(0),
             },
             None => Some(0),
@@ -113,17 +118,21 @@ pub fn create_dirlist_with_history(
             None => 0,
         }
     };
-    let visual_mode_anchor_index = history.get(path).and_then(|dirlist| {
-        dirlist
-            .get_visual_mode_anchor_index()
-            .map(|old_visual_mode_anchor_index| {
-                if old_visual_mode_anchor_index < contents_len {
-                    old_visual_mode_anchor_index
-                } else {
-                    contents_len - 1
-                }
-            })
-    });
+    // An empty listing has nowhere for an anchor to point, and `contents_len - 1`
+    // on nothing is a subtract-with-overflow panic. A directory whose entries are
+    // all filtered out reaches exactly that: toggle hidden files off over a
+    // directory holding only dotfiles while visual mode is on.
+    let visual_mode_anchor_index = if contents_len == 0 {
+        None
+    } else {
+        history.get(path).and_then(|dirlist| {
+            dirlist
+                .get_visual_mode_anchor_index()
+                .map(|old_visual_mode_anchor_index| {
+                    old_visual_mode_anchor_index.min(contents_len - 1)
+                })
+        })
+    };
 
     let metadata = JoshutoMetadata::from(path)?;
     let dirlist = JoshutoDirList::new(
@@ -216,4 +225,80 @@ pub fn generate_entries_to_root(
         prev = Some(curr);
     }
     Ok(dirlists)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    fn scratch_dir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("joshuto-history-{name}"));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    fn options(show_hidden: bool) -> DisplayOption {
+        let mut options = DisplayOption::default();
+        options.show_hidden = show_hidden;
+        options
+    }
+
+    /// A directory that filters down to nothing still has to produce a list.
+    #[test]
+    fn a_listing_that_filters_to_empty_keeps_its_visual_anchor_in_range() {
+        let dir = scratch_dir("empty-after-filter");
+        fs::write(dir.join(".hidden"), b"x").unwrap();
+        let tab_options = TabDisplayOption::default();
+
+        // Seen once with hidden files shown, and left in visual mode.
+        let mut history = JoshutoHistory::new();
+        let mut shown =
+            create_dirlist_with_history(&history, &dir, &options(true), &tab_options).unwrap();
+        assert_eq!(1, shown.len());
+        shown.visual_mode_anchor_index = shown.get_index();
+        history.insert_entries(vec![shown]);
+
+        // Hiding them empties the listing. The anchor has nowhere to point.
+        let hidden =
+            create_dirlist_with_history(&history, &dir, &options(false), &tab_options).unwrap();
+        assert!(hidden.is_empty());
+        assert_eq!(None, hidden.get_index());
+        assert_eq!(None, hidden.get_visual_mode_anchor_index());
+        assert_eq!(0, hidden.first_index_for_viewport());
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    /// A stored index is not bounded by its own contents, so read it rather
+    /// than index into it.
+    #[test]
+    fn a_stored_index_past_its_own_contents_does_not_panic() {
+        let dir = scratch_dir("stale-index");
+        for name in ["a", "b", "c"] {
+            fs::write(dir.join(name), b"x").unwrap();
+        }
+        let tab_options = TabDisplayOption::default();
+        let mut history = JoshutoHistory::new();
+
+        let seen =
+            create_dirlist_with_history(&history, &dir, &options(false), &tab_options).unwrap();
+        let metadata = JoshutoMetadata::from(&dir).unwrap();
+        history.insert_entries(vec![JoshutoDirList::new(
+            dir.clone(),
+            Vec::new(),
+            Some(seen.len() - 1),
+            0,
+            None,
+            metadata,
+        )]);
+
+        let rebuilt =
+            create_dirlist_with_history(&history, &dir, &options(false), &tab_options).unwrap();
+        assert_eq!(3, rebuilt.len());
+        assert_eq!(Some(2), rebuilt.get_index());
+
+        let _ = fs::remove_dir_all(&dir);
+    }
 }
