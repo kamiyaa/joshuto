@@ -31,8 +31,9 @@ pub struct FileManagerState {
     pub commandline_state: CommandLineState,
     /// user interface app_state; data which is input to both, the UI rendering and the app state
     pub ui_state: UiState,
-    /// filesystem watcher to inform about changes in shown directories
-    pub watcher: notify::RecommendedWatcher,
+    /// filesystem watcher to inform about changes in shown directories;
+    /// `None` if the platform's watcher couldn't be created
+    pub watcher: Option<notify::RecommendedWatcher>,
     /// list of watched paths; seems not to be possible to get them from a notify::Watcher
     pub watched_paths: HashSet<path::PathBuf>,
     /// the stdout of the last `shell` command
@@ -42,10 +43,14 @@ pub struct FileManagerState {
 impl FileManagerState {
     /// Updates the file system supervision with the currently shown directories.
     pub fn update_watcher(&mut self) {
+        let Some(watcher) = self.watcher.as_mut() else {
+            return;
+        };
+
         // collect the paths that shall be watched...
         let mut new_paths_to_watch: HashSet<path::PathBuf> = HashSet::with_capacity(3);
 
-        let curr_tab_ref = self.tab_state_ref().curr_tab_ref();
+        let curr_tab_ref = self.tab_state.curr_tab_ref();
 
         let watched_lists = [
             curr_tab_ref.parent_list_ref(),
@@ -60,15 +65,13 @@ impl FileManagerState {
         // remove paths from watcher which don't need to be watched anymore...
         for old_watched_path in &self.watched_paths {
             if !new_paths_to_watch.contains(old_watched_path.as_path()) {
-                let _ = self.watcher.unwatch(old_watched_path.as_path());
+                let _ = watcher.unwatch(old_watched_path.as_path());
             }
         }
         // add paths to watcher which need to be watched...
         for new_watched_path in &new_paths_to_watch {
             if !self.watched_paths.contains(new_watched_path.as_path()) {
-                let _ = self
-                    .watcher
-                    .watch(new_watched_path.as_path(), RecursiveMode::NonRecursive);
+                let _ = watcher.watch(new_watched_path.as_path(), RecursiveMode::NonRecursive);
             }
         }
         // update own list of watched paths

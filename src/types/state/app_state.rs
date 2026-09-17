@@ -58,12 +58,19 @@ impl AppState {
         let commandline_state = CommandLineState::new();
 
         let event_tx_for_fs_notification = event_tx.clone();
+        let mut message_queue = MessageQueue::new();
+        // e.g. inotify instance limit reached; carry on without live updates
         let watcher = notify::recommended_watcher(move |res| {
             if let Ok(event) = res {
                 let _ = event_tx_for_fs_notification.send(AppEvent::Filesystem(event));
             }
         })
-        .unwrap();
+        .inspect_err(|e| {
+            message_queue.push_error(format!(
+                "Failed to start filesystem watcher, directories won't update automatically: {e}"
+            ))
+        })
+        .ok();
         let watched_paths = HashSet::with_capacity(3);
 
         let preview_script = config.preview_options.preview_script.clone();
@@ -83,7 +90,7 @@ impl AppState {
                 tab_state: TabState::new(),
                 local_state: None,
                 search_state: None,
-                message_queue: MessageQueue::new(),
+                message_queue,
                 worker_state: WorkerState::new(event_tx.clone()),
                 thread_pool: ThreadPool::new(),
                 preview_state: PreviewState::new(
