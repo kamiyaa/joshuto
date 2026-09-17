@@ -189,7 +189,7 @@ fn process_input(
 fn calculate_ui_state(app_state: &mut AppState, area: Rect) {
     let area = Rect {
         y: area.top() + 1,
-        height: area.height - 2,
+        height: area.height.saturating_sub(2),
         ..area
     };
     let display_options = &app_state.config.display_options;

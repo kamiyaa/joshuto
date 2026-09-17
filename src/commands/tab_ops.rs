@@ -65,7 +65,7 @@ fn _tab_switch(new_index: usize, app_state: &mut AppState) -> std::io::Result<()
                 if list.need_update() {
                     let dirlist = create_dirlist_with_history(
                         history,
-                        cwd.as_path(),
+                        curr_path.as_path(),
                         display_options,
                         tab_options,
                     )?;
@@ -75,7 +75,7 @@ fn _tab_switch(new_index: usize, app_state: &mut AppState) -> std::io::Result<()
             None => {
                 let dirlist = create_dirlist_with_history(
                     history,
-                    cwd.as_path(),
+                    curr_path.as_path(),
                     display_options,
                     tab_options,
                 )?;
@@ -102,6 +102,12 @@ pub fn tab_switch(app_state: &mut AppState, offset: i32) -> std::io::Result<()> 
 /// Implements `tab_switch_index`: switches to the 1-indexed tab `new_index`, creating new
 /// default tabs to fill the gap if it doesn't exist yet.
 pub fn tab_switch_index(app_state: &mut AppState, new_index: usize) -> AppResult {
+    if new_index == 0 {
+        return Err(AppError::new(
+            AppErrorKind::InvalidParameters,
+            "Tab index starts at 1".to_string(),
+        ));
+    }
     let num_tabs = app_state.state.tab_state_ref().len();
     if new_index <= num_tabs {
         _tab_switch(new_index - 1, app_state)?;

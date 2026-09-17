@@ -113,17 +113,14 @@ pub fn create_dirlist_with_history(
             None => 0,
         }
     };
-    let visual_mode_anchor_index = history.get(path).and_then(|dirlist| {
-        dirlist
-            .get_visual_mode_anchor_index()
-            .map(|old_visual_mode_anchor_index| {
-                if old_visual_mode_anchor_index < contents_len {
-                    old_visual_mode_anchor_index
-                } else {
-                    contents_len - 1
-                }
-            })
-    });
+    let visual_mode_anchor_index = if contents_len == 0 {
+        None
+    } else {
+        history
+            .get(path)
+            .and_then(|dirlist| dirlist.get_visual_mode_anchor_index())
+            .map(|i| i.min(contents_len - 1))
+    };
 
     let metadata = JoshutoMetadata::from(path)?;
     let dirlist = JoshutoDirList::new(
@@ -150,27 +147,16 @@ where
     F: Fn(&walkdir::DirEntry, &DisplayOption, &DirListDisplayOptions) -> bool,
 {
     let dirlist_opts = tab_options
-        .dirlist_options_ref(&path.to_path_buf())
+        .dirlist_options_ref(path)
         .map(|v| v.to_owned())
         .unwrap_or_default();
 
     let results: Vec<JoshutoDirEntry> = WalkDir::new(path)
         .max_depth(dirlist_opts.depth() as usize + 1)
         .into_iter()
-        .filter_entry(|e| {
-            if e.path().to_str().cmp(&path.to_str()).is_ne() {
-                filter_func(e, display_options, &dirlist_opts)
-            } else {
-                true
-            }
-        })
-        .filter(|e| {
-            if let Ok(e) = e.as_ref() {
-                e.path().to_str().cmp(&path.to_str()).is_ne()
-            } else {
-                true
-            }
-        })
+        // depth 0 is `path` itself
+        .filter_entry(|e| e.depth() == 0 || filter_func(e, display_options, &dirlist_opts))
+        .filter(|e| e.as_ref().map(|e| e.depth() != 0).unwrap_or(true))
         .filter_map(|res| JoshutoDirEntry::from(&res.ok()?, path, display_options).ok())
         .collect();
 

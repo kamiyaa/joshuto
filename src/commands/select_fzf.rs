@@ -46,8 +46,11 @@ pub fn select_fzf(
 
         for selected in fzf_output.lines() {
             if let Some((selected_idx_str, _)) = selected.split_once(' ') {
-                if let Ok(index) = selected_idx_str.parse::<usize>() {
-                    let entry = curr_list.contents.get_mut(index).unwrap();
+                if let Some(entry) = selected_idx_str
+                    .parse::<usize>()
+                    .ok()
+                    .and_then(|index| curr_list.contents.get_mut(index))
+                {
                     found += 1;
 
                     if options.reverse {

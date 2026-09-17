@@ -34,6 +34,13 @@ pub fn process_io_tasks(
 /// Runs a single [`IoTask`] to completion, reporting start progress before dispatching to the
 /// operation-specific implementation (cut/copy/delete/symlink).
 pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> AppResult {
+    if matches!(
+        io_task.get_operation_type(),
+        FileOperation::Cut | FileOperation::Copy
+    ) {
+        check_dest_not_inside_src(io_task)?;
+    }
+
     let (total_files, total_bytes) = query_number_of_items(io_task.paths.as_slice())?;
     let src = io_task.paths[0].parent().unwrap().to_path_buf();
     let dest = io_task.dest.clone();
@@ -58,6 +65,29 @@ pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> A
         FileOperation::Symlink => paste_symlink(io_task, event_tx),
     };
     res?;
+    Ok(())
+}
+
+/// Errors if the destination is one of the source directories or inside one,
+/// which would otherwise recurse forever.
+fn check_dest_not_inside_src(io_task: &IoTask) -> AppResult {
+    let dest = io_task
+        .dest
+        .canonicalize()
+        .unwrap_or_else(|_| io_task.dest.clone());
+    for path in io_task.paths.iter() {
+        let is_dir = path.symlink_metadata().map(|m| m.is_dir()).unwrap_or(false);
+        if !is_dir {
+            continue;
+        }
+        let src = path.canonicalize().unwrap_or_else(|_| path.clone());
+        if dest.starts_with(&src) {
+            return Err(AppError::new(
+                AppErrorKind::InvalidParameters,
+                format!("Cannot paste '{}' into itself", path.to_string_lossy()),
+            ));
+        }
+    }
     Ok(())
 }
 
@@ -246,9 +276,18 @@ pub fn recursive_cut(
             };
             let _ = tx.send(AppEvent::IoTaskProgress(event));
         }
-        Err(_err) => {
+        // rename(2) can't move across filesystems, or merge into an existing directory
+        Err(err)
+            if err.kind() == io::ErrorKind::CrossesDevices
+                || (options.overwrite && file_type.is_dir() && dest_buf.is_dir()) =>
+        {
             if file_type.is_dir() {
-                fs::create_dir(dest_buf.as_path())?;
+                match fs::create_dir(dest_buf.as_path()) {
+                    Err(e) if !(options.overwrite && e.kind() == io::ErrorKind::AlreadyExists) => {
+                        return Err(e)
+                    }
+                    _ => {}
+                }
                 for entry in fs::read_dir(src)? {
                     let entry_path = entry?.path();
                     recursive_cut(tx, entry_path.as_path(), dest_buf.as_path(), options)?;
@@ -276,6 +315,7 @@ pub fn recursive_cut(
                 let _ = tx.send(AppEvent::IoTaskProgress(event));
             }
         }
+        Err(err) => return Err(err),
     }
     Ok(())
 }
@@ -327,33 +367,84 @@ fn trash_file<P>(file_path: P) -> AppResult
 where
     P: AsRef<path::Path>,
 {
-    let file_path_str = file_path
-        .as_ref()
-        .as_os_str()
-        .to_string_lossy()
-        .replace('\'', "'\\''");
-
-    let clipboards = [
-        ("gio trash", format!("gio trash -- '{}'", file_path_str)),
-        ("trash-put", format!("trash-put '{}'", file_path_str)),
-        ("trash", format!("trash '{}'", file_path_str)),
-        ("gtrash put", format!("gtrash put -- '{}'", file_path_str)),
+    let file_path = file_path.as_ref();
+    let trash_commands: [&[&str]; 4] = [
+        &["gio", "trash", "--"],
+        &["trash-put", "--"],
+        &["trash", "--"],
+        &["gtrash", "put", "--"],
     ];
 
-    for (_, cmd) in clipboards.iter() {
-        let status = Command::new("sh")
-            .args(["-c", cmd.as_str()])
+    for cmd in trash_commands {
+        let status = Command::new(cmd[0])
+            .args(&cmd[1..])
+            .arg(file_path)
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .status();
 
-        match status {
-            Ok(s) if s.success() => return Ok(()),
-            _ => {}
+        if matches!(status, Ok(s) if s.success()) {
+            return Ok(());
         }
     }
     Err(AppError::new(
         AppErrorKind::Trash,
         "Failed to trash file".to_string(),
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn task(op: FileOperation, src: &path::Path, dest: &path::Path) -> IoTask {
+        IoTask::new(
+            op,
+            vec![src.to_path_buf()],
+            dest.to_path_buf(),
+            FileOperationOptions::default(),
+        )
+    }
+
+    #[test]
+    fn paste_into_itself_is_rejected() {
+        let dir = std::env::temp_dir().join(format!("joshuto-test-{}", uuid::Uuid::new_v4()));
+        let src = dir.join("a");
+        fs::create_dir_all(src.join("b")).unwrap();
+
+        let into_self = check_dest_not_inside_src(&task(FileOperation::Copy, &src, &src));
+        let into_child = check_dest_not_inside_src(&task(FileOperation::Cut, &src, &src.join("b")));
+        let into_parent = check_dest_not_inside_src(&task(FileOperation::Copy, &src, &dir));
+        fs::remove_dir_all(&dir).unwrap();
+
+        assert!(into_self.is_err());
+        assert!(into_child.is_err());
+        assert!(into_parent.is_ok());
+    }
+
+    #[test]
+    fn cut_with_overwrite_merges_into_existing_dir() {
+        let dir = std::env::temp_dir().join(format!("joshuto-test-{}", uuid::Uuid::new_v4()));
+        let (src, dest) = (dir.join("src/a"), dir.join("dest"));
+        fs::create_dir_all(&src).unwrap();
+        fs::create_dir_all(dest.join("a")).unwrap();
+        fs::write(src.join("new"), b"new").unwrap();
+        fs::write(dest.join("a/old"), b"old").unwrap();
+
+        let (tx, _rx) = mpsc::channel();
+        let options = FileOperationOptions {
+            overwrite: true,
+            ..Default::default()
+        };
+        let res = recursive_cut(&tx, &src, &dest, options);
+        let (has_new, has_old, src_gone) = (
+            dest.join("a/new").exists(),
+            dest.join("a/old").exists(),
+            !src.exists(),
+        );
+        fs::remove_dir_all(&dir).unwrap();
+
+        res.unwrap();
+        assert!(has_new && has_old && src_gone);
+    }
 }

@@ -87,14 +87,14 @@ impl Widget for TuiFooter<'_> {
                     Span::raw(size_str),
                     Span::raw("  "),
                     Span::styled(
-                        match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
+                        match self.tab_options.dirlist_options_ref(path) {
                             Some(opt) if opt.depth() > 0 => format!("flat:{} ", opt.depth()),
                             _ => "".to_owned(),
                         },
                         indicator_style,
                     ),
                     Span::styled(
-                        match self.tab_options.dirlist_options_ref(&path.to_path_buf()) {
+                        match self.tab_options.dirlist_options_ref(path) {
                             Some(opt) if !opt.filter_state_ref().is_none() => {
                                 format!("filter:{} ", opt.filter_state_ref())
                             }

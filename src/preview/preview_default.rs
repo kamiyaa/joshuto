@@ -43,11 +43,7 @@ pub fn load_preview_path(
         let tab = app_state.state.tab_state_ref().curr_tab_ref();
         // only load if there doesn't already exist a loading thread and
         // there isn't an entry in history
-        let need_to_load = tab
-            .history_metadata_ref()
-            .get(p.as_path())
-            .map(|m| m.is_loading())
-            .unwrap_or(true)
+        let need_to_load = tab.history_metadata_ref().get(p.as_path()).is_none()
             && tab
                 .history_ref()
                 .get(p.as_path())

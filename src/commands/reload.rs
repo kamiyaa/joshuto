@@ -10,7 +10,7 @@ pub fn soft_reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
     if let Some(curr_tab) = app_state.state.tab_state_ref().tab_ref(id) {
         let display_options = &app_state.config.display_options;
-        let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
+        let tab_options = curr_tab.option_ref();
         let history = curr_tab.history_ref();
         for curr_list in [
             curr_tab.parent_list_ref(),
@@ -54,7 +54,7 @@ pub fn reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
     if let Some(curr_tab) = app_state.state.tab_state_ref().tab_ref(id) {
         let display_options = &app_state.config.display_options;
-        let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
+        let tab_options = curr_tab.option_ref();
         let history = curr_tab.history_ref();
         for curr_list in [
             curr_tab.parent_list_ref(),

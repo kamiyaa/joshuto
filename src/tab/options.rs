@@ -1,4 +1,5 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
 use crate::fs::DirListDisplayOptions;
 use crate::types::option::line_mode::LineMode;
@@ -24,7 +25,7 @@ impl TabDisplayOption {
     }
 
     /// Returns the per-directory display options for `path`, if set.
-    pub fn dirlist_options_ref(&self, path: &PathBuf) -> Option<&DirListDisplayOptions> {
+    pub fn dirlist_options_ref(&self, path: &Path) -> Option<&DirListDisplayOptions> {
         self.dirlist_options.get(path)
     }
 

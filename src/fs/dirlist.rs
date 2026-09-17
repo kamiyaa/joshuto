@@ -212,7 +212,8 @@ impl JoshutoDirList {
     /// Returns `true` if the directory on disk has been modified more recently than this
     /// listing's cached metadata.
     pub fn modified(&self) -> bool {
-        let metadata = std::fs::symlink_metadata(self.file_path());
+        // follow symlinks, like `JoshutoMetadata::from` does for `self.metadata`
+        let metadata = std::fs::metadata(self.file_path());
         metadata
             .and_then(|m| m.modified())
             .map(|m| m > self.metadata.modified())
