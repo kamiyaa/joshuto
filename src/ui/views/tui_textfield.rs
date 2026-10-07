@@ -345,12 +345,16 @@ impl<'a> TuiTextField<'a> {
                                 line_buffer.move_backward(1)
                             })
                         }
-                        Key::Alt('f') => moved_to_another_word(&mut line_buffer, |line_buffer| {
-                            line_buffer.move_to_next_word(At::Start, Word::Vi, 1)
-                        }),
-                        Key::Alt('b') => moved_to_another_word(&mut line_buffer, |line_buffer| {
-                            line_buffer.move_to_prev_word(Word::Vi, 1)
-                        }),
+                        Key::Alt('f') | Key::CtrlRight => {
+                            moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                line_buffer.move_to_next_word(At::Start, Word::Vi, 1)
+                            })
+                        }
+                        Key::Alt('b') | Key::CtrlLeft => {
+                            moved_to_another_word(&mut line_buffer, |line_buffer| {
+                                line_buffer.move_to_prev_word(Word::Vi, 1)
+                            })
+                        }
 
                         Key::Ctrl('w') => line_buffer.delete_prev_word(Word::Vi, 1, listener),
                         Key::Ctrl('u') => line_buffer.discard_line(listener),
