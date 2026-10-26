@@ -4,7 +4,7 @@ use nix::sys::stat::{mode_t, Mode, SFlag};
 
 /// The kind of filesystem object an entry represents.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum FileType {
+pub enum AppFileType {
     Directory,
     File,
     // Unix specific
@@ -15,52 +15,52 @@ pub enum FileType {
     Pipe,
 }
 
-impl From<SFlag> for FileType {
+impl From<SFlag> for AppFileType {
     fn from(value: SFlag) -> Self {
         Self::from_mode(value)
     }
 }
 
-impl FileType {
+impl AppFileType {
     /// Maps a Unix `st_mode` file-type flag to a [`FileType`].
     pub fn from_mode(mode: SFlag) -> Self {
         match mode {
-            SFlag::S_IFBLK => FileType::Block,
-            SFlag::S_IFCHR => FileType::Character,
-            SFlag::S_IFDIR => FileType::Directory,
-            SFlag::S_IFIFO => FileType::Pipe,
-            SFlag::S_IFLNK => FileType::Link,
-            SFlag::S_IFSOCK => FileType::Socket,
-            _ => FileType::File,
+            SFlag::S_IFBLK => AppFileType::Block,
+            SFlag::S_IFCHR => AppFileType::Character,
+            SFlag::S_IFDIR => AppFileType::Directory,
+            SFlag::S_IFIFO => AppFileType::Pipe,
+            SFlag::S_IFLNK => AppFileType::Link,
+            SFlag::S_IFSOCK => AppFileType::Socket,
+            _ => AppFileType::File,
         }
     }
 }
 
 /// Whether an entry is a plain file/directory or a symlink, and if a symlink, its target.
 #[derive(Clone, Debug)]
-pub enum LinkType {
+pub enum AppLinkType {
     Normal,
     Symlink { target: String, valid: bool },
 }
 
-/// Filesystem metadata for a [`JoshutoDirEntry`](super::JoshutoDirEntry).
+/// Filesystem metadata for a [`AppDirEntry`](super::AppDirEntry).
 #[derive(Clone, Debug)]
-pub struct JoshutoMetadata {
+pub struct AppFileMetadata {
     pub len: u64,
     pub directory_size: Option<usize>,
     pub cumulative_size: Option<u64>,
     pub modified: time::SystemTime,
     pub accessed: time::SystemTime,
     pub mode: Mode,
-    pub file_type: FileType,
-    pub link_type: LinkType,
+    pub file_type: AppFileType,
+    pub link_type: AppLinkType,
     #[cfg(unix)]
     pub uid: u32,
     #[cfg(unix)]
     pub gid: u32,
 }
 
-impl JoshutoMetadata {
+impl AppFileMetadata {
     /// Reads metadata for `path`, following symlinks where possible and falling back to
     /// symlink metadata if the target is broken.
     pub fn from(path: &path::Path) -> io::Result<Self> {
@@ -86,9 +86,9 @@ impl JoshutoMetadata {
                 let sflag = SFlag::from_bits_truncate(metadata_mode);
                 let mode = Mode::from_bits_truncate(metadata_mode);
 
-                (FileType::from_mode(sflag), mode)
+                (AppFileType::from_mode(sflag), mode)
             }
-            _ => (FileType::File, Mode::empty()),
+            _ => (AppFileType::File, Mode::empty()),
         };
 
         let link_type = if symlink_metadata.file_type().is_symlink() {
@@ -101,12 +101,12 @@ impl JoshutoMetadata {
             }
 
             let exists = path.exists();
-            LinkType::Symlink {
+            AppLinkType::Symlink {
                 target: link,
                 valid: exists,
             }
         } else {
-            LinkType::Normal
+            AppLinkType::Normal
         };
 
         #[cfg(unix)]
@@ -167,17 +167,17 @@ impl JoshutoMetadata {
     }
 
     /// Returns the kind of filesystem object this entry is.
-    pub fn file_type(&self) -> FileType {
+    pub fn file_type(&self) -> AppFileType {
         self.file_type
     }
 
     /// Returns whether this entry is a symlink, and its target if so.
-    pub fn link_type(&self) -> &LinkType {
+    pub fn link_type(&self) -> &AppLinkType {
         &self.link_type
     }
 
     /// Returns `true` if this entry is a directory.
     pub fn is_dir(&self) -> bool {
-        self.file_type == FileType::Directory
+        self.file_type == AppFileType::Directory
     }
 }

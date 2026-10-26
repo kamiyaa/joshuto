@@ -2,8 +2,8 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::Widget;
 
-use crate::types::option::display::DisplayMode;
-use crate::types::state::AppState;
+use crate::config::DisplayMode;
+use crate::state::AppState;
 use crate::ui::views::{tui_minimal_view::TuiMinimalView, TuiFolderView, TuiHSplitView};
 
 /// The main file-manager screen, delegating to the configured [`DisplayMode`]'s view.

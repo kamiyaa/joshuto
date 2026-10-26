@@ -4,22 +4,22 @@ use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
-use crate::fs::{JoshutoDirList, LinkType};
-use crate::tab::TabDisplayOption;
+use crate::config::TabDisplayOption;
+use crate::fs::{AppDirectoryList, AppLinkType};
+use crate::global;
 use crate::utils::format;
-use crate::utils::unix;
-use crate::{THEME_T, TIMEZONE_STR};
+use crate::utils::unix_helper;
 
 /// The bottom status line: current entry's permissions, owner, group, position, mtime, size,
 /// active flat/filter indicators, and selection count.
 pub struct TuiFooter<'a> {
-    dirlist: &'a JoshutoDirList,
+    dirlist: &'a AppDirectoryList,
     tab_options: &'a TabDisplayOption,
 }
 
 impl<'a> TuiFooter<'a> {
     /// Creates the footer widget for the given directory listing and tab options.
-    pub fn new(dirlist: &'a JoshutoDirList, tab_options: &'a TabDisplayOption) -> Self {
+    pub fn new(dirlist: &'a AppDirectoryList, tab_options: &'a TabDisplayOption) -> Self {
         Self {
             dirlist,
             tab_options,
@@ -35,12 +35,12 @@ impl Widget for TuiFooter<'_> {
         // flat and filter commands indicator style
         let indicator_style = Style::default()
             .fg(Color::LightBlue)
-            .add_modifier(THEME_T.selection.modifier);
+            .add_modifier(global::APP_THEME.selection.modifier);
 
         let selection_style = Style::default()
-            .fg(THEME_T.selection.fg)
-            .bg(THEME_T.selection.bg)
-            .add_modifier(THEME_T.selection.modifier);
+            .fg(global::APP_THEME.selection.fg)
+            .bg(global::APP_THEME.selection.bg)
+            .add_modifier(global::APP_THEME.selection.modifier);
         let selected_count = self.dirlist.selected_count();
 
         match self.dirlist.get_index() {
@@ -48,12 +48,14 @@ impl Widget for TuiFooter<'_> {
                 let entry = &self.dirlist.contents[i];
 
                 let mode_str: String =
-                    unix::mode_to_char_array(entry.metadata.mode, entry.metadata.file_type)
+                    unix_helper::mode_to_char_array(entry.metadata.mode, entry.metadata.file_type)
                         .iter()
                         .collect();
 
-                let user_str = unix::uid_to_string(entry.metadata.uid).unwrap_or("unknown".into());
-                let group_str = unix::gid_to_string(entry.metadata.gid).unwrap_or("unknown".into());
+                let user_str =
+                    unix_helper::uid_to_string(entry.metadata.uid).unwrap_or("unknown".into());
+                let group_str =
+                    unix_helper::gid_to_string(entry.metadata.gid).unwrap_or("unknown".into());
 
                 let mtime_str = format::time_to_string(entry.metadata.modified());
                 let size_str = format::file_size_to_string(entry.metadata.len());
@@ -83,7 +85,7 @@ impl Widget for TuiFooter<'_> {
                     Span::raw(format!("{}/{}", i + 1, self.dirlist.len())),
                     Span::raw("  "),
                     Span::raw(mtime_str),
-                    Span::raw(TIMEZONE_STR.as_str()),
+                    Span::raw(global::TIMEZONE_STR.as_str()),
                     Span::raw(size_str),
                     Span::raw("  "),
                     Span::styled(
@@ -112,17 +114,17 @@ impl Widget for TuiFooter<'_> {
                     ),
                 ];
 
-                if let LinkType::Symlink { target, valid } = entry.metadata.link_type() {
+                if let AppLinkType::Symlink { target, valid } = entry.metadata.link_type() {
                     let link_style = if *valid {
                         Style::default()
-                            .fg(THEME_T.link.fg)
-                            .bg(THEME_T.link.bg)
-                            .add_modifier(THEME_T.link.modifier)
+                            .fg(global::APP_THEME.link.fg)
+                            .bg(global::APP_THEME.link.bg)
+                            .add_modifier(global::APP_THEME.link.modifier)
                     } else {
                         Style::default()
-                            .fg(THEME_T.link_invalid.fg)
-                            .bg(THEME_T.link_invalid.bg)
-                            .add_modifier(THEME_T.link_invalid.modifier)
+                            .fg(global::APP_THEME.link_invalid.fg)
+                            .bg(global::APP_THEME.link_invalid.bg)
+                            .add_modifier(global::APP_THEME.link_invalid.modifier)
                     };
                     text.push(Span::styled(" -> ", link_style));
                     text.push(Span::styled(target, link_style));

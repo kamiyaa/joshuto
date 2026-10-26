@@ -3,8 +3,8 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::types::io::IoTaskStat;
-use crate::types::state::WorkerState;
+use crate::state::WorkerState;
+use crate::tasks::IoTaskStat;
 use crate::utils::format;
 
 /// The background-task view: the currently running IO task's progress, plus the queue behind it.

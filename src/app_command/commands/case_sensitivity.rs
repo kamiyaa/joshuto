@@ -1,0 +1,30 @@
+use crate::config::CaseSensitivity;
+use crate::error::AppResult;
+use crate::state::AppState;
+
+/// Which search mode's case-sensitivity setting the `set_case_sensitivity` command should change.
+#[derive(Clone, Copy, Debug)]
+pub enum SetType {
+    String,
+    Glob,
+    Regex,
+    Fzf,
+}
+
+/// Implements `set_case_sensitivity`: sets the default case sensitivity for one search mode.
+pub fn set_case_sensitivity(
+    app_state: &mut AppState,
+    case_sensitivity: CaseSensitivity,
+    set_type: SetType,
+) -> AppResult {
+    let options = &mut app_state.config.search_options;
+
+    match set_type {
+        SetType::String => options.string_case_sensitivity = case_sensitivity,
+        SetType::Glob => options.glob_case_sensitivity = case_sensitivity,
+        SetType::Regex => options.regex_case_sensitivity = case_sensitivity,
+        SetType::Fzf => options.fzf_case_sensitivity = case_sensitivity,
+    }
+
+    Ok(())
+}

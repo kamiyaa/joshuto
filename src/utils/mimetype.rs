@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::process::Command;
 
-use crate::error::{AppError, AppErrorKind, AppResult};
+use crate::error::{AppError, AppErrorCode, AppResult};
 
 /// A detected MIME type, split into its type and subtype (e.g. `"text"` / `"plain"`).
 pub struct Mimetype {
@@ -41,7 +41,7 @@ pub fn get_mimetype(p: &Path) -> AppResult<Mimetype> {
     if !output.status.success() {
         let stderr_msg = String::from_utf8_lossy(&output.stderr).to_string();
 
-        let error = AppError::new(AppErrorKind::Io, stderr_msg);
+        let error = AppError::new(AppErrorCode::Io, stderr_msg);
         return Err(error);
     }
 
@@ -49,7 +49,7 @@ pub fn get_mimetype(p: &Path) -> AppResult<Mimetype> {
     match stdout_msg.trim().split_once('/') {
         Some((ttype, subtype)) => Ok(Mimetype::new(ttype.to_string(), subtype.to_string())),
         None => {
-            let error = AppError::new(AppErrorKind::Io, "Unknown mimetype".to_string());
+            let error = AppError::new(AppErrorCode::Io, "Unknown mimetype".to_string());
             Err(error)
         }
     }

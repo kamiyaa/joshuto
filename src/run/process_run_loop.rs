@@ -1,22 +1,18 @@
 use super::process_event;
 
-use crate::commands::quit::QuitAction;
-use crate::history::generate_entries_to_root;
-use crate::history::DirectoryHistory;
-use crate::history::JoshutoHistory;
-use crate::preview::preview_default;
+use crate::app_command::commands::quit::QuitAction;
+use crate::app_command::ExecutableAppCommand;
+use crate::config::{AppKeybindConfig, KeyEventAction};
+use crate::fs::{generate_entries_to_root, AppDirectoryHistory, DirectoryHistory};
+use crate::state::{calculate_external_preview, AppState};
 use crate::tab::JoshutoTab;
-use crate::traits::app_execute::AppExecute;
-use crate::traits::ToString;
-use crate::types::event::AppEvent;
-use crate::types::keybind::CommandKeybind;
-use crate::types::keymap::AppKeyMapping;
-use crate::types::state::calculate_external_preview;
-use crate::types::state::AppState;
+use crate::tasks::preview::preview_default;
+use crate::tasks::AppEvent;
 use crate::ui;
 use crate::ui::views;
 use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
+use crate::utils::to_string::ToString;
 
 use uuid::Uuid;
 
@@ -28,7 +24,7 @@ use ratatui::termion::event::Event;
 pub fn run_loop(
     backend: &mut ui::AppBackend,
     app_state: &mut AppState,
-    keymap_t: AppKeyMapping,
+    keymap_t: AppKeybindConfig,
 ) -> std::io::Result<()> {
     let curr_path = std::env::current_dir()?;
 
@@ -46,7 +42,7 @@ pub fn run_loop(
     {
         let id = Uuid::new_v4();
         // Initialize an initial tab
-        let mut new_tab_history = JoshutoHistory::new();
+        let mut new_tab_history = AppDirectoryHistory::new();
         let tab_display_options = app_state
             .config
             .display_options
@@ -119,7 +115,7 @@ pub fn run_loop(
 fn process_input(
     app_state: &mut AppState,
     backend: &mut AppBackend,
-    keymap_t: &AppKeyMapping,
+    keymap_t: &AppKeybindConfig,
     event: AppEvent,
 ) {
     // handle the event
@@ -129,13 +125,10 @@ fn process_input(
             preview_default::load_previews(app_state, backend);
         }
         AppEvent::TerminalEvent(key) => {
-            if app_state
-                .state
-                .message_queue_ref()
-                .current_message()
-                .is_some()
-            {
-                app_state.state.message_queue_mut().pop_front();
+            // user input dismisses one queued message, and the worker's result once it's done
+            app_state.state.message_queue_mut().pop_front();
+            if !app_state.state.worker_state_ref().is_busy() {
+                app_state.state.io_worker_message = None;
             }
             match key {
                 // in the event where mouse input is not supported
@@ -150,7 +143,7 @@ fn process_input(
                             .message_queue_mut()
                             .push_info(format!("Unmapped input: {}", key.to_string()));
                     }
-                    Some(CommandKeybind::SimpleKeybind { commands, .. }) => {
+                    Some(KeyEventAction::Base { commands, .. }) => {
                         for command in commands {
                             if let Err(e) = command.execute(app_state, backend, keymap_t) {
                                 app_state
@@ -161,9 +154,9 @@ fn process_input(
                             }
                         }
                     }
-                    Some(CommandKeybind::CompositeKeybind(m)) => {
+                    Some(KeyEventAction::Recursive(m)) => {
                         let commands =
-                            process_event::poll_event_until_simple_keybind(app_state, backend, m);
+                            process_event::poll_event_until_base_keybind(app_state, backend, m);
 
                         if let Some(commands) = commands {
                             for command in commands {

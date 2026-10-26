@@ -5,8 +5,8 @@ use ratatui::text::Span;
 use ratatui::widgets::{Clear, Paragraph, Wrap};
 
 use crate::run::process_event;
-use crate::types::event::AppEvent;
-use crate::types::state::AppState;
+use crate::state::AppState;
+use crate::tasks::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::AppBackend;
 

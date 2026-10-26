@@ -4,11 +4,11 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Clear, Widget};
 
-use crate::traits::ToString;
-use crate::types::keybind::KeyMapping;
-use crate::types::state::AppState;
+use crate::config::KeyMapping;
+use crate::state::AppState;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::TuiMenu;
+use crate::utils::to_string::ToString;
 
 const BORDER_HEIGHT: usize = 1;
 const BOTTOM_MARGIN: usize = 1;

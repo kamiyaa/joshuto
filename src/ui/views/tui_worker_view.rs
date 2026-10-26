@@ -2,7 +2,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::Widget;
 
-use crate::types::state::AppState;
+use crate::state::AppState;
 use crate::ui::widgets::{TuiIoTasks, TuiTopBar};
 
 /// The `show_tasks` screen: top bar plus the background-task view.

@@ -6,9 +6,9 @@ use ratatui::widgets::{Paragraph, Widget};
 
 use tab_list_builder::factor_tab_bar_spans;
 
-use crate::types::state::AppState;
+use crate::global;
+use crate::state::AppState;
 use crate::ui::tab_list_builder;
-use crate::THEME_T;
 use crate::{HOSTNAME, USERNAME};
 
 /// The top status bar: username@hostname (if enabled) followed by the tab bar.
@@ -59,7 +59,7 @@ impl Widget for TuiTopBar<'_> {
             available_tab_width,
             &paths,
             self.app_state.state.tab_state_ref().index,
-            &THEME_T.tabs,
+            &global::APP_THEME.tabs,
         );
         top_bar_spans.extend(tab_bar_spans);
         Paragraph::new(Line::from(top_bar_spans)).render(area, buf);

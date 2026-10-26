@@ -3,13 +3,11 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
-use super::display_raw::DisplayOptionRaw;
-use super::preview::preview_option_raw::PreviewOptionRaw;
-use super::tab::TabOption;
+use crate::config::{
+    AppTabOption, CustomCommand, DisplayOptionRaw, PreviewOptionRaw, SearchOption,
+};
 
-use crate::types::custom_command::CustomCommand;
-use crate::types::option::search::SearchOption;
-use crate::utils::serde::{default_shell, default_true};
+use super::utils::{default_shell, default_true};
 
 /// TOML-deserializable form of [`AppConfig`](super::app::AppConfig).
 #[derive(Clone, Debug, Deserialize)]
@@ -39,7 +37,7 @@ pub struct AppConfigRaw {
     #[serde(default, rename = "search")]
     pub search_options: SearchOption,
     #[serde(default, rename = "tab")]
-    pub tab_options: TabOption,
+    pub tab_options: AppTabOption,
     #[serde(default)]
     pub custom_commands: Vec<CustomCommand>,
     #[serde(default = "default_shell")]

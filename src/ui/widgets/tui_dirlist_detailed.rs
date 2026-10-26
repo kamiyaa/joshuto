@@ -5,15 +5,13 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 
-use crate::config::app::AppConfig;
-use crate::fs::{FileType, JoshutoDirEntry, JoshutoDirList, LinkType};
-use crate::tab::TabDisplayOption;
-use crate::types::option::display::DisplayOption;
-use crate::types::option::line_mode::{LineMode, LineModeArgs, LineNumberStyle};
+use crate::config::{
+    AppConfig, DisplayOption, LineMode, LineModeArgs, LineNumberStyle, TabDisplayOption,
+};
+use crate::fs::{AppDirEntry, AppDirectoryList, AppFileType, AppLinkType};
 use crate::utils::format::time_to_string;
 use crate::utils::string::UnicodeTruncate;
-use crate::utils::style;
-use crate::utils::{format, unix};
+use crate::utils::{format, style_helper, unix_helper};
 use unicode_width::UnicodeWidthStr;
 
 use super::tui_dirlist::get_entry_icon;
@@ -26,7 +24,7 @@ const ELLIPSIS: &str = "…";
 /// per-entry linemode metadata (size, times, owner, permissions) right-aligned.
 pub struct TuiDirListDetailed<'a> {
     pub config: &'a AppConfig,
-    pub dirlist: &'a JoshutoDirList,
+    pub dirlist: &'a AppDirectoryList,
     pub display_options: &'a DisplayOption,
     pub tab_display_options: &'a TabDisplayOption,
     pub focused: bool,
@@ -35,7 +33,7 @@ impl<'a> TuiDirListDetailed<'a> {
     /// Creates a detailed directory-list widget for `dirlist`.
     pub fn new(
         config: &'a AppConfig,
-        dirlist: &'a JoshutoDirList,
+        dirlist: &'a AppDirectoryList,
         display_options: &'a DisplayOption,
         tab_display_options: &'a TabDisplayOption,
         focused: bool,
@@ -89,16 +87,16 @@ impl Widget for TuiDirListDetailed<'_> {
                 let ix = skip_dist + i;
 
                 let style = if !self.focused {
-                    style::entry_style(self.config, entry)
+                    style_helper::entry_style(self.config, entry)
                 } else if ix == curr_index {
-                    style::entry_style(self.config, entry).add_modifier(Modifier::REVERSED)
+                    style_helper::entry_style(self.config, entry).add_modifier(Modifier::REVERSED)
                 } else {
-                    style::entry_style(self.config, entry)
+                    style_helper::entry_style(self.config, entry)
                 };
 
                 buf.set_string(x, y + i as u16, space_fill.as_str(), style);
 
-                let mut prefix = style::entry_prefix(entry).to_string();
+                let mut prefix = style_helper::entry_prefix(entry).to_string();
                 let line_number_prefix = match line_num_style {
                     LineNumberStyle::None => "".to_string(),
                     _ if ix == curr_index => format!("{:<1$} ", curr_index + 1, max_index_length),
@@ -125,12 +123,12 @@ impl Widget for TuiDirListDetailed<'_> {
     }
 }
 
-fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
+fn get_entry_size_string(entry: &AppDirEntry) -> String {
     if let Some(size) = entry.metadata.cumulative_size() {
         return format::file_size_to_string(size);
     }
     match entry.metadata.file_type() {
-        FileType::Directory => entry
+        AppFileType::Directory => entry
             .metadata
             .directory_size()
             .map(|n| n.to_string())
@@ -139,7 +137,7 @@ fn get_entry_size_string(entry: &JoshutoDirEntry) -> String {
     }
 }
 
-fn display_line_mode(mode: LineMode, entry: &JoshutoDirEntry) -> String {
+fn display_line_mode(mode: LineMode, entry: &AppDirEntry) -> String {
     let metadata = &entry.metadata;
 
     mode.mode
@@ -149,11 +147,17 @@ fn display_line_mode(mode: LineMode, entry: &JoshutoDirEntry) -> String {
             LineModeArgs::Size => get_entry_size_string(entry),
             LineModeArgs::ModifyTime => time_to_string(metadata.modified()),
             LineModeArgs::AccessTime => time_to_string(metadata.accessed()),
-            LineModeArgs::User => unix::uid_to_string(metadata.uid).unwrap_or("unknown".into()),
-            LineModeArgs::Group => unix::gid_to_string(metadata.gid).unwrap_or("unknown".into()),
-            LineModeArgs::Permission => unix::mode_to_char_array(metadata.mode, metadata.file_type)
-                .iter()
-                .collect(),
+            LineModeArgs::User => {
+                unix_helper::uid_to_string(metadata.uid).unwrap_or("unknown".into())
+            }
+            LineModeArgs::Group => {
+                unix_helper::gid_to_string(metadata.gid).unwrap_or("unknown".into())
+            }
+            LineModeArgs::Permission => {
+                unix_helper::mode_to_char_array(metadata.mode, metadata.file_type)
+                    .iter()
+                    .collect()
+            }
             LineModeArgs::Null => unreachable!(),
         })
         .collect::<Vec<String>>()
@@ -164,7 +168,7 @@ fn display_line_mode(mode: LineMode, entry: &JoshutoDirEntry) -> String {
 fn print_entry(
     config: &AppConfig,
     buf: &mut Buffer,
-    entry: &JoshutoDirEntry,
+    entry: &AppDirEntry,
     style: Style,
     (x, y): (u16, u16),
     linemode: LineMode,
@@ -172,8 +176,8 @@ fn print_entry(
     prefix: &str,
 ) {
     let symlink_string = match entry.metadata.link_type() {
-        LinkType::Normal => "",
-        LinkType::Symlink { .. } => "-> ",
+        AppLinkType::Normal => "",
+        AppLinkType::Symlink { .. } => "-> ",
     };
 
     let name = entry.file_name();

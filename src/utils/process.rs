@@ -3,8 +3,8 @@ use std::process;
 use std::sync::mpsc;
 use std::thread;
 
-use crate::types::event::AppEvent;
-use crate::types::mimetype::ProgramEntry;
+use crate::config::ProgramEntry;
+use crate::tasks::AppEvent;
 use crate::utils::format::clear_screen;
 
 /// Spawns `entry` detached (not blocking joshuto), returning its pid and a thread handle that

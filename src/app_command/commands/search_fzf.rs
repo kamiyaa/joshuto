@@ -1,0 +1,41 @@
+use crate::app_command::commands::{cursor_move, fzf};
+use crate::error::{AppError, AppErrorCode, AppResult};
+use crate::state::AppState;
+use crate::ui::AppBackend;
+
+/// Implements `search_fzf`: opens an fzf picker over the current directory's entries and moves
+/// the cursor to the chosen one.
+pub fn search_fzf(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
+    let items = app_state
+        .state
+        .tab_state_ref()
+        .curr_tab_ref()
+        .curr_list_ref()
+        .map(|list| {
+            let v: Vec<String> = list
+                .iter()
+                .enumerate()
+                .map(|(i, entry)| format!("{:04} \u{02503} {}\n", i, entry.file_name()))
+                .collect();
+            v
+        })
+        .unwrap_or_default();
+
+    if items.is_empty() {
+        return Err(AppError::new(
+            AppErrorCode::Io,
+            "no files to select".to_string(),
+        ));
+    }
+
+    let fzf_output = fzf::fzf(app_state, backend, items)?;
+    let selected_idx_str = fzf_output.split_once(' ');
+
+    if let Some((selected_idx_str, _)) = selected_idx_str {
+        if let Ok(index) = selected_idx_str.parse::<usize>() {
+            cursor_move::cursor_move(app_state, index);
+        }
+    }
+
+    Ok(())
+}

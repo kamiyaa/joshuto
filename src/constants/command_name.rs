@@ -81,6 +81,7 @@ cmd_constants![
     (CMD_SUBPROCESS_CAPTURE, "capture"),
     (CMD_STDOUT_POST_PROCESS, "stdout"),
     (CMD_SHOW_TASKS, "show_tasks"),
+    (CMD_SHOW_LOGS, "show_logs"),
     (CMD_TAB_SWITCH, "tab_switch"),
     (CMD_TAB_SWITCH_INDEX, "tab_switch_index"),
     (CMD_TOGGLE_HIDDEN, "toggle_hidden"),

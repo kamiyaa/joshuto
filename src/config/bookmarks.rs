@@ -3,12 +3,15 @@ use std::collections::HashMap;
 use ratatui::termion::event::Event;
 use serde::{Deserialize, Serialize};
 
-use crate::{traits::config::TomlConfigFile, types::config_type::ConfigType, utils::keyparse};
+use crate::{
+    config::{AppPersistentConfig, ConfigType},
+    utils::keyparse,
+};
 
 /// Directory bookmarks: a key event mapped to the path it jumps to.
 pub type Bookmarks = HashMap<Event, String>;
 
-impl TomlConfigFile for Bookmarks {
+impl AppPersistentConfig for Bookmarks {
     type Raw = BookmarksRaw;
 
     fn get_type() -> ConfigType {

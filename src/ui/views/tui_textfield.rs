@@ -14,13 +14,13 @@ use ratatui::termion::event::{Event, Key};
 use ratatui::widgets::Clear;
 use unicode_width::UnicodeWidthStr;
 
+use crate::app_command::AppCommand;
+use crate::app_command::CompletionKind;
+use crate::app_command::{CommandCompletion, InteractiveExecute};
 use crate::constants::command_name::COMMANDS;
 use crate::run::process_event;
-use crate::traits::app_execute::{CommandCompletion, InteractiveExecute};
-use crate::types::command::Command;
-use crate::types::completion_kind::CompletionKind;
-use crate::types::event::AppEvent;
-use crate::types::state::AppState;
+use crate::state::AppState;
+use crate::tasks::AppEvent;
 use crate::ui::views::TuiView;
 use crate::ui::widgets::{TuiMenu, TuiMultilineText};
 use crate::ui::AppBackend;
@@ -252,7 +252,7 @@ impl<'a> TuiTextField<'a> {
                             }
 
                             let res = line_buffer.backspace(1, listener);
-                            if let Ok(command) = Command::from_str(line_buffer.as_str()) {
+                            if let Ok(command) = AppCommand::from_str(line_buffer.as_str()) {
                                 command.interactive_execute(app_state)
                             }
                             res
@@ -366,7 +366,7 @@ impl<'a> TuiTextField<'a> {
                         Key::Char(c) => {
                             let dirty = line_buffer.insert(c, 1, listener).is_some();
 
-                            if let Ok(command) = Command::from_str(line_buffer.as_str()) {
+                            if let Ok(command) = AppCommand::from_str(line_buffer.as_str()) {
                                 command.interactive_execute(app_state)
                             }
                             dirty
@@ -532,7 +532,7 @@ fn get_autocomplete_candidates(
             if line_buffer.pos() <= command.len() {
                 return Some((0, complete_word(&COMMANDS, command)));
             }
-            let completion_kind = Command::completion_kind(command)?;
+            let completion_kind = AppCommand::completion_kind(command)?;
             match completion_kind {
                 CompletionKind::Bin => {
                     if !arg.starts_with("./") && !arg.starts_with('/') {

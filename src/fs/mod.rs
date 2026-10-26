@@ -1,11 +1,11 @@
 //! Filesystem entry, directory listing, and metadata types shared across joshuto.
 
-mod dirlist;
-mod entry;
+mod app_dir_entry;
+mod app_dir_history;
+mod app_dirlist;
 mod metadata;
-mod options;
 
-pub use dirlist::*;
-pub use entry::*;
+pub use app_dir_entry::*;
+pub use app_dir_history::*;
+pub use app_dirlist::*;
 pub use metadata::*;
-pub use options::*;

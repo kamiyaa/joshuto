@@ -1,11 +1,9 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Style};
-use ratatui::text::Span;
-use ratatui::widgets::{Paragraph, Widget, Wrap};
+use ratatui::widgets::Widget;
 
-use crate::types::state::AppState;
-use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTopBar};
+use crate::state::AppState;
+use crate::ui::widgets::{TuiStatusBar, TuiDirListDetailed, TuiTopBar};
 
 /// A single-pane layout: just the current directory listing, top bar, and status line.
 pub struct TuiMinimalView<'a> {
@@ -63,23 +61,8 @@ impl Widget for TuiMinimalView<'_> {
                 };
 
                 if self.show_bottom_status {
-                    /* draw the bottom status bar */
-                    if let Some(msg) = self.app_state.state.worker_state_ref().get_msg() {
-                        let message_style = Style::default().fg(Color::Yellow);
-                        let text = Span::styled(msg, message_style);
-                        Paragraph::new(text)
-                            .wrap(Wrap { trim: true })
-                            .render(rect, buf);
-                    } else if let Some(msg) =
-                        self.app_state.state.message_queue_ref().current_message()
-                    {
-                        let text = Span::styled(msg.content.as_str(), msg.style);
-                        Paragraph::new(text)
-                            .wrap(Wrap { trim: true })
-                            .render(rect, buf);
-                    } else {
-                        TuiFooter::new(list, curr_tab.option_ref()).render(rect, buf);
-                    }
+                    TuiStatusBar::new(self.app_state, list, curr_tab.option_ref())
+                        .render(rect, buf);
                 }
             }
 

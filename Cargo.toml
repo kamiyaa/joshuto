@@ -46,6 +46,8 @@ shadow-rs = "^2"
 shell-words = "^1"
 shellexpand = { version = "^3", features = ["full"] }
 signal-hook = "^0"
+tracing = "^0"
+tracing-subscriber = "^0"
 toml = "^1"
 unicode-segmentation = "^1"
 unicode-width = "^0"

@@ -4,23 +4,26 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::Widget;
 use unicode_width::UnicodeWidthStr;
 
-use crate::config::app::AppConfig;
-use crate::fs::{FileType, JoshutoMetadata};
-use crate::fs::{JoshutoDirEntry, JoshutoDirList};
+use crate::config::AppConfig;
+use crate::fs::{AppDirEntry, AppDirectoryList};
+#[cfg(feature = "devicons")]
+use crate::fs::{AppFileMetadata, AppFileType};
+#[cfg(feature = "devicons")]
+use crate::global;
 use crate::ui::widgets::trim_file_label;
-use crate::utils::style;
+use crate::utils::style_helper;
 
 /// Renders a simple (non-detailed) directory listing: one entry name per line, current entry
 /// reverse-highlighted when `focused`. Used for the parent and preview panes.
 pub struct TuiDirList<'a> {
     pub config: &'a AppConfig,
-    pub dirlist: &'a JoshutoDirList,
+    pub dirlist: &'a AppDirectoryList,
     pub focused: bool,
 }
 
 impl<'a> TuiDirList<'a> {
     /// Creates a directory-list widget for `dirlist`.
-    pub fn new(config: &'a AppConfig, dirlist: &'a JoshutoDirList, focused: bool) -> Self {
+    pub fn new(config: &'a AppConfig, dirlist: &'a AppDirectoryList, focused: bool) -> Self {
         Self {
             config,
             dirlist,
@@ -59,11 +62,11 @@ impl Widget for TuiDirList<'_> {
                 let ix = skip_dist + i;
 
                 let style = if !self.focused {
-                    style::entry_style(self.config, entry)
+                    style_helper::entry_style(self.config, entry)
                 } else if ix == curr_index {
-                    style::entry_style(self.config, entry).add_modifier(Modifier::REVERSED)
+                    style_helper::entry_style(self.config, entry).add_modifier(Modifier::REVERSED)
                 } else {
-                    style::entry_style(self.config, entry)
+                    style_helper::entry_style(self.config, entry)
                 };
 
                 buf.set_string(x, y + i as u16, space_fill.as_str(), style);
@@ -83,7 +86,7 @@ impl Widget for TuiDirList<'_> {
 fn print_entry(
     config: &AppConfig,
     buf: &mut Buffer,
-    entry: &JoshutoDirEntry,
+    entry: &AppDirEntry,
     style: Style,
     (x, y): (u16, u16),
     drawing_width: usize,
@@ -123,18 +126,16 @@ pub fn get_entry_icon(
     config: &AppConfig,
     name: &str,
     ext: Option<&str>,
-    metadata: &JoshutoMetadata,
+    metadata: &AppFileMetadata,
 ) -> &'static str {
-    use crate::ICONS_T;
-
-    if let FileType::Directory = metadata.file_type() {
-        return ICONS_T
+    if let AppFileType::Directory = metadata.file_type() {
+        return global::APP_ICONS
             .directory_exact
             .get(name)
             .map(|s| s.as_str())
-            .unwrap_or(ICONS_T.default_dir.as_str());
+            .unwrap_or(global::APP_ICONS.default_dir.as_str());
     }
-    ICONS_T
+    global::APP_ICONS
         .file_exact
         .get(name)
         .map(|s| s.as_str())
@@ -145,8 +146,8 @@ pub fn get_entry_icon(
                 } else {
                     ext.to_owned()
                 };
-                ICONS_T.ext.get(&ext).map(|s| s.as_str())
+                global::APP_ICONS.ext.get(&ext).map(|s| s.as_str())
             })
-            .unwrap_or_else(|| ICONS_T.default_file.as_str())
+            .unwrap_or_else(|| global::APP_ICONS.default_file.as_str())
         })
 }

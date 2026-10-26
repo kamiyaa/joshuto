@@ -94,6 +94,7 @@ keymap = [
   { keys = ["V"], commands = ["toggle_visual"] },
 
   { keys = ["w"], commands = ["show_tasks --exit-key=w"] },
+  { keys = ["#"], commands = ["show_logs"] },
   { keys = ["b", "b"], commands = ["bulk_rename"] },
   { keys = ["="], commands = ["set_mode"] },
 

@@ -3,7 +3,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::widgets::{Block, Borders, Widget};
 
-use crate::THEME_T;
+use crate::global;
 
 /// A simple bordered list-of-strings popup menu (used for bookmark selection).
 pub struct TuiMenu<'a> {
@@ -29,7 +29,7 @@ impl Widget for TuiMenu<'_> {
         Block::default()
             .style(style)
             .borders(Borders::TOP)
-            .border_style(THEME_T.border.as_style())
+            .border_style(global::APP_THEME.border.as_style())
             .render(area, buf);
 
         let text_iter = self.options.iter().chain(&[" "]);

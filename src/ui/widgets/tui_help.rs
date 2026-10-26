@@ -7,8 +7,8 @@ use ratatui::layout::{Constraint, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Cell, Row, Table, Widget};
 
-use crate::traits::app_execute::CommandComment;
-use crate::types::keybind::{CommandKeybind, KeyMapping};
+use crate::app_command::CommandComment;
+use crate::config::{KeyEventAction, KeyMapping};
 
 lazy_static! {
     static ref COMMENT_STYLE: Style = Style::default().add_modifier(Modifier::REVERSED);
@@ -128,15 +128,15 @@ pub fn get_raw_keymap_table<'a>(
     for (event, bind) in keymap.iter() {
         let key = key_event_to_string(event);
         let (command, comment) = match bind {
-            CommandKeybind::SimpleKeybind {
+            KeyEventAction::Base {
                 commands,
                 description: Some(desc),
             } => (format!("{}", commands[0]), desc.as_str()),
-            CommandKeybind::SimpleKeybind {
+            KeyEventAction::Base {
                 commands,
                 description: None,
             } => (format!("{}", commands[0]), commands[0].comment()),
-            CommandKeybind::CompositeKeybind(sub_keymap) => {
+            KeyEventAction::Recursive(sub_keymap) => {
                 let mut sub_rows = get_raw_keymap_table(sub_keymap, "", sort_by);
                 for _ in 0..sub_rows.len() {
                     let mut sub_row = sub_rows.pop().unwrap();

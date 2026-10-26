@@ -2,21 +2,20 @@ use ratatui::buffer::{Buffer, Cell};
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::style::{Color, Style};
 use ratatui::symbols::line::{HORIZONTAL_DOWN, HORIZONTAL_UP};
-use ratatui::text::Span;
-use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
+use ratatui::widgets::{Block, Borders, Widget};
 use ratatui_image::Image;
 
-use crate::fs::FileType;
-use crate::preview::preview_dir::PreviewDirState;
-use crate::preview::preview_file::PreviewFileState;
-use crate::types::state::{AppState, PreviewState, TabState};
+use crate::fs::AppFileType;
+use crate::global;
+use crate::state::{AppState, PreviewState, TabState};
+use crate::tasks::PreviewDirState;
+use crate::tasks::PreviewFileState;
 use crate::ui;
-use crate::ui::widgets::{
-    TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiFooter, TuiMessage,
+use crate::ui::widgets::{TuiStatusBar, 
+    TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiMessage,
     TuiTopBar,
 };
 use crate::ui::PreviewArea;
-use crate::THEME_T;
 
 /// Draws the borders and T-junction intersections around the parent/current/preview panes.
 struct TuiFolderViewBorders<'a> {
@@ -32,7 +31,7 @@ impl<'a> TuiFolderViewBorders<'a> {
 
 impl Widget for TuiFolderViewBorders<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let border_style = THEME_T.border.as_style();
+        let border_style = global::APP_THEME.border.as_style();
 
         let block = Block::default()
             .borders(Borders::ALL)
@@ -179,22 +178,8 @@ impl Widget for TuiFolderView<'_> {
 
             let footer_area = Self::footer_area(&area);
             if self.show_bottom_status {
-                /* draw the bottom status bar */
-                if let Some(msg) = self.app_state.state.worker_state_ref().get_msg() {
-                    let message_style = Style::default().fg(Color::Yellow);
-                    let text = Span::styled(msg, message_style);
-                    Paragraph::new(text)
-                        .wrap(Wrap { trim: true })
-                        .render(footer_area, buf);
-                } else if let Some(msg) = self.app_state.state.message_queue_ref().current_message()
-                {
-                    let text = Span::styled(msg.content.as_str(), msg.style);
-                    Paragraph::new(text)
-                        .wrap(Wrap { trim: true })
-                        .render(footer_area, buf);
-                } else {
-                    TuiFooter::new(list, curr_tab.option_ref()).render(footer_area, buf);
-                }
+                TuiStatusBar::new(self.app_state, list, curr_tab.option_ref())
+                    .render(footer_area, buf);
             }
         } else {
             match curr_tab.history_metadata_ref().get(curr_tab_cwd) {
@@ -274,7 +259,7 @@ struct Intersections {
 
 impl Intersections {
     fn render_left(&self, buf: &mut Buffer) {
-        let border_style = THEME_T.border.as_style();
+        let border_style = global::APP_THEME.border.as_style();
         if let Some(cell) = buf.cell_mut(Position::new(self.left, self.top)) {
             *cell = Cell::new(HORIZONTAL_DOWN);
             cell.set_style(border_style);
@@ -285,7 +270,7 @@ impl Intersections {
         }
     }
     fn render_right(&self, buf: &mut Buffer) {
-        let border_style = THEME_T.border.as_style();
+        let border_style = global::APP_THEME.border.as_style();
         if let Some(cell) = buf.cell_mut(Position::new(self.right, self.top)) {
             *cell = Cell::new(HORIZONTAL_DOWN);
             cell.set_style(border_style);
@@ -321,7 +306,7 @@ pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
             Some(_) => &display_options.default_layout,
             None => match curr_entry {
                 None => &display_options.no_preview_layout,
-                Some(entry) if entry.metadata.file_type() == FileType::Directory => {
+                Some(entry) if entry.metadata.file_type() == AppFileType::Directory => {
                     &display_options.default_layout
                 }
                 Some(entry) => match preview_state.previews_ref().get(entry.file_path()) {

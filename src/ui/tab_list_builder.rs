@@ -6,9 +6,9 @@ use ratatui::text::Span;
 
 use unicode_width::UnicodeWidthStr;
 
-use crate::config::theme::tab::TabTheme;
+use crate::config::AppTabTheme;
+use crate::global::HOME_DIR;
 use crate::utils::string::UnicodeTruncate;
-use crate::HOME_DIR;
 
 // This file provides stuff to factor a tab-line from a list of paths.
 //
@@ -131,7 +131,7 @@ fn factor_tab_bar_sequence(
     available_width: usize,
     tab_records: &[&TabLabel],
     current_index: usize,
-    config: &TabTheme,
+    config: &AppTabTheme,
 ) -> Vec<TabBarElement> {
     //##################################################################
     //## Case 0: less available width than 2 units -> just show nothing
@@ -424,7 +424,7 @@ fn factor_tab_bar_sequence(
 
 fn factor_tab_bar_spans_from_sequence<'a>(
     tab_bar_elements: Vec<TabBarElement>,
-    config: &TabTheme,
+    config: &AppTabTheme,
 ) -> Vec<Span<'a>> {
     tab_bar_elements
         .into_iter()
@@ -504,7 +504,7 @@ pub fn factor_tab_bar_spans<'a>(
     available_width: usize,
     tab_paths: &[&'a Path],
     current_index: usize,
-    config: &TabTheme,
+    config: &AppTabTheme,
 ) -> Vec<Span<'a>> {
     let reps: Vec<TabLabel> = tab_paths.iter().map(|p| TabLabel::from_path(p)).collect();
     let rep_refs: Vec<&TabLabel> = reps.iter().collect();
@@ -516,15 +516,15 @@ pub fn factor_tab_bar_spans<'a>(
 
 #[cfg(test)]
 mod tests_facator_tab_bar_sequence {
-    use crate::config::theme::{tab::TabTheme, tab_raw::TabThemeRaw};
+    use crate::config::{AppTabTheme, AppTabThemeRaw};
 
     use super::{factor_tab_bar_sequence, TabBarElement, TabLabel};
 
-    fn test_config() -> TabTheme {
-        let raw = TabThemeRaw {
+    fn test_config() -> AppTabTheme {
+        let raw = AppTabThemeRaw {
             ..Default::default()
         };
-        TabTheme::from(raw)
+        AppTabTheme::from(raw)
     }
 
     #[test]

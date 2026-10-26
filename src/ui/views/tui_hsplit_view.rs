@@ -1,12 +1,10 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Style};
-use ratatui::text::Span;
-use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
+use ratatui::widgets::{Block, Borders, Widget};
 
-use crate::types::state::AppState;
-use crate::ui::widgets::{TuiDirListDetailed, TuiFooter, TuiTopBar};
-use crate::THEME_T;
+use crate::global;
+use crate::state::AppState;
+use crate::ui::widgets::{TuiStatusBar, TuiDirListDetailed, TuiTopBar};
 
 /// A two-pane layout showing the current and next tab's listings side by side (paired by even
 /// and odd tab index).
@@ -41,7 +39,7 @@ impl Widget for TuiHSplitView<'_> {
 
             let layout = calculate_layout_with_borders(area, constraints);
 
-            let border_style = THEME_T.border.as_style();
+            let border_style = global::APP_THEME.border.as_style();
 
             let block = Block::default()
                 .borders(Borders::ALL)
@@ -103,23 +101,8 @@ impl Widget for TuiHSplitView<'_> {
                 };
 
                 if self.show_bottom_status {
-                    /* draw the bottom status bar */
-                    if let Some(msg) = self.app_state.state.worker_state_ref().get_msg() {
-                        let message_style = Style::default().fg(Color::Yellow);
-                        let text = Span::styled(msg, message_style);
-                        Paragraph::new(text)
-                            .wrap(Wrap { trim: true })
-                            .render(rect, buf);
-                    } else if let Some(msg) =
-                        self.app_state.state.message_queue_ref().current_message()
-                    {
-                        let text = Span::styled(msg.content.as_str(), msg.style);
-                        Paragraph::new(text)
-                            .wrap(Wrap { trim: true })
-                            .render(rect, buf);
-                    } else {
-                        TuiFooter::new(list, curr_tab.option_ref()).render(rect, buf);
-                    }
+                    TuiStatusBar::new(self.app_state, list, curr_tab.option_ref())
+                        .render(rect, buf);
                 }
             }
 

@@ -1,16 +1,12 @@
-use std::collections::HashMap;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
-use super::{app_raw::AppConfigRaw, tab::TabOption};
 use crate::{
-    constants::config::APP_CONFIG,
-    error::AppResult,
-    traits::config::TomlConfigFile,
-    types::{
-        config_type::ConfigType,
-        custom_command::CustomCommand,
-        option::{display::DisplayOption, preview::PreviewOption, search::SearchOption},
+    config::{
+        app_raw::AppConfigRaw, AppPersistentConfig, AppTabOption, ConfigType, CustomCommand,
+        DisplayOption, PreviewOption, SearchOption,
     },
+    constants::config::DEFAULT_APP_CONFIG,
+    error::{AppError, AppErrorCode, AppResult},
 };
 
 /// Top-level application settings, loaded from `joshuto.toml`.
@@ -29,15 +25,19 @@ pub struct AppConfig {
     pub display_options: DisplayOption,
     pub preview_options: PreviewOption,
     pub search_options: SearchOption,
-    pub tab_options: TabOption,
+    pub tab_options: AppTabOption,
     pub shell: PathBuf,
 }
 
 impl AppConfig {
     /// Parses the built-in default `joshuto.toml`, returning an error only if it's malformed.
-    pub fn default_res() -> AppResult<Self> {
-        let raw: AppConfigRaw = toml::from_str(APP_CONFIG)?;
-        Ok(Self::from(raw))
+    pub fn try_default() -> AppResult<Self> {
+        let value: AppConfigRaw = toml::from_str(DEFAULT_APP_CONFIG).map_err(|err| {
+            let error_msg = "Failed to parse default config";
+            tracing::error!(?err, "{error_msg}");
+            AppError::new(AppErrorCode::DefaultConfigParse, error_msg.to_string())
+        })?;
+        Ok(Self::from(value))
     }
 }
 
@@ -45,36 +45,36 @@ impl std::default::Default for AppConfig {
     fn default() -> Self {
         // This should not fail.
         // If it fails then there is a (syntax) error in the default config file
-        Self::default_res().unwrap()
-    }
-}
-
-impl TomlConfigFile for AppConfig {
-    type Raw = AppConfigRaw;
-
-    fn get_type() -> ConfigType {
-        ConfigType::App
+        Self::try_default().unwrap()
     }
 }
 
 impl From<AppConfigRaw> for AppConfig {
-    fn from(raw: AppConfigRaw) -> Self {
+    fn from(value: AppConfigRaw) -> Self {
         Self {
-            use_trash: raw.use_trash,
-            xdg_open: raw.xdg_open,
-            xdg_open_fork: raw.xdg_open_fork,
-            case_insensitive_ext: raw.case_insensitive_ext,
-            watch_files: raw.watch_files,
-            cmd_aliases: raw.cmd_aliases,
-            focus_on_create: raw.focus_on_create,
-            mouse_support: raw.mouse_support,
-            zoxide_update: raw.zoxide_update,
-            display_options: DisplayOption::from(raw.display_options),
-            preview_options: PreviewOption::from(raw.preview_options),
-            search_options: raw.search_options,
-            tab_options: raw.tab_options,
-            custom_commands: raw.custom_commands,
-            shell: raw.shell,
+            use_trash: value.use_trash,
+            xdg_open: value.xdg_open,
+            xdg_open_fork: value.xdg_open_fork,
+            case_insensitive_ext: value.case_insensitive_ext,
+            watch_files: value.watch_files,
+            cmd_aliases: value.cmd_aliases,
+            focus_on_create: value.focus_on_create,
+            mouse_support: value.mouse_support,
+            zoxide_update: value.zoxide_update,
+            display_options: DisplayOption::from(value.display_options),
+            preview_options: PreviewOption::from(value.preview_options),
+            search_options: value.search_options,
+            tab_options: value.tab_options,
+            custom_commands: value.custom_commands,
+            shell: value.shell,
         }
+    }
+}
+
+impl AppPersistentConfig for AppConfig {
+    type Raw = AppConfigRaw;
+
+    fn get_type() -> ConfigType {
+        ConfigType::App
     }
 }

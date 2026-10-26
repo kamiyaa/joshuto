@@ -7,15 +7,32 @@ use std::sync::mpsc;
 #[cfg(unix)]
 use std::os::unix;
 
-use crate::error::AppError;
-use crate::error::AppErrorKind;
 use crate::error::AppResult;
-use crate::types::event::AppEvent;
-use crate::types::io::FileOperationProgress;
-use crate::types::io::IoTaskStat;
-use crate::types::io::{FileOperation, FileOperationOptions, IoTask, IoTaskProgressMessage};
-use crate::utils::fs::query_number_of_items;
-use crate::utils::name_resolution::rename_filename_conflict;
+use crate::error::{AppError, AppErrorCode};
+use crate::tasks::AppEvent;
+use crate::tasks::FileOperation;
+use crate::tasks::FileOperationOptions;
+use crate::tasks::FileOperationProgress;
+use crate::tasks::IoTask;
+use crate::tasks::IoTaskProgressMessage;
+use crate::tasks::IoTaskStat;
+use crate::utils::fs_helper;
+
+/// If `path` already exists, appends `_0`, `_1`, ... to its file name until a free name is
+/// found, mutating `path` in place.
+pub fn rename_filename_conflict(path: &mut path::PathBuf) {
+    let file_name = path.file_name().unwrap().to_os_string();
+    for i in 0.. {
+        if !path.exists() {
+            break;
+        }
+        path.pop();
+
+        let mut file_name = file_name.clone();
+        file_name.push(format!("_{i}"));
+        path.push(file_name);
+    }
+}
 
 /// Runs on the dedicated IO worker thread: processes queued [`IoTask`]s one at a time,
 /// reporting each result back over `event_tx`.
@@ -41,7 +58,7 @@ pub fn process_io_task(io_task: &IoTask, event_tx: &mpsc::Sender<AppEvent>) -> A
         check_dest_not_inside_src(io_task)?;
     }
 
-    let (total_files, total_bytes) = query_number_of_items(io_task.paths.as_slice())?;
+    let (total_files, total_bytes) = fs_helper::query_number_of_items(io_task.paths.as_slice())?;
     let src = io_task.paths[0].parent().unwrap().to_path_buf();
     let dest = io_task.dest.clone();
 
@@ -83,7 +100,7 @@ fn check_dest_not_inside_src(io_task: &IoTask) -> AppResult {
         let src = path.canonicalize().unwrap_or_else(|_| path.clone());
         if dest.starts_with(&src) {
             return Err(AppError::new(
-                AppErrorKind::InvalidParameters,
+                AppErrorCode::InvalidParameters,
                 format!("Cannot paste '{}' into itself", path.to_string_lossy()),
             ));
         }
@@ -115,6 +132,8 @@ fn paste_symlink(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
 fn paste_link_absolute(task: &IoTask, tx: &mpsc::Sender<AppEvent>) -> AppResult {
     #[cfg(unix)]
     for src in task.paths.iter() {
+        use crate::tasks::IoTaskProgressMessage;
+
         let event = IoTaskProgressMessage::FileStart {
             file_path: src.to_path_buf(),
         };
@@ -388,13 +407,15 @@ where
         }
     }
     Err(AppError::new(
-        AppErrorKind::Trash,
+        AppErrorCode::Trash,
         "Failed to trash file".to_string(),
     ))
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::tasks::FileOperationOptions;
+
     use super::*;
 
     fn task(op: FileOperation, src: &path::Path, dest: &path::Path) -> IoTask {

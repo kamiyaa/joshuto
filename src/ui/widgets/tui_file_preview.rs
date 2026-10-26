@@ -3,7 +3,7 @@ use ratatui::layout::Rect;
 use ratatui::text::Span;
 use ratatui::widgets::Widget;
 
-use crate::preview::preview_file::FilePreview;
+use crate::tasks::FilePreview;
 
 /// Renders a script-generated text file preview, scrolled to `preview.index`, with ANSI colors
 /// interpreted when the `syntax_highlight` feature is enabled.
