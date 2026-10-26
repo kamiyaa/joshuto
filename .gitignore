@@ -1,1 +1,9 @@
 /target
+/test
+*.log
+*.tmp
+*~
+**/*.rs.bk
+/result
+.env*
+.vscode/
