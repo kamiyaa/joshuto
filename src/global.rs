@@ -50,6 +50,6 @@ lazy_static::lazy_static! {
     pub static ref APP_LOG: LogBuffer = LogBuffer::default();
 
     pub static ref TIMEZONE_STR: String = {
-        format!(" UTC{:+} ", chrono::Local::now().offset().local_minus_utc() / 3600)
+        format!(" UTC{:+} ", jiff::Zoned::now().offset().seconds() / 3600)
     };
 }

@@ -25,8 +25,13 @@ pub fn file_size_to_string(file_size: u64) -> String {
 pub fn time_to_string(time: time::SystemTime) -> String {
     const TIME_FORMATTING: &str = "%Y-%m-%d %H:%M";
 
-    let datetime: chrono::DateTime<chrono::offset::Local> = time.into();
-    datetime.format(TIME_FORMATTING).to_string()
+    match jiff::Timestamp::try_from(time) {
+        Ok(timestamp) => timestamp
+            .to_zoned(jiff::tz::TimeZone::system())
+            .strftime(TIME_FORMATTING)
+            .to_string(),
+        Err(_) => String::new(),
+    }
 }
 
 /// Clears the terminal screen.

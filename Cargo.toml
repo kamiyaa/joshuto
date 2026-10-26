@@ -23,13 +23,13 @@ allmytoes = "^0.5"
 alphanumeric-sort = "^1"
 ansi-to-tui = { version = "^8", optional = true }
 bytesize = "^2"
-chrono = "^0"
 clap = { version = "^4", features = ["derive"] }
 clap_complete = "^4"
 colors-transform = "^0"
 dirs = "^7"
 globset = "^0"
 image = "^0.25"
+jiff = "^0"
 lazy_static = "^1"
 lscolors = { version = "^0", features = ["nu-ansi-term"] }
 nix = { version = "^0", default-features = false, features = ["fs", "signal", "user"] }
@@ -40,7 +40,7 @@ rand = "^0"
 ratatui = { version = "^0", default-features = false, features = ["termion"] }
 ratatui-image = { version = "^11", default-features = false, features = ["termion", "serde"] }
 regex = "^1"
-rustyline = "^18"
+rustyline = "^19"
 serde = { version = "^1", features = ["derive"] }
 shadow-rs = "^2"
 shell-words = "^1"
