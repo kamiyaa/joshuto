@@ -68,7 +68,13 @@ impl AppFileMetadata {
         use std::os::unix::fs::MetadataExt;
 
         let symlink_metadata = fs::symlink_metadata(path)?;
-        let metadata = fs::metadata(path);
+        let is_symlink = symlink_metadata.file_type().is_symlink();
+        // only symlinks need a second stat to resolve their target
+        let metadata = if is_symlink {
+            fs::metadata(path)
+        } else {
+            Ok(symlink_metadata.clone())
+        };
         let (len, modified, accessed) = match metadata.as_ref() {
             Ok(m) => (m.len(), m.modified()?, m.accessed()?),
             Err(_) => (
@@ -91,7 +97,7 @@ impl AppFileMetadata {
             _ => (AppFileType::File, Mode::empty()),
         };
 
-        let link_type = if symlink_metadata.file_type().is_symlink() {
+        let link_type = if is_symlink {
             let mut link = "".to_string();
 
             if let Ok(path) = fs::read_link(path) {
@@ -100,10 +106,9 @@ impl AppFileMetadata {
                 }
             }
 
-            let exists = path.exists();
             AppLinkType::Symlink {
                 target: link,
-                valid: exists,
+                valid: metadata.is_ok(),
             }
         } else {
             AppLinkType::Normal
