@@ -5,7 +5,7 @@ use colors_transform::{Color, Rgb};
 use lscolors::LsColors;
 use ratatui::style::{self, Style};
 
-use crate::fs::{AppFileType, AppLinkType};
+use crate::fs::{AppFileType, AppLinkType, GitFileStatus};
 use crate::global;
 use crate::utils::unix_helper;
 use crate::{config::AppConfig, fs::AppDirEntry};
@@ -84,6 +84,23 @@ pub fn entry_prefix(entry: &AppDirEntry) -> &str {
     } else {
         ""
     }
+}
+
+/// Style for a `git status --short` indicator, chosen by the kind of change.
+pub fn git_status_style(status: GitFileStatus) -> Style {
+    let theme = if status.is_untracked() {
+        &global::APP_THEME.git_untracked
+    } else if status.is_deleted() {
+        &global::APP_THEME.git_deleted
+    } else if status.is_staged_only() {
+        &global::APP_THEME.git_staged
+    } else {
+        &global::APP_THEME.git_modified
+    };
+    Style::default()
+        .fg(theme.fg)
+        .bg(theme.bg)
+        .add_modifier(theme.modifier)
 }
 
 fn default_style(

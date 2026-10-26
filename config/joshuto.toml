@@ -25,6 +25,8 @@ show_borders = true
 show_hostname = true
 show_hidden = false
 show_icons = false
+# show `git status --short` (XY) indicators next to files in a git repo
+show_git_status = false
 # none, absolute, relative
 line_number_style = "none"
 

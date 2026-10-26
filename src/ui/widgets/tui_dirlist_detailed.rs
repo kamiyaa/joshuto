@@ -201,10 +201,35 @@ fn print_entry(
     // draw prefix first
     let prefix_width = prefix.width();
     buf.set_stringn(x, y, prefix, prefix_width, Style::default());
-    let x = x + prefix_width as u16;
+    let mut x = x + prefix_width as u16;
+    let mut drawing_width = drawing_width - prefix_width;
+
+    // draw the git status column (2 chars + a trailing space), if enabled
+    if config.display_options.show_git_status {
+        let git_col_width = 3.min(drawing_width);
+        if git_col_width > 0 {
+            match entry.git_status() {
+                Some(git_status) => {
+                    let git_str = format!("{:<1$}", git_status.to_string(), git_col_width);
+                    buf.set_stringn(
+                        x,
+                        y,
+                        &git_str,
+                        git_col_width,
+                        style_helper::git_status_style(git_status),
+                    );
+                }
+                // keep the name column aligned for unmodified entries
+                None => {
+                    buf.set_stringn(x, y, " ".repeat(git_col_width), git_col_width, style);
+                }
+            }
+        }
+        x += git_col_width as u16;
+        drawing_width -= git_col_width;
+    }
 
     // factor left_label and right_label
-    let drawing_width = drawing_width - prefix_width;
     let (left_label, right_label) =
         factor_labels_for_entry(left_label_original, right_label_original, drawing_width);
 

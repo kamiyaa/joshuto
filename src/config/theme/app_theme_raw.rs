@@ -28,6 +28,14 @@ pub struct AppThemeRaw {
     #[serde(default)]
     pub border: AppStyleRaw,
     #[serde(default)]
+    pub git_modified: AppStyleRaw,
+    #[serde(default)]
+    pub git_staged: AppStyleRaw,
+    #[serde(default)]
+    pub git_untracked: AppStyleRaw,
+    #[serde(default)]
+    pub git_deleted: AppStyleRaw,
+    #[serde(default)]
     pub ext: HashMap<String, AppStyleRaw>,
     #[serde(default)]
     pub lscolors_enabled: bool,
