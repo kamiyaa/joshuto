@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::{env, fs};
 
 use rustyline::completion::{Candidate, FilenameCompleter, Pair};
-use rustyline::history::SearchDirection;
+use rustyline::history::{History, SearchDirection};
 use rustyline::line_buffer::{self, ChangeListener, DeleteListener, Direction, LineBuffer};
 use rustyline::{At, Word};
 
@@ -164,7 +164,7 @@ impl<'a> TuiTextField<'a> {
         let terminal = backend.terminal_mut();
         let _ = terminal.show_cursor();
 
-        let mut curr_history_index = app_state.state.commandline_state_ref().history_ref().len();
+        let mut curr_history_index = app_state.state.commandline_state.history.len();
 
         loop {
             terminal
@@ -272,8 +272,8 @@ impl<'a> TuiTextField<'a> {
                             line_buffer.kill_line(listener);
                             if let Ok(Some(s)) = app_state
                                 .state
-                                .commandline_state_ref()
-                                .history_ref()
+                                .commandline_state
+                                .history
                                 .get(curr_history_index, SearchDirection::Forward)
                             {
                                 line_buffer.insert_str(0, &s.entry, listener);
@@ -283,7 +283,7 @@ impl<'a> TuiTextField<'a> {
                         }
                         Key::Down => {
                             curr_history_index = if curr_history_index
-                                < app_state.state.commandline_state_ref().history_ref().len()
+                                < app_state.state.commandline_state.history.len()
                             {
                                 curr_history_index + 1
                             } else {
@@ -293,8 +293,8 @@ impl<'a> TuiTextField<'a> {
                             line_buffer.kill_line(listener);
                             if let Ok(Some(s)) = app_state
                                 .state
-                                .commandline_state_ref()
-                                .history_ref()
+                                .commandline_state
+                                .history
                                 .get(curr_history_index, SearchDirection::Reverse)
                             {
                                 line_buffer.insert_str(0, &s.entry, listener);

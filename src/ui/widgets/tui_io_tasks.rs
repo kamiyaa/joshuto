@@ -24,7 +24,7 @@ impl Widget for TuiIoTasks<'_> {
         if area.height < 7 {
             return;
         }
-        match self.app_state.worker_ref() {
+        match self.app_state.progress.as_ref() {
             Some(observer) => {
                 let current_area = Rect {
                     y: area.y + 1,

@@ -11,9 +11,9 @@ pub fn parent_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResu
     let mut new_index = new_index;
 
     {
-        let ui_state = app_state.state.ui_state_ref().clone();
+        let ui_state = app_state.state.ui_state.clone();
         let display_options = app_state.config.display_options.clone();
-        let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
+        let curr_tab = app_state.state.tab_state.curr_tab_mut();
         if let Some(curr_list) = curr_tab.parent_list_mut() {
             if curr_list.get_index().is_some() {
                 let dir_len = curr_list.contents.len();
@@ -39,7 +39,7 @@ pub fn parent_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResu
 pub fn parent_up(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .parent_list_ref()
         .and_then(|list| list.get_index().map(|idx| idx.saturating_sub(u)));
@@ -55,7 +55,7 @@ pub fn parent_up(app_state: &mut AppState, u: usize) -> AppResult {
 pub fn parent_down(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .parent_list_ref()
         .and_then(|list| list.get_index().map(|idx| idx + u));

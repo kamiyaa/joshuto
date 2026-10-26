@@ -10,7 +10,7 @@ pub fn search_string(app_state: &mut AppState, pattern: &str, incremental: bool)
 
     let search_state = MatchState::new_string(pattern, case_sensitivity);
 
-    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
+    let curr_tab = app_state.state.tab_state.curr_tab_ref();
 
     if incremental {
         if let Some(new_index) = search::search_next_impl(curr_tab, &search_state, 0) {

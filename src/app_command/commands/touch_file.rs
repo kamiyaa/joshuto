@@ -25,12 +25,12 @@ fn _create_file(file: &path::Path) -> std::io::Result<()> {
 /// Implements `touch`: updates the current entry's access/modified time (if `arg` is empty), or
 /// creates/touches the named file, then refreshes the listing.
 pub fn touch_file(app_state: &mut AppState, arg: &str) -> AppResult {
-    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
+    let curr_tab = app_state.state.tab_state.curr_tab_ref();
     match arg {
         "" => {
             if let Some(selected_file_path) = app_state
                 .state
-                .tab_state_ref()
+                .tab_state
                 .curr_tab_ref()
                 .curr_list_ref()
                 .and_then(|s| s.curr_entry_ref())
@@ -56,12 +56,12 @@ pub fn touch_file(app_state: &mut AppState, arg: &str) -> AppResult {
     if let Some(path) = path {
         let new_dirlist = {
             let options = &app_state.config.display_options;
-            let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
-            let history = app_state.state.tab_state_ref().curr_tab_ref().history_ref();
+            let tab_options = &app_state.state.tab_state.curr_tab_ref().options;
+            let history = &app_state.state.tab_state.curr_tab_ref().history;
 
             create_dirlist_with_history(history, path.as_path(), options, tab_options)?
         };
-        let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();
+        let history = &mut app_state.state.tab_state.curr_tab_mut().history;
         history.insert(path, new_dirlist);
     }
 

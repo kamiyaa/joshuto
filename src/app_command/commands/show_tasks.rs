@@ -32,7 +32,7 @@ pub fn show_tasks(
                         None => {
                             app_state
                                 .state
-                                .message_queue_mut()
+                                .message_queue
                                 .push_info(format!("Unmapped input: {}", key.to_string()));
                         }
                         Some(KeyEventAction::Base { commands, .. }) => {

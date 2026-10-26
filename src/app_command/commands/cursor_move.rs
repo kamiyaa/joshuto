@@ -10,14 +10,14 @@ use crate::ui::AppBackend;
 pub fn lazy_load_directory_size(app_state: &mut AppState) {
     let directory_size = match app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|l| l.curr_entry_ref())
     {
         Some(curr_entry) => {
             if let Some(size) = curr_entry.metadata.directory_size() {
-                let history = app_state.state.tab_state_ref().curr_tab_ref().history_ref();
+                let history = &app_state.state.tab_state.curr_tab_ref().history;
                 match history.get(curr_entry.file_path()).map(|d| d.len()) {
                     Some(len) if size != len => Some(len),
                     _ => None,
@@ -25,7 +25,7 @@ pub fn lazy_load_directory_size(app_state: &mut AppState) {
             } else if curr_entry.metadata.file_type() != AppFileType::Directory {
                 None
             } else {
-                let history = app_state.state.tab_state_ref().curr_tab_ref().history_ref();
+                let history = &app_state.state.tab_state.curr_tab_ref().history;
                 history.get(curr_entry.file_path()).map(|d| d.len())
             }
         }
@@ -35,7 +35,7 @@ pub fn lazy_load_directory_size(app_state: &mut AppState) {
     if let Some(s) = directory_size {
         if let Some(curr_entry) = app_state
             .state
-            .tab_state_mut()
+            .tab_state
             .curr_tab_mut()
             .curr_list_mut()
             .and_then(|l| l.curr_entry_mut())
@@ -50,14 +50,9 @@ pub fn lazy_load_directory_size(app_state: &mut AppState) {
 pub fn cursor_move(app_state: &mut AppState, new_index: usize) {
     lazy_load_directory_size(app_state);
     let mut new_index = new_index;
-    let ui_state = app_state.state.ui_state_ref().clone();
+    let ui_state = app_state.state.ui_state.clone();
     let display_options = &app_state.config.display_options;
-    if let Some(curr_list) = app_state
-        .state
-        .tab_state_mut()
-        .curr_tab_mut()
-        .curr_list_mut()
-    {
+    if let Some(curr_list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
         if !curr_list.is_empty() {
             let dir_len = curr_list.len();
             if new_index >= dir_len {
@@ -73,14 +68,9 @@ pub fn cursor_move(app_state: &mut AppState, new_index: usize) {
 pub fn to_path(app_state: &mut AppState, path: &path::Path) -> AppResult {
     // This error should never happen
     let err = || AppError::new(AppErrorCode::Unknown, String::from("Unexpected error"));
-    let ui_state = app_state.state.ui_state_ref().clone();
+    let ui_state = app_state.state.ui_state.clone();
     let display_options = &app_state.config.display_options;
-    if let Some(curr_list) = app_state
-        .state
-        .tab_state_mut()
-        .curr_tab_mut()
-        .curr_list_mut()
-    {
+    if let Some(curr_list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
         if let path::Component::Normal(name) = path.components().next().ok_or_else(err)? {
             let index = curr_list.get_index_from_name(name.to_str().ok_or_else(err)?);
             curr_list.set_index(index, &ui_state, display_options);
@@ -94,7 +84,7 @@ pub fn to_path(app_state: &mut AppState, path: &path::Path) -> AppResult {
 pub fn up(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|list| list.get_index().map(|idx| idx.saturating_sub(u)));
@@ -109,7 +99,7 @@ pub fn up(app_state: &mut AppState, u: usize) -> AppResult {
 pub fn down(app_state: &mut AppState, u: usize) -> AppResult {
     let movement = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|list| list.get_index().map(|idx| idx.saturating_add(u)));
@@ -124,7 +114,7 @@ pub fn down(app_state: &mut AppState, u: usize) -> AppResult {
 pub fn home(app_state: &mut AppState) -> AppResult {
     let movement = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|curr_list| {
@@ -146,7 +136,7 @@ pub fn home(app_state: &mut AppState) -> AppResult {
 pub fn end(app_state: &mut AppState) -> AppResult {
     let movement = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|curr_list| {
@@ -189,7 +179,7 @@ pub fn page_up(app_state: &mut AppState, backend: &mut AppBackend, proportion: f
 
     let movement = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|list| list.get_index().map(|idx| idx.saturating_sub(page_size)));
@@ -207,7 +197,7 @@ pub fn page_down(app_state: &mut AppState, backend: &mut AppBackend, proportion:
 
     let new_index = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|list| list.get_index().map(|idx| idx.saturating_add(page_size)));
@@ -222,7 +212,7 @@ pub fn page_down(app_state: &mut AppState, backend: &mut AppBackend, proportion:
 pub fn page_home(app_state: &mut AppState, _: &mut AppBackend) -> AppResult {
     let new_index = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map(|curr_list| curr_list.first_index_for_viewport());
@@ -238,7 +228,7 @@ pub fn page_middle(app_state: &mut AppState, backend: &mut AppBackend) -> AppRes
 
     let new_index = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map(|curr_list| curr_list.first_index_for_viewport() + movement);
@@ -254,7 +244,7 @@ pub fn page_end(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
 
     let new_index = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map(|curr_list| curr_list.first_index_for_viewport() + movement);

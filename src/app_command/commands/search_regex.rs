@@ -10,7 +10,7 @@ pub fn search_regex(app_state: &mut AppState, pattern: &str) -> AppResult {
 
     let search_state = MatchState::new_regex(pattern, case_sensitivity)?;
 
-    let curr_tab = &app_state.state.tab_state_ref().curr_tab_ref();
+    let curr_tab = &app_state.state.tab_state.curr_tab_ref();
     let index = curr_tab.curr_list_ref().and_then(|c| c.get_index());
 
     let offset = match index {

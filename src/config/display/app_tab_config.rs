@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -49,11 +46,6 @@ pub struct TabDisplayOption {
 }
 
 impl TabDisplayOption {
-    /// Returns the per-directory display options for `path`, if set.
-    pub fn dirlist_options_ref(&self, path: &Path) -> Option<&AppDirListDisplayOptions> {
-        self.dirlist_options.get(path)
-    }
-
     /// Returns a mutable reference to `path`'s display options, inserting the default if unset.
     pub fn dirlist_options_mut(&mut self, path: &PathBuf) -> &mut AppDirListDisplayOptions {
         if !self.dirlist_options.contains_key(path) {

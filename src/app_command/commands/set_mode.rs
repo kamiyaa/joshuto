@@ -27,7 +27,7 @@ pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
     const PREFIX: &str = "set_mode ";
     let entry = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|x| x.curr_entry_ref());
@@ -52,12 +52,7 @@ pub fn set_mode(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult
     if let Some(s) = user_input {
         if let Some(stripped) = s.strip_prefix(PREFIX) {
             let mode = str_to_mode(stripped);
-            if let Some(curr_list) = app_state
-                .state
-                .tab_state_mut()
-                .curr_tab_mut()
-                .curr_list_mut()
-            {
+            if let Some(curr_list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
                 if curr_list.selected_count() > 0 {
                     for entry in curr_list.iter_selected_mut() {
                         fchmodat(

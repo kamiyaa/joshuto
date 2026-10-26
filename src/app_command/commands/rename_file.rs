@@ -22,7 +22,7 @@ pub fn _rename_file(
     }
     std::fs::rename(src, dest)?;
 
-    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
+    let curr_tab = app_state.state.tab_state.curr_tab_ref();
 
     let path = curr_tab
         .curr_list_ref()
@@ -31,11 +31,11 @@ pub fn _rename_file(
     if let Some(path) = path {
         let new_dirlist = {
             let display_options = &app_state.config.display_options;
-            let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
-            let history = app_state.state.tab_state_ref().curr_tab_ref().history_ref();
+            let tab_options = &app_state.state.tab_state.curr_tab_ref().options;
+            let history = &app_state.state.tab_state.curr_tab_ref().history;
             create_dirlist_with_history(history, path.as_path(), display_options, tab_options)?
         };
-        let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();
+        let history = &mut app_state.state.tab_state.curr_tab_mut().history;
         history.insert(path, new_dirlist);
     }
     Ok(())
@@ -45,7 +45,7 @@ pub fn _rename_file(
 pub fn rename_file(app_state: &mut AppState, dest: &path::Path) -> AppResult {
     let path: Option<path::PathBuf> = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|s| s.curr_entry_ref())
@@ -61,7 +61,7 @@ pub fn rename_file(app_state: &mut AppState, dest: &path::Path) -> AppResult {
 fn _get_current_file_name(app_state: &mut AppState) -> Option<String> {
     app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|list| list.curr_entry_ref().map(|s| s.file_name().to_string()))

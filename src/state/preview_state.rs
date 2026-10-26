@@ -128,7 +128,7 @@ impl PreviewState {
         self.set_image_preview(None);
         self.load_preview_image(config, backend, path.clone());
 
-        let previews = self.previews_mut();
+        let previews = &mut self.previews;
         if previews.get(path.as_path()).is_none() {
             // add to loading state
             previews.insert(path.clone(), PreviewFileState::Loading);
@@ -176,14 +176,6 @@ impl PreviewState {
         let _ = thread_event_tx.send(res);
     }
 
-    /// Returns the cache of script-based file preview state.
-    pub fn previews_ref(&self) -> &FilePreviewMetadata {
-        &self.previews
-    }
-    /// Returns a mutable reference to the cache of script-based file preview state.
-    pub fn previews_mut(&mut self) -> &mut FilePreviewMetadata {
-        &mut self.previews
-    }
     /// Returns the cached rendered image preview for `other`, if it's the currently-loaded one.
     pub fn image_preview_ref(&self, other: &path::Path) -> Option<&Protocol> {
         match &self.image_preview {
@@ -349,13 +341,7 @@ fn call_preview_shown_hook(preview_area: PreviewArea, preview_options: &PreviewO
 /// This function can be called if an external preview shall be temporarily removed, for example
 /// when entering the help screen.
 pub fn remove_external_preview(app_state: &mut AppState) {
-    if app_state
-        .state
-        .preview_state_mut()
-        .preview_area
-        .take()
-        .is_some()
-    {
+    if app_state.state.preview_state.preview_area.take().is_some() {
         let preview_options = &app_state.config.preview_options;
         call_preview_removed_hook(preview_options);
     }

@@ -49,12 +49,7 @@ pub fn select_files(
 /// cursor in the latter case.
 fn select_without_pattern(app_state: &mut AppState, options: &SelectOption) -> AppResult {
     if options.all {
-        if let Some(curr_list) = app_state
-            .state
-            .tab_state_mut()
-            .curr_tab_mut()
-            .curr_list_mut()
-        {
+        if let Some(curr_list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
             curr_list.iter_mut().for_each(|e| {
                 if options.reverse {
                     e.set_permanent_selected(false);
@@ -67,7 +62,7 @@ fn select_without_pattern(app_state: &mut AppState, options: &SelectOption) -> A
         }
     } else if let Some(entry) = app_state
         .state
-        .tab_state_mut()
+        .tab_state
         .curr_tab_mut()
         .curr_list_mut()
         .and_then(|s| s.curr_entry_mut())
@@ -90,12 +85,7 @@ fn select_with_pattern(
     pattern: &MatchState,
     options: &SelectOption,
 ) -> AppResult {
-    if let Some(curr_list) = app_state
-        .state
-        .tab_state_mut()
-        .curr_tab_mut()
-        .curr_list_mut()
-    {
+    if let Some(curr_list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
         let mut found = 0;
         curr_list
             .iter_mut()
@@ -112,7 +102,7 @@ fn select_with_pattern(
             });
         app_state
             .state
-            .message_queue_mut()
+            .message_queue
             .push_info(format!("{} files selected", found));
     }
     Ok(())

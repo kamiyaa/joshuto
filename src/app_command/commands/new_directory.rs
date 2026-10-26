@@ -13,7 +13,7 @@ pub fn new_directory(app_state: &mut AppState, p: &path::Path) -> AppResult {
 
     let curr_path = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .get_cwd()
         .to_path_buf();

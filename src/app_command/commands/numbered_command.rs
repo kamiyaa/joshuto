@@ -26,12 +26,12 @@ pub fn numbered_command(
         // shown ahead of any queued messages, and removed once the next event arrives
         app_state
             .state
-            .message_queue_mut()
+            .message_queue
             .push_front(Message::info(prefix.clone()));
         backend.render(TuiView::new(app_state));
 
         let event = app_state.poll_event();
-        app_state.state.message_queue_mut().pop_front();
+        app_state.state.message_queue.pop_front();
         let event = match event {
             Ok(event) => event,
             Err(_) => return Ok(()),

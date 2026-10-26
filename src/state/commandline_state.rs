@@ -18,13 +18,4 @@ impl CommandLineState {
     pub fn new() -> Self {
         Self::default()
     }
-
-    /// Returns the command-line input history.
-    pub fn history_ref(&self) -> &dyn History {
-        &self.history
-    }
-    /// Returns a mutable reference to the command-line input history.
-    pub fn history_mut(&mut self) -> &mut dyn History {
-        &mut self.history
-    }
 }

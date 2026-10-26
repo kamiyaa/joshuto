@@ -56,13 +56,13 @@ fn delete_files(
     let dest = path::PathBuf::new();
     let io_task = IoTask::new(file_op, paths.clone(), dest, options);
     if background {
-        app_state.state.worker_state_mut().push_task(io_task);
+        app_state.state.worker_state.push_task(io_task);
     } else {
         let (wtx, _) = mpsc::channel();
         process_io_task(&io_task, &wtx)?;
     }
 
-    let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();
+    let history = &mut app_state.state.tab_state.curr_tab_mut().history;
     for path in paths.iter().filter(|p| p.is_dir()) {
         history.remove(path);
     }
@@ -81,7 +81,7 @@ pub fn delete_selected_files(
 ) -> AppResult {
     let paths = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map(|s| s.get_selected_paths())
@@ -102,7 +102,7 @@ pub fn delete_selected_files(
 
     let curr_path = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .get_cwd()
         .to_path_buf();

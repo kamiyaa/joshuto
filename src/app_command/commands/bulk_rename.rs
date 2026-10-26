@@ -41,7 +41,7 @@ pub fn _bulk_rename(app_state: &mut AppState) -> AppResult {
 
     let entries = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map_or(vec![], |s| s.selected_or_current());

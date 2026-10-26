@@ -96,13 +96,13 @@ fn process_filesystem_event(_event: notify::Event, app_state: &mut AppState) {
 
 /// Starts the next queued IO task, if the worker is idle and a task is waiting.
 pub fn process_new_io_task(app_state: &mut AppState) {
-    if app_state.state.worker_state_ref().is_busy() {
+    if app_state.state.worker_state.is_busy() {
         return;
     }
-    if app_state.state.worker_state_ref().is_empty() {
+    if app_state.state.worker_state.is_empty() {
         return;
     }
-    let _ = app_state.state.worker_state_mut().start_next_job();
+    let _ = app_state.state.worker_state.start_next_job();
 }
 
 /// Records `stats` as the currently in-progress IO task.
@@ -130,7 +130,7 @@ pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
             app_state.state.io_worker_message = Some(Message::error(msg));
         }
         Ok(_) => {
-            let worker_state = app_state.state.worker_state_mut();
+            let worker_state = &mut app_state.state.worker_state;
             if let Some(io_stat) = worker_state.remove_io_stat() {
                 let io_path = io_stat.dest_path();
                 if io_path.exists() {
@@ -158,7 +158,7 @@ pub fn process_finished_io_task(app_state: &mut AppState, res: AppResult) {
             }
         }
     }
-    app_state.state.worker_state_mut().progress = None;
+    app_state.state.worker_state.progress = None;
     process_new_io_task(app_state);
 }
 
@@ -169,27 +169,26 @@ pub fn process_dir_preview(
     path: path::PathBuf,
     res: io::Result<Option<AppDirectoryList>>,
 ) {
-    for (tab_id, tab) in app_state.state.tab_state_mut().iter_mut() {
+    for (tab_id, tab) in app_state.state.tab_state.iter_mut() {
         if *tab_id == id {
             match res {
                 Ok(None) => {
                     // unchanged on disk; the cached listing is still current
-                    tab.history_metadata_mut().remove(path.as_path());
+                    tab.history_metadata.remove(path.as_path());
                 }
                 Ok(Some(dirlist)) => {
                     // remove from loading state
-                    tab.history_metadata_mut().remove(dirlist.file_path());
+                    tab.history_metadata.remove(dirlist.file_path());
 
                     // merge now rather than in the loading thread, so cursor moves and
                     // selections made while it was loading are kept
-                    let dirlist =
-                        merge_dirlist_with_history(tab.history_ref(), dirlist, tab.option_ref());
+                    let dirlist = merge_dirlist_with_history(&tab.history, dirlist, &tab.options);
                     let dir_path = dirlist.file_path().to_path_buf();
-                    tab.history_mut().insert(dir_path, dirlist);
+                    tab.history.insert(dir_path, dirlist);
                 }
                 Err(e) => {
                     // set to false so we don't load again
-                    tab.history_metadata_mut().insert(
+                    tab.history_metadata.insert(
                         path,
                         PreviewDirState::Error {
                             message: e.to_string(),
@@ -208,16 +207,16 @@ pub fn process_file_preview(
     path: path::PathBuf,
     res: io::Result<PreviewData>,
 ) {
-    let preview_state = app_state.state.preview_state_mut();
+    let preview_state = &mut app_state.state.preview_state;
     match res {
         Ok(PreviewData::Script(output)) if output.status.code().is_some() => {
             preview_state
-                .previews_mut()
+                .previews
                 .insert(path, PreviewFileState::Success(*output));
         }
         Ok(PreviewData::Script(_)) => {
             preview_state
-                .previews_mut()
+                .previews
                 .insert(path, PreviewFileState::Error("status error".to_owned()));
         }
         Ok(PreviewData::Image(protocol)) => {
@@ -225,7 +224,7 @@ pub fn process_file_preview(
         }
         Err(e) => {
             preview_state
-                .previews_mut()
+                .previews
                 .insert(path, PreviewFileState::Error(e.to_string()));
         }
     };
@@ -243,19 +242,13 @@ pub fn process_unsupported(
         [27, 79, 65] => {
             let command = AppCommand::CursorMoveUp { offset: 1 };
             if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                app_state
-                    .state
-                    .message_queue_mut()
-                    .push_error(e.to_string());
+                app_state.state.message_queue.push_error(e.to_string());
             }
         }
         [27, 79, 66] => {
             let command = AppCommand::CursorMoveDown { offset: 1 };
             if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                app_state
-                    .state
-                    .message_queue_mut()
-                    .push_error(e.to_string());
+                app_state.state.message_queue.push_error(e.to_string());
             }
         }
         _ => {}
@@ -270,14 +263,9 @@ enum Panel {
 
 fn children_cursor_move(app_state: &mut AppState, new_index: usize) {
     let mut new_index = new_index;
-    let ui_state = app_state.state.ui_state_ref().clone();
+    let ui_state = app_state.state.ui_state.clone();
     let display_options = &app_state.config.display_options;
-    if let Some(children_list) = app_state
-        .state
-        .tab_state_mut()
-        .curr_tab_mut()
-        .child_list_mut()
-    {
+    if let Some(children_list) = app_state.state.tab_state.curr_tab_mut().child_list_mut() {
         if !children_list.is_empty() {
             let dir_len = children_list.len();
             if new_index >= dir_len {
@@ -324,34 +312,22 @@ pub fn process_mouse(
             if y == 1 {
                 let command = AppCommand::TabSwitch { offset: -1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             } else if x < layout_rect[1].x {
                 let command = AppCommand::ParentCursorMoveUp { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = AppCommand::CursorMoveUp { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             } else {
                 let command = AppCommand::PreviewCursorMoveUp { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             }
         }
@@ -359,34 +335,22 @@ pub fn process_mouse(
             if y == 1 {
                 let command = AppCommand::TabSwitch { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             } else if x < layout_rect[1].x {
                 let command = AppCommand::ParentCursorMoveDown { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             } else if x < layout_rect[2].x {
                 let command = AppCommand::CursorMoveDown { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             } else {
                 let command = AppCommand::PreviewCursorMoveDown { offset: 1 };
                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                    app_state
-                        .state
-                        .message_queue_mut()
-                        .push_error(e.to_string());
+                    app_state.state.message_queue.push_error(e.to_string());
                 }
             }
         }
@@ -396,29 +360,17 @@ pub fn process_mouse(
         {
             let (dirlist, panel) = if x < layout_rect[1].x {
                 (
-                    app_state
-                        .state
-                        .tab_state_mut()
-                        .curr_tab_mut()
-                        .parent_list_ref(),
+                    app_state.state.tab_state.curr_tab_mut().parent_list_ref(),
                     Some(Panel::Parent),
                 )
             } else if x < layout_rect[2].x {
                 (
-                    app_state
-                        .state
-                        .tab_state_mut()
-                        .curr_tab_mut()
-                        .curr_list_ref(),
+                    app_state.state.tab_state.curr_tab_mut().curr_list_ref(),
                     Some(Panel::Current),
                 )
             } else {
                 (
-                    app_state
-                        .state
-                        .tab_state_mut()
-                        .curr_tab_mut()
-                        .child_list_ref(),
+                    app_state.state.tab_state.curr_tab_mut().child_list_ref(),
                     Some(Panel::Preview),
                 )
             };
@@ -429,20 +381,14 @@ pub fn process_mouse(
                     Some(Panel::Parent) => {
                         if let Err(e) = parent_cursor_move::parent_cursor_move(app_state, new_index)
                         {
-                            app_state
-                                .state
-                                .message_queue_mut()
-                                .push_error(e.to_string());
+                            app_state.state.message_queue.push_error(e.to_string());
                         };
                         if button == MouseButton::Left {
                             let command = AppCommand::ChangeDirectory {
                                 path: path::PathBuf::from(".."),
                             };
                             if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                                app_state
-                                    .state
-                                    .message_queue_mut()
-                                    .push_error(e.to_string());
+                                app_state.state.message_queue.push_error(e.to_string());
                             }
                         };
                     }
@@ -451,10 +397,7 @@ pub fn process_mouse(
                         if button == MouseButton::Right {
                             let command = AppCommand::OpenFile;
                             if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                                app_state
-                                    .state
-                                    .message_queue_mut()
-                                    .push_error(e.to_string());
+                                app_state.state.message_queue.push_error(e.to_string());
                             }
                         }
                     }
@@ -463,10 +406,7 @@ pub fn process_mouse(
                         if button == MouseButton::Left {
                             let command = AppCommand::OpenFile;
                             if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                                app_state
-                                    .state
-                                    .message_queue_mut()
-                                    .push_error(e.to_string());
+                                app_state.state.message_queue.push_error(e.to_string());
                             }
                         }
                     }

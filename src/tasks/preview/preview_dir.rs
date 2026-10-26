@@ -1,6 +1,6 @@
 use std::thread;
-use std::{io, path};
 use std::time::SystemTime;
+use std::{io, path};
 
 use crate::config::{DisplayOption, TabDisplayOption};
 use crate::fs::AppDirectoryList;
@@ -26,9 +26,9 @@ impl Background {
     pub fn refresh(app_state: &mut AppState, dir_path: path::PathBuf) -> thread::JoinHandle<()> {
         let cached_modified = app_state
             .state
-            .tab_state_ref()
+            .tab_state
             .curr_tab_ref()
-            .history_ref()
+            .history
             .get(dir_path.as_path())
             .filter(|list| !list.need_update)
             .map(|list| list.metadata.modified());
@@ -42,20 +42,15 @@ impl Background {
     ) -> thread::JoinHandle<()> {
         let event_tx = app_state.events.event_tx.clone();
         let options = app_state.config.display_options.clone();
-        let tab_options = app_state
-            .state
-            .tab_state_ref()
-            .curr_tab_ref()
-            .option_ref()
-            .clone();
-        let tab_id = app_state.state.tab_state_ref().curr_tab_id();
+        let tab_options = app_state.state.tab_state.curr_tab_ref().options.clone();
+        let tab_id = app_state.state.tab_state.curr_tab_id();
 
         // add to loading state
         app_state
             .state
-            .tab_state_mut()
+            .tab_state
             .curr_tab_mut()
-            .history_metadata_mut()
+            .history_metadata
             .insert(dir_path.clone(), PreviewDirState::Loading);
 
         thread::spawn(move || {

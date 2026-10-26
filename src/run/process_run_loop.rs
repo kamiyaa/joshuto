@@ -51,14 +51,14 @@ pub fn run_loop(
         let dirlists = generate_entries_to_root(
             curr_path.as_path(),
             &new_tab_history,
-            app_state.state.ui_state_ref(),
+            &app_state.state.ui_state,
             &app_state.config.display_options,
             &tab_display_options,
         )?;
         new_tab_history.insert_entries(dirlists);
 
         let tab = JoshutoTab::new(curr_path, new_tab_history, tab_display_options)?;
-        app_state.state.tab_state_mut().insert_tab(id, tab, true);
+        app_state.state.tab_state.insert_tab(id, tab, true);
 
         // trigger a preview of child
         preview_default::load_previews(app_state, backend);
@@ -82,14 +82,14 @@ pub fn run_loop(
             // invoke preview hooks, if appropriate
             {
                 let new_preview_area = calculate_external_preview(
-                    app_state.state.tab_state_ref(),
-                    app_state.state.preview_state_ref(),
-                    app_state.state.ui_state_ref(),
+                    &app_state.state.tab_state,
+                    &app_state.state.preview_state,
+                    &app_state.state.ui_state,
                     &app_state.config.preview_options,
                 );
                 app_state
                     .state
-                    .preview_state_mut()
+                    .preview_state
                     .update_external_preview(new_preview_area);
             }
         }
@@ -126,8 +126,8 @@ fn process_input(
         }
         AppEvent::TerminalEvent(key) => {
             // user input dismisses one queued message, and the worker's result once it's done
-            app_state.state.message_queue_mut().pop_front();
-            if !app_state.state.worker_state_ref().is_busy() {
+            app_state.state.message_queue.pop_front();
+            if !app_state.state.worker_state.is_busy() {
                 app_state.state.io_worker_message = None;
             }
             match key {
@@ -140,16 +140,13 @@ fn process_input(
                     None => {
                         app_state
                             .state
-                            .message_queue_mut()
+                            .message_queue
                             .push_info(format!("Unmapped input: {}", key.to_string()));
                     }
                     Some(KeyEventAction::Base { commands, .. }) => {
                         for command in commands {
                             if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                                app_state
-                                    .state
-                                    .message_queue_mut()
-                                    .push_error(e.to_string());
+                                app_state.state.message_queue.push_error(e.to_string());
                                 break;
                             }
                         }
@@ -161,10 +158,7 @@ fn process_input(
                         if let Some(commands) = commands {
                             for command in commands {
                                 if let Err(e) = command.execute(app_state, backend, keymap_t) {
-                                    app_state
-                                        .state
-                                        .message_queue_mut()
-                                        .push_error(e.to_string());
+                                    app_state.state.message_queue.push_error(e.to_string());
                                     break;
                                 }
                             }
@@ -192,5 +186,5 @@ fn calculate_ui_state(app_state: &mut AppState, area: Rect) {
     } else {
         views::calculate_layout(area, constraints)
     };
-    app_state.state.ui_state_mut().layout = layout;
+    app_state.state.ui_state.layout = layout;
 }

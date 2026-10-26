@@ -10,9 +10,9 @@ fn next_or_prev(app_state: &mut AppState, path_opt: Option<PathBuf>) -> AppResul
         if !matches!(path.try_exists(), Ok(true)) {
             app_state
                 .state
-                .tab_state_mut()
+                .tab_state
                 .curr_tab_mut()
-                .navigation_history_mut()
+                .navigation_history
                 .remove_current();
             return next(app_state);
         }
@@ -27,9 +27,9 @@ fn next_or_prev(app_state: &mut AppState, path_opt: Option<PathBuf>) -> AppResul
 pub fn next(app_state: &mut AppState) -> AppResult {
     let next = app_state
         .state
-        .tab_state_mut()
+        .tab_state
         .curr_tab_mut()
-        .navigation_history_mut()
+        .navigation_history
         .next()
         .cloned();
     next_or_prev(app_state, next)
@@ -39,9 +39,9 @@ pub fn next(app_state: &mut AppState) -> AppResult {
 pub fn prev(app_state: &mut AppState) -> AppResult {
     let prev = app_state
         .state
-        .tab_state_mut()
+        .tab_state
         .curr_tab_mut()
-        .navigation_history_mut()
+        .navigation_history
         .prev()
         .cloned();
     next_or_prev(app_state, prev)

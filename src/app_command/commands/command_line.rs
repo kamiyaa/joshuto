@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use rustyline::history::History;
+
 use crate::app_command::AppCommand;
 use crate::app_command::ExecutableAppCommand;
 use crate::config::AppKeybindConfig;
@@ -28,11 +30,7 @@ pub fn read_and_execute(
 
     if let Some(mut s) = user_input {
         let mut trimmed = s.trim_start();
-        let _ = app_state
-            .state
-            .commandline_state_mut()
-            .history_mut()
-            .add(trimmed);
+        let _ = app_state.state.commandline_state.history.add(trimmed);
 
         let (command, arg) = match trimmed.find(' ') {
             Some(i) => (&trimmed[..i], &trimmed[i..]),

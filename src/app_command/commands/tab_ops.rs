@@ -23,10 +23,10 @@ use super::quit::{quit_with_action, QuitAction};
 /// parent, and cursor-entry directories in the background. The cached listings are shown
 /// meanwhile, so switching never waits on disk IO (which can take seconds on a spun-down disk).
 fn _tab_switch(new_index: usize, app_state: &mut AppState) -> AppResult {
-    app_state.state.tab_state_mut().index = new_index;
+    app_state.state.tab_state.index = new_index;
     let cwd = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .get_cwd()
         .to_path_buf();
@@ -35,7 +35,7 @@ fn _tab_switch(new_index: usize, app_state: &mut AppState) -> AppResult {
     // judged by cached metadata, which already follows symlinks
     let entry_path = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|l| l.curr_entry_ref())
@@ -53,9 +53,9 @@ fn _tab_switch(new_index: usize, app_state: &mut AppState) -> AppResult {
         let already_loading = matches!(
             app_state
                 .state
-                .tab_state_ref()
+                .tab_state
                 .curr_tab_ref()
-                .history_metadata_ref()
+                .history_metadata
                 .get(dir_path.as_path()),
             Some(PreviewDirState::Loading)
         );
@@ -69,8 +69,8 @@ fn _tab_switch(new_index: usize, app_state: &mut AppState) -> AppResult {
 
 /// Implements `tab_switch`: switches to the tab `offset` positions away, wrapping around.
 pub fn tab_switch(app_state: &mut AppState, offset: i32) -> AppResult {
-    let index = app_state.state.tab_state_ref().index;
-    let num_tabs = app_state.state.tab_state_ref().len();
+    let index = app_state.state.tab_state.index;
+    let num_tabs = app_state.state.tab_state.len();
     let new_index = (index as i32 + num_tabs as i32 + offset) as usize % num_tabs;
 
     _tab_switch(new_index, app_state).map_err(|err| {
@@ -89,7 +89,7 @@ pub fn tab_switch_index(app_state: &mut AppState, new_index: usize) -> AppResult
             "Tab index starts at 1".to_string(),
         ));
     }
-    let num_tabs = app_state.state.tab_state_ref().len();
+    let num_tabs = app_state.state.tab_state.len();
     if new_index <= num_tabs {
         _tab_switch(new_index - 1, app_state)?;
     } else if new_index > num_tabs {
@@ -110,7 +110,7 @@ pub fn new_tab_home_path(app_state: &AppState) -> path::PathBuf {
         },
         TabHomePage::Inherit => app_state
             .state
-            .tab_state_ref()
+            .tab_state
             .curr_tab_ref()
             .get_cwd()
             .to_path_buf(),
@@ -125,13 +125,13 @@ pub fn new_tab(app_state: &mut AppState, mode: &NewTabMode, last: bool) -> AppRe
         NewTabMode::Default => Ok(new_tab_home_path(app_state)),
         NewTabMode::CurrentTabDir => Ok(app_state
             .state
-            .tab_state_ref()
+            .tab_state
             .curr_tab_ref()
             .get_cwd()
             .to_path_buf()),
         NewTabMode::CursorDir => app_state
             .state
-            .tab_state_ref()
+            .tab_state
             .curr_tab_ref()
             .curr_list_ref()
             .and_then(|list| {
@@ -154,7 +154,7 @@ pub fn new_tab(app_state: &mut AppState, mode: &NewTabMode, last: bool) -> AppRe
             } else {
                 let mut tab_dir = app_state
                     .state
-                    .tab_state_ref()
+                    .tab_state
                     .curr_tab_ref()
                     .get_cwd()
                     .to_path_buf();
@@ -174,7 +174,7 @@ pub fn new_tab(app_state: &mut AppState, mode: &NewTabMode, last: bool) -> AppRe
         let dirlists = generate_entries_to_root(
             new_tab_path.as_path(),
             &new_tab_history,
-            app_state.state.ui_state_ref(),
+            &app_state.state.ui_state,
             &app_state.config.display_options,
             &tab_display_options,
         )?;
@@ -186,14 +186,14 @@ pub fn new_tab(app_state: &mut AppState, mode: &NewTabMode, last: bool) -> AppRe
             .default_tab_display_option
             .clone();
         let tab = JoshutoTab::new(new_tab_path, new_tab_history, tab_display_options)?;
-        app_state.state.tab_state_mut().insert_tab(id, tab, last);
+        app_state.state.tab_state.insert_tab(id, tab, last);
         let new_index = if last {
-            app_state.state.tab_state_ref().len() - 1
+            app_state.state.tab_state.len() - 1
         } else {
-            app_state.state.tab_state_ref().index + 1
+            app_state.state.tab_state.index + 1
         };
 
-        app_state.state.tab_state_mut().index = new_index;
+        app_state.state.tab_state.index = new_index;
         _tab_switch(new_index, app_state)?;
         Ok(())
     } else {
@@ -206,7 +206,7 @@ pub fn new_tab(app_state: &mut AppState, mode: &NewTabMode, last: bool) -> AppRe
 
 /// Implements `close_tab`: closes the current tab, or quits joshuto if it's the last tab.
 pub fn close_tab(app_state: &mut AppState) -> AppResult {
-    if app_state.state.tab_state_ref().len() <= 1 {
+    if app_state.state.tab_state.len() <= 1 {
         let action = if app_state.args.change_directory {
             QuitAction::OutputCurrentDirectory
         } else {
@@ -214,11 +214,11 @@ pub fn close_tab(app_state: &mut AppState) -> AppResult {
         };
         return quit_with_action(app_state, action);
     }
-    let curr_tab_id = app_state.state.tab_state_ref().curr_tab_id();
-    let mut tab_index = app_state.state.tab_state_ref().index;
+    let curr_tab_id = app_state.state.tab_state.curr_tab_id();
+    let mut tab_index = app_state.state.tab_state.index;
 
-    let _ = app_state.state.tab_state_mut().remove_tab(&curr_tab_id);
-    let num_tabs = app_state.state.tab_state_ref().len();
+    let _ = app_state.state.tab_state.remove_tab(&curr_tab_id);
+    let num_tabs = app_state.state.tab_state.len();
     if tab_index >= num_tabs {
         tab_index = num_tabs - 1;
     }
@@ -232,9 +232,9 @@ pub fn reload_all_tabs(app_state: &mut AppState, curr_path: &Path) -> io::Result
     {
         let display_options = &app_state.config.display_options;
 
-        for (id, tab) in app_state.state.tab_state_ref().iter() {
-            let tab_options = tab.option_ref();
-            let history = tab.history_ref();
+        for (id, tab) in app_state.state.tab_state.iter() {
+            let tab_options = &tab.options;
+            let history = &tab.history;
             let dirlist =
                 create_dirlist_with_history(history, curr_path, display_options, tab_options)?;
             map.insert(*id, dirlist);
@@ -242,8 +242,8 @@ pub fn reload_all_tabs(app_state: &mut AppState, curr_path: &Path) -> io::Result
     }
 
     for (id, dirlist) in map {
-        if let Some(tab) = app_state.state.tab_state_mut().tab_mut(&id) {
-            tab.history_mut().insert(curr_path.to_path_buf(), dirlist);
+        if let Some(tab) = app_state.state.tab_state.tabs.get_mut(&id) {
+            tab.history.insert(curr_path.to_path_buf(), dirlist);
         }
     }
     Ok(())
@@ -251,7 +251,7 @@ pub fn reload_all_tabs(app_state: &mut AppState, curr_path: &Path) -> io::Result
 
 /// Removes `curr_path` from every open tab's listing cache (e.g. after it's deleted).
 pub fn remove_entry_from_all_tabs(app_state: &mut AppState, curr_path: &Path) {
-    for (_, tab) in app_state.state.tab_state_mut().iter_mut() {
-        tab.history_mut().remove(curr_path);
+    for (_, tab) in app_state.state.tab_state.iter_mut() {
+        tab.history.remove(curr_path);
     }
 }

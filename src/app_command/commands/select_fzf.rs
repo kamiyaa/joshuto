@@ -14,7 +14,7 @@ pub fn select_fzf(
 ) -> AppResult {
     let items = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map(|list| {
@@ -36,12 +36,7 @@ pub fn select_fzf(
 
     let fzf_output = fzf::fzf_multi(app_state, backend, items)?;
 
-    if let Some(curr_list) = app_state
-        .state
-        .tab_state_mut()
-        .curr_tab_mut()
-        .curr_list_mut()
-    {
+    if let Some(curr_list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
         let mut found = 0;
 
         for selected in fzf_output.lines() {
@@ -66,7 +61,7 @@ pub fn select_fzf(
 
         app_state
             .state
-            .message_queue_mut()
+            .message_queue
             .push_info(format!("{} files selected", found));
     }
 

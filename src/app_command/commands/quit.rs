@@ -37,7 +37,7 @@ pub fn quit_with_action(app_state: &mut AppState, quit_action: QuitAction) -> Ap
         return Ok(());
     }
 
-    let worker_state = app_state.state.worker_state_ref();
+    let worker_state = &app_state.state.worker_state;
     if worker_state.is_busy() || !worker_state.is_empty() {
         Err(AppError::new(
             AppErrorCode::Io,

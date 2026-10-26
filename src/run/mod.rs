@@ -81,7 +81,7 @@ pub fn run_app(args: AppArgs) -> AppResult<i32> {
 /// Writes the output requested by the quit action (current directory or selected files) to
 /// `--output-file` if given, otherwise to stderr.
 fn run_quit(args: &AppArgs, app_state: &AppState) -> AppResult {
-    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
+    let curr_tab = app_state.state.tab_state.curr_tab_ref();
     let lines: Vec<String> = match app_state.quit {
         QuitAction::OutputCurrentDirectory => {
             let curr_path = match args.output_file {

@@ -34,12 +34,12 @@ impl<'a> TuiStatusBar<'a> {
     ) -> Self {
         let state = &app_state.state;
         let message = state
-            .message_queue_ref()
+            .message_queue
             .current_message()
             .or(state.io_worker_message.as_ref());
         Self {
             message,
-            progress: state.worker_state_ref().worker_ref().map(|s| &s.progress),
+            progress: state.worker_state.progress.as_ref().map(|s| &s.progress),
             dirlist,
             tab_options,
         }
@@ -121,9 +121,12 @@ mod tests {
 
     fn render(message: Option<&Message>, progress: Option<&FileOperationProgress>) -> String {
         let tab_options = TabDisplayOption::default();
-        let dirlist =
-            AppDirectoryList::from_path(PathBuf::from("/"), &DisplayOption::default(), &tab_options)
-                .unwrap();
+        let dirlist = AppDirectoryList::from_path(
+            PathBuf::from("/"),
+            &DisplayOption::default(),
+            &tab_options,
+        )
+        .unwrap();
         let area = Rect::new(0, 0, WIDTH, 1);
         let mut buf = Buffer::empty(area);
         TuiStatusBar {

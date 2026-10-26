@@ -8,10 +8,10 @@ use uuid::Uuid;
 /// changed on disk.
 pub fn soft_reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
-    if let Some(curr_tab) = app_state.state.tab_state_ref().tab_ref(id) {
+    if let Some(curr_tab) = app_state.state.tab_state.tabs.get(id) {
         let display_options = &app_state.config.display_options;
-        let tab_options = curr_tab.option_ref();
-        let history = curr_tab.history_ref();
+        let tab_options = &curr_tab.options;
+        let history = &curr_tab.history;
         for curr_list in [
             curr_tab.parent_list_ref(),
             curr_tab.curr_list_ref(),
@@ -34,9 +34,10 @@ pub fn soft_reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
 
     if let Some(history) = app_state
         .state
-        .tab_state_mut()
-        .tab_mut(id)
-        .map(|t| t.history_mut())
+        .tab_state
+        .tabs
+        .get_mut(id)
+        .map(|t| &mut t.history)
     {
         history.insert_entries(dirlists);
     }
@@ -45,17 +46,17 @@ pub fn soft_reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
 
 /// Soft-reloads the currently active tab. See [`soft_reload`].
 pub fn soft_reload_curr_tab(app_state: &mut AppState) -> std::io::Result<()> {
-    let curr_tab_id = app_state.state.tab_state_ref().curr_tab_id();
+    let curr_tab_id = app_state.state.tab_state.curr_tab_id();
     soft_reload(app_state, &curr_tab_id)
 }
 
 /// Unconditionally re-reads the parent/current/child listings of tab `id` from disk.
 pub fn reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
     let mut dirlists = Vec::with_capacity(3);
-    if let Some(curr_tab) = app_state.state.tab_state_ref().tab_ref(id) {
+    if let Some(curr_tab) = app_state.state.tab_state.tabs.get(id) {
         let display_options = &app_state.config.display_options;
-        let tab_options = curr_tab.option_ref();
-        let history = curr_tab.history_ref();
+        let tab_options = &curr_tab.options;
+        let history = &curr_tab.history;
         for curr_list in [
             curr_tab.parent_list_ref(),
             curr_tab.curr_list_ref(),
@@ -76,21 +77,22 @@ pub fn reload(app_state: &mut AppState, id: &Uuid) -> std::io::Result<()> {
 
     if let Some(history) = app_state
         .state
-        .tab_state_mut()
-        .tab_mut(id)
-        .map(|t| t.history_mut())
+        .tab_state
+        .tabs
+        .get_mut(id)
+        .map(|t| &mut t.history)
     {
         history.insert_entries(dirlists);
     }
     app_state
         .state
-        .message_queue_mut()
+        .message_queue
         .push_success("Directory listing reloaded!".to_string());
     Ok(())
 }
 
 /// Implements `reload_dirlist`: force-reloads the current tab and reports success.
 pub fn reload_dirlist(app_state: &mut AppState) -> AppResult {
-    reload(app_state, &app_state.state.tab_state_ref().curr_tab_id())?;
+    reload(app_state, &app_state.state.tab_state.curr_tab_id())?;
     Ok(())
 }

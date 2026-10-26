@@ -11,8 +11,8 @@ use crate::state::{AppState, PreviewState, TabState};
 use crate::tasks::PreviewDirState;
 use crate::tasks::PreviewFileState;
 use crate::ui;
-use crate::ui::widgets::{TuiStatusBar, 
-    TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiMessage,
+use crate::ui::widgets::{
+    TuiDirList, TuiDirListDetailed, TuiDirListLoading, TuiFilePreview, TuiMessage, TuiStatusBar,
     TuiTopBar,
 };
 use crate::ui::PreviewArea;
@@ -134,8 +134,8 @@ impl Widget for TuiFolderView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let display_options = &self.app_state.config.display_options;
 
-        let preview_state = self.app_state.state.preview_state_ref();
-        let curr_tab = self.app_state.state.tab_state_ref().curr_tab_ref();
+        let preview_state = &self.app_state.state.preview_state;
+        let curr_tab = self.app_state.state.tab_state.curr_tab_ref();
         let curr_tab_cwd = curr_tab.get_cwd();
 
         let curr_list = curr_tab.curr_list_ref();
@@ -171,18 +171,17 @@ impl Widget for TuiFolderView<'_> {
                 &self.app_state.config,
                 list,
                 display_options,
-                curr_tab.option_ref(),
+                &curr_tab.options,
                 true,
             )
             .render(layout_rect[1], buf);
 
             let footer_area = Self::footer_area(&area);
             if self.show_bottom_status {
-                TuiStatusBar::new(self.app_state, list, curr_tab.option_ref())
-                    .render(footer_area, buf);
+                TuiStatusBar::new(self.app_state, list, &curr_tab.options).render(footer_area, buf);
             }
         } else {
-            match curr_tab.history_metadata_ref().get(curr_tab_cwd) {
+            match curr_tab.history_metadata.get(curr_tab_cwd) {
                 Some(PreviewDirState::Loading) => {
                     TuiDirListLoading::new().render(layout_rect[1], buf);
                 }
@@ -197,7 +196,7 @@ impl Widget for TuiFolderView<'_> {
         if let Some(list) = child_list.as_ref() {
             TuiDirList::new(&self.app_state.config, list, true).render(layout_rect[2], buf);
         } else if let Some(entry) = curr_entry {
-            match curr_tab.history_metadata_ref().get(entry.file_path()) {
+            match curr_tab.history_metadata.get(entry.file_path()) {
                 Some(PreviewDirState::Loading) => {
                     TuiDirListLoading::new().render(layout_rect[2], buf);
                 }
@@ -216,11 +215,11 @@ impl Widget for TuiFolderView<'_> {
                     };
 
                     if let Some(PreviewFileState::Success(data)) =
-                        preview_state.previews_ref().get(entry.file_path())
+                        preview_state.previews.get(entry.file_path())
                     {
                         let preview_area = calculate_preview(
-                            self.app_state.state.tab_state_ref(),
-                            self.app_state.state.preview_state_ref(),
+                            &self.app_state.state.tab_state,
+                            &self.app_state.state.preview_state,
                             layout_rect[2],
                         );
                         if let Some(preview_area) = preview_area {
@@ -287,12 +286,12 @@ impl Intersections {
 /// the current pane the preview pane's space.
 pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
     let display_options = &app_state.config.display_options;
-    if app_state.state.tab_state_ref().len() == 0 {
+    if app_state.state.tab_state.len() == 0 {
         return &display_options.default_layout;
     }
 
-    let preview_state = app_state.state.preview_state_ref();
-    let curr_tab = app_state.state.tab_state_ref().curr_tab_ref();
+    let preview_state = &app_state.state.preview_state;
+    let curr_tab = app_state.state.tab_state.curr_tab_ref();
 
     let curr_list = curr_tab.curr_list_ref();
     let curr_entry = curr_list.and_then(|c| c.curr_entry_ref());
@@ -309,7 +308,7 @@ pub fn get_constraints(app_state: &AppState) -> &[Constraint; 3] {
                 Some(entry) if entry.metadata.file_type() == AppFileType::Directory => {
                     &display_options.default_layout
                 }
-                Some(entry) => match preview_state.previews_ref().get(entry.file_path()) {
+                Some(entry) => match preview_state.previews.get(entry.file_path()) {
                     None => &display_options.no_preview_layout,
                     _ => &display_options.default_layout,
                 },
@@ -374,7 +373,7 @@ pub fn calculate_preview(
     if child_list.as_ref().is_some() {
         None
     } else if let Some(entry) = curr_entry {
-        match preview_state.previews_ref().get(entry.file_path()) {
+        match preview_state.previews.get(entry.file_path()) {
             None | Some(PreviewFileState::Loading) | Some(PreviewFileState::Error(_)) => None,
             _ => {
                 let file_preview_path = entry.file_path_buf();

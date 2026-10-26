@@ -8,17 +8,15 @@ use crate::tasks::PreviewFileState;
 fn preview_cursor_move(app_state: &mut AppState, new_index: usize) -> AppResult {
     let file_path: Option<PathBuf> = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
         .map(|e| e.file_path().to_path_buf());
 
-    let preview_state = app_state.state.preview_state_mut();
+    let preview_state = &mut app_state.state.preview_state;
     if let Some(file_path) = file_path {
-        if let Some(PreviewFileState::Success(data)) =
-            preview_state.previews_mut().get_mut(&file_path)
-        {
+        if let Some(PreviewFileState::Success(data)) = preview_state.previews.get_mut(&file_path) {
             data.index = new_index;
         }
     }
@@ -30,17 +28,15 @@ pub fn preview_up(app_state: &mut AppState, u: usize) -> AppResult {
     let new_index = {
         let file_path = app_state
             .state
-            .tab_state_ref()
+            .tab_state
             .curr_tab_ref()
             .curr_list_ref()
             .and_then(|c| c.curr_entry_ref())
             .map(|e| e.file_path());
 
-        let preview_state = app_state.state.preview_state_ref();
+        let preview_state = &app_state.state.preview_state;
         if let Some(file_path) = file_path {
-            if let Some(PreviewFileState::Success(data)) =
-                preview_state.previews_ref().get(file_path)
-            {
+            if let Some(PreviewFileState::Success(data)) = preview_state.previews.get(file_path) {
                 if data.index < u {
                     Some(0)
                 } else {
@@ -65,18 +61,16 @@ pub fn preview_down(app_state: &mut AppState, u: usize) -> AppResult {
     let new_index = {
         let file_path = app_state
             .state
-            .tab_state_ref()
+            .tab_state
             .curr_tab_ref()
             .curr_list_ref()
             .and_then(|c| c.curr_entry_ref())
             .map(|e| e.file_path());
 
-        let preview_state = app_state.state.preview_state_ref();
+        let preview_state = &app_state.state.preview_state;
         if let Some(file_path) = file_path {
             // TODO: scroll in child list
-            if let Some(PreviewFileState::Success(data)) =
-                preview_state.previews_ref().get(file_path)
-            {
+            if let Some(PreviewFileState::Success(data)) = preview_state.previews.get(file_path) {
                 if (data.index as isize)
                     < (data.output.split('\n').count() as isize - u as isize - 3)
                 {

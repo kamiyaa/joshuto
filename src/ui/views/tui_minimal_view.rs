@@ -3,7 +3,7 @@ use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::widgets::Widget;
 
 use crate::state::AppState;
-use crate::ui::widgets::{TuiStatusBar, TuiDirListDetailed, TuiTopBar};
+use crate::ui::widgets::{TuiDirListDetailed, TuiStatusBar, TuiTopBar};
 
 /// A single-pane layout: just the current directory listing, top bar, and status line.
 pub struct TuiMinimalView<'a> {
@@ -23,7 +23,7 @@ impl<'a> TuiMinimalView<'a> {
 
 impl Widget for TuiMinimalView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let tab_state = self.app_state.state.tab_state_ref();
+        let tab_state = &self.app_state.state.tab_state;
 
         let display_options = &self.app_state.config.display_options;
         let constraints = &[Constraint::Ratio(1, 1)];
@@ -38,7 +38,7 @@ impl Widget for TuiMinimalView<'_> {
         };
 
         let tab_id = tab_state.curr_tab_id();
-        if let Some(curr_tab) = tab_state.tab_ref(&tab_id) {
+        if let Some(curr_tab) = tab_state.tabs.get(&tab_id) {
             let curr_list = curr_tab.curr_list_ref();
 
             let layout_rect = layout_rect[0];
@@ -49,7 +49,7 @@ impl Widget for TuiMinimalView<'_> {
                     &self.app_state.config,
                     list,
                     display_options,
-                    curr_tab.option_ref(),
+                    &curr_tab.options,
                     true,
                 )
                 .render(layout_rect, buf);
@@ -61,8 +61,7 @@ impl Widget for TuiMinimalView<'_> {
                 };
 
                 if self.show_bottom_status {
-                    TuiStatusBar::new(self.app_state, list, curr_tab.option_ref())
-                        .render(rect, buf);
+                    TuiStatusBar::new(self.app_state, list, &curr_tab.options).render(rect, buf);
                 }
             }
 

@@ -32,6 +32,6 @@ impl Widget for TuiWorkerView<'_> {
             width: area.width,
             height: area.height - 1,
         };
-        TuiIoTasks::new(self.app_state.state.worker_state_ref()).render(rect, buf);
+        TuiIoTasks::new(&self.app_state.state.worker_state).render(rect, buf);
     }
 }

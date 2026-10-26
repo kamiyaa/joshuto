@@ -6,11 +6,7 @@ use crate::tasks::{FileOperation, FileOperationOptions, IoTask};
 
 /// Stashes the current selection (or current entry) as a pending `file_op` for later paste.
 fn new_local_state(app_state: &mut AppState, file_op: FileOperation) -> Option<()> {
-    let list = app_state
-        .state
-        .tab_state_ref()
-        .curr_tab_ref()
-        .curr_list_ref()?;
+    let list = app_state.state.tab_state.curr_tab_ref().curr_list_ref()?;
     let selected = list.get_selected_paths();
 
     let mut local_state = LocalStateState::new();
@@ -53,12 +49,12 @@ pub fn create_io_task(
 
     let dest = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .get_cwd()
         .to_path_buf();
     let worker_thread = IoTask::new(operation, local_state.paths, dest, options);
-    app_state.state.worker_state_mut().push_task(worker_thread);
+    app_state.state.worker_state.push_task(worker_thread);
 
     Ok(())
 }
@@ -79,12 +75,12 @@ pub fn create_io_paste_task(app_state: &mut AppState, options: FileOperationOpti
 
     let dest = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .get_cwd()
         .to_path_buf();
     let worker_thread = IoTask::new(local_state.file_op, local_state.paths, dest, options);
-    app_state.state.worker_state_mut().push_task(worker_thread);
+    app_state.state.worker_state.push_task(worker_thread);
 
     Ok(())
 }
@@ -93,7 +89,7 @@ pub fn create_io_paste_task(app_state: &mut AppState, options: FileOperationOpti
 pub fn copy_filename(app_state: &mut AppState) -> AppResult {
     let entry_file_name = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
@@ -110,7 +106,7 @@ pub fn copy_filename(app_state: &mut AppState) -> AppResult {
 pub fn copy_filename_without_extension(app_state: &mut AppState) -> AppResult {
     let entry_file_name = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|c| c.curr_entry_ref())
@@ -131,11 +127,7 @@ pub fn copy_filename_without_extension(app_state: &mut AppState) -> AppResult {
 /// Implements `copy_filepath`: copies the current entry's full path (or every selected entry's
 /// path, newline-separated, if `all`) to the system clipboard.
 pub fn copy_filepath(app_state: &mut AppState, all: bool) -> AppResult {
-    let selected = app_state
-        .state
-        .tab_state_ref()
-        .curr_tab_ref()
-        .curr_list_ref();
+    let selected = app_state.state.tab_state.curr_tab_ref().curr_list_ref();
     let entry_file_path = {
         if all {
             selected.map(|c| c.get_selected_paths()).and_then(|sel| {
@@ -164,7 +156,7 @@ pub fn copy_filepath(app_state: &mut AppState, all: bool) -> AppResult {
 pub fn copy_dirpath(app_state: &mut AppState) -> AppResult {
     let opt_entry = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map(|dirlist| dirlist.file_path());

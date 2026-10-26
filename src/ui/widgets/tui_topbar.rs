@@ -51,14 +51,14 @@ impl Widget for TuiTopBar<'_> {
 
         let available_tab_width = area.width as usize - name_width;
         let mut paths = Vec::new();
-        let tabs = self.app_state.state.tab_state_ref().tab_refs_in_order();
+        let tabs = self.app_state.state.tab_state.tab_refs_in_order();
         for tab in tabs {
             paths.push(tab.get_cwd());
         }
         let tab_bar_spans = factor_tab_bar_spans(
             available_tab_width,
             &paths,
-            self.app_state.state.tab_state_ref().index,
+            self.app_state.state.tab_state.index,
             &global::APP_THEME.tabs,
         );
         top_bar_spans.extend(tab_bar_spans);

@@ -28,12 +28,7 @@ pub fn fzf_change_dir(app_state: &mut AppState, path: &Path) -> AppResult {
             .trim();
         change_directory(app_state, parent)?;
 
-        let index = match app_state
-            .state
-            .tab_state_ref()
-            .curr_tab_ref()
-            .curr_list_ref()
-        {
+        let index = match app_state.state.tab_state.curr_tab_ref().curr_list_ref() {
             Some(curr_list) => curr_list
                 .iter()
                 .enumerate()
@@ -43,14 +38,9 @@ pub fn fzf_change_dir(app_state: &mut AppState, path: &Path) -> AppResult {
         };
 
         if let Some(index) = index {
-            let ui_state = app_state.state.ui_state_ref().clone();
+            let ui_state = app_state.state.ui_state.clone();
             let display_options = &app_state.config.display_options;
-            if let Some(curr_list) = app_state
-                .state
-                .tab_state_mut()
-                .curr_tab_mut()
-                .curr_list_mut()
-            {
+            if let Some(curr_list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
                 curr_list.set_index(Some(index), &ui_state, display_options);
             }
         }

@@ -21,12 +21,7 @@ pub enum SubprocessCallMode {
 /// `(name, path)` pairs.
 pub fn current_files(app_state: &AppState) -> Vec<(&str, &Path)> {
     let mut result = Vec::new();
-    if let Some(curr_list) = app_state
-        .state
-        .tab_state_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-    {
+    if let Some(curr_list) = app_state.state.tab_state.curr_tab_ref().curr_list_ref() {
         let mut i = 0;
         curr_list.iter_selected().for_each(|entry| {
             result.push((entry.file_name(), entry.file_path()));
@@ -43,7 +38,7 @@ pub fn current_files(app_state: &AppState) -> Vec<(&str, &Path)> {
 }
 
 fn current_dir(app_state: &AppState) -> &Path {
-    app_state.state.tab_state_ref().curr_tab_ref().get_cwd()
+    app_state.state.tab_state.curr_tab_ref().get_cwd()
 }
 
 fn shell_quote(val: &str) -> String {
@@ -169,14 +164,14 @@ pub fn sub_process(
             res?;
             app_state
                 .state
-                .message_queue_mut()
+                .message_queue
                 .push_info(format!("Finished: {}", words.join(" ")));
         }
         SubprocessCallMode::Spawn => {
             execute_sub_process(app_state, words, mode)?;
             app_state
                 .state
-                .message_queue_mut()
+                .message_queue
                 .push_info(format!("Spawned: {}", words.join(" ")));
         }
         SubprocessCallMode::Capture => {

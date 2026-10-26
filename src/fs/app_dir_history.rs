@@ -154,7 +154,8 @@ where
     F: Fn(&walkdir::DirEntry, &DisplayOption, &AppDirListDisplayOptions) -> bool,
 {
     let dirlist_opts = tab_options
-        .dirlist_options_ref(path)
+        .dirlist_options
+        .get(path)
         .map(|v| v.to_owned())
         .unwrap_or_default();
 
@@ -229,8 +230,16 @@ mod tests {
         let tab_options = TabDisplayOption::default();
 
         let mut old = AppDirectoryList::from_path(dir.clone(), &options, &tab_options).unwrap();
-        let b = old.contents.iter().position(|e| e.file_name() == "b").unwrap();
-        let c = old.contents.iter().position(|e| e.file_name() == "c").unwrap();
+        let b = old
+            .contents
+            .iter()
+            .position(|e| e.file_name() == "b")
+            .unwrap();
+        let c = old
+            .contents
+            .iter()
+            .position(|e| e.file_name() == "c")
+            .unwrap();
         old.index = Some(b);
         old.contents[c].set_permanent_selected(true);
         let mut history = AppDirectoryHistory::new();

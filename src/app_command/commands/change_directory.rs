@@ -12,7 +12,7 @@ pub fn cd(path: &Path, app_state: &mut AppState, history_update: bool) -> AppRes
     set_current_dir(path)?;
     app_state
         .state
-        .tab_state_mut()
+        .tab_state
         .curr_tab_mut()
         .set_cwd(path, history_update);
     if app_state.config.zoxide_update {
@@ -41,16 +41,16 @@ pub fn change_directory(app_state: &mut AppState, mut path: &Path) -> AppResult 
     cd(new_cwd.as_path(), app_state, true)?;
     let dirlists = generate_entries_to_root(
         new_cwd.as_path(),
-        app_state.state.tab_state_ref().curr_tab_ref().history_ref(),
-        app_state.state.ui_state_ref(),
+        &app_state.state.tab_state.curr_tab_ref().history,
+        &app_state.state.ui_state,
         &app_state.config.display_options,
-        app_state.state.tab_state_ref().curr_tab_ref().option_ref(),
+        &app_state.state.tab_state.curr_tab_ref().options,
     )?;
     app_state
         .state
-        .tab_state_mut()
+        .tab_state
         .curr_tab_mut()
-        .history_mut()
+        .history
         .insert_entries(dirlists);
     Ok(())
 }
@@ -59,7 +59,7 @@ pub fn change_directory(app_state: &mut AppState, mut path: &Path) -> AppResult 
 pub fn parent_directory(app_state: &mut AppState) -> AppResult {
     if let Some(parent) = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .get_cwd()
         .parent()
@@ -73,12 +73,7 @@ pub fn parent_directory(app_state: &mut AppState) -> AppResult {
 
 /// Implements `cd -`: changes back to the directory this tab was in previously.
 pub fn previous_directory(app_state: &mut AppState) -> AppResult {
-    if let Some(path) = app_state
-        .state
-        .tab_state_ref()
-        .curr_tab_ref()
-        .previous_dir()
-    {
+    if let Some(path) = app_state.state.tab_state.curr_tab_ref().previous_dir() {
         let path = path.to_path_buf();
         cd(&path, app_state, true)?;
         reload::soft_reload_curr_tab(app_state)?;

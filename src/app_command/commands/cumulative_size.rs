@@ -37,19 +37,15 @@ fn compute_size(path: &path::Path) -> u64 {
 /// Implements `calculate_cumulative_size`: computes and displays the total recursive size of
 /// the selected entries (or the current entry, if none selected).
 pub fn calculate_cumulative_size(app_state: &mut AppState) -> AppResult {
-    let targets: Vec<(path::PathBuf, String)> = match app_state
-        .state
-        .tab_state_ref()
-        .curr_tab_ref()
-        .curr_list_ref()
-    {
-        Some(list) => list
-            .selected_or_current()
-            .into_iter()
-            .map(|e| (e.file_path().to_path_buf(), e.file_name().to_string()))
-            .collect(),
-        None => Vec::new(),
-    };
+    let targets: Vec<(path::PathBuf, String)> =
+        match app_state.state.tab_state.curr_tab_ref().curr_list_ref() {
+            Some(list) => list
+                .selected_or_current()
+                .into_iter()
+                .map(|e| (e.file_path().to_path_buf(), e.file_name().to_string()))
+                .collect(),
+            None => Vec::new(),
+        };
 
     if targets.is_empty() {
         return Ok(());
@@ -63,12 +59,7 @@ pub fn calculate_cumulative_size(app_state: &mut AppState) -> AppResult {
         sizes.push((name.clone(), size));
     }
 
-    if let Some(list) = app_state
-        .state
-        .tab_state_mut()
-        .curr_tab_mut()
-        .curr_list_mut()
-    {
+    if let Some(list) = app_state.state.tab_state.curr_tab_mut().curr_list_mut() {
         for (name, size) in &sizes {
             if let Some(entry) = list.iter_mut().find(|e| e.file_name() == name.as_str()) {
                 entry.metadata.update_cumulative_size(*size);
@@ -89,7 +80,7 @@ pub fn calculate_cumulative_size(app_state: &mut AppState) -> AppResult {
             file_size_to_string(total).trim()
         )
     };
-    app_state.state.message_queue_mut().push_info(msg);
+    app_state.state.message_queue.push_info(msg);
 
     Ok(())
 }

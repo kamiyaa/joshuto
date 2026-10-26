@@ -162,11 +162,7 @@ where
 /// (and any other selected files) with the first working configured program, `xdg-open`, or an
 /// interactive prompt, in that order of preference.
 pub fn open(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
-    let curr_list = app_state
-        .state
-        .tab_state_ref()
-        .curr_tab_ref()
-        .curr_list_ref();
+    let curr_list = app_state.state.tab_state.curr_tab_ref().curr_list_ref();
     let entry = curr_list.and_then(|s| s.curr_entry_ref().cloned());
 
     match entry {
@@ -214,7 +210,7 @@ pub fn open_with_index(
 ) -> AppResult {
     let paths = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map_or(vec![], |s| s.iter_selected().cloned().collect());
@@ -245,7 +241,7 @@ pub fn open_with_index(
 pub fn open_with_interactive(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let mut paths = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map_or(vec![], |s| s.iter_selected().cloned().collect());
@@ -253,7 +249,7 @@ pub fn open_with_interactive(app_state: &mut AppState, backend: &mut AppBackend)
     if paths.is_empty() {
         match app_state
             .state
-            .tab_state_ref()
+            .tab_state
             .curr_tab_ref()
             .curr_list_ref()
             .and_then(|s| s.curr_entry_ref())

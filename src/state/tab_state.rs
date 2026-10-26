@@ -25,23 +25,15 @@ impl TabState {
         self.tab_order.len()
     }
 
-    /// Returns the tab with the given id, if open.
-    pub fn tab_ref(&self, id: &Uuid) -> Option<&JoshutoTab> {
-        self.tabs.get(id)
-    }
     /// Returns all open tabs in display order.
     pub fn tab_refs_in_order(&self) -> Vec<&JoshutoTab> {
         let mut tab_refs: Vec<&JoshutoTab> = vec![];
         for tab_id in self.tab_order.iter() {
-            if let Some(tab_ref) = self.tab_ref(tab_id) {
+            if let Some(tab_ref) = self.tabs.get(tab_id) {
                 tab_refs.push(tab_ref);
             }
         }
         tab_refs
-    }
-    /// Returns a mutable reference to the tab with the given id, if open.
-    pub fn tab_mut(&mut self, id: &Uuid) -> Option<&mut JoshutoTab> {
-        self.tabs.get_mut(id)
     }
 
     /// Returns the id of the currently active tab.

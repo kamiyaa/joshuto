@@ -153,7 +153,7 @@ fn filter(
         None => return false,
     };
 
-    if !dirlist_opts.filter_state_ref().is_match(file_name) {
+    if !dirlist_opts.filter_state.is_match(file_name) {
         return false;
     }
 

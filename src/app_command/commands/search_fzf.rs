@@ -8,7 +8,7 @@ use crate::ui::AppBackend;
 pub fn search_fzf(app_state: &mut AppState, backend: &mut AppBackend) -> AppResult {
     let items = app_state
         .state
-        .tab_state_ref()
+        .tab_state
         .curr_tab_ref()
         .curr_list_ref()
         .map(|list| {

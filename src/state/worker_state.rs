@@ -60,10 +60,6 @@ impl WorkerState {
     pub fn iter<'a>(&'a self) -> Iter<'a, IoTask> {
         self.task_queue.iter()
     }
-    /// Returns the progress of the currently executing task, if any.
-    pub fn worker_ref(&self) -> Option<&IoTaskStat> {
-        self.progress.as_ref()
-    }
 
     /// Dequeues and sends the next task to the worker thread, if any is queued.
     pub fn start_next_job(&mut self) -> AppResult {

@@ -85,12 +85,7 @@ pub fn custom_search(
             ))?,
         )?;
 
-        if let Some(current_dir_items) = app_state
-            .state
-            .tab_state_ref()
-            .curr_tab_ref()
-            .curr_list_ref()
-        {
+        if let Some(current_dir_items) = app_state.state.tab_state.curr_tab_ref().curr_list_ref() {
             let position = current_dir_items
                 .iter()
                 .enumerate()

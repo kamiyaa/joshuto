@@ -59,20 +59,19 @@ impl Widget for TuiLogs<'_> {
 
         let visible = self.lines.iter().skip(*self.offset).take(page_height);
         for (i, line) in visible.enumerate() {
-            buf.set_stringn(
-                area.x,
-                area.y + 1 + i as u16,
-                line,
-                width,
-                line_style(line),
-            );
+            buf.set_stringn(area.x, area.y + 1 + i as u16, line, width, line_style(line));
         }
 
         let footer = if self.lines.is_empty() {
             "No logs yet. Press <ESC> to return".to_string()
         } else {
             let last = (*self.offset + page_height).min(self.lines.len());
-            format!("{FOOTER} ({}-{} of {})", *self.offset + 1, last, self.lines.len())
+            format!(
+                "{FOOTER} ({}-{} of {})",
+                *self.offset + 1,
+                last,
+                self.lines.len()
+            )
         };
         buf.set_stringn(
             area.x,

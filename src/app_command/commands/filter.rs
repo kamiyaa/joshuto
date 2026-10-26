@@ -6,11 +6,11 @@ use super::reload;
 /// Applies `filter_state` as the current directory's filter and reloads the listing. Shared by
 /// the `filter`, `filter_glob`, and `filter_regex` commands.
 pub fn filter(app_state: &mut AppState, filter_state: MatchState) -> AppResult {
-    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
+    let curr_tab = app_state.state.tab_state.curr_tab_mut();
     let path = curr_tab.get_cwd().to_path_buf();
 
     curr_tab
-        .option_mut()
+        .options
         .dirlist_options_mut(&path)
         .set_filter_state(filter_state);
 

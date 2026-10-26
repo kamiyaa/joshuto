@@ -47,16 +47,6 @@ impl JoshutoTab {
         Ok(new_tab)
     }
 
-    /// Returns this tab's display options.
-    pub fn option_ref(&self) -> &TabDisplayOption {
-        &self.options
-    }
-
-    /// Returns a mutable reference to this tab's display options.
-    pub fn option_mut(&mut self) -> &mut TabDisplayOption {
-        &mut self.options
-    }
-
     /// Returns this tab's current working directory.
     pub fn get_cwd(&self) -> &path::Path {
         self.cwd.as_path()
@@ -80,33 +70,7 @@ impl JoshutoTab {
         self.previous_dir.as_deref()
     }
 
-    /// Returns this tab's cache of previously-read directory listings.
-    pub fn history_ref(&self) -> &AppDirectoryHistory {
-        &self.history
-    }
-    /// Returns a mutable reference to this tab's directory-listing cache.
-    pub fn history_mut(&mut self) -> &mut AppDirectoryHistory {
-        &mut self.history
-    }
-
-    /// Returns the loading/error state of any in-progress background directory previews.
-    pub fn history_metadata_ref(&self) -> &HistoryMetadata {
-        &self.history_metadata
-    }
-    /// Returns a mutable reference to this tab's background directory-preview state.
-    pub fn history_metadata_mut(&mut self) -> &mut HistoryMetadata {
-        &mut self.history_metadata
-    }
-
     /// Returns this tab's back/forward navigation history.
-    #[allow(dead_code)]
-    pub fn navigation_history_ref(&self) -> &NavigationHistory {
-        &self.navigation_history
-    }
-    /// Returns a mutable reference to this tab's back/forward navigation history.
-    pub fn navigation_history_mut(&mut self) -> &mut NavigationHistory {
-        &mut self.navigation_history
-    }
 
     /// Returns the cached listing for the current directory, if present.
     pub fn curr_list_ref(&self) -> Option<&AppDirectoryList> {

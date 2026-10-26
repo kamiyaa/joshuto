@@ -4,7 +4,7 @@ use ratatui::widgets::{Block, Borders, Widget};
 
 use crate::global;
 use crate::state::AppState;
-use crate::ui::widgets::{TuiStatusBar, TuiDirListDetailed, TuiTopBar};
+use crate::ui::widgets::{TuiDirListDetailed, TuiStatusBar, TuiTopBar};
 
 /// A two-pane layout showing the current and next tab's listings side by side (paired by even
 /// and odd tab index).
@@ -25,7 +25,7 @@ impl<'a> TuiHSplitView<'a> {
 
 impl Widget for TuiHSplitView<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let tab_state = self.app_state.state.tab_state_ref();
+        let tab_state = &self.app_state.state.tab_state;
 
         let display_options = &self.app_state.config.display_options;
         let constraints = &[Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)];
@@ -74,7 +74,7 @@ impl Widget for TuiHSplitView<'_> {
 
         let tab_id = tab_state.curr_tab_id();
         let tab_index = tab_state.index;
-        if let Some(curr_tab) = tab_state.tab_ref(&tab_id) {
+        if let Some(curr_tab) = tab_state.tabs.get(&tab_id) {
             let curr_list = curr_tab.curr_list_ref();
 
             let layout_rect = if tab_index.is_multiple_of(2) {
@@ -89,7 +89,7 @@ impl Widget for TuiHSplitView<'_> {
                     &self.app_state.config,
                     list,
                     display_options,
-                    curr_tab.option_ref(),
+                    &curr_tab.options,
                     true,
                 )
                 .render(layout_rect, buf);
@@ -101,8 +101,7 @@ impl Widget for TuiHSplitView<'_> {
                 };
 
                 if self.show_bottom_status {
-                    TuiStatusBar::new(self.app_state, list, curr_tab.option_ref())
-                        .render(rect, buf);
+                    TuiStatusBar::new(self.app_state, list, &curr_tab.options).render(rect, buf);
                 }
             }
 
@@ -124,7 +123,7 @@ impl Widget for TuiHSplitView<'_> {
 
         if other_tab_index < tab_state.tab_order.len() {
             let other_tab_id = tab_state.tab_order[other_tab_index];
-            if let Some(curr_tab) = tab_state.tab_ref(&other_tab_id) {
+            if let Some(curr_tab) = tab_state.tabs.get(&other_tab_id) {
                 let curr_list = curr_tab.curr_list_ref();
 
                 let layout_rect = if other_tab_index.is_multiple_of(2) {
@@ -138,7 +137,7 @@ impl Widget for TuiHSplitView<'_> {
                         &self.app_state.config,
                         list,
                         display_options,
-                        curr_tab.option_ref(),
+                        &curr_tab.options,
                         false,
                     )
                     .render(layout_rect, buf);

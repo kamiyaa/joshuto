@@ -4,7 +4,8 @@ use std::path;
 use notify::{RecursiveMode, Watcher};
 
 use crate::state::{
-    CommandLineState, LocalStateState, MatchState, Message, MessageQueue, PreviewState, TabState, UiState, WorkerState,
+    CommandLineState, LocalStateState, MatchState, Message, MessageQueue, PreviewState, TabState,
+    UiState, WorkerState,
 };
 
 use super::AppHandlePool;
@@ -80,24 +81,6 @@ impl FileManagerState {
         self.watched_paths = new_paths_to_watch;
     }
 
-    /// Returns the state of all tabs.
-    pub fn tab_state_ref(&self) -> &TabState {
-        &self.tab_state
-    }
-    /// Returns a mutable reference to the state of all tabs.
-    pub fn tab_state_mut(&mut self) -> &mut TabState {
-        &mut self.tab_state
-    }
-
-    /// Returns the queue of messages pending display in the UI.
-    pub fn message_queue_ref(&self) -> &MessageQueue {
-        &self.message_queue
-    }
-    /// Returns a mutable reference to the message queue.
-    pub fn message_queue_mut(&mut self) -> &mut MessageQueue {
-        &mut self.message_queue
-    }
-
     // local state related
     /// Stashes `state` (e.g. a pending cut/copy selection) for later use.
     pub fn set_local_state(&mut self, state: LocalStateState) {
@@ -115,41 +98,5 @@ impl FileManagerState {
     /// Sets the active search/filter match state.
     pub fn set_search_state(&mut self, app_state: MatchState) {
         self.search_state = Some(app_state);
-    }
-
-    /// Returns the current preview state.
-    pub fn preview_state_ref(&self) -> &PreviewState {
-        &self.preview_state
-    }
-    /// Returns a mutable reference to the preview state.
-    pub fn preview_state_mut(&mut self) -> &mut PreviewState {
-        &mut self.preview_state
-    }
-
-    /// Returns the current UI rendering-layout state.
-    pub fn ui_state_ref(&self) -> &UiState {
-        &self.ui_state
-    }
-    /// Returns a mutable reference to the UI rendering-layout state.
-    pub fn ui_state_mut(&mut self) -> &mut UiState {
-        &mut self.ui_state
-    }
-
-    /// Returns the state of background IO workers.
-    pub fn worker_state_ref(&self) -> &WorkerState {
-        &self.worker_state
-    }
-    /// Returns a mutable reference to the background IO worker state.
-    pub fn worker_state_mut(&mut self) -> &mut WorkerState {
-        &mut self.worker_state
-    }
-
-    /// Returns the command-line state.
-    pub fn commandline_state_ref(&self) -> &CommandLineState {
-        &self.commandline_state
-    }
-    /// Returns a mutable reference to the command-line state.
-    pub fn commandline_state_mut(&mut self) -> &mut CommandLineState {
-        &mut self.commandline_state
     }
 }

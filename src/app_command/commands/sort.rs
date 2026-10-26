@@ -7,12 +7,12 @@ use super::reload;
 
 /// Implements `sort`: sets the primary sort method (and optionally reverse) for the current tab.
 pub fn set_sort(app_state: &mut AppState, method: SortMethod, reverse: Option<bool>) -> AppResult {
-    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
-    curr_tab.option_mut().sort_options.set_sort_method(method);
-    curr_tab.history_mut().depreciate_all_entries();
+    let curr_tab = app_state.state.tab_state.curr_tab_mut();
+    curr_tab.options.sort_options.set_sort_method(method);
+    curr_tab.history.depreciate_all_entries();
 
     if let Some(r) = reverse {
-        curr_tab.option_mut().sort_options.reverse = r;
+        curr_tab.options.sort_options.reverse = r;
     }
 
     refresh(app_state)
@@ -20,19 +20,19 @@ pub fn set_sort(app_state: &mut AppState, method: SortMethod, reverse: Option<bo
 
 /// Implements `sort reverse`: toggles reverse sort order for the current tab.
 pub fn toggle_reverse(app_state: &mut AppState) -> AppResult {
-    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
-    let reversed = !curr_tab.option_mut().sort_options.reverse;
-    curr_tab.option_mut().sort_options.reverse = reversed;
-    curr_tab.history_mut().depreciate_all_entries();
+    let curr_tab = app_state.state.tab_state.curr_tab_mut();
+    let reversed = !curr_tab.options.sort_options.reverse;
+    curr_tab.options.sort_options.reverse = reversed;
+    curr_tab.history.depreciate_all_entries();
     refresh(app_state)
 }
 
 fn refresh(app_state: &mut AppState) -> AppResult {
     reload::soft_reload_curr_tab(app_state)?;
 
-    let ui_state = app_state.state.ui_state_ref().clone();
+    let ui_state = app_state.state.ui_state.clone();
     let display_options = &app_state.config.display_options;
-    let curr_tab = app_state.state.tab_state_mut().curr_tab_mut();
+    let curr_tab = app_state.state.tab_state.curr_tab_mut();
 
     macro_rules! update_viewport {
         ($x_list_mut: ident) => {

@@ -17,7 +17,7 @@ pub fn zoxide_query(app_state: &mut AppState, args: &str) -> AppResult {
         if !app_state.config.zoxide_update {
             let cwd = app_state
                 .state
-                .tab_state_ref()
+                .tab_state
                 .curr_tab_ref()
                 .get_cwd()
                 .to_str()
@@ -45,14 +45,14 @@ pub fn zoxide_query(app_state: &mut AppState, args: &str) -> AppResult {
             let path = Path::new(zoxide_path);
             app_state
                 .state
-                .message_queue_mut()
+                .message_queue
                 .push_info(format!("z {:?}", zoxide_path));
             change_directory::change_directory(app_state, path)?;
         }
     } else if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stderr) {
         app_state
             .state
-            .message_queue_mut()
+            .message_queue
             .push_error(zoxide_str.to_string());
     }
     Ok(())
@@ -88,14 +88,14 @@ pub fn zoxide_query_interactive(
             let path = Path::new(zoxide_path);
             app_state
                 .state
-                .message_queue_mut()
+                .message_queue
                 .push_info(format!("zi {:?}", zoxide_path));
             change_directory::change_directory(app_state, path)?;
         }
     } else if let Ok(zoxide_str) = std::str::from_utf8(&zoxide_output.stderr) {
         app_state
             .state
-            .message_queue_mut()
+            .message_queue
             .push_error(zoxide_str.to_string());
     }
     Ok(())
