@@ -221,7 +221,7 @@ fn print_entry(
                 }
                 // keep the name column aligned for unmodified entries
                 None => {
-                    buf.set_stringn(x, y, &" ".repeat(git_col_width), git_col_width, style);
+                    buf.set_stringn(x, y, " ".repeat(git_col_width), git_col_width, style);
                 }
             }
         }
