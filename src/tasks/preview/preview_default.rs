@@ -38,17 +38,10 @@ pub fn load_preview_path(
     let preview_options = &app_state.config.preview_options;
     if metadata.is_dir() {
         let tab = app_state.state.tab_state_ref().curr_tab_ref();
-        // only load if there doesn't already exist a loading thread and
-        // there isn't an entry in history
-        let need_to_load = tab.history_metadata_ref().get(p.as_path()).is_none()
-            && tab
-                .history_ref()
-                .get(p.as_path())
-                .map(|e| e.need_update())
-                .unwrap_or(true);
-
-        if need_to_load {
-            preview_dir::Background::load_preview(app_state, p);
+        // only if there isn't already a loading thread or a failed load; whether a cached
+        // listing is out of date is checked by the loading thread, to keep IO off this one
+        if tab.history_metadata_ref().get(p.as_path()).is_none() {
+            preview_dir::Background::refresh(app_state, p);
         }
     } else if metadata.len() <= preview_options.max_preview_size {
         app_state

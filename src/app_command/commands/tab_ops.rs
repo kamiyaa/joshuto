@@ -11,14 +11,17 @@ use crate::fs::{
 };
 use crate::state::AppState;
 use crate::tab::{JoshutoTab, NewTabMode};
+use crate::tasks::preview::preview_dir;
+use crate::tasks::PreviewDirState;
 use crate::utils::{set_current_dir, unix_helper};
 
 use crate::global::HOME_DIR;
 
 use super::quit::{quit_with_action, QuitAction};
 
-/// Makes the tab at `new_index` active: syncs the process cwd to it and loads listings for its
-/// current, parent, and cursor-entry directories.
+/// Makes the tab at `new_index` active: syncs the process cwd to it and refreshes its current,
+/// parent, and cursor-entry directories in the background. The cached listings are shown
+/// meanwhile, so switching never waits on disk IO (which can take seconds on a spun-down disk).
 fn _tab_switch(new_index: usize, app_state: &mut AppState) -> AppResult {
     app_state.state.tab_state_mut().index = new_index;
     let cwd = app_state
@@ -29,64 +32,37 @@ fn _tab_switch(new_index: usize, app_state: &mut AppState) -> AppResult {
         .to_path_buf();
     set_current_dir(cwd.as_path())?;
 
-    let entry_path = match app_state
+    // judged by cached metadata, which already follows symlinks
+    let entry_path = app_state
         .state
         .tab_state_ref()
         .curr_tab_ref()
         .curr_list_ref()
         .and_then(|l| l.curr_entry_ref())
-    {
-        Some(entry) => {
-            let file_path = entry.file_path();
-            if file_path.is_dir() {
-                Some(file_path.to_path_buf())
-            } else {
-                None
-            }
-        }
-        None => None,
-    };
+        .filter(|entry| entry.metadata.is_dir())
+        .map(|entry| entry.file_path().to_path_buf());
 
-    let display_options = &app_state.config.display_options;
-    let tab_options = app_state.state.tab_state_ref().curr_tab_ref().option_ref();
-
-    let history = app_state.state.tab_state_ref().curr_tab_ref().history_ref();
-
-    let mut dirlists = Vec::with_capacity(3);
-    for curr_path in [
-        Some(cwd.as_path().to_path_buf()),
+    for dir_path in [
+        Some(cwd.clone()),
         cwd.parent().map(|p| p.to_path_buf()),
         entry_path,
     ]
     .into_iter()
     .flatten()
     {
-        match history.get(&curr_path) {
-            Some(list) => {
-                if list.need_update() {
-                    let dirlist = create_dirlist_with_history(
-                        history,
-                        curr_path.as_path(),
-                        display_options,
-                        tab_options,
-                    )?;
-                    dirlists.push(dirlist);
-                }
-            }
-            None => {
-                let dirlist = create_dirlist_with_history(
-                    history,
-                    curr_path.as_path(),
-                    display_options,
-                    tab_options,
-                )?;
-                dirlists.push(dirlist);
-            }
+        let already_loading = matches!(
+            app_state
+                .state
+                .tab_state_ref()
+                .curr_tab_ref()
+                .history_metadata_ref()
+                .get(dir_path.as_path()),
+            Some(PreviewDirState::Loading)
+        );
+        if !already_loading {
+            preview_dir::Background::refresh(app_state, dir_path);
         }
     }
-
-    let history = app_state.state.tab_state_mut().curr_tab_mut().history_mut();
-    history.insert_entries(dirlists);
 
     Ok(())
 }

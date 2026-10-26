@@ -23,26 +23,6 @@ pub struct AppDirectoryList {
 }
 
 impl AppDirectoryList {
-    /// Builds a `AppDirectoryList` from already-read contents and metadata.
-    pub fn new(
-        path: path::PathBuf,
-        contents: Vec<AppDirEntry>,
-        index: Option<usize>,
-        viewport_index: usize,
-        visual_mode_anchor_index: Option<usize>,
-        metadata: AppFileMetadata,
-    ) -> Self {
-        Self {
-            path,
-            contents,
-            metadata,
-            index,
-            viewport_index,
-            visual_mode_anchor_index,
-            need_update: false,
-        }
-    }
-
     /// Reads and sorts the contents of `path` from disk into a new `AppDirectoryList`.
     pub fn from_path(
         path: path::PathBuf,

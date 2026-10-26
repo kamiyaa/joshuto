@@ -35,10 +35,12 @@ pub enum AppEvent {
     ChildProcessComplete(u32),
 
     // preview thread events
+    /// A background directory read finished. `Ok(None)` means the directory hadn't changed
+    /// since the cached listing was read, so it wasn't re-read.
     PreviewDir {
         id: Uuid,
         path: path::PathBuf,
-        res: Box<io::Result<AppDirectoryList>>,
+        res: Box<io::Result<Option<AppDirectoryList>>>,
     },
     PreviewFile {
         path: path::PathBuf,

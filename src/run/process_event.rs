@@ -18,7 +18,7 @@ use crate::config::AppKeybindConfig;
 use crate::config::KeyEventAction;
 use crate::config::KeyMapping;
 use crate::error::AppResult;
-use crate::fs::AppDirectoryList;
+use crate::fs::{merge_dirlist_with_history, AppDirectoryList};
 use crate::state::{AppState, Message};
 use crate::tasks::AppEvent;
 use crate::tasks::IoTaskProgressMessage;
@@ -167,18 +167,25 @@ pub fn process_dir_preview(
     app_state: &mut AppState,
     id: Uuid,
     path: path::PathBuf,
-    res: io::Result<AppDirectoryList>,
+    res: io::Result<Option<AppDirectoryList>>,
 ) {
     for (tab_id, tab) in app_state.state.tab_state_mut().iter_mut() {
         if *tab_id == id {
             match res {
-                Ok(dirlist) => {
+                Ok(None) => {
+                    // unchanged on disk; the cached listing is still current
+                    tab.history_metadata_mut().remove(path.as_path());
+                }
+                Ok(Some(dirlist)) => {
                     // remove from loading state
                     tab.history_metadata_mut().remove(dirlist.file_path());
 
-                    let history = tab.history_mut();
+                    // merge now rather than in the loading thread, so cursor moves and
+                    // selections made while it was loading are kept
+                    let dirlist =
+                        merge_dirlist_with_history(tab.history_ref(), dirlist, tab.option_ref());
                     let dir_path = dirlist.file_path().to_path_buf();
-                    history.insert(dir_path, dirlist);
+                    tab.history_mut().insert(dir_path, dirlist);
                 }
                 Err(e) => {
                     // set to false so we don't load again
