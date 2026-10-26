@@ -2,7 +2,7 @@ use std::{fs, io, path};
 
 use crate::{config::DisplayOption, fs::AppFileMetadata};
 
-use super::AppFileType;
+use super::{AppFileType, GitFileStatus};
 
 /// A single file or directory entry as shown in a joshuto directory listing.
 #[derive(Clone, Debug)]
@@ -11,6 +11,8 @@ pub struct AppDirEntry {
     pub ext: Option<String>,
     pub path: path::PathBuf,
     pub metadata: AppFileMetadata,
+    /// Git status of this entry, or `None` outside a repo / when disabled
+    git_status: Option<GitFileStatus>,
     /// Directly selected by the user, _not_ by a current visual mode selection
     permanent_selected: bool,
     /// Temporarily selected by the visual mode range
@@ -54,10 +56,21 @@ impl AppDirEntry {
             ext,
             path,
             metadata,
+            git_status: None,
             permanent_selected: false,
             visual_mode_selected: false,
             _marked: false,
         })
+    }
+
+    /// Returns the entry's git status, or `None` if unchanged / not in a repo.
+    pub fn git_status(&self) -> Option<GitFileStatus> {
+        self.git_status
+    }
+
+    /// Sets the entry's git status.
+    pub fn set_git_status(&mut self, git_status: Option<GitFileStatus>) {
+        self.git_status = git_status;
     }
 
     /// Returns the entry's file name (not the full path).

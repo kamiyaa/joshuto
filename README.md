@@ -268,6 +268,7 @@ Please create an issue :)
   - Jump to number
 - File chooser
 - Trash support
+- `git status --short` marks on files
 
 ## TODOs
 

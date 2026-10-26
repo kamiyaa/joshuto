@@ -170,6 +170,7 @@ pub enum AppCommand {
     SignalSuspend,
 
     ToggleHiddenFiles,
+    ToggleGitStatus,
     SwitchLineNums(LineNumberStyle),
 
     Flat {

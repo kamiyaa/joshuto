@@ -85,6 +85,7 @@ cmd_constants![
     (CMD_TAB_SWITCH, "tab_switch"),
     (CMD_TAB_SWITCH_INDEX, "tab_switch_index"),
     (CMD_TOGGLE_HIDDEN, "toggle_hidden"),
+    (CMD_TOGGLE_GIT_STATUS, "toggle_git_status"),
     (CMD_TOGGLE_VISUAL, "toggle_visual"),
     (CMD_SWITCH_LINE_NUMBERS, "line_nums"),
     (CMD_SET_DISPLAY_MODE, "set_display_mode"),

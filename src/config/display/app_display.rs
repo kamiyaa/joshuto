@@ -32,6 +32,7 @@ pub struct DisplayOption {
     pub show_hostname: bool,
     pub show_hidden: bool,
     pub show_icons: bool,
+    pub show_git_status: bool,
     pub line_number_style: LineNumberStyle,
     pub default_layout: [Constraint; 3],
     pub no_preview_layout: [Constraint; 3],
@@ -74,6 +75,7 @@ impl From<DisplayOptionRaw> for DisplayOption {
             show_hostname: raw.show_hostname,
             show_hidden: raw.show_hidden,
             show_icons: raw.show_icons,
+            show_git_status: raw.show_git_status,
             line_number_style: raw.line_number_style,
 
             default_layout,
@@ -123,6 +125,7 @@ impl std::default::Default for DisplayOption {
             show_hostname: true,
             show_hidden: false,
             show_icons: false,
+            show_git_status: false,
             line_number_style: LineNumberStyle::None,
             default_layout,
             no_preview_layout,

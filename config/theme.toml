@@ -97,6 +97,29 @@ bold = true
 # fg = "dark_gray"
 
 ##########################################
+## File list - git status indicators
+##########################################
+# Shown when `show_git_status = true` is set in the display options.
+# The indicator uses the two-character `git status --short` (XY) code.
+
+# Working-tree (unstaged) modifications
+[git_modified]
+fg = "red"
+
+# Staged (index) changes only
+[git_staged]
+fg = "green"
+
+# Untracked files
+[git_untracked]
+fg = "dark_gray"
+
+# Deleted files
+[git_deleted]
+fg = "red"
+bold = true
+
+##########################################
 ## File list - Override style by extension
 ##########################################
 # This sections allows to override the basic

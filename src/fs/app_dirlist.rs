@@ -33,6 +33,14 @@ impl AppDirectoryList {
         let mut contents =
             read_directory(path.as_path(), filter_func, display_options, tab_options)?;
 
+        if display_options.show_git_status {
+            if let Some(statuses) = crate::fs::dir_git_statuses(path.as_path()) {
+                for entry in contents.iter_mut() {
+                    entry.set_git_status(statuses.get(entry.file_name()).copied());
+                }
+            }
+        }
+
         contents.sort_by(|f1, f2| tab_options.sort_options.compare(f1, f2));
 
         let index = if contents.is_empty() { None } else { Some(0) };
