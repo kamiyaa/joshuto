@@ -5,10 +5,10 @@ mod new_tab_mode;
 
 pub use new_tab_mode::*;
 
-use nav_history::NavigationHistory;
-
 use std::collections::HashMap;
 use std::path;
+
+use nav_history::NavigationHistory;
 
 use crate::config::TabDisplayOption;
 use crate::fs::{AppDirectoryHistory, AppDirectoryList};
@@ -69,8 +69,6 @@ impl JoshutoTab {
     pub fn previous_dir(&self) -> Option<&path::Path> {
         self.previous_dir.as_deref()
     }
-
-    /// Returns this tab's back/forward navigation history.
 
     /// Returns the cached listing for the current directory, if present.
     pub fn curr_list_ref(&self) -> Option<&AppDirectoryList> {

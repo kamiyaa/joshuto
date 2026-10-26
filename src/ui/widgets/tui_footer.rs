@@ -98,7 +98,7 @@ impl Widget for TuiFooter<'_> {
                     Span::styled(
                         match self.tab_options.dirlist_options.get(path) {
                             Some(opt) if !opt.filter_state.is_none() => {
-                                format!("filter:{} ", &opt.filter_state)
+                                format!("filter:{} ", opt.filter_state)
                             }
                             _ => "".to_owned(),
                         },

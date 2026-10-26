@@ -15,7 +15,6 @@ use crate::{
     utils::keyparse,
 };
 
-///
 pub fn command_keymaps_vec_to_map(keymaps: &[CommandKeymapRaw]) -> HashMap<Event, KeyEventAction> {
     let mut hashmap = HashMap::new();
 
@@ -110,10 +109,10 @@ fn insert_keycommand(
             _ => {
                 let error_msg = "Ambiguous keybindings";
                 tracing::debug!("{error_msg}");
-                return Err(AppError::new(
+                Err(AppError::new(
                     AppErrorCode::AmbiguousKeybinding,
                     error_msg.to_string(),
-                ));
+                ))
             }
         },
         Entry::Vacant(entry) => {

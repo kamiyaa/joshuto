@@ -40,7 +40,7 @@ pub fn load_preview_path(
         let tab = app_state.state.tab_state.curr_tab_ref();
         // only if there isn't already a loading thread or a failed load; whether a cached
         // listing is out of date is checked by the loading thread, to keep IO off this one
-        if tab.history_metadata.get(p.as_path()).is_none() {
+        if !tab.history_metadata.contains_key(p.as_path()) {
             preview_dir::Background::refresh(app_state, p);
         }
     } else if metadata.len() <= preview_options.max_preview_size {
